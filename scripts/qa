@@ -1,0 +1,19 @@
+#!/bin/zsh
+set -eu
+source "${0:A:h}/qa-lib.zsh"
+gate="${1:-changed}"; shift || true
+case "$gate" in
+  lint) qa_run lint bun run lint;;
+  typecheck) qa_run typecheck bun run typecheck;;
+  build) qa_run build bun run build;;
+  release) qa_run release bun run build:release;;
+  test) qa_run test bun test "$@";;
+  changed)
+    files=$(git status --porcelain 2>/dev/null || true)
+    qa_run lint bun run lint
+    qa_run typecheck bun run typecheck
+    if [[ "$files" == *"tests/"* || "$files" == *"packages/"* || "$files" == *"apps/server"* ]]; then qa_run test bun test; fi
+    if [[ "$files" == *"apps/web"* || "$files" == *"package"* ]]; then qa_run build bun run build; fi;;
+  all) qa_run format bun run format; qa_run lint bun run lint; qa_run typecheck bun run typecheck; qa_run test bun test; qa_run build bun run build;;
+  *) echo "Verwendung: ./scripts/qa {changed|all|test|build|lint|typecheck|release}"; exit 2;;
+esac

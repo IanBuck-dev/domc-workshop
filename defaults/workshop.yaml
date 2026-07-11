@@ -1,0 +1,20 @@
+workshopTitle: Claims-Ideenportfolio
+workshopSubtitle: Von der Idee zur belastbaren IT-Übergabe
+model: opus
+modelDisplay: Claude Opus 4.8
+effort: medium
+impactThreshold: 5.5
+effortThreshold: 5.5
+scoringGuidance: Geschäftswirkung, Dringlichkeit, strategische Passung, Risikoreduktion, Machbarkeit und Abhängigkeiten getrennt begründen.
+weights:
+  businessImpact: 1
+  urgency: 1
+  strategicFit: 1
+  riskReduction: 1
+  feasibility: 1
+  dependencyReadiness: 1
+models:
+  - label: Claude Opus 4.8
+    value: opus
+  - label: Claude Sonnet (aktuell)
+    value: sonnet

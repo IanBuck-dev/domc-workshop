@@ -1,0 +1,4 @@
+dist
+workspace
+.local
+bun.lock
