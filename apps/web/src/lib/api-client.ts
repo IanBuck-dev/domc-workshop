@@ -1,4 +1,8 @@
-import type { Idea, Workshop } from "../../../../packages/domain/src/schemas";
+import type {
+  Idea,
+  ProcessRecord,
+  Workshop,
+} from "../../../../packages/domain/src/schemas";
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const r = await fetch(`/api${path}`, {
     headers: { "Content-Type": "application/json" },
@@ -31,9 +35,13 @@ export const api = {
   saveSettings: (v: Workshop) =>
     req<Workshop>("/settings", { method: "PUT", body: JSON.stringify(v) }),
   environment: () =>
-    req<{ available: boolean; version: string; authenticated: string }>(
-      "/settings/environment",
-    ),
+    req<{
+      available: boolean;
+      version: string;
+      authenticated: string;
+      pythonAvailable: boolean;
+      pythonVersion: string;
+    }>("/settings/environment"),
   reset: (confirmation: string) =>
     req<{ backup: string }>("/settings/reset", {
       method: "POST",
@@ -43,4 +51,39 @@ export const api = {
     req<{ markdown: string; csv: string; count: number }>("/exports", {
       method: "POST",
     }),
+  processes: () => req<ProcessRecord[]>("/processes"),
+  process: (id: string) => req<ProcessRecord>(`/processes/${id}`),
+  updateProcessDepartment: (id: string, department: string) =>
+    req<ProcessRecord>(`/processes/${id}/department`, {
+      method: "PATCH",
+      body: JSON.stringify({ department }),
+    }),
+  createProcess: (department = "") =>
+    req<ProcessRecord>("/processes", {
+      method: "POST",
+      body: JSON.stringify({ department }),
+    }),
+  finishProcess: (id: string) =>
+    req<ProcessRecord>(`/processes/${id}/finish`, { method: "POST" }),
+  generatePdd: (id: string) =>
+    req<ProcessRecord>(`/processes/${id}/pdd`, { method: "POST" }),
+  savePdd: (id: string, pdd: string, changeNote: string) =>
+    req<ProcessRecord>(`/processes/${id}/pdd`, {
+      method: "PUT",
+      body: JSON.stringify({ pdd, changeNote }),
+    }),
+  uploadProcessFile: async (id: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    const response = await fetch(`/api/processes/${id}/upload`, {
+      method: "POST",
+      body: form,
+    });
+    const data = (await response.json()) as { name?: string; error?: string };
+    if (!response.ok || !data.name)
+      throw new Error(
+        data.error ?? "Die Datei konnte nicht hochgeladen werden.",
+      );
+    return data.name;
+  },
 };

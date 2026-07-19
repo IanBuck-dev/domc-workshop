@@ -5,6 +5,7 @@ import {
   ChartScatter,
   Send,
   Settings,
+  MessagesSquare,
 } from "lucide-react";
 import { DemoDataWarning } from "./demo-data-warning";
 import { FirstRun } from "./first-run";
@@ -14,6 +15,7 @@ const nav = [
   ["/", "Portfolio", LayoutList],
   ["/matrix", "Impact / Aufwand", ChartScatter],
   ["/handover", "IT-Übergabe", Send],
+  ["/processes", "Prozess-Discovery", MessagesSquare],
   ["/settings", "Einstellungen", Settings],
 ] as const;
 export function AppShell({ children }: { children: React.ReactNode }) {

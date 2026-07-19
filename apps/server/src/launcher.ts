@@ -60,6 +60,7 @@ export async function acquireInstanceLock(root: string) {
     await handle.close();
   } catch {
     const pid = Number(await readFile(path, "utf8").catch(() => "0"));
+    if (pid === process.pid) return;
     try {
       process.kill(pid, 0);
       throw new Error("Das Claims-Ideenportfolio läuft bereits.");

@@ -28,9 +28,10 @@ export function FirstRun() {
           Beschäftigtendaten eingeben.
         </p>
         <p className="local-note">
-          Ihre Ideen werden als lesbare Dateien lokal gespeichert. Nur bei einer
-          ausdrücklichen Analyse wird die aktuelle Idee an die konfigurierte
-          Claude-CLI übergeben.
+          Ideen und Prozessaufnahmen werden als lesbare Dateien lokal
+          gespeichert. Nur bei einer ausdrücklichen Analyse oder
+          Interviewantwort werden die dafür benötigten Inhalte an die
+          konfigurierte Claude-CLI übergeben.
         </p>
         <button
           className="button"

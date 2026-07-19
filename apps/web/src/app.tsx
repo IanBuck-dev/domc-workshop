@@ -7,6 +7,9 @@ import { MatrixPage } from "./pages/matrix-page";
 import { HandoverPage } from "./pages/handover-page";
 import { SettingsPage } from "./pages/settings-page";
 import { ShowcasePage } from "./pages/showcase-page";
+import { ProcessOverviewPage } from "./pages/process-overview-page";
+import { ProcessChatPage } from "./pages/process-chat-page";
+import { ProcessDetailPage } from "./pages/process-detail-page";
 export function App() {
   return (
     <AppShell>
@@ -16,6 +19,9 @@ export function App() {
         <Route path="/ideas/:id" element={<IdeaDetailPage />} />
         <Route path="/matrix" element={<MatrixPage />} />
         <Route path="/handover" element={<HandoverPage />} />
+        <Route path="/processes" element={<ProcessOverviewPage />} />
+        <Route path="/processes/:id/interview" element={<ProcessChatPage />} />
+        <Route path="/processes/:id" element={<ProcessDetailPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/settings/entstehung" element={<ShowcasePage />} />
       </Routes>

@@ -21,17 +21,26 @@ export function settingsRoutes(ws: WorkspaceRepository) {
         stdout: "pipe",
         stderr: "pipe",
       });
+      const python = Bun.spawn(["python3", "--version"], {
+        stdout: "pipe",
+        stderr: "pipe",
+      });
       const version = (await new Response(p.stdout).text()).trim();
+      const pythonVersion = (await new Response(python.stdout).text()).trim();
       return c.json({
         available: (await p.exited) === 0,
         version,
         authenticated: "Nicht separat getestet",
+        pythonAvailable: (await python.exited) === 0,
+        pythonVersion,
       });
     } catch {
       return c.json({
         available: false,
         version: "Nicht gefunden",
         authenticated: "Unbekannt",
+        pythonAvailable: false,
+        pythonVersion: "Nicht gefunden",
       });
     }
   });

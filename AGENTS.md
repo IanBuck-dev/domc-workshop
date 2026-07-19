@@ -24,6 +24,7 @@ Build a local prototype for claims project intake, clarification, assessment, pr
 - Claude prompts and structured response schemas are versioned repository files, not inline strings scattered through application code.
 - Do not send unrelated repository content to Claude. Pass only the idea data required for the current operation.
 - Avoid autonomous loops. One explicit user action may trigger one bounded analysis or clarification operation.
+- Process Discovery may resume one deterministic Claude session across user messages. Each explicit user message still triggers exactly one bounded interview turn; autonomous follow-up loops remain prohibited.
 - Keep the product behavior primarily editable through `defaults/CLAUDE.md` and `defaults/workshop.yaml`; do not bury workshop policy in React components.
 - Keep automated testing lean for this prototype: cover domain rules, file/reset safety, and the Claude process contract.
 - Keep the demo-data warning visible globally and at intake. Do not weaken the per-session confirmation without explicit user approval.

@@ -7,6 +7,8 @@ import { ideaRoutes } from "./routes/ideas.ts";
 import { settingsRoutes } from "./routes/settings.ts";
 import { claudeRoutes } from "./routes/claude.ts";
 import { exportRoutes } from "./routes/exports.ts";
+import { processRoutes } from "./routes/processes.ts";
+import { ProcessRepository } from "../../../packages/storage/src/process-repository.ts";
 import {
   workspacePath,
   hasWebDist,
@@ -21,6 +23,7 @@ const root = workspacePath(),
 await ws.ensure();
 await acquireInstanceLock(root);
 const repo = new MarkdownIdeaRepository(root),
+  processRepo = new ProcessRepository(root),
   app = new Hono();
 app.onError((error, c) => {
   console.error(error);
@@ -33,6 +36,7 @@ app.route("/api/ideas", ideaRoutes(repo));
 app.route("/api/settings", settingsRoutes(ws));
 app.route("/api/claude", claudeRoutes(repo, ws));
 app.route("/api/exports", exportRoutes(repo, root));
+app.route("/api/processes", processRoutes(processRepo, ws));
 const instanceId = `${process.pid}-${Date.now()}`;
 app.get("/api/health", (c) => c.json({ ok: true, instanceId }));
 if (hasWebDist()) {

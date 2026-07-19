@@ -150,6 +150,17 @@ export function SettingsPage() {
             Claude Code muss separat installiert und angemeldet sein. Pro Klick
             wird genau eine begrenzte Analyse ohne Werkzeuge gestartet.
           </p>
+          <div className="env-status">
+            <span className={env?.pythonAvailable ? "dot ok" : "dot"} />
+            <div>
+              <b>
+                {env?.pythonAvailable
+                  ? "Dateikonvertierung verfügbar"
+                  : "Dateikonvertierung eingeschränkt"}
+              </b>
+              <small>{env?.pythonVersion ?? "Python wird geprüft …"}</small>
+            </div>
+          </div>
         </section>
         <section className="panel danger-zone">
           <h2>

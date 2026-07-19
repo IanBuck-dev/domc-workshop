@@ -35,6 +35,18 @@ export class WorkspaceRepository {
       await mkdir(join(this.root, "exports"), { recursive: true });
       await mkdir(join(this.root, "backups"), { recursive: true });
     }
+    await mkdir(join(this.root, "processes"), { recursive: true });
+    for (const [source, target] of [
+      ["CLAUDE-discovery.md", "CLAUDE-discovery.md"],
+      [join("templates", "pdd.md"), join("templates", "pdd.md")],
+    ]) {
+      try {
+        await access(join(this.root, target));
+      } catch {
+        await mkdir(join(this.root, "templates"), { recursive: true });
+        await cp(join(this.defaults, source), join(this.root, target));
+      }
+    }
   }
   async settings() {
     const [stored, defaults] = await Promise.all([
@@ -50,10 +62,16 @@ export class WorkspaceRepository {
         ...defaultValue.weights,
         ...((storedValue.weights as Record<string, number> | undefined) ?? {}),
       },
+      discovery: {
+        ...defaultValue.discovery,
+        ...((storedValue.discovery as Record<string, unknown> | undefined) ??
+          {}),
+      },
     });
     if (
       storedValue.scoringGuidance === undefined ||
-      storedValue.weights === undefined
+      storedValue.weights === undefined ||
+      storedValue.discovery === undefined
     ) {
       await this.saveSettings(migrated);
     }

@@ -18,3 +18,30 @@ models:
     value: opus
   - label: Claude Sonnet (aktuell)
     value: sonnet
+discovery:
+  model: claude-opus-4-8
+  modelDisplay: Claude Opus 4.8
+  effort: high
+  timeoutMs: 90000
+  maxOutputTokens: 1800
+  maxQuestions: 8
+  departments:
+    - Schadenservice
+    - Vertragsservice
+    - Kundenservice
+    - Underwriting
+    - Vertrieb
+    - Finanzen
+    - Controlling
+    - Recht & Compliance
+    - IT
+    - Personal
+  criteria:
+    - id: implicit-context
+      question: Muss eine Vielzahl an nicht expliziter Informationen oder Kontext verarbeitet werden?
+    - id: unstructured-information
+      question: Werden verschiedene unstrukturierte Informationen verwendet?
+    - id: pattern-recognition
+      question: Müssen Unregelmäßigkeiten oder Regelmäßigkeiten erkannt werden?
+    - id: anticipation-interpretation
+      question: Sollen Ereignisse antizipiert oder interpretiert werden?
