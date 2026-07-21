@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claims-ai/criteria-proposals/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["message", "proposals", "askFollowUp"],
+  "properties": {
+    "message": { "type": "string" },
+    "proposals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "criterionId",
+          "value",
+          "rationale",
+          "evidence",
+          "assumptions",
+          "confidence"
+        ],
+        "properties": {
+          "criterionId": { "type": "string", "minLength": 1 },
+          "value": {
+            "anyOf": [{ "type": "number" }, { "type": "boolean" }]
+          },
+          "rationale": { "type": "string", "minLength": 1 },
+          "evidence": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "assumptions": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "confidence": { "type": "integer", "minimum": 0, "maximum": 100 }
+        }
+      }
+    },
+    "askFollowUp": { "type": "boolean" }
+  }
+}

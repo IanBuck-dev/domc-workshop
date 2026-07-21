@@ -1,0 +1,66 @@
+import { FormEvent, useState } from "react";
+import { LockKeyhole } from "lucide-react";
+import { api } from "../lib/api-client";
+import domcuraLogo from "../assets/domcura-logo-colored.svg";
+
+export function LoginPage({ onLogin }: { onLogin: () => void }) {
+  const [username, setUsername] = useState("testing");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      await api.login(username, password);
+      onLogin();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <main className="login-page">
+      <form className="login-card" onSubmit={submit}>
+        <img src={domcuraLogo} alt="DOMCURA" />
+        <span className="login-icon">
+          <LockKeyhole />
+        </span>
+        <h1>KI-Potenziale</h1>
+        <p>Bitte melden Sie sich für den geschützten Testbereich an.</p>
+        <label>
+          Benutzername
+          <input
+            name="username"
+            autoComplete="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+        </label>
+        <label>
+          Passwort
+          <input
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </label>
+        {error && (
+          <p className="notice error" role="alert">
+            {error}
+          </p>
+        )}
+        <button className="button" disabled={busy}>
+          {busy ? "Anmeldung läuft …" : "Anmelden"}
+        </button>
+        <small>Nur anonymisierte oder freigegebene Testdaten verwenden.</small>
+      </form>
+    </main>
+  );
+}

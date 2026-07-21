@@ -1,0 +1,32 @@
+{
+  "network": {
+    "allowedDomains": [
+      "api.anthropic.com",
+      "*.anthropic.com",
+      "claude.ai",
+      "*.claude.ai"
+    ],
+    "deniedDomains": [],
+    "allowUnixSockets": [],
+    "allowLocalBinding": false
+  },
+  "filesystem": {
+    "denyRead": [
+      "/home",
+      "/root",
+      "/etc/claims-ai-portfolio.env",
+      "/opt/claims-ai-portfolio",
+      "/var/lib/claims-ai/workspace"
+    ],
+    "allowRead": [
+      ".",
+      "/var/lib/claims-ai/.claude",
+      "/opt/claims-ai-portfolio/current/node_modules/@anthropic-ai/sandbox-runtime"
+    ],
+    "allowWrite": [".", "/tmp/claude"],
+    "denyWrite": []
+  },
+  "mandatoryDenySearchDepth": 5,
+  "enableWeakerNestedSandbox": false,
+  "enableWeakerNetworkIsolation": false
+}

@@ -1,4 +1,5 @@
 import { z } from "zod";
+export * from "./assessment.ts";
 
 export const stateSchema = z.enum([
   "Entwurf",

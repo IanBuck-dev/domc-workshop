@@ -1,5 +1,10 @@
 # Prototype Implementation Plan
 
+> **Historical legacy-module plan.** This file describes the earlier
+> idea-portfolio prototype and is not an active specification for process
+> capture. All new process-flow work follows
+> [`PRODUCT-FLOW-KI-POTENTIAL.md`](./PRODUCT-FLOW-KI-POTENTIAL.md) exclusively.
+
 ## Current status — 11 July 2026
 
 The macOS development prototype is implemented and running locally. The current repository includes:

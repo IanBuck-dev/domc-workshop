@@ -2,7 +2,12 @@ import { access, cp, mkdir, readFile, rm, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { zipSync, strToU8 } from "fflate";
 import { load, dump } from "js-yaml";
-import { workshopSchema, type Workshop } from "../../domain/src/schemas.ts";
+import {
+  assessmentConfigSchema,
+  workshopSchema,
+  type AssessmentConfig,
+  type Workshop,
+} from "../../domain/src/schemas.ts";
 import { atomicWrite } from "./atomic-write.ts";
 import { demoIdeas } from "./seed.ts";
 import { MarkdownIdeaRepository } from "./markdown-idea-repository.ts";
@@ -36,6 +41,7 @@ export class WorkspaceRepository {
       await mkdir(join(this.root, "backups"), { recursive: true });
     }
     await mkdir(join(this.root, "processes"), { recursive: true });
+    await mkdir(join(this.root, "assessments"), { recursive: true });
     for (const [source, target] of [
       ["CLAUDE-discovery.md", "CLAUDE-discovery.md"],
       [join("templates", "pdd.md"), join("templates", "pdd.md")],
@@ -76,6 +82,13 @@ export class WorkspaceRepository {
       await this.saveSettings(migrated);
     }
     return migrated;
+  }
+  async assessmentDefaults(): Promise<AssessmentConfig> {
+    return assessmentConfigSchema.parse(
+      JSON.parse(
+        await readFile(join(this.defaults, "assessment-config.json"), "utf8"),
+      ),
+    );
   }
   async saveSettings(v: Workshop) {
     await atomicWrite(

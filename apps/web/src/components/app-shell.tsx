@@ -1,31 +1,26 @@
+import { BarChart3, LogOut, PlusCircle, Settings } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import {
-  Lightbulb,
-  LayoutList,
-  ChartScatter,
-  Send,
-  Settings,
-  MessagesSquare,
-} from "lucide-react";
-import { DemoDataWarning } from "./demo-data-warning";
-import { FirstRun } from "./first-run";
 import domcuraLogo from "../assets/domcura-logo-colored.svg";
+import { DemoDataWarning } from "./demo-data-warning";
+import { AiOperationQueue } from "./ai-operation-queue";
 const nav = [
-  ["/neu", "Idee erfassen", Lightbulb],
-  ["/", "Portfolio", LayoutList],
-  ["/matrix", "Impact / Aufwand", ChartScatter],
-  ["/handover", "IT-Übergabe", Send],
-  ["/processes", "Prozess-Discovery", MessagesSquare],
+  ["/", "Rangliste", BarChart3],
+  ["/assessments/new", "Prozess einreichen", PlusCircle],
   ["/settings", "Einstellungen", Settings],
 ] as const;
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  onLogout,
+}: {
+  children: React.ReactNode;
+  onLogout: () => void;
+}) {
   return (
     <div className="app">
-      <FirstRun />
       <header>
         <NavLink className="brand" to="/">
           <img src={domcuraLogo} alt="DOMCURA" />
-          <small>Claims-Ideenportfolio</small>
+          <small>KI-Potenziale</small>
         </NavLink>
         <nav aria-label="Hauptnavigation">
           {nav.map(([to, label, Icon]) => (
@@ -34,13 +29,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {label}
             </NavLink>
           ))}
+          <button className="logout-button" onClick={onLogout}>
+            <LogOut />
+            Abmelden
+          </button>
         </nav>
       </header>
       <DemoDataWarning />
+      <AiOperationQueue />
       <main>{children}</main>
       <footer>
-        Lokaler Workshop-Prototyp · KI-Empfehlungen sind unverbindlich ·
-        Menschliche Entscheidung erforderlich
+        Workshop-Prototyp · KI-Vorschläge sind unverbindlich · Fachliche
+        Bestätigung erforderlich
       </footer>
     </div>
   );

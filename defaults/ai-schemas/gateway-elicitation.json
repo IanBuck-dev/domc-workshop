@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claims-ai/gateway-elicitation/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["assistantMessage", "questions"],
+  "properties": {
+    "assistantMessage": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "questions": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["questionId", "question", "recognitionAids"],
+        "properties": {
+          "questionId": { "type": "string", "minLength": 1 },
+          "question": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "recognitionAids": {
+            "type": "array",
+            "maxItems": 6,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          }
+        }
+      }
+    }
+  }
+}

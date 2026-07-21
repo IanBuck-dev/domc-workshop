@@ -13,6 +13,7 @@ if (mode === "release") {
   for (const [target, out] of [
     ["bun-darwin-arm64", "dist/Claims-Ideenportfolio-macos-arm64"],
     ["bun-windows-x64", "dist/Claims-Ideenportfolio-windows-x64.exe"],
+    ["bun-linux-arm64", "dist/claims-ai-portfolio-linux-arm64"],
   ] as const) {
     const p = Bun.spawn(
       [
@@ -30,13 +31,14 @@ if (mode === "release") {
   for (const [platform, executable] of [
     ["windows-x64", "Claims-Ideenportfolio-windows-x64.exe"],
     ["macos-arm64", "Claims-Ideenportfolio-macos-arm64"],
+    ["linux-arm64", "claims-ai-portfolio-linux-arm64"],
   ] as const) {
     const staging = join("dist", `.package-${platform}`);
     await mkdir(staging, { recursive: true });
     await cp(join("dist", executable), join(staging, executable));
     await cp("dist/web", join(staging, "web"), { recursive: true });
     await cp("dist/defaults", join(staging, "defaults"), { recursive: true });
-    if (platform === "macos-arm64")
+    if (platform !== "windows-x64")
       await chmod(join(staging, executable), 0o755);
     const zipPath = resolve(`dist/Claims-Ideenportfolio-${platform}.zip`);
     const zip = Bun.spawn(["zip", "-q", "-r", zipPath, "."], {

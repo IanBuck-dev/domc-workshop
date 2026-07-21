@@ -2,3 +2,4 @@ dist
 workspace
 .local
 bun.lock
+.agents

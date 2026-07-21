@@ -63,7 +63,7 @@ export async function acquireInstanceLock(root: string) {
     if (pid === process.pid) return;
     try {
       process.kill(pid, 0);
-      throw new Error("Das Claims-Ideenportfolio läuft bereits.");
+      throw new Error("KI-Potenziale läuft bereits.");
     } catch (error) {
       if (error instanceof Error && error.message.includes("läuft bereits"))
         throw error;
