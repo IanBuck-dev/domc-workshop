@@ -23,10 +23,13 @@
       "/var/lib/claims-ai/.claude",
       "/opt/claims-ai-portfolio/current/node_modules/@anthropic-ai/sandbox-runtime"
     ],
-    "allowWrite": [".", "/tmp/claude"],
+    "allowWrite": [".", "/tmp/claude", "/var/lib/claims-ai/.claude"],
     "denyWrite": []
   },
   "mandatoryDenySearchDepth": 5,
+  "seccomp": {
+    "applyPath": "/opt/claims-ai-portfolio/current/node_modules/@anthropic-ai/sandbox-runtime/vendor/seccomp/arm64/apply-seccomp"
+  },
   "enableWeakerNestedSandbox": false,
   "enableWeakerNetworkIsolation": false
 }

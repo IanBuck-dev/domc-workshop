@@ -1,4 +1,4 @@
-# KI-Potenziale
+# Prozessaufnahme
 
 German workshop prototype for capturing and confirming how department processes work today. The target flow is a compact two-page form that produces an evidence-backed process brief and high-level process map; KI-use-case generation, project assessment, and ranking are separate future phases. Repository-local files are the system of record, and the backend invokes the authenticated Claude CLI only for explicit, bounded actions.
 
@@ -22,7 +22,7 @@ bun run dev
 
 Open `http://127.0.0.1:5173`. Never enter real claim, customer, contract, health, employee, or other confidential production data.
 
-The active target flow and acceptance criteria are specified in [docs/PRODUCT-FLOW-KI-POTENTIAL.md](docs/PRODUCT-FLOW-KI-POTENTIAL.md). The deployed application is currently being migrated from the replaced assessment flow and may still expose obsolete screens until that implementation is complete.
+The implemented flow, contracts, and acceptance criteria are specified in [docs/PRODUCT-FLOW-KI-POTENTIAL.md](docs/PRODUCT-FLOW-KI-POTENTIAL.md).
 
 ## Validate and package
 

@@ -4,7 +4,7 @@ import { basename, dirname, join } from "node:path";
 import { createServer } from "node:net";
 export function appBase() {
   if (process.env.APP_BASE_PATH) return process.env.APP_BASE_PATH;
-  return basename(process.execPath).startsWith("Claims-Ideenportfolio")
+  return basename(process.execPath).startsWith("Prozessaufnahme")
     ? dirname(process.execPath)
     : process.cwd();
 }
@@ -22,7 +22,7 @@ export function workspacePath() {
   return process.env.WORKSPACE_PATH ?? join(appBase(), "workspace");
 }
 export function webDist() {
-  return basename(process.execPath).startsWith("Claims-Ideenportfolio")
+  return basename(process.execPath).startsWith("Prozessaufnahme")
     ? join(appBase(), "web")
     : join(appBase(), "dist", "web");
 }
@@ -63,7 +63,7 @@ export async function acquireInstanceLock(root: string) {
     if (pid === process.pid) return;
     try {
       process.kill(pid, 0);
-      throw new Error("KI-Potenziale läuft bereits.");
+      throw new Error("Die Prozessaufnahme läuft bereits.");
     } catch (error) {
       if (error instanceof Error && error.message.includes("läuft bereits"))
         throw error;

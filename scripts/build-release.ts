@@ -11,9 +11,9 @@ if (mode === "release") {
   await mkdir("dist/defaults", { recursive: true });
   await cp("defaults", "dist/defaults", { recursive: true });
   for (const [target, out] of [
-    ["bun-darwin-arm64", "dist/Claims-Ideenportfolio-macos-arm64"],
-    ["bun-windows-x64", "dist/Claims-Ideenportfolio-windows-x64.exe"],
-    ["bun-linux-arm64", "dist/claims-ai-portfolio-linux-arm64"],
+    ["bun-darwin-arm64", "dist/Prozessaufnahme-macos-arm64"],
+    ["bun-windows-x64", "dist/Prozessaufnahme-windows-x64.exe"],
+    ["bun-linux-arm64", "dist/Prozessaufnahme-linux-arm64"],
   ] as const) {
     const p = Bun.spawn(
       [
@@ -29,9 +29,9 @@ if (mode === "release") {
     if (await p.exited) process.exit(1);
   }
   for (const [platform, executable] of [
-    ["windows-x64", "Claims-Ideenportfolio-windows-x64.exe"],
-    ["macos-arm64", "Claims-Ideenportfolio-macos-arm64"],
-    ["linux-arm64", "claims-ai-portfolio-linux-arm64"],
+    ["windows-x64", "Prozessaufnahme-windows-x64.exe"],
+    ["macos-arm64", "Prozessaufnahme-macos-arm64"],
+    ["linux-arm64", "Prozessaufnahme-linux-arm64"],
   ] as const) {
     const staging = join("dist", `.package-${platform}`);
     await mkdir(staging, { recursive: true });
@@ -40,7 +40,7 @@ if (mode === "release") {
     await cp("dist/defaults", join(staging, "defaults"), { recursive: true });
     if (platform !== "windows-x64")
       await chmod(join(staging, executable), 0o755);
-    const zipPath = resolve(`dist/Claims-Ideenportfolio-${platform}.zip`);
+    const zipPath = resolve(`dist/Prozessaufnahme-${platform}.zip`);
     const zip = Bun.spawn(["zip", "-q", "-r", zipPath, "."], {
       cwd: staging,
       stdout: "inherit",

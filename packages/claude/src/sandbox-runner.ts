@@ -11,25 +11,26 @@ import { basename, join, relative, resolve, sep } from "node:path";
 import { tmpdir } from "node:os";
 import type { ZodType } from "zod";
 import type {
-  AiModelConfig,
-  AiOperationResult,
-  AiTrace,
-  SelectedUpload,
-} from "./assessment-ai-contracts.ts";
+  ProcessAiModelConfig,
+  ProcessAiResult,
+  ProcessSelectedUpload,
+} from "./process-ai-contracts.ts";
+import type { AiTrace } from "../../domain/src/process-understanding.ts";
 
 const NO_NETWORK_TOOLS = ["WebFetch", "WebSearch", "Task", "NotebookEdit"];
 const TOOL_NAMES = ["Read", "Glob", "Bash"] as const;
 
 export interface SandboxOperation<T> {
-  assessmentId: string;
+  processId: string;
   operationName: string;
   prompt: string;
   systemPrompt: string;
   responseSchema: ZodType<T>;
   responseJsonSchema: object;
-  model: AiModelConfig;
+  structuredOutput?: "constrained" | "prompted";
+  model: ProcessAiModelConfig;
   tools: "none" | "workspace";
-  selectedUploads?: SelectedUpload[];
+  selectedUploads?: ProcessSelectedUpload[];
   sessionId?: string;
   signal?: AbortSignal;
 }
@@ -63,79 +64,8 @@ export interface SandboxRunnerOptions {
   ) => Promise<SandboxTransportResult>;
 }
 
-class FifoQueue {
-  private tail: Promise<void> = Promise.resolve();
-
-  async run<T>(
-    signal: AbortSignal | undefined,
-    task: () => Promise<T>,
-  ): Promise<T> {
-    let release!: () => void;
-    const previous = this.tail;
-    this.tail = new Promise<void>((resolvePromise) => {
-      release = resolvePromise;
-    });
-    try {
-      await waitForTurn(previous, signal);
-      if (signal?.aborted) throw abortError();
-      return await task();
-    } finally {
-      release();
-    }
-  }
-}
-
-const globalAiQueue = new FifoQueue();
-
-export interface AiOperationStatus {
-  operationId: string;
-  assessmentId: string;
-  operationName: string;
-  state: "queued" | "running";
-  position: number;
-  createdAt: string;
-}
-
-interface ManagedAiOperation extends Omit<AiOperationStatus, "position"> {
-  controller: AbortController;
-}
-
-const managedAiOperations = new Map<string, ManagedAiOperation>();
-
-export function listAiOperations(): AiOperationStatus[] {
-  let queuedPosition = 0;
-  return [...managedAiOperations.values()].map((operation) => ({
-    operationId: operation.operationId,
-    assessmentId: operation.assessmentId,
-    operationName: operation.operationName,
-    state: operation.state,
-    position: operation.state === "running" ? 0 : ++queuedPosition,
-    createdAt: operation.createdAt,
-  }));
-}
-
-export function cancelAiOperation(operationId: string) {
-  const operation = managedAiOperations.get(operationId);
-  if (!operation) return false;
-  operation.controller.abort();
-  return true;
-}
-
 function abortError() {
   return new DOMException("AI operation cancelled.", "AbortError");
-}
-
-async function waitForTurn(previous: Promise<void>, signal?: AbortSignal) {
-  if (!signal) return previous;
-  if (signal.aborted) throw abortError();
-  await Promise.race([
-    previous,
-    new Promise<never>((_, reject) =>
-      signal.addEventListener("abort", () => reject(abortError()), {
-        once: true,
-      }),
-    ),
-  ]);
 }
 
 function sanitizeFileName(name: string) {
@@ -216,6 +146,13 @@ function claudeCompatibleSchema(schema: object) {
   delete value.$schema;
   return value;
 }
+function parsePromptedJson(value: string) {
+  const trimmed = value.trim();
+  const unfenced = trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "");
+  return JSON.parse(unfenced);
+}
 
 function validateSandboxSettings(value: unknown) {
   if (typeof value !== "object" || value === null || Array.isArray(value))
@@ -295,7 +232,7 @@ export class SandboxRunner {
       ...options,
       tempRoot: options.tempRoot ?? join(tmpdir(), "claims-ai-operations"),
       uploadRoot: options.uploadRoot ?? process.env.AI_UPLOAD_ROOT,
-      claudeCommand: options.claudeCommand ?? "claude",
+      claudeCommand: options.claudeCommand ?? Bun.which("claude") ?? "claude",
       sandboxCommand: options.sandboxCommand ?? "srt",
       sandboxSettingsTemplate:
         options.sandboxSettingsTemplate ?? process.env.AI_SANDBOX_SETTINGS,
@@ -307,33 +244,15 @@ export class SandboxRunner {
 
   runStructured<T>(
     operation: SandboxOperation<T>,
-  ): Promise<AiOperationResult<T>> {
+  ): Promise<ProcessAiResult<T>> {
     const operationId = crypto.randomUUID();
-    const controller = new AbortController();
-    const signal = operation.signal
-      ? AbortSignal.any([operation.signal, controller.signal])
-      : controller.signal;
-    managedAiOperations.set(operationId, {
-      operationId,
-      assessmentId: operation.assessmentId,
-      operationName: operation.operationName,
-      state: "queued",
-      createdAt: new Date().toISOString(),
-      controller,
-    });
-    return globalAiQueue
-      .run(signal, () => {
-        const managed = managedAiOperations.get(operationId);
-        if (managed) managed.state = "running";
-        return this.execute({ ...operation, signal }, operationId);
-      })
-      .finally(() => managedAiOperations.delete(operationId));
+    return this.execute(operation, operationId);
   }
 
   private async execute<T>(
     operation: SandboxOperation<T>,
     operationId: string,
-  ): Promise<AiOperationResult<T>> {
+  ): Promise<ProcessAiResult<T>> {
     const startedAt = performance.now();
     const logicalSessionId = operation.sessionId ?? crypto.randomUUID();
     await mkdir(this.options.tempRoot, { recursive: true, mode: 0o700 });
@@ -345,16 +264,20 @@ export class SandboxRunner {
         operationDir,
         operation.selectedUploads ?? [],
       );
-      const prompt = `${operation.prompt}\n\n## Verfügbare Dateien\n${
+      const basePrompt = `${operation.prompt}\n\n## Verfügbare Dateien\n${
         uploads.length
           ? uploads.map((name) => `- uploads/${name}`).join("\n")
           : "Keine ausgewählten Dateien."
       }`;
-      const promptPath = join(operationDir, "operation-prompt.md");
-      const schemaPath = join(operationDir, "response-schema.json");
       const responseSchema = claudeCompatibleSchema(
         operation.responseJsonSchema,
       );
+      const prompt =
+        operation.structuredOutput === "prompted"
+          ? `${basePrompt}\n\n## Verbindliches Ausgabeschema\n${JSON.stringify(responseSchema)}\n\nGib ausschließlich ein JSON-Objekt ohne Markdown oder Erläuterungen aus.`
+          : basePrompt;
+      const promptPath = join(operationDir, "operation-prompt.md");
+      const schemaPath = join(operationDir, "response-schema.json");
       await Promise.all([
         writeFile(promptPath, prompt, { encoding: "utf8", mode: 0o600 }),
         writeFile(schemaPath, JSON.stringify(responseSchema, null, 2), {
@@ -388,7 +311,7 @@ export class SandboxRunner {
       const raw =
         envelope.structured_output ??
         (typeof envelope.result === "string"
-          ? JSON.parse(envelope.result)
+          ? parsePromptedJson(envelope.result)
           : (envelope.result ?? envelope));
       const value = operation.responseSchema.parse(raw);
       const usage =
@@ -412,7 +335,10 @@ export class SandboxRunner {
     }
   }
 
-  private async stageUploads(operationDir: string, uploads: SelectedUpload[]) {
+  private async stageUploads(
+    operationDir: string,
+    uploads: ProcessSelectedUpload[],
+  ) {
     if (!uploads.length) return [];
     const uploadDir = join(operationDir, "uploads");
     await mkdir(uploadDir, { recursive: true, mode: 0o700 });
@@ -427,7 +353,7 @@ export class SandboxRunner {
       const source = await realpath(upload.path);
       if (configuredRoot && !isWithin(configuredRoot, source))
         throw new Error(
-          `Upload is outside the configured assessment workspace: ${upload.name}`,
+          `Upload is outside the configured process workspace: ${upload.name}`,
         );
       if (!configuredRoot && process.env.NODE_ENV === "production")
         throw new Error("AI_UPLOAD_ROOT must be configured in production.");
@@ -474,8 +400,9 @@ export class SandboxRunner {
       operation.systemPrompt,
       "--output-format",
       "json",
-      "--json-schema",
-      JSON.stringify(responseSchema),
+      ...(operation.structuredOutput === "prompted"
+        ? []
+        : ["--json-schema", JSON.stringify(responseSchema)]),
     ];
     if (!(await sandboxRuntimeAvailable(this.options.sandboxCommand))) {
       if (

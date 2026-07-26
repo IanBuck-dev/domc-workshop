@@ -1,5 +1,5 @@
 [Unit]
-Description=Claims AI Portfolio prototype
+Description=Claims process capture prototype
 After=network-online.target
 Wants=network-online.target
 
@@ -15,7 +15,7 @@ Environment=PORT=3210
 Environment=HOME=/var/lib/claims-ai
 Environment=CLAUDE_CONFIG_DIR=/var/lib/claims-ai/.claude
 Environment=CLAIMS_AI_DEFAULTS_DIR=/opt/claims-ai-portfolio/current/defaults
-Environment=AI_UPLOAD_ROOT=/var/lib/claims-ai/workspace/assessments
+Environment=AI_UPLOAD_ROOT=/var/lib/claims-ai/workspace/process-captures
 Environment=AI_SANDBOX_SETTINGS=/opt/claims-ai-portfolio/current/deploy/pi/sandbox-settings.json
 Environment=PATH=/opt/claims-ai-portfolio/current/node_modules/.bin:/var/lib/claims-ai/.bun/bin:/usr/local/bin:/usr/bin:/bin
 ExecStartPre=/usr/bin/install -d -m 700 /tmp/claude

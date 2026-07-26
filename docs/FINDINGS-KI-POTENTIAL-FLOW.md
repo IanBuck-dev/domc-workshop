@@ -97,8 +97,8 @@ and only decisions required to understand the normal path.
 ## Operational follow-ups retained from the live prototype
 
 - The setup page contains no voluntary process-description field.
-- Unfinished records need a red, confirmed, recoverable archive action in the
-  primary list.
+- All records need a red, two-stage permanent delete action in the primary
+  list. The prototype intentionally has no per-process archive or restore flow.
 - Claude reasoning effort remains `medium`; the slow `ASSESS-0009` run was
   already executed with that setting.
 - Few relevant, current documents are the normal prototype assumption.

@@ -1,15 +1,16 @@
 import { Hono } from "hono";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
+import { mkdir } from "node:fs/promises";
 import { ZodError } from "zod";
-import { WorkspaceRepository } from "../../../packages/storage/src/workspace-repository.ts";
-import { AssessmentRepository } from "../../../packages/storage/src/assessment-repository.ts";
-import { ClaudeAssessmentAiAdapter } from "../../../packages/claude/src/assessment-ai-adapter.ts";
-import { assessmentRoutes } from "./routes/assessments.ts";
+import {
+  ProcessCaptureNotFoundError,
+  ProcessCaptureRepository,
+} from "../../../packages/storage/src/process-capture-repository.ts";
+import { ClaudeProcessAiAdapter } from "../../../packages/claude/src/process-ai-adapter.ts";
+import { processCaptureRoutes } from "./routes/process-captures.ts";
 import { authRoutes } from "./routes/auth.ts";
 import { configRoutes } from "./routes/config.ts";
-import { rankingRoutes } from "./routes/ranking.ts";
-import { comparisonRoutes } from "./routes/comparisons.ts";
 import { aiOperationRoutes } from "./routes/ai-operations.ts";
 import { requireSession } from "./session.ts";
 import {
@@ -17,18 +18,18 @@ import {
   hasWebDist,
   webDist,
   openBrowser,
-  appBase,
   availablePort,
   acquireInstanceLock,
 } from "./launcher.ts";
-const root = workspacePath(),
-  ws = new WorkspaceRepository(root, join(appBase(), "defaults"));
-await ws.ensure();
+const root = workspacePath();
+await mkdir(root, { recursive: true });
 await acquireInstanceLock(root);
-const assessmentRepo = new AssessmentRepository(root),
+const processRepo = new ProcessCaptureRepository(root),
   app = new Hono();
 app.onError((error, c) => {
   console.error(error);
+  if (error instanceof ProcessCaptureNotFoundError)
+    return c.json({ error: error.message }, 404);
   if (error instanceof ZodError)
     return c.json(
       {
@@ -57,13 +58,11 @@ const instanceId = `${process.pid}-${Date.now()}`;
 app.get("/api/health", (c) => c.json({ ok: true, instanceId }));
 app.route("/api/auth", authRoutes());
 app.use("/api/*", requireSession);
-app.route("/api/config", configRoutes(ws));
+app.route("/api/config", configRoutes());
 app.route(
-  "/api/assessments",
-  assessmentRoutes(assessmentRepo, new ClaudeAssessmentAiAdapter()),
+  "/api/processes",
+  processCaptureRoutes(processRepo, new ClaudeProcessAiAdapter()),
 );
-app.route("/api/ranking", rankingRoutes(assessmentRepo));
-app.route("/api/comparisons", comparisonRoutes(assessmentRepo));
 app.route("/api/ai-operations", aiOperationRoutes());
 app.all("/api/*", (c) =>
   c.json({ error: "API-Endpunkt nicht gefunden." }, 404),
@@ -89,7 +88,7 @@ if (hasWebDist()) {
 const port = process.env.PORT
   ? Number(process.env.PORT)
   : await availablePort(3210);
-console.log(`KI-Potenziale: http://127.0.0.1:${port}`);
+console.log(`Prozessaufnahme: http://127.0.0.1:${port}`);
 if (!process.env.BUN_WATCH) void openBrowser(`http://127.0.0.1:${port}`);
 export default {
   port,

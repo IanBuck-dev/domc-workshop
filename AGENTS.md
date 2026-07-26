@@ -2,7 +2,7 @@
 
 ## Product boundary
 
-Build a local prototype for claims project intake, clarification, assessment, prioritization, manual review, and IT handover. Do not turn it into a general project-management suite.
+Build a local prototype that captures and confirms how a department process works today. Do not add KI-use-case generation, solution assessment, scoring, prioritization, handover, or general project-management features to the active flow.
 
 ## Runtime
 
@@ -18,17 +18,16 @@ Build a local prototype for claims project intake, clarification, assessment, pr
 - Keep domain logic independent of React and the Claude adapter.
 - Validate every file read and every AI response at runtime before using it.
 - Write files atomically and preserve an append-only audit history for AI and manual changes.
-- Never silently reject a non-AI idea. Label it, explain the assessment, and keep it available for human review.
-- Scores must expose their component values, weights, evidence, assumptions, and confidence. Users can override them only with a recorded reason.
-- AI output is advisory. Only a user action can mark an idea ready for IT handover.
+- Preserve evidence, assumptions, confidence, and provenance for every structured process fact. Human corrections require a recorded reason.
+- AI output is advisory. Only a user action can confirm the process understanding.
 - Claude prompts and structured response schemas are versioned repository files, not inline strings scattered through application code.
 - Do not send unrelated repository content to Claude. Pass only the idea data required for the current operation.
 - Avoid autonomous loops. One explicit user action may trigger one bounded analysis or clarification operation.
-- Process Discovery may resume one deterministic Claude session across user messages. Each explicit user message still triggers exactly one bounded interview turn; autonomous follow-up loops remain prohibited.
-- Keep the product behavior primarily editable through `defaults/CLAUDE.md` and `defaults/workshop.yaml`; do not bury workshop policy in React components.
+- Do not resume Claude sessions. One explicit user action triggers one bounded follow-up or synthesis operation; autonomous follow-up loops remain prohibited.
+- Keep editable product behavior in `defaults/process-capture-config.json` and versioned prompts and schemas; do not bury workshop policy in React components.
 - Keep automated testing lean for this prototype: cover domain rules, file/reset safety, and the Claude process contract.
 - Keep the demo-data warning visible globally and at intake. Do not weaken the per-session confirmation without explicit user approval.
-- Preserve `PUBLIC`, `INFERRED`, and `FICTIONAL` provenance in storage, UI, and exports. Never present inferred or fictional demo work as an actual DOMCURA commitment.
+- Preserve `user_stated`, `file_evidence`, `ai_structured`, `ai_inferred`, `user_confirmed`, and `unknown` provenance in storage and UI.
 - Use `./scripts/qa changed` during implementation and focused `./scripts/qa test <file>` while repairing failures. Use `./scripts/qa all` once before handoff. Read full `.local/validation-runs` logs only when the compact failure excerpt is insufficient.
 
 ## UX rules
@@ -44,4 +43,4 @@ Before considering an implementation task complete, run `./scripts/qa all` and t
 
 ## Planning source
 
-Follow `docs/PLAN.md` until it is replaced by a more specific approved plan. Preserve its domain states and acceptance criteria unless the user explicitly changes them.
+Follow `docs/PRODUCT-FLOW-KI-POTENTIAL.md`. Preserve its domain states and acceptance criteria unless the user explicitly changes them.

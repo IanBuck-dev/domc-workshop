@@ -20,7 +20,7 @@ export function DemoDataWarning() {
       <div>
         <b>Nur Demo-Daten verwenden.</b> Keine echten Schaden-, Kunden-,
         Vertrags-, Gesundheits- oder Beschäftigtendaten eingeben. Inhalte werden
-        lokal gespeichert und zur Analyse an die konfigurierte Claude-CLI
+        lokal gespeichert und zur Analyse an den konfigurierten KI-Dienst
         übergeben.
       </div>
       <button

@@ -28,7 +28,7 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
         <span className="login-icon">
           <LockKeyhole />
         </span>
-        <h1>KI-Potenziale</h1>
+        <h1>Prozessaufnahme</h1>
         <p>Bitte melden Sie sich für den geschützten Testbereich an.</p>
         <label>
           Benutzername

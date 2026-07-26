@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claims-ai/process-follow-ups/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["followUps"],
+  "properties": {
+    "followUps": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "topicId", "question", "rationale"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "topicId": {
+            "type": "string",
+            "enum": [
+              "purpose-scope",
+              "flow-roles",
+              "information-systems",
+              "decisions-controls-handoffs",
+              "effort-pain-goals"
+            ]
+          },
+          "question": { "type": "string", "minLength": 1 },
+          "rationale": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

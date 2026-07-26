@@ -1,0 +1,323 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claims-ai/process-understanding/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "purpose",
+    "trigger",
+    "outcome",
+    "boundaries",
+    "participants",
+    "informationSources",
+    "systems",
+    "decisions",
+    "controls",
+    "handoffs",
+    "volumeAndTime",
+    "painPoints",
+    "improvementGoals",
+    "steps",
+    "evidence",
+    "documentCoverage",
+    "knowledgeGaps",
+    "conflicts"
+  ],
+  "properties": {
+    "purpose": { "$ref": "#/$defs/stringFact" },
+    "trigger": { "$ref": "#/$defs/stringFact" },
+    "outcome": { "$ref": "#/$defs/stringFact" },
+    "boundaries": { "$ref": "#/$defs/stringFact" },
+    "participants": { "$ref": "#/$defs/listFact" },
+    "informationSources": { "$ref": "#/$defs/listFact" },
+    "systems": { "$ref": "#/$defs/listFact" },
+    "decisions": { "$ref": "#/$defs/listFact" },
+    "controls": { "$ref": "#/$defs/listFact" },
+    "handoffs": { "$ref": "#/$defs/listFact" },
+    "volumeAndTime": { "$ref": "#/$defs/listFact" },
+    "painPoints": { "$ref": "#/$defs/listFact" },
+    "improvementGoals": { "$ref": "#/$defs/listFact" },
+    "steps": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 8,
+      "items": { "$ref": "#/$defs/step" }
+    },
+    "evidence": {
+      "type": "array",
+      "maxItems": 250,
+      "items": { "$ref": "#/$defs/evidence" }
+    },
+    "documentCoverage": {
+      "type": "array",
+      "maxItems": 5,
+      "items": { "$ref": "#/$defs/coverage" }
+    },
+    "knowledgeGaps": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "conflicts": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "$defs": {
+    "factBase": {
+      "type": "object",
+      "required": [
+        "provenance",
+        "evidenceIds",
+        "confidence",
+        "assumptions",
+        "confirmed"
+      ],
+      "properties": {
+        "provenance": {
+          "type": "string",
+          "enum": [
+            "user_stated",
+            "file_evidence",
+            "ai_structured",
+            "ai_inferred",
+            "user_confirmed",
+            "unknown"
+          ]
+        },
+        "evidenceIds": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "confidence": {
+          "anyOf": [
+            { "type": "integer", "minimum": 0, "maximum": 100 },
+            { "type": "null" }
+          ]
+        },
+        "assumptions": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "confirmed": { "type": "boolean" }
+      }
+    },
+    "stringFact": {
+      "allOf": [
+        { "$ref": "#/$defs/factBase" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "provenance",
+            "evidenceIds",
+            "confidence",
+            "assumptions",
+            "confirmed"
+          ],
+          "properties": {
+            "value": {
+              "anyOf": [
+                { "type": "string", "minLength": 1 },
+                { "type": "null" }
+              ]
+            },
+            "provenance": {
+              "type": "string",
+              "enum": [
+                "user_stated",
+                "file_evidence",
+                "ai_structured",
+                "ai_inferred",
+                "user_confirmed",
+                "unknown"
+              ]
+            },
+            "evidenceIds": { "type": "array", "items": { "type": "string" } },
+            "confidence": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }]
+            },
+            "assumptions": { "type": "array", "items": { "type": "string" } },
+            "confirmed": { "type": "boolean" }
+          }
+        }
+      ]
+    },
+    "listFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "provenance",
+        "evidenceIds",
+        "confidence",
+        "assumptions",
+        "confirmed"
+      ],
+      "properties": {
+        "value": {
+          "anyOf": [
+            { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            { "type": "null" }
+          ]
+        },
+        "provenance": {
+          "type": "string",
+          "enum": [
+            "user_stated",
+            "file_evidence",
+            "ai_structured",
+            "ai_inferred",
+            "user_confirmed",
+            "unknown"
+          ]
+        },
+        "evidenceIds": { "type": "array", "items": { "type": "string" } },
+        "confidence": {
+          "anyOf": [
+            { "type": "integer", "minimum": 0, "maximum": 100 },
+            { "type": "null" }
+          ]
+        },
+        "assumptions": { "type": "array", "items": { "type": "string" } },
+        "confirmed": { "type": "boolean" }
+      }
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "order",
+        "name",
+        "trigger",
+        "responsibleRoles",
+        "activity",
+        "information",
+        "output",
+        "systems",
+        "decision",
+        "ruleOrJudgement",
+        "handover",
+        "controls",
+        "painPoints",
+        "provenance",
+        "evidenceIds",
+        "confidence",
+        "assumptions",
+        "confirmed"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "order": { "type": "integer", "minimum": 1, "maximum": 8 },
+        "name": { "type": "string", "minLength": 1 },
+        "trigger": {
+          "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+        },
+        "responsibleRoles": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "activity": { "type": "string", "minLength": 1 },
+        "information": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "output": {
+          "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+        },
+        "systems": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "decision": {
+          "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+        },
+        "ruleOrJudgement": {
+          "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+        },
+        "handover": {
+          "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+        },
+        "controls": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "painPoints": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "provenance": {
+          "type": "string",
+          "enum": [
+            "user_stated",
+            "file_evidence",
+            "ai_structured",
+            "ai_inferred",
+            "user_confirmed",
+            "unknown"
+          ]
+        },
+        "evidenceIds": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "confidence": {
+          "anyOf": [
+            { "type": "integer", "minimum": 0, "maximum": 100 },
+            { "type": "null" }
+          ]
+        },
+        "assumptions": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "confirmed": { "type": "boolean" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "sourceId", "excerpt"],
+      "properties": {
+        "id": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "main_answer",
+            "follow_up_answer",
+            "upload",
+            "human_correction"
+          ]
+        },
+        "sourceId": { "type": "string" },
+        "excerpt": { "type": "string" }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uploadId",
+        "name",
+        "status",
+        "processedCharacters",
+        "limitation"
+      ],
+      "properties": {
+        "uploadId": { "type": "string" },
+        "name": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["complete", "partial", "failed"]
+        },
+        "processedCharacters": {
+          "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }]
+        },
+        "limitation": { "anyOf": [{ "type": "string" }, { "type": "null" }] }
+      }
+    }
+  }
+}

@@ -1,80 +1,43 @@
-import { assessmentConfigSchema } from "../../../../packages/domain/src/assessment";
-import type { AssessmentConfig } from "./assessment-types";
+import { processCaptureConfigSchema } from "../../../../packages/domain/src/process-understanding";
+import type { ProcessCaptureConfig } from "./process-types";
 
-const STORAGE_KEY = "claims-ai-portfolio.config.v1";
-
-function withSeparatedGatewayQuestions(
-  config: AssessmentConfig,
-): AssessmentConfig {
-  return {
-    ...config,
-    gateway: {
-      ...config.gateway,
-      questions: config.gateway.questions.map((question) => {
-        const { description, ...current } = question;
-        const legacy = description ?? "";
-        return {
-          ...current,
-          evaluationQuestion: question.evaluationQuestion ?? legacy,
-          userQuestion: question.userQuestion ?? legacy,
-          helpText: question.helpText ?? legacy,
-        };
-      }),
-    },
-  };
+const STORAGE_KEY = "claims-ai-process-capture.config.v2";
+function currentConfig(value: unknown): ProcessCaptureConfig {
+  const config = processCaptureConfigSchema.parse(value);
+  if (config.profile.version !== 2 || !("workCharacteristics" in config))
+    throw new Error("Die Konfiguration verwendet eine ältere Profilversion.");
+  return config;
 }
-
-export function loadConfigOverride(): AssessmentConfig | null {
+export function loadConfigOverride(): ProcessCaptureConfig | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = assessmentConfigSchema.safeParse(JSON.parse(raw));
-    if (!parsed.success) throw new Error("Ungültige Browser-Konfiguration");
-    return assessmentConfigSchema.parse(
-      withSeparatedGatewayQuestions(parsed.data),
-    );
+    return raw ? currentConfig(JSON.parse(raw)) : null;
   } catch {
     localStorage.removeItem(STORAGE_KEY);
     return null;
   }
 }
-
-export function saveConfigOverride(config: AssessmentConfig) {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(
-      assessmentConfigSchema.parse(withSeparatedGatewayQuestions(config)),
-    ),
-  );
+export function saveConfigOverride(config: ProcessCaptureConfig) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(currentConfig(config)));
 }
-
 export function resetConfigOverride() {
   localStorage.removeItem(STORAGE_KEY);
 }
-
-export function exportConfig(config: AssessmentConfig) {
-  const blob = new Blob(
-    [JSON.stringify(withSeparatedGatewayQuestions(config), null, 2)],
-    {
-      type: "application/json",
-    },
-  );
+export function exportConfig(config: ProcessCaptureConfig) {
   const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "claims-ai-config-v1.json";
+  link.href = URL.createObjectURL(
+    new Blob([JSON.stringify(currentConfig(config), null, 2)], {
+      type: "application/json",
+    }),
+  );
+  link.download = "prozessaufnahme-compact-v1-version-2.json";
   link.click();
   URL.revokeObjectURL(link.href);
 }
-
-export async function importConfig(file: File): Promise<AssessmentConfig> {
-  const parsed = assessmentConfigSchema.safeParse(
-    JSON.parse(await file.text()),
-  );
-  if (!parsed.success)
-    throw new Error(
-      "Die Konfigurationsdatei ist nicht vollständig oder ungültig.",
-    );
-  return assessmentConfigSchema.parse(
-    withSeparatedGatewayQuestions(parsed.data),
-  );
+export async function importConfig(file: File) {
+  try {
+    return currentConfig(JSON.parse(await file.text()));
+  } catch {
+    throw new Error("Die Konfigurationsdatei ist ungültig.");
+  }
 }

@@ -1,0 +1,305 @@
+import { afterEach, describe, expect, test } from "bun:test";
+import {
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  stat,
+  writeFile,
+} from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { ProcessCaptureRepository } from "../packages/storage/src/process-capture-repository.ts";
+import {
+  answers,
+  cover,
+  processConfig,
+  understanding,
+  workCharacteristicAnswers,
+} from "./process-fixtures.ts";
+
+const roots: string[] = [];
+afterEach(async () => {
+  await Promise.all(
+    roots.splice(0).map((root) => rm(root, { recursive: true, force: true })),
+  );
+});
+async function fixture() {
+  const root = await mkdtemp(join(tmpdir(), "process-storage-"));
+  roots.push(root);
+  return {
+    root,
+    repo: new ProcessCaptureRepository(root),
+    config: await processConfig(),
+  };
+}
+const trace = () => ({
+  operationId: crypto.randomUUID(),
+  sessionId: crypto.randomUUID(),
+  model: "sonnet",
+  durationMs: 10,
+  inputTokens: 2,
+  outputTokens: 4,
+  sandboxed: true,
+});
+
+describe("process capture repository", () => {
+  test("creates only canonical files and never scans legacy roots", async () => {
+    const { root, repo, config } = await fixture();
+    await writeFile(join(root, "legacy-marker"), "unchanged");
+    const record = await repo.create(cover, config);
+    expect(record.id).toBe("PROC-0001");
+    expect(record.state).toBe("capture_in_progress");
+    expect((await readdir(repo.dir(record.id))).sort()).toEqual([
+      "answers.json",
+      "config-snapshot.json",
+      "cover.yaml",
+      "follow-ups.json",
+      "history.jsonl",
+      "metadata.yaml",
+      "operations.jsonl",
+      "process-understanding.json",
+      "uploads",
+    ]);
+    expect(await readFile(join(root, "legacy-marker"), "utf8")).toBe(
+      "unchanged",
+    );
+    expect((await repo.list()).map((item) => item.id)).toEqual([record.id]);
+  });
+
+  test("persists bounded followups, synthesis, correction, and confirmation", async () => {
+    const { repo, config } = await fixture();
+    let record = await repo.create(cover, config);
+    record = await repo.saveMainAnswers(
+      record.id,
+      answers(),
+      workCharacteristicAnswers(),
+      [],
+    );
+    const questions = [
+      {
+        id: "follow-purpose",
+        topicId: "purpose-scope" as const,
+        question: "Was ist das normale Ergebnis?",
+        rationale: "Ergebnis fehlt.",
+      },
+    ];
+    record = await repo.saveFollowUps(record.id, questions, trace());
+    expect(record.state).toBe("follow_up_required");
+    record = await repo.saveFollowUpAnswers(record.id, [
+      {
+        questionId: "follow-purpose",
+        topicId: "purpose-scope",
+        text: "Eine Nachricht wurde versendet.",
+        answeredAt: new Date().toISOString(),
+      },
+    ]);
+    expect(record.state).toBe("synthesis_ready");
+    const invalidEvidence = understanding();
+    invalidEvidence.evidence[0]!.kind = "upload";
+    await expect(
+      repo.saveUnderstanding(record.id, invalidEvidence, trace()),
+    ).rejects.toThrow("unbekannte Evidenzquelle");
+    expect((await repo.required(record.id)).state).toBe("synthesis_ready");
+    record = await repo.saveUnderstanding(record.id, understanding(), trace());
+    expect(record.state).toBe("review_required");
+    const corrected = structuredClone(record.understanding!);
+    corrected.purpose.value = "Korrigierter fachlicher Zweck.";
+    [corrected.steps[0], corrected.steps[1]] = [
+      corrected.steps[1]!,
+      corrected.steps[0]!,
+    ];
+    corrected.steps.forEach((step, index) => {
+      step.order = index + 1;
+    });
+    record = await repo.correctUnderstanding(
+      record.id,
+      corrected,
+      "Zweck fachlich präzisiert.",
+    );
+    expect(record.understanding?.purpose.provenance).toBe("user_confirmed");
+    expect(
+      record.understanding?.steps.slice(0, 2).map((step) => step.id),
+    ).toEqual(["step-2", "step-1"]);
+    expect(
+      record.understanding?.steps.slice(0, 2).map((step) => step.order),
+    ).toEqual([1, 2]);
+    expect(record.understanding?.steps[0]?.provenance).toBe("user_confirmed");
+    record = await repo.confirm(record.id);
+    expect(record.state).toBe("confirmed");
+    expect(record.understanding?.trigger.provenance).toBe("ai_structured");
+    expect(record.understanding?.knowledgeGaps).toContain(
+      "Exakte Fallzahl unbekannt",
+    );
+    const correctedCharacteristics = workCharacteristicAnswers();
+    correctedCharacteristics[1]!.selectedOptionIds = ["none"];
+    record = await repo.correctWorkCharacteristics(
+      record.id,
+      correctedCharacteristics,
+      "Inhaltsarten fachlich berichtigt.",
+    );
+    expect(record.state).toBe("review_required");
+    expect(record.confirmedAt).toBeNull();
+    expect(record.workCharacteristicAnswers[1]?.selectedOptionIds).toEqual([
+      "none",
+    ]);
+    expect((await repo.history(record.id)).map((entry) => entry.event)).toEqual(
+      expect.arrayContaining([
+        "understanding-confirmed",
+        "work-characteristics-corrected",
+      ]),
+    );
+  });
+
+  test("validates upload type/count and permanently deletes records", async () => {
+    const { repo, config } = await fixture();
+    const record = await repo.create(cover, config);
+    const file = new File(["Fiktiver Ablauf"], "prozess.txt", {
+      type: "text/plain;charset=utf-8",
+    });
+    const upload = await repo.saveUpload(record.id, file);
+    expect(upload.mediaType).toBe("text/plain");
+    expect(
+      (await stat(repo.uploadPath(record.id, upload.id, upload.name))).isFile(),
+    ).toBe(true);
+    await expect(
+      repo.saveUpload(
+        record.id,
+        new File(["x"], "bad.exe", { type: "application/octet-stream" }),
+      ),
+    ).rejects.toThrow();
+    await expect(
+      repo.saveUpload(
+        record.id,
+        new File(["kein echtes PDF"], "falsch.pdf", {
+          type: "application/pdf",
+        }),
+      ),
+    ).rejects.toThrow("kein gültiges PDF");
+    await expect(
+      repo.saveUpload(
+        record.id,
+        new File(
+          [new Uint8Array(config.uploads.maxFileBytes + 1)],
+          "zu-gross.txt",
+          { type: "text/plain" },
+        ),
+      ),
+    ).rejects.toThrow("höchstens 20 MB");
+    await expect(
+      repo.saveMainAnswers(record.id, answers(), workCharacteristicAnswers(), [
+        crypto.randomUUID(),
+      ]),
+    ).rejects.toThrow("gehört nicht zu diesem Prozess");
+    for (let index = 2; index <= 5; index++)
+      await repo.saveUpload(
+        record.id,
+        new File([`Ablauf ${index}`], `prozess-${index}.txt`, {
+          type: "text/plain",
+        }),
+      );
+    await expect(
+      repo.saveUpload(
+        record.id,
+        new File(["sechste Datei"], "prozess-6.txt", {
+          type: "text/plain",
+        }),
+      ),
+    ).rejects.toThrow("höchstens fünf Dateien");
+    await expect(repo.deleteCapture(record.id, true)).rejects.toThrow(
+      "KI-Aktion",
+    );
+    const deleted = await repo.deleteCapture(record.id);
+    expect(deleted.deleted).toBe(true);
+    expect(await repo.get(record.id)).toBeNull();
+    expect((await repo.create(cover, config)).id).toBe("PROC-0001");
+  });
+
+  test("permanently deletes a confirmed process after explicit repository call", async () => {
+    const { repo, config } = await fixture();
+    let record = await repo.create(cover, config);
+    record = await repo.saveMainAnswers(
+      record.id,
+      answers(),
+      workCharacteristicAnswers(),
+      [],
+    );
+    record = await repo.saveFollowUps(record.id, [], trace());
+    record = await repo.saveUnderstanding(record.id, understanding(), trace());
+    record = await repo.confirm(record.id);
+
+    expect((await repo.deleteCapture(record.id)).deleted).toBe(true);
+    expect(await repo.get(record.id)).toBeNull();
+    expect(await stat(repo.dir(record.id)).catch(() => null)).toBeNull();
+  });
+
+  test("reads uploads byte-identically and rejects tampered files", async () => {
+    const { repo, config } = await fixture();
+    const record = await repo.create(cover, config);
+    const original = new TextEncoder().encode("Fiktiver Ablauf mit Umlaut: ä");
+    const upload = await repo.saveUpload(
+      record.id,
+      new File([original], "Ablauf Übersicht.txt", { type: "text/plain" }),
+    );
+
+    const stored = await repo.readUpload(record.id, upload.id);
+    expect(stored.upload).toEqual(upload);
+    expect(stored.bytes).toEqual(original);
+    await expect(
+      repo.readUpload(record.id, crypto.randomUUID()),
+    ).rejects.toThrow("Datei nicht gefunden");
+
+    await writeFile(
+      repo.uploadPath(record.id, upload.id, upload.name),
+      "manipulierter Inhalt gleicher oder anderer Länge",
+    );
+    await expect(repo.readUpload(record.id, upload.id)).rejects.toThrow(
+      "nicht sicher gelesen",
+    );
+  });
+
+  test("rejects corrupt canonical files after restart without repairing them", async () => {
+    const { root, repo, config } = await fixture();
+    const record = await repo.create(cover, config);
+    const answersPath = join(repo.dir(record.id), "answers.json");
+    await writeFile(answersPath, "{ broken json\n");
+    const before = await readFile(answersPath, "utf8");
+
+    const restarted = new ProcessCaptureRepository(root);
+    await expect(restarted.required(record.id)).rejects.toThrow();
+    expect(await readFile(answersPath, "utf8")).toBe(before);
+  });
+
+  test("rejects forged correction evidence and keeps canonical output unchanged", async () => {
+    const { repo, config } = await fixture();
+    let record = await repo.create(cover, config);
+    record = await repo.saveMainAnswers(
+      record.id,
+      answers(),
+      workCharacteristicAnswers(),
+      [],
+    );
+    record = await repo.saveFollowUps(record.id, [], trace());
+    record = await repo.saveUnderstanding(record.id, understanding(), trace());
+    const before = await readFile(
+      join(repo.dir(record.id), "process-understanding.json"),
+      "utf8",
+    );
+    const forged = structuredClone(record.understanding!);
+    forged.evidence.push({
+      id: "forged-correction",
+      kind: "human_correction",
+      sourceId: "forged-correction",
+      excerpt: "Nicht vom System erzeugt",
+    });
+    await expect(
+      repo.correctUnderstanding(record.id, forged, "Fachliche Korrektur"),
+    ).rejects.toThrow("ausschließlich vom System");
+    expect(
+      await readFile(
+        join(repo.dir(record.id), "process-understanding.json"),
+        "utf8",
+      ),
+    ).toBe(before);
+  });
+});

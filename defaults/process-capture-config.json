@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "profile": { "id": "compact-v1", "version": 2 },
+  "departments": [
+    "Schaden",
+    "Vertrieb",
+    "Vertrag",
+    "Finanzen",
+    "IT",
+    "Personal",
+    "Sonstiger Fachbereich"
+  ],
+  "topics": [
+    {
+      "id": "purpose-scope",
+      "name": "Zweck und Abgrenzung",
+      "question": "Was löst den Prozess aus, welches Ergebnis soll er normalerweise liefern und wo beginnt und endet er?",
+      "helpText": "Beschreiben Sie Ziel, Start und Abschluss in Ihren eigenen Worten.",
+      "displayOrder": 1
+    },
+    {
+      "id": "flow-roles",
+      "name": "Hauptablauf und Beteiligte",
+      "question": "Welche wesentlichen Schritte werden in welcher Reihenfolge durchgeführt und welche Rollen oder Teams sind beteiligt?",
+      "helpText": "Fünf bis acht fachliche Hauptschritte genügen; einzelne Klicks sind nicht erforderlich.",
+      "displayOrder": 2
+    },
+    {
+      "id": "information-systems",
+      "name": "Informationen, Dokumente und Systeme",
+      "question": "Welche Informationen und Unterlagen werden benötigt und in welchen sichtbaren Anwendungen oder Ablagen arbeiten Sie?",
+      "helpText": "Technische Schnittstellen oder Datenformate müssen Sie nicht kennen.",
+      "displayOrder": 3
+    },
+    {
+      "id": "decisions-controls-handoffs",
+      "name": "Entscheidungen, Kontrollen und Übergaben",
+      "question": "Welche wichtigen Entscheidungen, Freigaben oder Kontrollen gibt es und wo wechselt die Verantwortung?",
+      "helpText": "Konzentrieren Sie sich auf den normalen Ablauf, nicht auf seltene Sonderfälle.",
+      "displayOrder": 4
+    },
+    {
+      "id": "effort-pain-goals",
+      "name": "Aufwand, Probleme und Verbesserungsziele",
+      "question": "Was kostet Zeit, wiederholt sich, führt zu Fehlern oder sollte aus fachlicher Sicht besser werden?",
+      "helpText": "Mengen und Zeiten können Sie nennen, wenn sie ungefähr bekannt sind.",
+      "displayOrder": 5
+    }
+  ],
+  "workCharacteristics": [
+    {
+      "id": "combined-information-sources",
+      "topicId": "information-systems",
+      "question": "Müssen Informationen aus mehreren Quellen erst miteinander verbunden und fachlich eingeordnet werden, um den Fall bearbeiten zu können?",
+      "helpText": "Gemeint sind fachliche Zusammenhänge zwischen Angaben, Unterlagen oder Anwendungen – technische Schnittstellen müssen Sie nicht kennen.",
+      "selection": "single",
+      "options": [
+        { "id": "yes", "label": "Ja" },
+        { "id": "no", "label": "Nein" },
+        { "id": "unsure", "label": "Nicht sicher" }
+      ]
+    },
+    {
+      "id": "content-types",
+      "topicId": "information-systems",
+      "question": "Welche Arten von Inhalten müssen dabei gelesen, verstanden oder erstellt werden?",
+      "helpText": "Wählen Sie alle Arten aus, die im heutigen normalen Ablauf vorkommen.",
+      "selection": "multiple",
+      "options": [
+        {
+          "id": "free-text",
+          "label": "Freitexte, beispielsweise E-Mails, Briefe oder Notizen"
+        },
+        {
+          "id": "audio-speech",
+          "label": "Gesprochene Sprache oder Audioaufnahmen"
+        },
+        {
+          "id": "images-scans",
+          "label": "Bilder oder eingescannte Unterlagen"
+        },
+        { "id": "video", "label": "Videos" },
+        {
+          "id": "other-freeform-files",
+          "label": "Andere frei aufgebaute Dokumente oder Dateien"
+        },
+        {
+          "id": "none",
+          "label": "Keine davon – ausschließlich feste Felder, Listen oder Tabellen"
+        },
+        { "id": "unsure", "label": "Nicht sicher" }
+      ]
+    },
+    {
+      "id": "case-specific-recognition",
+      "topicId": "flow-roles",
+      "question": "Was müssen Mitarbeitende im normalen Ablauf selbst erkennen oder an den Einzelfall anpassen?",
+      "helpText": "Wählen Sie alle Aussagen aus, die auf den heutigen Ablauf zutreffen.",
+      "selection": "multiple",
+      "options": [
+        {
+          "id": "detect-unusual-cases",
+          "label": "Ungewöhnliche Fälle oder Auffälligkeiten erkennen"
+        },
+        {
+          "id": "detect-recurring-connections",
+          "label": "Wiederkehrende Zusammenhänge erkennen"
+        },
+        {
+          "id": "adapt-case-flow",
+          "label": "Den Ablauf abhängig vom Einzelfall anpassen"
+        },
+        { "id": "none", "label": "Nichts davon" },
+        { "id": "unsure", "label": "Nicht sicher" }
+      ]
+    },
+    {
+      "id": "uncertain-decisions",
+      "topicId": "decisions-controls-handoffs",
+      "question": "Was ist bei Entscheidungen oder der Lösungsfindung erforderlich?",
+      "helpText": "Wählen Sie alle Aussagen aus, die auf den heutigen Ablauf zutreffen.",
+      "selection": "multiple",
+      "options": [
+        {
+          "id": "estimate-future",
+          "label": "Zukünftige Entwicklungen, Ergebnisse oder Risiken einschätzen"
+        },
+        {
+          "id": "decide-with-incomplete-rules",
+          "label": "Bei unklarer Sachlage eine passende Entscheidung oder Lösung finden, obwohl Regeln nicht jeden Fall abdecken"
+        },
+        { "id": "none", "label": "Nichts davon" },
+        { "id": "unsure", "label": "Nicht sicher" }
+      ]
+    }
+  ],
+  "instructions": {
+    "followUps": "Stelle nur Rückfragen, die das Verständnis des heutigen Prozesses materiell verbessern.",
+    "synthesis": "Erzeuge ein evidenzbasiertes Prozessbild des heutigen normalen Ablaufs ohne KI-Lösung oder Bewertung."
+  },
+  "uploads": {
+    "allowedExtensions": [
+      ".pdf",
+      ".xlsx",
+      ".csv",
+      ".docx",
+      ".txt",
+      ".md",
+      ".png",
+      ".jpg",
+      ".jpeg"
+    ],
+    "maxFiles": 5,
+    "maxFileBytes": 20971520,
+    "maxProcessBytes": 104857600
+  },
+  "ai": {
+    "model": "sonnet",
+    "reasoningEffort": "medium",
+    "timeoutMs": 180000,
+    "maxOutputTokens": 12000,
+    "maxInputCharacters": 200000,
+    "maxBudgetUsd": 1
+  }
+}

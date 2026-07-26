@@ -1,4 +1,6 @@
-const server = Bun.spawn(["bun", "--watch", "apps/server/src/index.ts"], {
+// Keep the backend as a direct child process. Bun's watch supervisor can block
+// execution of the separately authenticated Claude CLI on macOS.
+const server = Bun.spawn(["bun", "apps/server/src/index.ts"], {
   stdout: "inherit",
   stderr: "inherit",
   env: { ...process.env, BUN_WATCH: "1" },
