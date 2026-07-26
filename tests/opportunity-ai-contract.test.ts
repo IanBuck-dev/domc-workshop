@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ClaudeOpportunityAiAdapter } from "../packages/claude/src/opportunity-ai-adapter.ts";
 import {
+  CLAUDE_NETWORK_ALLOWED_DOMAINS,
   SandboxRunner,
   type SandboxTransportRequest,
 } from "../packages/claude/src/sandbox-runner.ts";
@@ -32,6 +33,17 @@ function envelope(value: unknown) {
 }
 
 describe("opportunity Claude contract", () => {
+  test("allows the Claude OAuth refresh host in deployment and fallback sandbox settings", async () => {
+    const deploymentSettings = JSON.parse(
+      await Bun.file("deploy/pi/sandbox-settings.json").text(),
+    ) as { network?: { allowedDomains?: unknown } };
+
+    expect(deploymentSettings.network?.allowedDomains).toContain(
+      "platform.claude.com",
+    );
+    expect(CLAUDE_NETWORK_ALLOWED_DOMAINS).toContain("platform.claude.com");
+  });
+
   test("uses two fresh tool-free calls with only bounded phase inputs", async () => {
     const root = await mkdtemp(join(tmpdir(), "opportunity-ai-"));
     roots.push(root);

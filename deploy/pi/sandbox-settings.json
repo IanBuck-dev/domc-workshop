@@ -4,7 +4,8 @@
       "api.anthropic.com",
       "*.anthropic.com",
       "claude.ai",
-      "*.claude.ai"
+      "*.claude.ai",
+      "platform.claude.com"
     ],
     "deniedDomains": [],
     "allowUnixSockets": [],

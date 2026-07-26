@@ -20,6 +20,14 @@ import type { AiTrace } from "../../domain/src/process-understanding.ts";
 const NO_NETWORK_TOOLS = ["WebFetch", "WebSearch", "Task", "NotebookEdit"];
 const TOOL_NAMES = ["Read", "Glob", "Bash"] as const;
 
+export const CLAUDE_NETWORK_ALLOWED_DOMAINS = [
+  "api.anthropic.com",
+  "*.anthropic.com",
+  "claude.ai",
+  "*.claude.ai",
+  "platform.claude.com",
+] as const;
+
 export interface SandboxOperation<T> {
   processId: string;
   operationName: string;
@@ -426,12 +434,7 @@ export class SandboxRunner {
         )
       : {
           network: {
-            allowedDomains: [
-              "api.anthropic.com",
-              "*.anthropic.com",
-              "claude.ai",
-              "*.claude.ai",
-            ],
+            allowedDomains: [...CLAUDE_NETWORK_ALLOWED_DOMAINS],
             deniedDomains: [],
             allowLocalBinding: false,
             allowUnixSockets: [],
