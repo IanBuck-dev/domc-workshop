@@ -1,4 +1,5 @@
-export type ProcessOperationName = "process-follow-ups" | "process-synthesis";
+export type ProcessOperationName =
+  "process-follow-ups" | "process-synthesis" | "opportunity-discovery";
 export interface ProcessOperationStatus {
   operationId: string;
   processId: string;
@@ -10,6 +11,7 @@ export interface ProcessOperationStatus {
 }
 interface ManagedOperation extends Omit<ProcessOperationStatus, "position"> {
   controller: AbortController;
+  onQueuedCancel?: () => Promise<void>;
 }
 
 const operations = new Map<string, ManagedOperation>();
@@ -42,11 +44,14 @@ export function hasActiveProcessOperation(processId: string) {
       operation.processId === processId && operation.state !== "failed",
   );
 }
-export function cancelProcessOperation(operationId: string) {
+export async function cancelProcessOperation(operationId: string) {
   const operation = operations.get(operationId);
   if (!operation || operation.state === "failed") return false;
   operation.controller.abort();
-  if (operation.state === "queued") operations.delete(operationId);
+  if (operation.state === "queued") {
+    operations.delete(operationId);
+    await operation.onQueuedCancel?.();
+  }
   return true;
 }
 export function dismissFailedOperation(operationId: string) {
@@ -71,6 +76,7 @@ export function enqueueProcessOperation(
   processId: string,
   operationName: ProcessOperationName,
   action: (signal: AbortSignal) => Promise<void>,
+  onQueuedCancel?: () => Promise<void>,
 ) {
   if (hasActiveProcessOperation(processId))
     throw new Error("Für diesen Prozess läuft bereits eine KI-Aktion.");
@@ -86,6 +92,7 @@ export function enqueueProcessOperation(
     state: "queued",
     createdAt: new Date().toISOString(),
     controller,
+    onQueuedCancel,
   };
   operations.set(operationId, operation);
   const previous = queueTail;

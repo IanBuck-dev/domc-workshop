@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "profile": { "id": "opportunity-discovery-v1", "version": 1 },
+  "instructions": {
+    "hypotheses": "Untersuche jeden bestätigten Prozessschritt evidenzbasiert. Erzeuge keine Hypothese, wenn kein materieller KI-Beitrag begründbar ist.",
+    "scenarios": "Erzeuge drei kompakte, nachvollziehbare Ausbaustufen mit klarer Arbeitsteilung zwischen Mensch und KI. Bewerte weder Wirtschaftlichkeit noch Machbarkeit."
+  },
+  "ai": {
+    "model": "sonnet",
+    "reasoningEffort": "medium",
+    "timeoutMs": 180000,
+    "maxOutputTokens": 12000,
+    "maxInputCharacters": 200000,
+    "maxBudgetUsd": 1
+  }
+}

@@ -12,7 +12,8 @@ export type {
 export interface ProcessOperationStatus {
   operationId: string;
   processId: string;
-  operationName: "process-follow-ups" | "process-synthesis";
+  operationName:
+    "process-follow-ups" | "process-synthesis" | "opportunity-discovery";
   state: "queued" | "running" | "failed";
   position: number;
   createdAt: string;

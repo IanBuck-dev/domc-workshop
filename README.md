@@ -1,6 +1,6 @@
 # Prozessaufnahme
 
-German workshop prototype for capturing and confirming how department processes work today. The target flow is a compact two-page form that produces an evidence-backed process brief and high-level process map; KI-use-case generation, project assessment, and ranking are separate future phases. Repository-local files are the system of record, and the backend invokes the authenticated Claude CLI only for explicit, bounded actions.
+German workshop prototype for capturing and confirming how department processes work today. The compact two-page form produces an evidence-backed process brief and high-level process map. For a confirmed process, a separate read-only module can then discover evidence-backed KI-potential hypotheses and generate three human-oversight scenarios (`assistive`, `delegated`, `agentic`). Project assessment, scoring, prioritization, and ranking remain later phases. Repository-local files are the system of record, and the backend invokes the authenticated Claude CLI only for explicit, bounded actions.
 
 ## Start development
 
@@ -22,7 +22,7 @@ bun run dev
 
 Open `http://127.0.0.1:5173`. Never enter real claim, customer, contract, health, employee, or other confidential production data.
 
-The implemented flow, contracts, and acceptance criteria are specified in [docs/PRODUCT-FLOW-KI-POTENTIAL.md](docs/PRODUCT-FLOW-KI-POTENTIAL.md).
+The process flow is specified in [docs/PRODUCT-FLOW-KI-POTENTIAL.md](docs/PRODUCT-FLOW-KI-POTENTIAL.md); the downstream module and its acceptance criteria are specified in [docs/PLAN-KI-POTENTIAL-SCENARIOS.md](docs/PLAN-KI-POTENTIAL-SCENARIOS.md).
 
 ## Validate and package
 

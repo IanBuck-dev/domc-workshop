@@ -1,6 +1,19 @@
 import { z } from "zod";
+import {
+  processCaptureRecordSchema,
+  processUnderstandingSchema,
+  workCharacteristicIdSchema,
+} from "./process-understanding.ts";
 
 export const opportunityScenarioContractVersion = 1 as const;
+
+export interface OpportunityContractSnapshot {
+  basePrompt: string;
+  hypothesesPrompt: string;
+  scenariosPrompt: string;
+  hypothesesSchema: object;
+  scenariosSchema: object;
+}
 
 export const scenarioLevels = ["assistive", "delegated", "agentic"] as const;
 export const scenarioLevelSchema = z.enum(scenarioLevels);
@@ -41,6 +54,8 @@ export const aiCapabilitySchema = z.enum(aiCapabilities);
 
 export const confidenceLevels = ["high", "medium", "low"] as const;
 export const confidenceLevelSchema = z.enum(confidenceLevels);
+export const potentialLevels = ["high", "medium", "low"] as const;
+export const potentialLevelSchema = z.enum(potentialLevels);
 
 const identifierSchema = z.string().trim().min(1).max(120);
 const hypothesisIdSchema = z.string().regex(/^HYP-\d{3}$/);
@@ -68,6 +83,318 @@ const identifierArraySchema = (minimum = 0, maximum = 100) =>
     .refine((values) => new Set(values).size === values.length, {
       message: "Identifiers must be unique.",
     });
+
+const aiRuntimeConfigSchema = z
+  .object({
+    model: z.literal("sonnet"),
+    reasoningEffort: z.literal("medium"),
+    timeoutMs: z.number().int().min(10_000).max(300_000),
+    maxOutputTokens: z.number().int().min(512).max(32_768),
+    maxInputCharacters: z.number().int().min(10_000).max(2_000_000),
+    maxBudgetUsd: z.number().positive().max(10),
+  })
+  .strict();
+
+export const opportunityDiscoveryConfigSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    profile: z
+      .object({
+        id: z.literal("opportunity-discovery-v1"),
+        version: z.literal(1),
+      })
+      .strict(),
+    instructions: z
+      .object({
+        hypotheses: z.string().trim().min(1).max(30_000),
+        scenarios: z.string().trim().min(1).max(30_000),
+      })
+      .strict(),
+    ai: aiRuntimeConfigSchema,
+  })
+  .strict();
+
+const workCharacteristicSnapshotSchema = z
+  .object({
+    id: workCharacteristicIdSchema,
+    question: shortTextSchema,
+    selectedOptions: z
+      .array(
+        z.object({ id: identifierSchema, label: shortTextSchema }).strict(),
+      )
+      .min(1)
+      .max(12),
+  })
+  .strict();
+
+export const opportunityProcessSnapshotSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    processId: z.string().regex(/^PROC-\d{4}$/),
+    processName: shortTextSchema,
+    department: shortTextSchema,
+    confirmedAt: z.string().datetime(),
+    workCharacteristics: z.array(workCharacteristicSnapshotSchema).length(4),
+    understanding: processUnderstandingSchema,
+  })
+  .strict()
+  .superRefine((snapshot, ctx) => {
+    const ids = snapshot.workCharacteristics.map((item) => item.id);
+    if (new Set(ids).size !== ids.length)
+      ctx.addIssue({
+        code: "custom",
+        path: ["workCharacteristics"],
+        message: "Work-characteristic IDs must be unique.",
+      });
+  });
+
+export function createOpportunityProcessSnapshot(input: unknown) {
+  const record = processCaptureRecordSchema.parse(input);
+  if (
+    record.state !== "confirmed" ||
+    !record.confirmedAt ||
+    !record.understanding
+  )
+    throw new Error(
+      "Nur ein fachlich bestätigter Prozess kann analysiert werden.",
+    );
+  if (
+    record.profile.version !== 2 ||
+    !("workCharacteristics" in record.configSnapshot)
+  )
+    throw new Error(
+      "Die Potenzialanalyse benötigt die aktuellen Arbeitsmerkmale.",
+    );
+  const answers = new Map(
+    record.workCharacteristicAnswers.map((answer) => [
+      answer.characteristicId,
+      answer,
+    ]),
+  );
+  return opportunityProcessSnapshotSchema.parse({
+    schemaVersion: 1,
+    processId: record.id,
+    processName: record.cover.processName,
+    department: record.cover.department,
+    confirmedAt: record.confirmedAt,
+    workCharacteristics: record.configSnapshot.workCharacteristics.map(
+      (definition) => ({
+        id: definition.id,
+        question: definition.question,
+        selectedOptions: (
+          answers.get(definition.id)?.selectedOptionIds ?? []
+        ).map((optionId) => ({
+          id: optionId,
+          label:
+            definition.options.find((option) => option.id === optionId)
+              ?.label ?? optionId,
+        })),
+      }),
+    ),
+    understanding: record.understanding,
+  });
+}
+
+export const opportunityAssumptionSchema = z
+  .object({ text: textSchema, material: z.boolean() })
+  .strict();
+
+const opportunityHypothesisBase = {
+  processStepId: identifierSchema,
+  title: shortTextSchema,
+  currentSituation: textSchema,
+  aiContribution: textSchema,
+  aiCapabilities: z
+    .array(aiCapabilitySchema)
+    .min(1)
+    .max(aiCapabilities.length)
+    .refine((values) => new Set(values).size === values.length),
+  expectedChange: textSchema,
+  supportingDeterministicAutomation: uniqueTextArray(0, 50),
+  requiredInformationAndSystemAccess: uniqueTextArray(0, 50),
+  expectedHumanRole: textSchema,
+  potentialLevel: potentialLevelSchema,
+  potentialRationale: textSchema,
+  confidenceLevel: confidenceLevelSchema,
+  confidenceRationale: textSchema,
+  evidenceIds: identifierArraySchema(0, 250),
+  assumptions: z.array(opportunityAssumptionSchema).max(50),
+  openQuestions: uniqueTextArray(0, 50),
+};
+
+export const opportunityHypothesisSchema = z
+  .object({
+    id: hypothesisIdSchema,
+    provenance: z.literal("ai_inferred"),
+    ...opportunityHypothesisBase,
+  })
+  .strict()
+  .superRefine((hypothesis, ctx) => {
+    if (
+      hypothesis.confidenceLevel === "high" &&
+      (!hypothesis.evidenceIds.length ||
+        hypothesis.assumptions.some((assumption) => assumption.material))
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["confidenceLevel"],
+        message:
+          "High confidence requires evidence and no material assumption.",
+      });
+  });
+
+const opportunityHypothesisAiSchema = z
+  .object(opportunityHypothesisBase)
+  .strict();
+
+const stepOpportunityAiSchema = z
+  .object({
+    processStepId: identifierSchema,
+    summary: textSchema,
+    noPotentialRationale: textSchema.nullable(),
+    hypotheses: z.array(opportunityHypothesisAiSchema).max(20),
+  })
+  .strict()
+  .superRefine((analysis, ctx) => {
+    if (!analysis.hypotheses.length && !analysis.noPotentialRationale)
+      ctx.addIssue({
+        code: "custom",
+        path: ["noPotentialRationale"],
+        message: "A step without hypotheses requires a rationale.",
+      });
+    if (analysis.hypotheses.length && analysis.noPotentialRationale !== null)
+      ctx.addIssue({
+        code: "custom",
+        path: ["noPotentialRationale"],
+        message: "A step with hypotheses cannot have a no-potential rationale.",
+      });
+    analysis.hypotheses.forEach((hypothesis, index) => {
+      if (hypothesis.processStepId !== analysis.processStepId)
+        ctx.addIssue({
+          code: "custom",
+          path: ["hypotheses", index, "processStepId"],
+          message: "Hypothesis and step analysis must reference the same step.",
+        });
+    });
+  });
+
+export const opportunityHypothesisAiResultSchema = z
+  .object({ stepAnalyses: z.array(stepOpportunityAiSchema).min(5).max(8) })
+  .strict();
+
+export const stepOpportunityAnalysisSchema = z
+  .object({
+    processStepId: identifierSchema,
+    summary: textSchema,
+    noPotentialRationale: textSchema.nullable(),
+    hypotheses: z.array(opportunityHypothesisSchema).max(20),
+  })
+  .strict();
+
+export const opportunityHypothesisResultSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    stepAnalyses: z.array(stepOpportunityAnalysisSchema).min(5).max(8),
+  })
+  .strict();
+
+const rank = { high: 0, medium: 1, low: 2 } as const;
+export function normalizeOpportunityHypotheses(
+  input: unknown,
+  snapshotInput: unknown,
+) {
+  const output = opportunityHypothesisAiResultSchema.parse(input);
+  const snapshot = opportunityProcessSnapshotSchema.parse(snapshotInput);
+  const stepOrder = new Map(
+    snapshot.understanding.steps.map((step) => [step.id, step.order]),
+  );
+  const expected = [...stepOrder.keys()].sort();
+  const actual = output.stepAnalyses.map((item) => item.processStepId).sort();
+  if (JSON.stringify(expected) !== JSON.stringify(actual))
+    throw new Error(
+      "Die Hypothesenanalyse muss jeden Prozessschritt genau einmal enthalten.",
+    );
+  const evidenceIds = new Set(
+    snapshot.understanding.evidence.map((item) => item.id),
+  );
+  const analyses = output.stepAnalyses
+    .map((analysis) => ({ ...analysis, hypotheses: [...analysis.hypotheses] }))
+    .sort(
+      (a, b) =>
+        (stepOrder.get(a.processStepId) ?? 99) -
+        (stepOrder.get(b.processStepId) ?? 99),
+    );
+  let sequence = 0;
+  const normalized = analyses.map((analysis) => ({
+    ...analysis,
+    hypotheses: analysis.hypotheses
+      .sort(
+        (a, b) =>
+          rank[a.potentialLevel] - rank[b.potentialLevel] ||
+          rank[a.confidenceLevel] - rank[b.confidenceLevel] ||
+          a.title.localeCompare(b.title, "de"),
+      )
+      .map((hypothesis) => {
+        if (hypothesis.evidenceIds.some((id) => !evidenceIds.has(id)))
+          throw new Error("Eine Hypothese verweist auf unbekannte Evidenz.");
+        return opportunityHypothesisSchema.parse({
+          ...hypothesis,
+          id: `HYP-${String(++sequence).padStart(3, "0")}`,
+          provenance: "ai_inferred",
+        });
+      }),
+  }));
+  return opportunityHypothesisResultSchema.parse({
+    schemaVersion: 1,
+    stepAnalyses: normalized,
+  });
+}
+
+export const opportunityDiscoveryStates = [
+  "hypotheses_queued",
+  "hypotheses_running",
+  "hypotheses_failed",
+  "no_supported_hypotheses",
+  "scenarios_running",
+  "scenarios_failed",
+  "completed",
+] as const;
+export const opportunityDiscoveryStateSchema = z.enum(
+  opportunityDiscoveryStates,
+);
+
+const opportunityDiscoveryTransitions = new Set([
+  "hypotheses_queued:hypotheses_running",
+  "hypotheses_running:no_supported_hypotheses",
+  "hypotheses_running:scenarios_running",
+  "hypotheses_running:hypotheses_failed",
+  "hypotheses_failed:hypotheses_queued",
+  "scenarios_running:completed",
+  "scenarios_running:scenarios_failed",
+  "scenarios_failed:scenarios_running",
+]);
+
+export function assertOpportunityDiscoveryTransition(
+  fromInput: unknown,
+  toInput: unknown,
+) {
+  const from = opportunityDiscoveryStateSchema.parse(fromInput);
+  const to = opportunityDiscoveryStateSchema.parse(toInput);
+  if (!opportunityDiscoveryTransitions.has(`${from}:${to}`))
+    throw new Error(
+      `Ungültiger Zustandswechsel der Potenzialanalyse: ${from} → ${to}.`,
+    );
+  return to;
+}
+
+export const opportunityPhaseErrorSchema = z
+  .object({
+    phase: z.enum(["hypotheses", "scenarios"]),
+    message: shortTextSchema,
+    cancelled: z.boolean(),
+    at: z.string().datetime(),
+  })
+  .strict();
 
 export const scenarioActionSchema = z
   .object({
@@ -245,6 +572,37 @@ export const opportunityScenarioResultSchema = z
     });
   });
 
+export const opportunityScenarioAiResultSchema = z.preprocess((input) => {
+  const value = structuredClone(input);
+  if (!value || typeof value !== "object" || !("scenarios" in value))
+    return value;
+  const scenarios = (value as { scenarios?: unknown }).scenarios;
+  if (!Array.isArray(scenarios)) return value;
+  for (const scenario of scenarios) {
+    if (!scenario || typeof scenario !== "object") continue;
+    const scenarioRecord = scenario as Record<string, unknown>;
+    scenarioRecord.id = `SCN-${String(scenarioRecord.level)}`;
+    scenarioRecord.provenance = "ai_inferred";
+    if (!("systemAccess" in scenarioRecord)) continue;
+    const accesses = scenarioRecord.systemAccess;
+    if (!Array.isArray(accesses)) continue;
+    for (const access of accesses) {
+      if (
+        !access ||
+        typeof access !== "object" ||
+        !("possibleMechanisms" in access)
+      )
+        continue;
+      const mechanisms = (access as { possibleMechanisms?: unknown })
+        .possibleMechanisms;
+      if (Array.isArray(mechanisms) && mechanisms.length > 1)
+        (access as { possibleMechanisms: unknown[] }).possibleMechanisms =
+          mechanisms.filter((mechanism) => mechanism !== "unknown");
+    }
+  }
+  return value;
+}, opportunityScenarioResultSchema);
+
 export const opportunityScenarioReferenceContextSchema = z
   .object({
     highConfidenceHypotheses: z
@@ -282,6 +640,46 @@ export const opportunityScenarioReferenceContextSchema = z
         });
     });
   });
+
+export function normalizeOpportunityScenarioScope(
+  resultInput: unknown,
+  contextInput: unknown,
+) {
+  const result = opportunityScenarioResultSchema.parse(resultInput);
+  const context = opportunityScenarioReferenceContextSchema.parse(contextInput);
+  const hypothesisSteps = new Map(
+    context.highConfidenceHypotheses.map((hypothesis) => [
+      hypothesis.id,
+      hypothesis.processStepId,
+    ]),
+  );
+  const stepOrder = new Map(
+    context.processStepIds.map((stepId, index) => [stepId, index]),
+  );
+
+  return opportunityScenarioResultSchema.parse({
+    ...result,
+    scenarios: result.scenarios.map((scenario) => {
+      const affectedProcessStepIds = new Set(scenario.affectedProcessStepIds);
+      for (const hypothesisId of scenario.includedHypothesisIds) {
+        const processStepId = hypothesisSteps.get(hypothesisId);
+        if (processStepId) affectedProcessStepIds.add(processStepId);
+      }
+      for (const action of scenario.actions)
+        for (const processStepId of action.processStepIds)
+          affectedProcessStepIds.add(processStepId);
+
+      return {
+        ...scenario,
+        affectedProcessStepIds: [...affectedProcessStepIds].sort(
+          (left, right) =>
+            (stepOrder.get(left) ?? Number.MAX_SAFE_INTEGER) -
+            (stepOrder.get(right) ?? Number.MAX_SAFE_INTEGER),
+        ),
+      };
+    }),
+  });
+}
 
 export function assertOpportunityScenarioReferences(
   resultInput: unknown,
@@ -344,6 +742,117 @@ export function assertOpportunityScenarioReferences(
   return result;
 }
 
+const sha256Schema = z.string().regex(/^[a-f0-9]{64}$/);
+export const opportunityContractManifestSchema = z
+  .object({
+    basePrompt: sha256Schema,
+    hypothesesPrompt: sha256Schema,
+    scenariosPrompt: sha256Schema,
+    hypothesesSchema: sha256Schema,
+    scenariosSchema: sha256Schema,
+  })
+  .strict();
+
+export const opportunityDiscoveryRecordSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    id: z.string().regex(/^OPP-PROC-\d{4}$/),
+    processId: z.string().regex(/^PROC-\d{4}$/),
+    state: opportunityDiscoveryStateSchema,
+    sourceProcessHash: sha256Schema,
+    configHash: sha256Schema,
+    sourceProcess: opportunityProcessSnapshotSchema,
+    configSnapshot: opportunityDiscoveryConfigSchema,
+    contractManifest: opportunityContractManifestSchema,
+    hypotheses: opportunityHypothesisResultSchema.nullable(),
+    scenarios: opportunityScenarioResultSchema.nullable(),
+    lastError: opportunityPhaseErrorSchema.nullable(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  })
+  .strict()
+  .superRefine((record, ctx) => {
+    if (record.id !== `OPP-${record.processId}`)
+      ctx.addIssue({
+        code: "custom",
+        path: ["id"],
+        message: "Opportunity ID must be derived from process ID.",
+      });
+    const hypothesesRequired = [
+      "no_supported_hypotheses",
+      "scenarios_running",
+      "scenarios_failed",
+      "completed",
+    ].includes(record.state);
+    if (hypothesesRequired && !record.hypotheses)
+      ctx.addIssue({
+        code: "custom",
+        path: ["hypotheses"],
+        message: "This state requires hypotheses.",
+      });
+    if (record.state === "completed" && !record.scenarios)
+      ctx.addIssue({
+        code: "custom",
+        path: ["scenarios"],
+        message: "Completed state requires scenarios.",
+      });
+    if (record.state !== "completed" && record.scenarios)
+      ctx.addIssue({
+        code: "custom",
+        path: ["scenarios"],
+        message: "Only completed state may contain scenarios.",
+      });
+    if (record.state.endsWith("failed") !== (record.lastError !== null))
+      ctx.addIssue({
+        code: "custom",
+        path: ["lastError"],
+        message: "Failure state and error detail must agree.",
+      });
+  });
+
+export const opportunityDiscoverySummarySchema = z
+  .object({
+    processId: z.string().regex(/^PROC-\d{4}$/),
+    state: opportunityDiscoveryStateSchema,
+    isStale: z.boolean(),
+    hypothesisCount: z.number().int().nonnegative(),
+    highConfidenceHypothesisCount: z.number().int().nonnegative(),
+    scenarioCount: z.union([z.literal(0), z.literal(3)]),
+    updatedAt: z.string().datetime(),
+  })
+  .strict();
+
+export const opportunityDiscoveryPublicRecordSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    id: z.string().regex(/^OPP-PROC-\d{4}$/),
+    processId: z.string().regex(/^PROC-\d{4}$/),
+    state: opportunityDiscoveryStateSchema,
+    sourceProcess: opportunityProcessSnapshotSchema,
+    hypotheses: opportunityHypothesisResultSchema.nullable(),
+    scenarios: opportunityScenarioResultSchema.nullable(),
+    lastError: opportunityPhaseErrorSchema.nullable(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  })
+  .strict();
+
+export function toOpportunityDiscoveryPublicRecord(input: unknown) {
+  const record = opportunityDiscoveryRecordSchema.parse(input);
+  return opportunityDiscoveryPublicRecordSchema.parse({
+    schemaVersion: record.schemaVersion,
+    id: record.id,
+    processId: record.processId,
+    state: record.state,
+    sourceProcess: record.sourceProcess,
+    hypotheses: record.hypotheses,
+    scenarios: record.scenarios,
+    lastError: record.lastError,
+    createdAt: record.createdAt,
+    updatedAt: record.updatedAt,
+  });
+}
+
 export type ScenarioLevel = z.infer<typeof scenarioLevelSchema>;
 export type ExecutionMode = z.infer<typeof executionModeSchema>;
 export type SystemAccessMode = z.infer<typeof systemAccessModeSchema>;
@@ -351,6 +860,25 @@ export type AccessTiming = z.infer<typeof accessTimingSchema>;
 export type AccessMechanism = z.infer<typeof accessMechanismSchema>;
 export type AiCapability = z.infer<typeof aiCapabilitySchema>;
 export type ConfidenceLevel = z.infer<typeof confidenceLevelSchema>;
+export type PotentialLevel = z.infer<typeof potentialLevelSchema>;
+export type OpportunityDiscoveryConfig = z.infer<
+  typeof opportunityDiscoveryConfigSchema
+>;
+export type OpportunityProcessSnapshot = z.infer<
+  typeof opportunityProcessSnapshotSchema
+>;
+export type OpportunityAssumption = z.infer<typeof opportunityAssumptionSchema>;
+export type OpportunityHypothesis = z.infer<typeof opportunityHypothesisSchema>;
+export type OpportunityHypothesisAiResult = z.infer<
+  typeof opportunityHypothesisAiResultSchema
+>;
+export type OpportunityHypothesisResult = z.infer<
+  typeof opportunityHypothesisResultSchema
+>;
+export type OpportunityDiscoveryState = z.infer<
+  typeof opportunityDiscoveryStateSchema
+>;
+export type OpportunityPhaseError = z.infer<typeof opportunityPhaseErrorSchema>;
 export type ScenarioAction = z.infer<typeof scenarioActionSchema>;
 export type ScenarioSystemAccess = z.infer<typeof scenarioSystemAccessSchema>;
 export type OpportunityScenario = z.infer<typeof opportunityScenarioSchema>;
@@ -359,4 +887,16 @@ export type OpportunityScenarioResult = z.infer<
 >;
 export type OpportunityScenarioReferenceContext = z.infer<
   typeof opportunityScenarioReferenceContextSchema
+>;
+export type OpportunityContractManifest = z.infer<
+  typeof opportunityContractManifestSchema
+>;
+export type OpportunityDiscoveryRecord = z.infer<
+  typeof opportunityDiscoveryRecordSchema
+>;
+export type OpportunityDiscoveryPublicRecord = z.infer<
+  typeof opportunityDiscoveryPublicRecordSchema
+>;
+export type OpportunityDiscoverySummary = z.infer<
+  typeof opportunityDiscoverySummarySchema
 >;

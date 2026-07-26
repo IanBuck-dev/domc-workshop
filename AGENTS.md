@@ -2,7 +2,7 @@
 
 ## Product boundary
 
-Build a local prototype that captures and confirms how a department process works today. Do not add KI-use-case generation, solution assessment, scoring, prioritization, handover, or general project-management features to the active flow.
+Build a local prototype that captures and confirms how a department process works today and, in a separate downstream module, discovers evidence-backed KI-potential hypotheses and three read-only human-oversight scenarios for confirmed processes. Do not add solution assessment, financial values, scoring, prioritization, handover, or general project-management features to the active flow.
 
 ## Runtime
 
@@ -22,8 +22,8 @@ Build a local prototype that captures and confirms how a department process work
 - AI output is advisory. Only a user action can confirm the process understanding.
 - Claude prompts and structured response schemas are versioned repository files, not inline strings scattered through application code.
 - Do not send unrelated repository content to Claude. Pass only the idea data required for the current operation.
-- Avoid autonomous loops. One explicit user action may trigger one bounded analysis or clarification operation.
-- Do not resume Claude sessions. One explicit user action triggers one bounded follow-up or synthesis operation; autonomous follow-up loops remain prohibited.
+- Avoid autonomous loops. Process capture actions trigger one bounded operation. The explicitly started opportunity-discovery job is the sole exception: it may perform exactly one bounded hypothesis call followed deterministically by exactly one bounded scenario call when high-confidence hypotheses exist.
+- Do not resume Claude sessions. Every follow-up, synthesis, hypothesis, and scenario operation uses a fresh session; autonomous follow-up loops remain prohibited.
 - Keep editable product behavior in `defaults/process-capture-config.json` and versioned prompts and schemas; do not bury workshop policy in React components.
 - Keep automated testing lean for this prototype: cover domain rules, file/reset safety, and the Claude process contract.
 - Keep the demo-data warning visible globally and at intake. Do not weaken the per-session confirmation without explicit user approval.
@@ -43,4 +43,4 @@ Before considering an implementation task complete, run `./scripts/qa all` and t
 
 ## Planning source
 
-Follow `docs/PRODUCT-FLOW-KI-POTENTIAL.md`. Preserve its domain states and acceptance criteria unless the user explicitly changes them.
+Follow `docs/PRODUCT-FLOW-KI-POTENTIAL.md` for process capture and `docs/PLAN-KI-POTENTIAL-SCENARIOS.md` for opportunity discovery. Preserve their domain states and acceptance criteria unless the user explicitly changes them.

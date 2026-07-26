@@ -68,6 +68,7 @@ function operationLabel(value: string) {
     {
       "process-follow-ups": "Prozessangaben prüfen",
       "process-synthesis": "Prozessbild erstellen",
+      "opportunity-discovery": "KI-Potenziale entdecken",
     }[value] ?? "KI-Unterstützung"
   );
 }

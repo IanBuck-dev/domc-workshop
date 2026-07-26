@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["stepAnalyses"],
+  "properties": {
+    "stepAnalyses": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "processStepId",
+          "summary",
+          "noPotentialRationale",
+          "hypotheses"
+        ],
+        "properties": {
+          "processStepId": { "type": "string" },
+          "summary": { "type": "string" },
+          "noPotentialRationale": { "type": ["string", "null"] },
+          "hypotheses": {
+            "type": "array",
+            "maxItems": 20,
+            "items": { "$ref": "#/$defs/hypothesis" }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "hypothesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "processStepId",
+        "title",
+        "currentSituation",
+        "aiContribution",
+        "aiCapabilities",
+        "expectedChange",
+        "supportingDeterministicAutomation",
+        "requiredInformationAndSystemAccess",
+        "expectedHumanRole",
+        "potentialLevel",
+        "potentialRationale",
+        "confidenceLevel",
+        "confidenceRationale",
+        "evidenceIds",
+        "assumptions",
+        "openQuestions"
+      ],
+      "properties": {
+        "processStepId": { "type": "string" },
+        "title": { "type": "string" },
+        "currentSituation": { "type": "string" },
+        "aiContribution": { "type": "string" },
+        "aiCapabilities": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "interpretation",
+              "generation",
+              "recognition",
+              "prediction",
+              "recommendation",
+              "planning"
+            ]
+          }
+        },
+        "expectedChange": { "type": "string" },
+        "supportingDeterministicAutomation": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "requiredInformationAndSystemAccess": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "expectedHumanRole": { "type": "string" },
+        "potentialLevel": { "enum": ["high", "medium", "low"] },
+        "potentialRationale": { "type": "string" },
+        "confidenceLevel": { "enum": ["high", "medium", "low"] },
+        "confidenceRationale": { "type": "string" },
+        "evidenceIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["text", "material"],
+            "properties": {
+              "text": { "type": "string" },
+              "material": { "type": "boolean" }
+            }
+          }
+        },
+        "openQuestions": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

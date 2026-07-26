@@ -5,15 +5,18 @@ import {
   type ProcessCaptureConfig,
 } from "../../domain/src/process-understanding.ts";
 import { ProcessCaptureRepository } from "./process-capture-repository.ts";
+import { OpportunityDiscoveryRepository } from "./opportunity-discovery-repository.ts";
 
 export class WorkspaceRepository {
   readonly processes: ProcessCaptureRepository;
+  readonly opportunities: OpportunityDiscoveryRepository;
 
   constructor(
     public root: string,
     public defaults = join(process.cwd(), "defaults"),
   ) {
     this.processes = new ProcessCaptureRepository(root);
+    this.opportunities = new OpportunityDiscoveryRepository(root);
   }
 
   async ensure() {

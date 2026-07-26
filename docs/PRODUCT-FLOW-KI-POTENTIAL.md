@@ -22,7 +22,7 @@ and the reference commit `58ff74f` preserve the removed implementation.
 
 ## Required outcome
 
-The completed application has one active product journey:
+The completed process-capture module has one active product journey:
 
 1. `/processes/new` — setup only;
 2. `/processes/:id/capture` — five topic answers, at most one follow-up per
@@ -33,9 +33,13 @@ high-level business steps, evidence and provenance, document coverage, conflicts
 and visible knowledge gaps. The UI renders the record as a German process brief
 and a deterministic high-level process map.
 
-The application does not classify KI potential, generate KI use cases, define a
-solution, assess business value, calculate scores, review an assessment, compare
-interaction modes, or rank projects.
+The process-capture journey does not classify KI potential, generate KI use
+cases, define a solution, assess business value, calculate scores, review an
+assessment, compare interaction modes, or rank projects. After confirmation, a
+separate read-only Opportunity-Discovery module may consume only the confirmed
+snapshot. Its two-phase behavior and additional files are governed exclusively
+by [PLAN-KI-POTENTIAL-SCENARIOS.md](PLAN-KI-POTENTIAL-SCENARIOS.md); it does not
+change the capture states or the confirmed process record.
 
 ## Locked product behavior
 

@@ -8,10 +8,13 @@ import {
   ProcessCaptureRepository,
 } from "../../../packages/storage/src/process-capture-repository.ts";
 import { ClaudeProcessAiAdapter } from "../../../packages/claude/src/process-ai-adapter.ts";
+import { ClaudeOpportunityAiAdapter } from "../../../packages/claude/src/opportunity-ai-adapter.ts";
+import { OpportunityDiscoveryRepository } from "../../../packages/storage/src/opportunity-discovery-repository.ts";
 import { processCaptureRoutes } from "./routes/process-captures.ts";
 import { authRoutes } from "./routes/auth.ts";
 import { configRoutes } from "./routes/config.ts";
 import { aiOperationRoutes } from "./routes/ai-operations.ts";
+import { opportunityRoutes } from "./routes/opportunities.ts";
 import { requireSession } from "./session.ts";
 import {
   workspacePath,
@@ -25,7 +28,9 @@ const root = workspacePath();
 await mkdir(root, { recursive: true });
 await acquireInstanceLock(root);
 const processRepo = new ProcessCaptureRepository(root),
+  opportunityRepo = new OpportunityDiscoveryRepository(root),
   app = new Hono();
+await opportunityRepo.recoverInterrupted();
 app.onError((error, c) => {
   console.error(error);
   if (error instanceof ProcessCaptureNotFoundError)
@@ -62,6 +67,14 @@ app.route("/api/config", configRoutes());
 app.route(
   "/api/processes",
   processCaptureRoutes(processRepo, new ClaudeProcessAiAdapter()),
+);
+app.route(
+  "/api/opportunities",
+  opportunityRoutes(
+    processRepo,
+    opportunityRepo,
+    new ClaudeOpportunityAiAdapter(),
+  ),
 );
 app.route("/api/ai-operations", aiOperationRoutes());
 app.all("/api/*", (c) =>

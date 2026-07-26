@@ -9,6 +9,11 @@ import type {
   UnderstandingSection,
   UploadRecord,
 } from "./process-types";
+import type {
+  OpportunityDiscoveryDetail,
+  OpportunityDiscoveryPublicRecord,
+  OpportunityDiscoverySummary,
+} from "./opportunity-types";
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
@@ -141,5 +146,20 @@ export const api = {
   history: (id: string) =>
     req<Array<{ at: string; event: string; detail: unknown }>>(
       `/processes/${id}/history`,
+    ),
+  opportunitySummaries: () =>
+    req<OpportunityDiscoverySummary[]>("/opportunities"),
+  opportunity: (processId: string) =>
+    req<OpportunityDiscoveryDetail>(`/opportunities/${processId}`),
+  startOpportunity: (processId: string) =>
+    req<{
+      record: OpportunityDiscoveryPublicRecord;
+      operationId: string;
+      state: "queued";
+    }>(`/opportunities/${processId}`, { method: "POST" }),
+  retryOpportunity: (processId: string) =>
+    req<{ operationId: string; state: "queued" }>(
+      `/opportunities/${processId}/retry`,
+      { method: "POST" },
     ),
 };

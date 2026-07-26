@@ -2,10 +2,9 @@
 
 ## Status, Ziel und Produktgrenze
 
-Status: implementation-ready Plan auf Basis von
+Status: implementiert und verifiziert auf Basis von
 [`DISCOVERY-KI-POTENTIAL-SCENARIOS.md`](./DISCOVERY-KI-POTENTIAL-SCENARIOS.md).
-Er wird nach Freigabe der neue aktive Implementierungsplan für den nächsten
-Produktausbau.
+Er ist die verbindliche Spezifikation des getrennten Opportunity-Discovery-Moduls.
 
 Ziel ist ein neues, getrenntes Opportunity-Discovery-Modul hinter der
 bestehenden Prozessaufnahme. Ein KI-Verantwortlicher startet die Analyse für

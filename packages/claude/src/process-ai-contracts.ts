@@ -1,5 +1,4 @@
 import type {
-  AiTrace,
   Cover,
   FollowUpAnswer,
   FollowUpQuestion,
@@ -8,15 +7,12 @@ import type {
   TopicAnswer,
   WorkCharacteristicAnswer,
 } from "../../domain/src/process-understanding.ts";
+import type {
+  AiRuntimeModelConfig,
+  AiStructuredResult,
+} from "./ai-runtime-contracts.ts";
 
-export interface ProcessAiModelConfig {
-  model: "sonnet";
-  effort: "medium";
-  timeoutMs: number;
-  maxOutputTokens: number;
-  maxInputCharacters: number;
-  maxBudgetUsd: number;
-}
+export type ProcessAiModelConfig = AiRuntimeModelConfig;
 export interface ProcessSelectedUpload {
   id: string;
   name: string;
@@ -48,10 +44,7 @@ export interface SynthesisRequest extends FollowUpRequest {
   followUps: FollowUpQuestion[];
   followUpAnswers: FollowUpAnswer[];
 }
-export interface ProcessAiResult<T> {
-  value: T;
-  trace: AiTrace;
-}
+export type ProcessAiResult<T> = AiStructuredResult<T>;
 export interface FollowUpResult {
   followUps: FollowUpQuestion[];
 }

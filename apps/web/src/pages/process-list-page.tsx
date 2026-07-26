@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, Plus, Trash2, Workflow } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowRight, Plus, Sparkles, Trash2, Workflow } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { api } from "../lib/api-client";
+import type { OpportunityDiscoverySummary } from "../lib/opportunity-types";
 import type { ProcessCaptureRecord } from "../lib/process-types";
 
 const stateCopy: Record<ProcessCaptureRecord["state"], string> = {
@@ -19,16 +20,35 @@ const nextAction: Record<ProcessCaptureRecord["state"], string> = {
   confirmed: "Prozessbild abgeschlossen",
 };
 export function ProcessListPage() {
+  const navigate = useNavigate();
   const [records, setRecords] = useState<ProcessCaptureRecord[]>([]);
+  const [opportunities, setOpportunities] = useState<
+    Record<string, OpportunityDiscoverySummary>
+  >({});
   const [confirming, setConfirming] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
   useEffect(() => {
-    api
-      .processes()
-      .then(setRecords)
+    Promise.all([api.processes(), api.opportunitySummaries()])
+      .then(([processes, summaries]) => {
+        setRecords(processes);
+        setOpportunities(
+          Object.fromEntries(summaries.map((item) => [item.processId, item])),
+        );
+      })
       .catch((e: Error) => setError(e.message));
   }, []);
+  async function startOpportunity(id: string) {
+    setBusy(id);
+    setError("");
+    try {
+      await api.startOpportunity(id);
+      navigate(`/processes/${id}/opportunities`);
+    } catch (e) {
+      setError((e as Error).message);
+      setBusy(null);
+    }
+  }
   async function deleteProcess(id: string) {
     setBusy(id);
     setError("");
@@ -77,68 +97,102 @@ export function ProcessListPage() {
         </div>
       ) : (
         <div className="process-list">
-          {records.map((record) => (
-            <article className="process-row" key={record.id}>
-              <Link
-                className="process-row-main"
-                to={`/processes/${record.id}/capture`}
-              >
-                <Workflow />
-                <div>
-                  <b>{record.cover.processName}</b>
-                  <small>
-                    {record.cover.department} · {record.id} · aktualisiert{" "}
-                    {new Date(record.updatedAt).toLocaleString("de-DE", {
-                      dateStyle: "short",
-                      timeStyle: "short",
-                    })}
-                  </small>
-                  <span className="next-action">
-                    Nächster Schritt: {nextAction[record.state]}
-                  </span>
-                </div>
-                <span className={`state state-${record.state}`}>
-                  {stateCopy[record.state]}
-                </span>
-                <ArrowRight />
-              </Link>
-              <div className="row-action">
-                {confirming === record.id ? (
-                  <div
-                    className="delete-confirm"
-                    role="group"
-                    aria-label={`Prozess ${record.cover.processName} löschen`}
-                  >
-                    <button
-                      className="danger-button"
-                      disabled={busy === record.id}
-                      onClick={() => void deleteProcess(record.id)}
-                    >
-                      {busy === record.id
-                        ? "Wird gelöscht …"
-                        : "Prozess löschen"}
-                    </button>
-                    <button
-                      className="button secondary"
-                      onClick={() => setConfirming(null)}
-                    >
-                      Abbrechen
-                    </button>
+          {records.map((record) => {
+            const opportunity = opportunities[record.id];
+            return (
+              <article className="process-row" key={record.id}>
+                <Link
+                  className="process-row-main"
+                  to={`/processes/${record.id}/capture`}
+                >
+                  <Workflow />
+                  <div>
+                    <b>{record.cover.processName}</b>
+                    <small>
+                      {record.cover.department} · {record.id} · aktualisiert{" "}
+                      {new Date(record.updatedAt).toLocaleString("de-DE", {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      })}
+                    </small>
+                    <span className="next-action">
+                      Nächster Schritt: {nextAction[record.state]}
+                    </span>
                   </div>
-                ) : (
-                  <button
-                    className="trash-button"
-                    aria-label={`Prozess „${record.cover.processName}“ löschen`}
-                    onClick={() => setConfirming(record.id)}
-                  >
-                    <Trash2 />
-                  </button>
-                )}
-              </div>
-            </article>
-          ))}
+                  <span className={`state state-${record.state}`}>
+                    {stateCopy[record.state]}
+                  </span>
+                  <ArrowRight />
+                </Link>
+                <div className="row-action">
+                  {record.state === "confirmed" &&
+                    record.profile.version === 2 &&
+                    (opportunity ? (
+                      <Link
+                        className="button secondary opportunity-row-action"
+                        to={`/processes/${record.id}/opportunities`}
+                      >
+                        <Sparkles />
+                        {opportunityLabel(opportunity)}
+                      </Link>
+                    ) : (
+                      <button
+                        className="button secondary opportunity-row-action"
+                        disabled={busy === record.id}
+                        onClick={() => void startOpportunity(record.id)}
+                      >
+                        <Sparkles />
+                        {busy === record.id
+                          ? "Wird gestartet …"
+                          : "KI-Potenziale entdecken"}
+                      </button>
+                    ))}
+                  {confirming === record.id ? (
+                    <div
+                      className="delete-confirm"
+                      role="group"
+                      aria-label={`Prozess ${record.cover.processName} löschen`}
+                    >
+                      <button
+                        className="danger-button"
+                        disabled={busy === record.id}
+                        onClick={() => void deleteProcess(record.id)}
+                      >
+                        {busy === record.id
+                          ? "Wird gelöscht …"
+                          : "Prozess löschen"}
+                      </button>
+                      <button
+                        className="button secondary"
+                        onClick={() => setConfirming(null)}
+                      >
+                        Abbrechen
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      className="trash-button"
+                      aria-label={`Prozess „${record.cover.processName}“ löschen`}
+                      onClick={() => setConfirming(record.id)}
+                    >
+                      <Trash2 />
+                    </button>
+                  )}
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
     </section>
   );
+}
+
+function opportunityLabel(summary: OpportunityDiscoverySummary) {
+  if (summary.isStale) return "Prozess später geändert";
+  if (summary.state === "completed") return "3 Szenarien verfügbar";
+  if (summary.state === "no_supported_hypotheses")
+    return "Analyse abgeschlossen";
+  if (summary.state.endsWith("failed")) return "Analyse prüfen";
+  return "Potenziale werden untersucht";
 }

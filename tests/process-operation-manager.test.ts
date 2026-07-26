@@ -29,11 +29,15 @@ describe("process operation manager", () => {
         await firstGate;
       },
     );
+    let queuedCancelPersisted = false;
     const second = enqueueProcessOperation(
       `TEST-${crypto.randomUUID()}`,
-      "process-synthesis",
+      "opportunity-discovery",
       async () => {
         starts.push("second");
+      },
+      async () => {
+        queuedCancelPersisted = true;
       },
     );
 
@@ -48,8 +52,13 @@ describe("process operation manager", () => {
       listProcessOperations().find(
         (operation) => operation.operationId === second.operationId,
       ),
-    ).toMatchObject({ state: "queued", position: 1 });
-    expect(cancelProcessOperation(second.operationId)).toBe(true);
+    ).toMatchObject({
+      operationName: "opportunity-discovery",
+      state: "queued",
+      position: 1,
+    });
+    expect(await cancelProcessOperation(second.operationId)).toBe(true);
+    expect(queuedCancelPersisted).toBe(true);
     expect(
       listProcessOperations().some(
         (operation) => operation.operationId === second.operationId,
@@ -89,7 +98,7 @@ describe("process operation manager", () => {
           (item) => item.operationId === operation.operationId,
         )?.state === "running",
     );
-    expect(cancelProcessOperation(operation.operationId)).toBe(true);
+    expect(await cancelProcessOperation(operation.operationId)).toBe(true);
     await until(
       () =>
         !listProcessOperations().some(

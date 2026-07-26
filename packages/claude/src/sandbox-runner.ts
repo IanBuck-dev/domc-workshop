@@ -10,11 +10,11 @@ import { createHash } from "node:crypto";
 import { basename, join, relative, resolve, sep } from "node:path";
 import { tmpdir } from "node:os";
 import type { ZodType } from "zod";
+import type { ProcessSelectedUpload } from "./process-ai-contracts.ts";
 import type {
-  ProcessAiModelConfig,
-  ProcessAiResult,
-  ProcessSelectedUpload,
-} from "./process-ai-contracts.ts";
+  AiRuntimeModelConfig,
+  AiStructuredResult,
+} from "./ai-runtime-contracts.ts";
 import type { AiTrace } from "../../domain/src/process-understanding.ts";
 
 const NO_NETWORK_TOOLS = ["WebFetch", "WebSearch", "Task", "NotebookEdit"];
@@ -28,7 +28,7 @@ export interface SandboxOperation<T> {
   responseSchema: ZodType<T>;
   responseJsonSchema: object;
   structuredOutput?: "constrained" | "prompted";
-  model: ProcessAiModelConfig;
+  model: AiRuntimeModelConfig;
   tools: "none" | "workspace";
   selectedUploads?: ProcessSelectedUpload[];
   sessionId?: string;
@@ -244,7 +244,7 @@ export class SandboxRunner {
 
   runStructured<T>(
     operation: SandboxOperation<T>,
-  ): Promise<ProcessAiResult<T>> {
+  ): Promise<AiStructuredResult<T>> {
     const operationId = crypto.randomUUID();
     return this.execute(operation, operationId);
   }
@@ -252,7 +252,7 @@ export class SandboxRunner {
   private async execute<T>(
     operation: SandboxOperation<T>,
     operationId: string,
-  ): Promise<ProcessAiResult<T>> {
+  ): Promise<AiStructuredResult<T>> {
     const startedAt = performance.now();
     const logicalSessionId = operation.sessionId ?? crypto.randomUUID();
     await mkdir(this.options.tempRoot, { recursive: true, mode: 0o700 });

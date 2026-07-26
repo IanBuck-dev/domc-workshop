@@ -23,6 +23,24 @@
 6. Öffnen Sie bei Bedarf die Vorschau einer berücksichtigten Unterlage. PDF-, Bild- und Textdateien werden direkt angezeigt; Word- und Excel-Dateien stehen als Originaldownload bereit.
 7. Korrigieren Sie missverstandene Bereiche und bestätigen Sie anschließend die Prozessbeschreibung als fachliche Ausgangsbasis.
 
+## KI-Potenziale und Szenarien entdecken
+
+Nach der fachlichen Bestätigung zeigt die Prozessübersicht die Aktion
+`KI-Potenziale entdecken`. Sie startet einmalig eine zweiphasige Analyse:
+
+1. Claude untersucht jeden bestätigten Hauptschritt und dokumentiert mögliche
+   KI-Beiträge mit Begründung, Evidenz, Annahmen, Potenzial und Konfidenz.
+2. Nur wenn mindestens eine Hypothese eine hohe Konfidenz besitzt, erstellt eine
+   neue Claude-Session drei Zukunftsbilder: assistiert, teilautonom und agentisch.
+
+Die Ergebnisse werden während der Verarbeitung schrittweise sichtbar. Nach
+Beginn der zweiten Phase kann zwischen Hypothesen und Szenarien gewechselt
+werden. Ohne ausreichend belastbare Hypothese endet die Analyse neutral und
+ohne erfundene Szenarien. Ein technischer Fehler kann wiederholt werden; bereits
+gespeicherte Hypothesen bleiben bei einem Fehler der Szenariophase erhalten.
+Die Ergebnisse sind in diesem Prototyp read-only und enthalten keine
+Wirtschaftlichkeits-, Machbarkeits-, Risiko- oder Priorisierungsbewertung.
+
 Unter `Prozessaufnahme einstellen` können Sie im Bereich `Hinweise für die
 KI-Unterstützung` über `Vollständige Anweisungen ansehen` prüfen, welche
 Anweisungen für Rückfragen und Prozessbild tatsächlich wirksam wären. Die
@@ -37,12 +55,13 @@ Datenschutz, Wirtschaftlichkeit oder einen späteren KI-Use-Case.
 
 Prozessaufnahmen können in der Übersicht über das rote Papierkorb-Symbol und
 die anschließende Bestätigung dauerhaft gelöscht werden. Dies gilt auch für
-fachlich bestätigte Aufnahmen. Es gibt keine Wiederherstellung; während einer
-laufenden KI-Aktion ist das Löschen gesperrt.
+fachlich bestätigte Aufnahmen und ihre abhängige Potenzialanalyse. Es gibt keine
+Wiederherstellung; während einer laufenden KI-Aktion ist das Löschen gesperrt.
 
 ## Dateien und Betrieb
 
 - Prozesserfassungen liegen repository-lokal im konfigurierten Workspace; `history.jsonl` ist das fortlaufende Änderungsprotokoll.
+- Potenzialanalysen liegen im jeweiligen Prozessordner unter `opportunity-discovery/`; Prompt-, Schema-, Konfigurations- und Prozesssnapshots werden gehasht und für beide Phasen unverändert verwendet.
 - Uploads bleiben im jeweiligen Prozessordner. Wählen Sie für KI-Aktionen nur tatsächlich benötigte Dateien aus.
 - Vorschau und Download lesen ausschließlich die zum aktuellen Prozess gehörende Originaldatei. Vor jeder Ausgabe werden Dateigröße und SHA-256-Prüfsumme gegen die gespeicherten Metadaten geprüft.
 - Servervorgaben liegen versioniert unter `defaults/`. Der Einstellungen-Import verändert keine Serverdateien.

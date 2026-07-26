@@ -1,12 +1,25 @@
 import { describe, expect, test } from "bun:test";
 import {
   assertOpportunityScenarioReferences,
+  assertOpportunityDiscoveryTransition,
+  createOpportunityProcessSnapshot,
+  normalizeOpportunityHypotheses,
+  normalizeOpportunityScenarioScope,
+  opportunityScenarioAiResultSchema,
   opportunityScenarioResultSchema,
   type OpportunityScenario,
   type OpportunityScenarioReferenceContext,
   type OpportunityScenarioResult,
   type ScenarioLevel,
 } from "../packages/domain/src/opportunity-discovery.ts";
+import { ProcessCaptureRepository } from "../packages/storage/src/process-capture-repository.ts";
+import { mkdtemp, rm } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import {
+  confirmedProcess,
+  hypothesisAiResult,
+} from "./opportunity-fixtures.ts";
 
 const context: OpportunityScenarioReferenceContext = {
   highConfidenceHypotheses: [
@@ -126,6 +139,26 @@ describe("opportunity scenario contract", () => {
     ]);
   });
 
+  test("assigns scenario IDs and provenance on the server", () => {
+    const aiOutput = structuredClone(result()) as unknown as {
+      scenarios: Array<Record<string, unknown>>;
+    };
+    aiOutput.scenarios.forEach((item) => {
+      item.id = "SCN-untrusted";
+      delete item.provenance;
+    });
+
+    const parsed = opportunityScenarioAiResultSchema.parse(aiOutput);
+    expect(parsed.scenarios.map((item) => item.id)).toEqual([
+      "SCN-assistive",
+      "SCN-delegated",
+      "SCN-agentic",
+    ]);
+    expect(
+      parsed.scenarios.every((item) => item.provenance === "ai_inferred"),
+    ).toBeTrue();
+  });
+
   test("enforces the autonomy policy for every level", () => {
     const assistive = result();
     assistive.scenarios[0]!.actions[0]!.executionMode = "autonomous";
@@ -164,6 +197,22 @@ describe("opportunity scenario contract", () => {
     );
   });
 
+  test("completes the redundant scenario scope from hypotheses and actions", () => {
+    const incomplete = result();
+    incomplete.scenarios[0]!.includedHypothesisIds = ["HYP-001", "HYP-002"];
+    incomplete.scenarios[0]!.excludedHypotheses = [];
+    incomplete.scenarios[0]!.actions[0]!.processStepIds = ["step-1", "step-2"];
+
+    const normalized = normalizeOpportunityScenarioScope(incomplete, context);
+    expect(normalized.scenarios[0]!.affectedProcessStepIds).toEqual([
+      "step-1",
+      "step-2",
+    ]);
+    expect(() =>
+      assertOpportunityScenarioReferences(normalized, context),
+    ).not.toThrow();
+  });
+
   test("rejects foreign process-step and evidence references", () => {
     const foreignStep = result();
     foreignStep.scenarios[0]!.affectedProcessStepIds = ["step-foreign"];
@@ -193,6 +242,10 @@ describe("opportunity scenario contract", () => {
     expect(() => opportunityScenarioResultSchema.parse(invalid)).toThrow(
       "Unknown cannot be combined",
     );
+    expect(
+      opportunityScenarioAiResultSchema.parse(invalid).scenarios[1]
+        ?.systemAccess[0]?.possibleMechanisms,
+    ).toEqual(["mcp"]);
   });
 
   test("rejects assessment fields and malformed scenario ordering", () => {
@@ -212,5 +265,169 @@ describe("opportunity scenario contract", () => {
     expect(() => opportunityScenarioResultSchema.parse(wrongOrder)).toThrow(
       "ordered assistive, delegated, agentic",
     );
+  });
+});
+
+describe("opportunity discovery input and hypotheses", () => {
+  test("rejects every state transition outside the bounded pipeline", () => {
+    const allowed = new Set([
+      "hypotheses_queued:hypotheses_running",
+      "hypotheses_running:no_supported_hypotheses",
+      "hypotheses_running:scenarios_running",
+      "hypotheses_running:hypotheses_failed",
+      "hypotheses_failed:hypotheses_queued",
+      "scenarios_running:completed",
+      "scenarios_running:scenarios_failed",
+      "scenarios_failed:scenarios_running",
+    ]);
+    const states = [
+      "hypotheses_queued",
+      "hypotheses_running",
+      "hypotheses_failed",
+      "no_supported_hypotheses",
+      "scenarios_running",
+      "scenarios_failed",
+      "completed",
+    ] as const;
+
+    for (const from of states)
+      for (const to of states) {
+        const transition = `${from}:${to}`;
+        if (allowed.has(transition))
+          expect(assertOpportunityDiscoveryTransition(from, to)).toBe(to);
+        else
+          expect(() => assertOpportunityDiscoveryTransition(from, to)).toThrow(
+            "Ungültiger Zustandswechsel",
+          );
+      }
+  });
+
+  test("creates a bounded confirmed snapshot without participant data", async () => {
+    const root = await mkdtemp(join(tmpdir(), "opportunity-domain-"));
+    try {
+      const process = await confirmedProcess(
+        new ProcessCaptureRepository(root),
+      );
+      const snapshot = createOpportunityProcessSnapshot(process);
+      const serialized = JSON.stringify(snapshot);
+      expect(snapshot.understanding.steps).toHaveLength(5);
+      expect(snapshot.workCharacteristics).toHaveLength(4);
+      expect(serialized).not.toContain(process.cover.participantName);
+      expect(serialized).not.toContain(process.cover.participantEmail);
+      expect(serialized).not.toContain("mainAnswers");
+      expect(serialized).not.toContain("uploads");
+      expect(() =>
+        createOpportunityProcessSnapshot({
+          ...process,
+          state: "review_required",
+          confirmedAt: null,
+        }),
+      ).toThrow("Nur ein fachlich bestätigter Prozess");
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  test("normalizes every process step and assigns deterministic sorted IDs", async () => {
+    const root = await mkdtemp(join(tmpdir(), "opportunity-domain-"));
+    try {
+      const process = await confirmedProcess(
+        new ProcessCaptureRepository(root),
+      );
+      const snapshot = createOpportunityProcessSnapshot(process);
+      const input = hypothesisAiResult();
+      input.stepAnalyses[0]!.hypotheses.push({
+        ...input.stepAnalyses[0]!.hypotheses[0]!,
+        title: "Kleineres Potenzial",
+        potentialLevel: "low",
+        confidenceLevel: "medium",
+        assumptions: [{ text: "Datenqualität ist unbekannt.", material: true }],
+      });
+      input.stepAnalyses.reverse();
+      const output = normalizeOpportunityHypotheses(input, snapshot);
+      expect(output.stepAnalyses.map((item) => item.processStepId)).toEqual(
+        snapshot.understanding.steps.map((step) => step.id),
+      );
+      expect(output.stepAnalyses[0]!.hypotheses.map((item) => item.id)).toEqual(
+        ["HYP-001", "HYP-002"],
+      );
+      expect(output.stepAnalyses[0]!.hypotheses[0]!.potentialLevel).toBe(
+        "high",
+      );
+
+      input.stepAnalyses[input.stepAnalyses.length - 1] = structuredClone(
+        input.stepAnalyses[0]!,
+      );
+      expect(() => normalizeOpportunityHypotheses(input, snapshot)).toThrow(
+        "jeden Prozessschritt genau einmal",
+      );
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  test("enforces evidence and assumption rules for high confidence", async () => {
+    const root = await mkdtemp(join(tmpdir(), "opportunity-domain-"));
+    try {
+      const process = await confirmedProcess(
+        new ProcessCaptureRepository(root),
+      );
+      const snapshot = createOpportunityProcessSnapshot(process);
+      const withoutEvidence = hypothesisAiResult();
+      withoutEvidence.stepAnalyses[0]!.hypotheses[0]!.evidenceIds = [];
+      expect(() =>
+        normalizeOpportunityHypotheses(withoutEvidence, snapshot),
+      ).toThrow("High confidence requires evidence");
+
+      const withMaterialAssumption = hypothesisAiResult();
+      withMaterialAssumption.stepAnalyses[0]!.hypotheses[0]!.assumptions = [
+        {
+          text: "Eine wesentliche Voraussetzung ist ungeklärt.",
+          material: true,
+        },
+      ];
+      expect(() =>
+        normalizeOpportunityHypotheses(withMaterialAssumption, snapshot),
+      ).toThrow("High confidence requires evidence");
+
+      const deterministicOnly = hypothesisAiResult();
+      deterministicOnly.stepAnalyses[0]!.hypotheses[0]!.aiCapabilities = [];
+      expect(() =>
+        normalizeOpportunityHypotheses(deterministicOnly, snapshot),
+      ).toThrow();
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  test("accepts a complete analysis of eight process steps", async () => {
+    const root = await mkdtemp(join(tmpdir(), "opportunity-domain-"));
+    try {
+      const process = await confirmedProcess(
+        new ProcessCaptureRepository(root),
+      );
+      const snapshot = createOpportunityProcessSnapshot(process);
+      const input = hypothesisAiResult();
+      for (let order = 6; order <= 8; order += 1) {
+        snapshot.understanding.steps.push({
+          ...structuredClone(snapshot.understanding.steps[0]!),
+          id: `step-${order}`,
+          order,
+          name: `Zusätzlicher Hauptschritt ${order}`,
+        });
+        input.stepAnalyses.push({
+          processStepId: `step-${order}`,
+          summary: `Der Hauptschritt ${order} wurde geprüft.`,
+          noPotentialRationale: "Kein materieller KI-Beitrag belegt.",
+          hypotheses: [],
+        });
+      }
+
+      expect(
+        normalizeOpportunityHypotheses(input, snapshot).stepAnalyses,
+      ).toHaveLength(8);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
   });
 });

@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "scenarios"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "scenarios": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "$ref": "#/$defs/scenario" }
+    }
+  },
+  "$defs": {
+    "shortText": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "text": { "type": "string", "minLength": 1, "maxLength": 700 },
+    "stringArray": {
+      "type": "array",
+      "maxItems": 12,
+      "items": { "type": "string", "minLength": 1, "maxLength": 400 }
+    },
+    "idArray": {
+      "type": "array",
+      "maxItems": 100,
+      "items": { "type": "string", "minLength": 1, "maxLength": 120 }
+    },
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "description",
+        "processStepIds",
+        "executionMode",
+        "controls",
+        "escalationTriggers"
+      ],
+      "properties": {
+        "name": { "$ref": "#/$defs/shortText" },
+        "description": { "$ref": "#/$defs/text" },
+        "processStepIds": { "$ref": "#/$defs/idArray" },
+        "executionMode": {
+          "enum": ["autonomous", "approval_required", "human_only"]
+        },
+        "controls": { "$ref": "#/$defs/stringArray" },
+        "escalationTriggers": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "systemAccess": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "accessModes",
+        "timing",
+        "possibleMechanisms",
+        "assumptions"
+      ],
+      "properties": {
+        "target": { "$ref": "#/$defs/shortText" },
+        "accessModes": {
+          "type": "array",
+          "items": { "enum": ["read", "write", "observe", "act"] }
+        },
+        "timing": { "enum": ["manual", "on_demand", "event_driven"] },
+        "possibleMechanisms": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "manual",
+              "file_exchange",
+              "api",
+              "connector",
+              "mcp",
+              "ui_automation",
+              "unknown"
+            ]
+          }
+        },
+        "assumptions": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "level",
+        "title",
+        "summary",
+        "targetState",
+        "includedHypothesisIds",
+        "excludedHypotheses",
+        "affectedProcessStepIds",
+        "changesFromToday",
+        "aiResponsibilities",
+        "aiCapabilities",
+        "deterministicAutomation",
+        "orchestration",
+        "humanResponsibilities",
+        "actions",
+        "humanOversight",
+        "informationAndDocuments",
+        "systemAccess",
+        "prerequisites",
+        "risksAndFailureModes",
+        "assumptions",
+        "openQuestions",
+        "evidenceIds",
+        "confidenceLevel",
+        "confidenceRationale"
+      ],
+      "properties": {
+        "level": { "enum": ["assistive", "delegated", "agentic"] },
+        "title": { "$ref": "#/$defs/shortText" },
+        "summary": { "$ref": "#/$defs/text" },
+        "targetState": { "$ref": "#/$defs/text" },
+        "includedHypothesisIds": { "$ref": "#/$defs/idArray" },
+        "excludedHypotheses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["hypothesisId", "rationale"],
+            "properties": {
+              "hypothesisId": { "$ref": "#/$defs/shortText" },
+              "rationale": { "$ref": "#/$defs/text" }
+            }
+          }
+        },
+        "affectedProcessStepIds": { "$ref": "#/$defs/idArray" },
+        "changesFromToday": { "$ref": "#/$defs/stringArray" },
+        "aiResponsibilities": { "$ref": "#/$defs/stringArray" },
+        "aiCapabilities": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "interpretation",
+              "generation",
+              "recognition",
+              "prediction",
+              "recommendation",
+              "planning"
+            ]
+          }
+        },
+        "deterministicAutomation": { "$ref": "#/$defs/stringArray" },
+        "orchestration": { "$ref": "#/$defs/stringArray" },
+        "humanResponsibilities": { "$ref": "#/$defs/stringArray" },
+        "actions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": { "$ref": "#/$defs/action" }
+        },
+        "humanOversight": { "$ref": "#/$defs/stringArray" },
+        "informationAndDocuments": { "$ref": "#/$defs/stringArray" },
+        "systemAccess": {
+          "type": "array",
+          "maxItems": 8,
+          "items": { "$ref": "#/$defs/systemAccess" }
+        },
+        "prerequisites": { "$ref": "#/$defs/stringArray" },
+        "risksAndFailureModes": { "$ref": "#/$defs/stringArray" },
+        "assumptions": { "$ref": "#/$defs/stringArray" },
+        "openQuestions": { "$ref": "#/$defs/stringArray" },
+        "evidenceIds": { "$ref": "#/$defs/idArray" },
+        "confidenceLevel": { "enum": ["high", "medium", "low"] },
+        "confidenceRationale": { "$ref": "#/$defs/text" }
+      }
+    }
+  }
+}
