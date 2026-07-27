@@ -14,6 +14,7 @@ import { Badge } from "../components/ui/badge";
 import { api } from "../lib/api-client";
 import type { OpportunityDiscoverySummary } from "../lib/opportunity-types";
 import {
+  opportunityEntryPhase,
   processNavigationModel,
   type ModuleNavigationState,
 } from "../lib/process-navigation-model";
@@ -220,7 +221,7 @@ export function ProcessDetailPage() {
       return (
         <Link
           className={buttonClassName("secondary")}
-          to={`/processes/${id}/opportunities/hypotheses`}
+          to={`/processes/${id}/opportunities/${opportunityEntryPhase(opportunity)}`}
         >
           {state.actionLabel} <ArrowRight />
         </Link>

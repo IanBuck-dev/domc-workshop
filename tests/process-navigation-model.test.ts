@@ -1,6 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import type { OpportunityDiscoverySummary } from "../apps/web/src/lib/opportunity-types.ts";
-import { processNavigationModel } from "../apps/web/src/lib/process-navigation-model.ts";
+import {
+  opportunityEntryPhase,
+  processNavigationModel,
+} from "../apps/web/src/lib/process-navigation-model.ts";
 import type { ProcessCaptureRecord } from "../apps/web/src/lib/process-types.ts";
 
 function process(state: ProcessCaptureRecord["state"], version = 2) {
@@ -113,5 +116,18 @@ describe("process navigation model", () => {
       status: "Nicht verfügbar",
       action: null,
     });
+  });
+
+  test("öffnet vorhandene Szenarien direkt und sonst die Hypothesen", () => {
+    expect(opportunityEntryPhase()).toBe("hypotheses");
+    expect(opportunityEntryPhase(opportunity("scenarios_running"))).toBe(
+      "hypotheses",
+    );
+    expect(opportunityEntryPhase(opportunity("completed"))).toBe("scenarios");
+    expect(
+      opportunityEntryPhase(
+        opportunity("completed", { isStale: true, scenarioCount: 3 }),
+      ),
+    ).toBe("scenarios");
   });
 });

@@ -22,6 +22,14 @@ export interface ProcessNavigationModel {
   opportunity: ModuleNavigationState;
 }
 
+export function opportunityEntryPhase(
+  opportunity?: OpportunityDiscoverySummary,
+): "hypotheses" | "scenarios" {
+  return opportunity && opportunity.scenarioCount > 0
+    ? "scenarios"
+    : "hypotheses";
+}
+
 const captureStates: Record<
   ProcessCaptureRecord["state"],
   ModuleNavigationState
