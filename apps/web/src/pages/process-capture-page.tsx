@@ -20,6 +20,9 @@ import type {
   ProcessCaptureRecord,
   ProcessOperationStatus,
 } from "../lib/process-types";
+import { Button } from "../components/ui/button";
+import { Kicker } from "../components/ui/kicker";
+import { Card } from "../components/ui/card";
 
 const stateIndex: Record<ProcessCaptureRecord["state"], number> = {
   capture_in_progress: 1,
@@ -218,7 +221,7 @@ export function ProcessCapturePage() {
       </Link>
       <div className="capture-heading">
         <div>
-          <span className="kicker">SEITE 2 VON 2 · {record.id}</span>
+          <Kicker>Seite 2 von 2 · {record.id}</Kicker>
           <h1>{record.cover.processName}</h1>
           <p>
             {record.cover.department} · eingereicht von{" "}
@@ -239,15 +242,15 @@ export function ProcessCapturePage() {
 
       {record.state === "capture_in_progress" && !operation && (
         <form onSubmit={submitMainAnswers} className="capture-form">
-          <div className="intro-panel panel">
-            <span className="kicker">HEUTIGEN NORMALFALL BESCHREIBEN</span>
+          <Card className="intro-panel">
+            <Kicker>Heutigen Normalfall beschreiben</Kicker>
             <h2>Teilen Sie Ihr Fachwissen in fünf Themenblöcken.</h2>
             <p>
               Antworten Sie in Ihren eigenen Worten und gern in Stichpunkten.
               Technische Details sind nicht erforderlich. Auf Basis Ihrer
               Angaben werden höchstens fünf gezielte Rückfragen gestellt.
             </p>
-          </div>
+          </Card>
           <div className="topic-list">
             {[...record.configSnapshot.topics]
               .sort((a, b) => a.displayOrder - b.displayOrder)
@@ -296,8 +299,8 @@ export function ProcessCapturePage() {
                 einer Rückfrage.
               </span>
             </div>
-            <button
-              className="button"
+            <Button
+              variant="primary"
               disabled={
                 locked ||
                 record.configSnapshot.topics.some(
@@ -310,15 +313,15 @@ export function ProcessCapturePage() {
               }
             >
               {busy ? "Wird gestartet …" : "Angaben prüfen lassen"}
-            </button>
+            </Button>
           </div>
         </form>
       )}
 
       {record.state === "follow_up_required" && !operation && (
         <form className="follow-up-stage" onSubmit={submitFollowUps}>
-          <div className="intro-panel panel">
-            <span className="kicker">GEZIELTE ERGÄNZUNG</span>
+          <Card className="intro-panel">
+            <Kicker>Gezielte Ergänzung</Kicker>
             <h2>
               {record.followUps.length === 1
                 ? "Eine Rückfrage ist offen."
@@ -329,7 +332,7 @@ export function ProcessCapturePage() {
               technische Fragen abzubilden. Danach gibt es keine weitere
               Rückfragerunde.
             </p>
-          </div>
+          </Card>
           <div className="follow-up-list">
             {record.followUps.map((question) => (
               <ProcessFollowUpCard
@@ -357,8 +360,8 @@ export function ProcessCapturePage() {
                 Der Steckbrief und die Prozesskarte werden gemeinsam erstellt.
               </span>
             </div>
-            <button
-              className="button"
+            <Button
+              variant="primary"
               disabled={
                 locked ||
                 record.followUps.some(
@@ -369,29 +372,29 @@ export function ProcessCapturePage() {
               {busy
                 ? "Wird gestartet …"
                 : "Antworten senden und Prozessbild erstellen"}
-            </button>
+            </Button>
           </div>
         </form>
       )}
 
       {record.state === "synthesis_ready" && !operation && (
-        <section className="center-stage panel">
+        <Card as="section" className="center-stage">
           <Check />
-          <span className="kicker">ANGABEN VOLLSTÄNDIG</span>
+          <Kicker>Angaben vollständig</Kicker>
           <h2>Das Prozessbild kann erstellt werden.</h2>
           <p>
             Aus Ihren Antworten und den ausgewählten Unterlagen entstehen ein
             kompakter Steckbrief und eine Prozesskarte mit fünf bis acht
             Hauptschritten.
           </p>
-          <button
-            className="button"
+          <Button
+            variant="primary"
             disabled={busy}
             onClick={() => void synthesize()}
           >
             {busy ? "Wird gestartet …" : "Prozessbild erstellen"}
-          </button>
-        </section>
+          </Button>
+        </Card>
       )}
 
       {(record.state === "review_required" || record.state === "confirmed") &&
@@ -479,27 +482,27 @@ function OperationPanel({
 }) {
   if (operation.state === "failed")
     return (
-      <section className="operation-panel failed panel" role="alert">
+      <Card as="section" className="operation-panel failed" role="alert">
         <AlertTriangle />
         <div>
           <b>Die Verarbeitung konnte nicht abgeschlossen werden.</b>
           <p>{operation.error}</p>
         </div>
-        <button
-          className="button"
+        <Button
+          variant="primary"
           disabled={disabled}
           onClick={() => void onRetry()}
         >
           <RefreshCw /> Erneut versuchen
-        </button>
-      </section>
+        </Button>
+      </Card>
     );
   const label =
     operation.operationName === "process-follow-ups"
       ? "Ihre Angaben werden auf Verständnislücken geprüft."
       : "Ihr Prozessbild wird erstellt.";
   return (
-    <section className="operation-panel panel" aria-live="polite">
+    <Card as="section" className="operation-panel" aria-live="polite">
       <LoaderCircle className="spin" />
       <div>
         <b>{label}</b>
@@ -509,6 +512,6 @@ function OperationPanel({
             : "Die Verarbeitung läuft. Ihre Angaben bleiben auch bei einem Seitenwechsel gespeichert."}
         </p>
       </div>
-    </section>
+    </Card>
   );
 }

@@ -3,8 +3,15 @@ import type {
   OpportunityHypothesisResult,
 } from "../lib/opportunity-types";
 import type { ProcessUnderstanding } from "../lib/process-types";
+import { Badge, type BadgeTone } from "./ui/badge";
 
 const level = { high: "Hoch", medium: "Mittel", low: "Niedrig" } as const;
+/* Hoch, Mittel und Niedrig sind eine Einschätzung, keine Warnung. */
+const levelTone: Record<keyof typeof level, BadgeTone> = {
+  high: "success",
+  medium: "warning",
+  low: "neutral",
+};
 const capability = {
   interpretation: "Interpretation",
   generation: "Generierung",
@@ -30,10 +37,7 @@ export function OpportunityHypothesesView({
       {result.stepAnalyses.map((analysis) => {
         const step = steps.get(analysis.processStepId);
         return (
-          <section
-            className="panel hypothesis-step"
-            key={analysis.processStepId}
-          >
+          <section className="hypothesis-step" key={analysis.processStepId}>
             <header>
               <span>{step?.order ?? "–"}</span>
               <div>
@@ -76,18 +80,20 @@ function HypothesisCard({
           <h3>{item.title}</h3>
         </div>
         <div className="hypothesis-levels">
-          <span className={`level level-${item.potentialLevel}`}>
+          <Badge tone={levelTone[item.potentialLevel]}>
             Potenzial: {level[item.potentialLevel]}
-          </span>
-          <span className={`level level-${item.confidenceLevel}`}>
+          </Badge>
+          <Badge tone={levelTone[item.confidenceLevel]}>
             Konfidenz: {level[item.confidenceLevel]}
-          </span>
+          </Badge>
         </div>
       </div>
       <p>{item.aiContribution}</p>
       <div className="capability-list" aria-label="KI-Fähigkeiten">
         {item.aiCapabilities.map((item) => (
-          <span key={item}>{capability[item]}</span>
+          <Badge key={item} tone="accent">
+            {capability[item]}
+          </Badge>
         ))}
       </div>
       <dl className="hypothesis-rationales">

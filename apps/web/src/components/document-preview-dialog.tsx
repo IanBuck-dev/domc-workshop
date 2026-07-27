@@ -2,6 +2,8 @@ import { Download, FileText, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api-client";
 import type { UploadRecord } from "../lib/process-types";
+import { IconButton, buttonClassName } from "./ui/button";
+import { Kicker } from "./ui/kicker";
 
 const textTypes = new Set(["text/plain", "text/markdown", "text/csv"]);
 const officeTypes = new Set([
@@ -66,20 +68,18 @@ export function DocumentPreviewDialog({
     >
       <header>
         <div>
-          <span className="kicker">UNTERLAGE</span>
+          <Kicker>Unterlage</Kicker>
           <h2 id="document-preview-title">{upload.name}</h2>
           <small>
             {friendlyType(upload.mediaType)} · {formatBytes(upload.size)}
           </small>
         </div>
-        <button
-          type="button"
-          className="icon-button"
-          aria-label="Vorschau schließen"
+        <IconButton
+          label="Vorschau schließen"
           onClick={() => dialog.current?.close()}
         >
           <X />
-        </button>
+        </IconButton>
       </header>
       <div
         className="preview-dialog-content document-preview-content"
@@ -109,7 +109,7 @@ export function DocumentPreviewDialog({
       </div>
       <footer>
         <a
-          className="button"
+          className={buttonClassName()}
           href={api.uploadDownloadUrl(processId, upload.id)}
           download={upload.name}
         >

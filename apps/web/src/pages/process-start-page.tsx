@@ -7,6 +7,9 @@ import type {
   ProcessCaptureConfig,
   ProcessCaptureRecord,
 } from "../lib/process-types";
+import { Button } from "../components/ui/button";
+import { Kicker } from "../components/ui/kicker";
+import { Card } from "../components/ui/card";
 
 export function ProcessStartPage() {
   const navigate = useNavigate();
@@ -46,14 +49,14 @@ export function ProcessStartPage() {
   return (
     <section className="narrow-page">
       <div className="page-title">
-        <span className="kicker">SEITE 1 VON 2 · SETUP</span>
+        <Kicker>Seite 1 von 2 · Setup</Kicker>
         <h1>Prozessaufnahme vorbereiten</h1>
         <p>
           Hier werden nur die Rahmendaten erfasst. Die Beschreibung des Ablaufs
           beginnt auf der nächsten Seite.
         </p>
       </div>
-      <form className="panel setup-form" onSubmit={submit}>
+      <Card as="form" className="setup-form" onSubmit={submit}>
         <div className="form-grid">
           <label>
             Fachbereich
@@ -127,10 +130,10 @@ export function ProcessStartPage() {
           </span>
         </label>
         {error && <p className="notice error">{error}</p>}
-        <button className="button" disabled={!config || !confirmed || busy}>
+        <Button variant="primary" disabled={!config || !confirmed || busy}>
           {busy ? "Wird angelegt …" : "Weiter zur Prozessbeschreibung"}
-        </button>
-      </form>
+        </Button>
+      </Card>
     </section>
   );
 }

@@ -2,6 +2,7 @@ import { Eye } from "lucide-react";
 import { useState } from "react";
 import type { ProcessUnderstanding, UploadRecord } from "../lib/process-types";
 import { DocumentPreviewDialog } from "./document-preview-dialog";
+import { Button } from "./ui/button";
 const copy = {
   complete: "Vollständig berücksichtigt",
   partial: "Teilweise berücksichtigt",
@@ -33,13 +34,14 @@ export function DocumentCoverage({
                   </span>
                 </div>
                 {upload && (
-                  <button
+                  <Button
                     type="button"
-                    className="button secondary coverage-preview-button"
+                    variant="secondary"
+                    className="coverage-preview-button"
                     onClick={() => setPreview(upload)}
                   >
                     <Eye /> Vorschau öffnen
-                  </button>
+                  </Button>
                 )}
                 {file.limitation && <small>{file.limitation}</small>}
               </li>

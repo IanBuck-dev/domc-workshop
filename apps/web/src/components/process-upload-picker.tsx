@@ -2,6 +2,9 @@ import { FileText, Paperclip, Trash2, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { api } from "../lib/api-client";
 import type { ProcessCaptureRecord, UploadRecord } from "../lib/process-types";
+import { Button, IconButton } from "./ui/button";
+import { Kicker } from "./ui/kicker";
+import { Card } from "./ui/card";
 
 export function ProcessUploadPicker({
   processId,
@@ -54,10 +57,10 @@ export function ProcessUploadPicker({
   }
 
   return (
-    <section className="upload-panel panel" aria-labelledby="upload-title">
+    <Card as="section" className="upload-panel" aria-labelledby="upload-title">
       <div className="section-head compact">
         <div>
-          <span className="kicker">FREIWILLIG</span>
+          <Kicker>Freiwillig</Kicker>
           <h2 id="upload-title">Vorhandene Unterlagen</h2>
         </div>
         <span>
@@ -92,15 +95,14 @@ export function ProcessUploadPicker({
                   <small>{formatBytes(upload.size)}</small>
                 </span>
               </label>
-              <button
-                type="button"
-                className="icon-button danger"
+              <IconButton
+                label={`Datei ${upload.name} entfernen`}
+                tone="danger"
                 disabled={disabled || busy}
-                aria-label={`Datei ${upload.name} entfernen`}
                 onClick={() => void remove(upload)}
               >
                 <Trash2 />
-              </button>
+              </IconButton>
             </li>
           ))}
         </ul>
@@ -117,19 +119,19 @@ export function ProcessUploadPicker({
           if (file) void add(file);
         }}
       />
-      <button
+      <Button
         type="button"
-        className="button secondary"
+        variant="secondary"
         disabled={disabled || busy || uploads.length >= configLimit}
         onClick={() => input.current?.click()}
       >
         {busy ? <Paperclip className="spin" /> : <Upload />}
         {busy ? "Datei wird verarbeitet …" : "Unterlage hinzufügen"}
-      </button>
+      </Button>
       <small>
         PDF, Word, Excel, CSV, Text oder Bild · höchstens 20 MB je Datei
       </small>
-    </section>
+    </Card>
   );
 }
 

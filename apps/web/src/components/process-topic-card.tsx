@@ -4,6 +4,7 @@ import type {
   WorkCharacteristicAnswer,
   WorkCharacteristicDefinition,
 } from "../lib/process-types";
+import { Card } from "./ui/card";
 export function ProcessTopicCard({
   topic,
   value,
@@ -22,7 +23,7 @@ export function ProcessTopicCard({
   invalidCharacteristicIds: ReadonlySet<string>;
 }) {
   return (
-    <article className="topic-card">
+    <Card as="article" elevation="flat" className="topic-card">
       <span className="topic-number">{topic.displayOrder}</span>
       <span className="topic-copy">
         <b>{topic.name}</b>
@@ -53,7 +54,7 @@ export function ProcessTopicCard({
           />
         ))}
       </span>
-    </article>
+    </Card>
   );
 }
 

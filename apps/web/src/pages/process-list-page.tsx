@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, Plus, Workflow } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Badge } from "../components/ui/badge";
 import { api } from "../lib/api-client";
 import type { OpportunityDiscoverySummary } from "../lib/opportunity-types";
 import { processNavigationModel } from "../lib/process-navigation-model";
 import type { ProcessCaptureRecord } from "../lib/process-types";
+import { buttonClassName } from "../components/ui/button";
+import { Kicker } from "../components/ui/kicker";
+import { Card } from "../components/ui/card";
 
 const nextAction: Record<ProcessCaptureRecord["state"], string> = {
   capture_in_progress: "Fünf Themen beantworten",
@@ -33,14 +37,14 @@ export function ProcessListPage() {
     <section>
       <div className="hero compact-hero">
         <div>
-          <span className="kicker">PROZESSE VERSTEHEN</span>
+          <Kicker>Prozesse verstehen</Kicker>
           <h1>Heutige Abläufe klar erfassen.</h1>
           <p>
             Ein kompakter Prozesssteckbrief und eine übersichtliche Prozesskarte
             schaffen die Grundlage für spätere KI-Use-Cases.
           </p>
         </div>
-        <Link className="button" to="/processes/new">
+        <Link className={buttonClassName()} to="/processes/new">
           <Plus /> Prozess erfassen
         </Link>
       </div>
@@ -51,17 +55,17 @@ export function ProcessListPage() {
       )}
       <div className="section-head">
         <div>
-          <span className="kicker">LOKAL GESPEICHERT</span>
+          <Kicker>Lokal gespeichert</Kicker>
           <h2>Prozessaufnahmen</h2>
         </div>
         <span>{records.length} Prozesse</span>
       </div>
       {!records.length ? (
-        <div className="empty-state panel">
+        <Card className="empty-state">
           <Workflow />
           <h2>Noch kein Prozess erfasst</h2>
           <p>Starten Sie mit einem fiktiven oder anonymisierten Prozess.</p>
-        </div>
+        </Card>
       ) : (
         <div className="process-list">
           {records.map((record) => {
@@ -91,11 +95,12 @@ export function ProcessListPage() {
                     </div>
                   </div>
                   <div className="process-row-side">
-                    <span
-                      className={`state navigation-state state-tone-${navigation.listTone}`}
+                    <Badge
+                      tone={navigation.listTone}
+                      className="navigation-state"
                     >
                       {navigation.listStatus}
-                    </span>
+                    </Badge>
                     <span className="process-row-arrow" aria-hidden="true">
                       <ArrowRight />
                     </span>

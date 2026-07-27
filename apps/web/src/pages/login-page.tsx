@@ -2,6 +2,8 @@ import { FormEvent, useState } from "react";
 import { LockKeyhole } from "lucide-react";
 import { api } from "../lib/api-client";
 import domcuraLogo from "../assets/domcura-logo-colored.svg";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
 
 export function LoginPage({ onLogin }: { onLogin: () => void }) {
   const [username, setUsername] = useState("testing");
@@ -23,7 +25,12 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
   }
   return (
     <main className="login-page">
-      <form className="login-card" onSubmit={submit}>
+      <Card
+        as="form"
+        elevation="floating"
+        className="login-card"
+        onSubmit={submit}
+      >
         <img src={domcuraLogo} alt="DOMCURA" />
         <span className="login-icon">
           <LockKeyhole />
@@ -56,11 +63,11 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
             {error}
           </p>
         )}
-        <button className="button" disabled={busy}>
+        <Button variant="primary" disabled={busy}>
           {busy ? "Anmeldung läuft …" : "Anmelden"}
-        </button>
+        </Button>
         <small>Nur anonymisierte oder freigegebene Testdaten verwenden.</small>
-      </form>
+      </Card>
     </main>
   );
 }

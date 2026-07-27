@@ -10,6 +10,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ProcessDeleteDialog } from "../components/process-delete-dialog";
+import { Badge } from "../components/ui/badge";
 import { api } from "../lib/api-client";
 import type { OpportunityDiscoverySummary } from "../lib/opportunity-types";
 import {
@@ -17,6 +18,9 @@ import {
   type ModuleNavigationState,
 } from "../lib/process-navigation-model";
 import type { ProcessCaptureRecord } from "../lib/process-types";
+import { Button, IconButton, buttonClassName } from "../components/ui/button";
+import { Kicker } from "../components/ui/kicker";
+import { Card } from "../components/ui/card";
 
 export function ProcessDetailPage() {
   const { id = "" } = useParams();
@@ -83,7 +87,7 @@ export function ProcessDetailPage() {
       </Link>
       <div className="page-title process-detail-heading">
         <div>
-          <span className="kicker">PROZESS</span>
+          <Kicker>Prozess</Kicker>
           <h1>{process.cover.processName}</h1>
           <p>
             {process.cover.department} · {process.id} · aktualisiert{" "}
@@ -95,17 +99,16 @@ export function ProcessDetailPage() {
         </div>
         <div className="title-actions process-detail-actions">
           <div className="process-context-menu" ref={menu}>
-            <button
+            <IconButton
               ref={menuButton}
-              type="button"
-              className="icon-button process-context-trigger"
-              aria-label="Weitere Aktionen"
+              label="Weitere Aktionen"
+              className="process-context-trigger"
               aria-haspopup="menu"
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((value) => !value)}
             >
               <EllipsisVertical />
-            </button>
+            </IconButton>
             {menuOpen && (
               <div className="process-context-popover" role="menu">
                 <button
@@ -138,7 +141,10 @@ export function ProcessDetailPage() {
           icon={<Workflow />}
           state={navigation.capture}
           action={
-            <Link className="button secondary" to={`/processes/${id}/capture`}>
+            <Link
+              className={buttonClassName("secondary")}
+              to={`/processes/${id}/capture`}
+            >
               {navigation.capture.actionLabel} <ArrowRight />
             </Link>
           }
@@ -184,8 +190,8 @@ export function ProcessDetailPage() {
   function opportunityAction(state: ModuleNavigationState) {
     if (state.action === "start_opportunity")
       return (
-        <button
-          className="button"
+        <Button
+          variant="primary"
           disabled={busy}
           onClick={async () => {
             setBusy(true);
@@ -208,12 +214,12 @@ export function ProcessDetailPage() {
               {state.actionLabel} <ArrowRight />
             </>
           )}
-        </button>
+        </Button>
       );
     if (state.action === "view_opportunity")
       return (
         <Link
-          className="button secondary"
+          className={buttonClassName("secondary")}
           to={`/processes/${id}/opportunities/hypotheses`}
         >
           {state.actionLabel} <ArrowRight />
@@ -237,20 +243,18 @@ function ProcessModuleCard({
   action: React.ReactNode;
 }) {
   return (
-    <article className="panel process-module-card">
+    <Card as="article" className="process-module-card">
       <div className="process-module-icon">{icon}</div>
       <div className="process-module-content">
         <div className="process-module-title">
           <h2>{title}</h2>
-          <span className={`state state-tone-${state.tone}`}>
-            {state.status}
-          </span>
+          <Badge tone={state.tone}>{state.status}</Badge>
         </div>
         <p>{description}</p>
         <div className="process-module-action">
           {action ?? <span>Aktuell keine Aktion erforderlich</span>}
         </div>
       </div>
-    </article>
+    </Card>
   );
 }

@@ -20,6 +20,9 @@ import {
   InstructionPreviewDialog,
   type InstructionPreview,
 } from "../components/instruction-preview-dialog";
+import { Button } from "../components/ui/button";
+import { Kicker } from "../components/ui/kicker";
+import { Card } from "../components/ui/card";
 
 export function SettingsPage() {
   const [defaults, setDefaults] = useState<ProcessCaptureConfig | null>(null);
@@ -89,7 +92,7 @@ export function SettingsPage() {
     <section className="settings">
       <div className="page-title">
         <div>
-          <span className="kicker">TESTKONFIGURATION</span>
+          <Kicker>Testkonfiguration</Kicker>
           <h1>Prozessaufnahme einstellen</h1>
           <p>
             Anpassungen werden nur in diesem Browser gespeichert. Jeder neue
@@ -97,9 +100,9 @@ export function SettingsPage() {
           </p>
         </div>
         <div className="title-actions">
-          <button className="text-button" onClick={() => exportConfig(config)}>
+          <Button variant="ghost" onClick={() => exportConfig(config)}>
             <Download /> Exportieren
-          </button>
+          </Button>
           <input
             ref={file}
             name="config-import"
@@ -123,11 +126,11 @@ export function SettingsPage() {
               }
             }}
           />
-          <button className="text-button" onClick={() => file.current?.click()}>
+          <Button variant="ghost" onClick={() => file.current?.click()}>
             <Upload /> Importieren
-          </button>
-          <button
-            className="text-button"
+          </Button>
+          <Button
+            variant="ghost"
             onClick={() => {
               if (!defaults) return;
               resetConfigOverride();
@@ -137,7 +140,7 @@ export function SettingsPage() {
             }}
           >
             <RotateCcw /> Zurücksetzen
-          </button>
+          </Button>
         </div>
       </div>
       {message && (
@@ -151,7 +154,7 @@ export function SettingsPage() {
         </p>
       )}
       <div className="settings-sections">
-        <details className="panel" open>
+        <Card as="details" open>
           <summary>
             <h2>Fachbereiche</h2>
             <ChevronDown className="settings-chevron" aria-hidden="true" />
@@ -176,8 +179,8 @@ export function SettingsPage() {
               }
             />
           </label>
-        </details>
-        <details className="panel" open>
+        </Card>
+        <Card as="details" open>
           <summary>
             <h2>Fünf Themenbereiche</h2>
             <ChevronDown className="settings-chevron" aria-hidden="true" />
@@ -299,8 +302,8 @@ export function SettingsPage() {
                 </fieldset>
               ))}
           </div>
-        </details>
-        <details className="panel">
+        </Card>
+        <Card as="details">
           <summary>
             <h2>Hinweise für die KI-Unterstützung</h2>
             <ChevronDown className="settings-chevron" aria-hidden="true" />
@@ -310,13 +313,14 @@ export function SettingsPage() {
             Ausgabevorgaben. Technische Laufzeit- und Sicherheitsgrenzen bleiben
             im Profil fest.
           </p>
-          <button
+          <Button
             type="button"
-            className="button secondary instruction-preview-trigger"
+            variant="secondary"
+            className="instruction-preview-trigger"
             onClick={() => void openInstructionPreview()}
           >
             <Info /> Vollständige Anweisungen ansehen
-          </button>
+          </Button>
           <label>
             Materielle Rückfragen
             <textarea
@@ -351,12 +355,12 @@ export function SettingsPage() {
               }
             />
           </label>
-        </details>
+        </Card>
       </div>
       <div className="settings-save">
-        <button className="button" onClick={save}>
+        <Button variant="primary" onClick={save}>
           <Save /> Im Browser speichern
-        </button>
+        </Button>
       </div>
       <InstructionPreviewDialog
         open={previewOpen}

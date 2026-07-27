@@ -1,4 +1,6 @@
+import { provenanceCopy, provenanceTone } from "../lib/process-provenance";
 import type { ProcessUnderstanding } from "../lib/process-types";
+import { Badge } from "./ui/badge";
 
 export function ProcessStepCard({
   step,
@@ -15,15 +17,9 @@ export function ProcessStepCard({
             <small>{step.activity}</small>
           </span>
           {!["ai_structured", "user_stated"].includes(step.provenance) && (
-            <em className={`provenance provenance-${step.provenance}`}>
-              {step.provenance === "ai_inferred"
-                ? "Annahme"
-                : step.provenance === "unknown"
-                  ? "Noch unbekannt"
-                  : step.provenance === "user_confirmed"
-                    ? "Bestätigt"
-                    : "Aus Unterlage"}
-            </em>
+            <Badge as="em" tone={provenanceTone[step.provenance]}>
+              {provenanceCopy[step.provenance]}
+            </Badge>
           )}
         </summary>
         <dl>

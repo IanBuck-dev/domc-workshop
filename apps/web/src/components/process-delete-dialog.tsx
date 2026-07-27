@@ -1,5 +1,6 @@
 import { AlertTriangle, LoaderCircle, X } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { Button, IconButton } from "./ui/button";
 
 export function ProcessDeleteDialog({
   open,
@@ -39,15 +40,13 @@ export function ProcessDeleteDialog({
         <div className="confirmation-dialog-icon" aria-hidden="true">
           <AlertTriangle />
         </div>
-        <button
-          type="button"
-          className="icon-button"
-          aria-label="Löschen abbrechen"
+        <IconButton
+          label="Löschen abbrechen"
           disabled={busy}
           onClick={() => dialog.current?.close()}
         >
           <X />
-        </button>
+        </IconButton>
       </header>
       <div className="confirmation-dialog-content">
         <h2 id="process-delete-title">Prozessaufnahme löschen?</h2>
@@ -62,18 +61,18 @@ export function ProcessDeleteDialog({
         )}
       </div>
       <footer>
-        <button
+        <Button
           type="button"
-          className="button secondary"
+          variant="secondary"
           disabled={busy}
           autoFocus
           onClick={() => dialog.current?.close()}
         >
           Abbrechen
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
-          className="danger-button"
+          variant="danger"
           disabled={busy}
           onClick={onConfirm}
         >
@@ -84,7 +83,7 @@ export function ProcessDeleteDialog({
           ) : (
             "Endgültig löschen"
           )}
-        </button>
+        </Button>
       </footer>
     </dialog>
   );

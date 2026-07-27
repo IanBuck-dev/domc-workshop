@@ -13,6 +13,9 @@ import { OpportunityScenariosView } from "../components/opportunity-scenarios-vi
 import { api } from "../lib/api-client";
 import type { OpportunityDiscoveryDetail } from "../lib/opportunity-types";
 import type { ProcessCaptureRecord } from "../lib/process-types";
+import { Button } from "../components/ui/button";
+import { Kicker } from "../components/ui/kicker";
+import { Card } from "../components/ui/card";
 
 const runningStates = new Set([
   "hypotheses_queued",
@@ -98,7 +101,7 @@ export function OpportunityDiscoveryPage({
       </Link>
       <div className="opportunity-heading">
         <div>
-          <span className="kicker">KI-POTENZIALE ENTDECKEN</span>
+          <Kicker>KI-Potenziale entdecken</Kicker>
           <h1>{process.cover.processName}</h1>
           <p>
             {process.cover.department} · {process.id}
@@ -126,15 +129,15 @@ export function OpportunityDiscoveryPage({
         </p>
       )}
       {failed && record.lastError && (
-        <section className="operation-panel failed panel" role="alert">
+        <Card as="section" className="operation-panel failed" role="alert">
           <AlertTriangle />
           <div>
             <b>Diese Phase konnte nicht abgeschlossen werden.</b>
             <p>{record.lastError.message}</p>
           </div>
           {!detail.isStale && (
-            <button
-              className="button"
+            <Button
+              variant="primary"
               disabled={busy}
               onClick={async () => {
                 setBusy(true);
@@ -150,25 +153,25 @@ export function OpportunityDiscoveryPage({
               }}
             >
               <RefreshCw /> {busy ? "Wird gestartet …" : "Erneut versuchen"}
-            </button>
+            </Button>
           )}
-        </section>
+        </Card>
       )}
 
       {phase === "hypotheses" && !record.hypotheses && (
-        <section className="center-stage panel" aria-live="polite">
+        <Card as="section" className="center-stage" aria-live="polite">
           <LoaderCircle className="spin" />
-          <span className="kicker">PHASE 1 VON 2</span>
+          <Kicker>Phase 1 von 2</Kicker>
           <h2>Die Prozessschritte werden untersucht.</h2>
           <p>
             Potenziale, Begründungen und ihre Evidenz werden gemeinsam geprüft.
           </p>
-        </section>
+        </Card>
       )}
       {phase === "hypotheses" && record.hypotheses && (
         <>
           {record.state === "no_supported_hypotheses" && (
-            <section className="panel no-supported">
+            <Card as="section" className="no-supported">
               <Sparkles />
               <h2>Analyse abgeschlossen</h2>
               {highConfidenceCount > 0 || mediumConfidenceCount >= 2 ? (
@@ -188,7 +191,7 @@ export function OpportunityDiscoveryPage({
                   Fachinformationen können weiterhin geklärt werden.
                 </p>
               )}
-            </section>
+            </Card>
           )}
           <OpportunityHypothesesView
             result={record.hypotheses}
@@ -197,13 +200,13 @@ export function OpportunityDiscoveryPage({
         </>
       )}
       {phase === "scenarios" && !record.scenarios && (
-        <section className="center-stage panel" aria-live="polite">
+        <Card as="section" className="center-stage" aria-live="polite">
           {record.state === "scenarios_failed" ? (
             <AlertTriangle />
           ) : (
             <LoaderCircle className="spin" />
           )}
-          <span className="kicker">PHASE 2 VON 2</span>
+          <Kicker>Phase 2 von 2</Kicker>
           <h2>
             {record.state === "scenarios_failed"
               ? "Die Szenarien sind noch nicht verfügbar."
@@ -212,7 +215,7 @@ export function OpportunityDiscoveryPage({
           <p>
             Sie können währenddessen zu den Potenzialhypothesen zurückkehren.
           </p>
-        </section>
+        </Card>
       )}
       {phase === "scenarios" && record.scenarios && (
         <OpportunityScenariosView

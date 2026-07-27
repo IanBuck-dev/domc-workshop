@@ -5,6 +5,9 @@ import type {
   OpportunityScenario,
 } from "../lib/opportunity-types";
 import type { ProcessUnderstanding } from "../lib/process-types";
+import { Badge, type BadgeTone } from "./ui/badge";
+import { IconButton } from "./ui/button";
+import { Meter } from "./ui/meter";
 
 type ProcessStep = ProcessUnderstanding["steps"][number];
 
@@ -43,6 +46,12 @@ const execution = {
   approval_required: "Menschliche Freigabe erforderlich",
   human_only: "Bleibt vollständig beim Menschen",
 } as const;
+/* Je weniger die KI allein entscheidet, desto zurückhaltender das Etikett. */
+const executionTone: Record<keyof typeof execution, BadgeTone> = {
+  autonomous: "success",
+  approval_required: "warning",
+  human_only: "neutral",
+};
 const mechanisms = {
   manual: "Manuelle Übergabe",
   file_exchange: "Dateiaustausch",
@@ -194,7 +203,9 @@ function ScenarioColumn({
         <small>KI-Fähigkeiten</small>
         <ul className="capability-list">
           {scenario.aiCapabilities.map((item) => (
-            <li key={item}>{capabilities[item]}</li>
+            <Badge as="li" key={item} tone="accent">
+              {capabilities[item]}
+            </Badge>
           ))}
         </ul>
       </div>
@@ -241,14 +252,9 @@ function ScenarioDetail({
           <span className="scenario-level">{label.title}</span>
           <h3>{scenario.title}</h3>
         </div>
-        <button
-          type="button"
-          className="icon-button"
-          onClick={onClose}
-          aria-label="Details schließen"
-        >
+        <IconButton label="Details schließen" onClick={onClose}>
           <X aria-hidden />
-        </button>
+        </IconButton>
       </header>
       <div className="scenario-detail-body">
         <section className="scenario-target-state">
@@ -313,9 +319,9 @@ function ScenarioDetail({
             {scenario.actions.map((action, index) => (
               <article key={`${index}-${action.name}-${action.executionMode}`}>
                 <b>{action.name}</b>
-                <span className={`execution execution-${action.executionMode}`}>
+                <Badge tone={executionTone[action.executionMode]}>
                   {execution[action.executionMode]}
-                </span>
+                </Badge>
                 <p>{action.description}</p>
                 {!!action.controls.length && (
                   <small>Kontrollen: {action.controls.join(" · ")}</small>
@@ -387,26 +393,6 @@ function ScenarioDetail({
         </footer>
       </div>
     </article>
-  );
-}
-
-function Meter({
-  className,
-  total,
-  filled,
-  label,
-}: {
-  className: string;
-  total: number;
-  filled: number;
-  label: string;
-}) {
-  return (
-    <span className={`meter ${className}`} role="img" aria-label={label}>
-      {Array.from({ length: total }, (_, index) => (
-        <span key={index} className={index < filled ? "on" : undefined} />
-      ))}
-    </span>
   );
 }
 

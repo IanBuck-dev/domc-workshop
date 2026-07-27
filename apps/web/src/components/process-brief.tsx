@@ -7,21 +7,17 @@ import type {
   WorkCharacteristicAnswer,
   WorkCharacteristicDefinition,
 } from "../lib/process-types";
+import { provenanceCopy, provenanceTone } from "../lib/process-provenance";
 import { DocumentCoverage } from "./document-coverage";
 import { ProcessMap } from "./process-map";
 import { ProcessStepCard } from "./process-step-card";
+import { Badge } from "./ui/badge";
+import { Button, IconButton } from "./ui/button";
+import { Kicker } from "./ui/kicker";
+import { Card } from "./ui/card";
 
 type StringFact = ProcessUnderstanding["purpose"];
 type ListFact = ProcessUnderstanding["participants"];
-
-const provenanceCopy: Record<StringFact["provenance"], string> = {
-  user_stated: "Ihre Angabe",
-  file_evidence: "Aus Unterlage",
-  ai_structured: "Strukturiert",
-  ai_inferred: "Annahme",
-  user_confirmed: "Bestätigt",
-  unknown: "Noch unbekannt",
-};
 
 export function ProcessBrief({
   understanding,
@@ -65,10 +61,10 @@ export function ProcessBrief({
 
   return (
     <div className="review-layout">
-      <section className="panel process-brief">
+      <Card as="section" className="process-brief">
         <div className="brief-heading">
           <div>
-            <span className="kicker">ERGEBNIS</span>
+            <Kicker>Ergebnis</Kicker>
             <h1>Prozesssteckbrief</h1>
             <p>
               Prüfen Sie, ob der heutige normale Ablauf fachlich richtig
@@ -76,12 +72,9 @@ export function ProcessBrief({
             </p>
           </div>
           {!confirmed && !editing && !editingCharacteristics && (
-            <button
-              className="button secondary"
-              onClick={() => setEditing(true)}
-            >
+            <Button variant="secondary" onClick={() => setEditing(true)}>
               <Edit3 /> Prozessbild korrigieren
-            </button>
+            </Button>
           )}
         </div>
 
@@ -118,8 +111,8 @@ export function ProcessBrief({
               />
             </label>
             <div>
-              <button
-                className="button secondary"
+              <Button
+                variant="secondary"
                 disabled={saving}
                 onClick={() => {
                   setDraft(structuredClone(understanding));
@@ -127,18 +120,18 @@ export function ProcessBrief({
                 }}
               >
                 <X /> Abbrechen
-              </button>
-              <button
-                className="button"
+              </Button>
+              <Button
+                variant="primary"
                 disabled={saving}
                 onClick={() => void save()}
               >
                 <Save /> {saving ? "Wird gespeichert …" : "Korrektur speichern"}
-              </button>
+              </Button>
             </div>
           </div>
         )}
-      </section>
+      </Card>
 
       {!editing && <ProcessMap understanding={understanding} />}
       {!editing && (
@@ -150,7 +143,7 @@ export function ProcessBrief({
       )}
 
       {!confirmed && !editing && !editingCharacteristics && (
-        <section className="confirmation-panel panel">
+        <Card as="section" className="confirmation-panel">
           <div>
             <Check />
             <span>
@@ -161,14 +154,14 @@ export function ProcessBrief({
               </small>
             </span>
           </div>
-          <button
-            className="button"
+          <Button
+            variant="primary"
             disabled={saving}
             onClick={() => void onConfirm()}
           >
             Prozessbild fachlich bestätigen
-          </button>
-        </section>
+          </Button>
+        </Card>
       )}
       {confirmed && (
         <p className="success-banner" role="status">
@@ -227,9 +220,9 @@ function WorkCharacteristicsSection({
           </p>
         </div>
         {!editing && (
-          <button className="button secondary" type="button" onClick={onEdit}>
+          <Button variant="secondary" type="button" onClick={onEdit}>
             <Edit3 /> Angaben korrigieren
-          </button>
+          </Button>
         )}
       </div>
       {editing ? (
@@ -268,16 +261,16 @@ function WorkCharacteristicsSection({
             />
           </label>
           <div className="edit-actions-inline">
-            <button
-              className="button secondary"
+            <Button
+              variant="secondary"
               type="button"
               disabled={saving}
               onClick={onCancel}
             >
               <X /> Abbrechen
-            </button>
-            <button
-              className="button"
+            </Button>
+            <Button
+              variant="primary"
               type="button"
               disabled={
                 saving ||
@@ -294,7 +287,7 @@ function WorkCharacteristicsSection({
               onClick={() => void onSave(draft, reason)}
             >
               <Save /> {saving ? "Wird gespeichert …" : "Korrektur speichern"}
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
@@ -307,9 +300,7 @@ function WorkCharacteristicsSection({
               <article key={definition.id}>
                 <div>
                   <h3>{definition.question}</h3>
-                  <span className="provenance provenance-user_confirmed">
-                    Direkte Angabe
-                  </span>
+                  <Badge tone="success">Direkte Angabe</Badge>
                 </div>
                 <ul>
                   {(answer?.selectedOptionIds ?? []).map((optionId) => (
@@ -371,9 +362,9 @@ function FactBadge({ fact }: { fact: StringFact | ListFact }) {
   if (fact.provenance === "ai_structured" || fact.provenance === "user_stated")
     return null;
   return (
-    <span className={`provenance provenance-${fact.provenance}`}>
+    <Badge tone={provenanceTone[fact.provenance]}>
       {provenanceCopy[fact.provenance]}
-    </span>
+    </Badge>
   );
 }
 
@@ -512,24 +503,20 @@ function BriefEditor({
             <legend>
               <span>Schritt {step.order}</span>
               <span className="step-order-actions">
-                <button
-                  type="button"
-                  className="icon-button"
+                <IconButton
+                  label={`Schritt ${step.order} nach oben verschieben`}
                   disabled={index === 0}
-                  aria-label={`Schritt ${step.order} nach oben verschieben`}
                   onClick={() => moveStep(value, onChange, index, -1)}
                 >
                   <ArrowUp />
-                </button>
-                <button
-                  type="button"
-                  className="icon-button"
+                </IconButton>
+                <IconButton
+                  label={`Schritt ${step.order} nach unten verschieben`}
                   disabled={index === value.steps.length - 1}
-                  aria-label={`Schritt ${step.order} nach unten verschieben`}
                   onClick={() => moveStep(value, onChange, index, 1)}
                 >
                   <ArrowDown />
-                </button>
+                </IconButton>
               </span>
             </legend>
             <div className="form-grid">

@@ -1,6 +1,8 @@
 import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
+import { IconButton } from "./ui/button";
+import { Kicker } from "./ui/kicker";
 
 export interface InstructionPreview {
   base: string;
@@ -36,20 +38,18 @@ export function InstructionPreviewDialog({
     >
       <header>
         <div>
-          <span className="kicker">KI-UNTERSTÜTZUNG</span>
+          <Kicker>KI-Unterstützung</Kicker>
           <h2 id="instruction-preview-title">Vollständige Anweisungen</h2>
           <small>
             Feste Leitplanken und Ihre aktuell eingetragenen Zusatzhinweise
           </small>
         </div>
-        <button
-          type="button"
-          className="icon-button"
-          aria-label="Anweisungsvorschau schließen"
+        <IconButton
+          label="Anweisungsvorschau schließen"
           onClick={() => dialog.current?.close()}
         >
           <X />
-        </button>
+        </IconButton>
       </header>
       <div className="preview-dialog-content instruction-preview-content">
         {loading && <p aria-live="polite">Anweisungen werden geladen …</p>}

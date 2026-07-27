@@ -6,7 +6,7 @@ type ProcessInput = Pick<ProcessCaptureRecord, "state"> & {
 };
 
 export type NavigationTone =
-  "neutral" | "active" | "success" | "warning" | "danger";
+  "neutral" | "info" | "success" | "warning" | "danger";
 
 export interface ModuleNavigationState {
   status: string;
@@ -40,7 +40,7 @@ const captureStates: Record<
   },
   synthesis_ready: {
     status: "Bereit",
-    tone: "active",
+    tone: "info",
     actionLabel: "Erstellen",
     action: "capture",
   },
@@ -85,7 +85,7 @@ function listState(
       opportunity.state === "hypotheses_running" ||
       opportunity.state === "scenarios_running"
     )
-      return { status: "Analyse läuft", tone: "active" } as const;
+      return { status: "Analyse läuft", tone: "info" } as const;
     if (opportunity.state.endsWith("failed"))
       return { status: "Analyse prüfen", tone: "danger" } as const;
     if (opportunity.state === "no_supported_hypotheses")
@@ -144,7 +144,7 @@ function opportunityModuleState(
   )
     return {
       status: "Läuft",
-      tone: "active",
+      tone: "info",
       actionLabel: "Fortschritt",
       action: "view_opportunity",
     };
