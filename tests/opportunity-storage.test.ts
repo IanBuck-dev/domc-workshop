@@ -93,7 +93,7 @@ describe("opportunity discovery repository", () => {
     expect(await readFile(processCoverPath, "utf8")).toBe(processCoverBefore);
   });
 
-  test("stops neutrally without scenarios when no high-confidence hypothesis exists", async () => {
+  test("stops neutrally when fewer than two medium-confidence hypotheses exist", async () => {
     const { process, opportunities, defaults } = await fixture();
     await opportunities.create(process, defaults.config, defaults.contracts);
     await opportunities.markHypothesesRunning(process.id);

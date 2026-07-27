@@ -12,8 +12,8 @@ einen fachlich bestätigten Prozess einmalig aus der Prozessübersicht. Die
 Anwendung führt danach genau zwei begrenzte Claude-Aufrufe aus:
 
 1. Potenzialhypothesen für jeden bestätigten Prozessschritt entdecken;
-2. aus allen hoch-konfidenten Hypothesen ein assistiertes, teilautonomes und
-   agentisches Szenario erstellen.
+2. aus allen hohen oder ersatzweise zwei bis drei priorisierten mittleren
+   Hypothesen ein assistiertes, teilautonomes und agentisches Szenario erstellen.
 
 Das Modul endet mit read-only Hypothesen und Szenarien. Wirtschaftliche Werte,
 Machbarkeit, Nutzen, Risiko, Scoring, Priorisierung, Ranking, Szenarioauswahl
@@ -34,12 +34,13 @@ Rückfragen, Synthese, Korrektur und Bestätigung bleiben fachlich unverändert.
 4. Phase 1 bewertet jeden der fünf bis acht Prozessschritte und erzeugt null bis
    mehrere Hypothesen pro Schritt. Die vollständig validierte Antwort wird
    atomar gespeichert und sofort in der UI verfügbar.
-5. Nur Hypothesen mit `confidenceLevel: high` werden als Eingabe für Phase 2
-   verwendet. Mittlere und niedrige Hypothesen bleiben sichtbar.
-6. Ohne hoch-konfidente Hypothese endet die Pipeline erfolgreich nach Phase 1.
-   Es werden keine Szenarien erfunden.
-7. Mit mindestens einer hoch-konfidenten Hypothese beginnt Phase 2 automatisch
-   innerhalb desselben Warteschlangenjobs und in einer neuen Claude-Session.
+5. Alle hohen Hypothesen werden als Eingabe für Phase 2 verwendet. Ohne hohe
+   Hypothese werden bei mindestens zwei mittleren Hypothesen die besten zwei bis
+   drei nach Potenzial und Prozessreihenfolge ausgewählt.
+6. Ohne mindestens eine hohe oder zwei mittlere Hypothesen endet die Pipeline
+   erfolgreich nach Phase 1. Es werden keine Szenarien erfunden.
+7. Mit ausreichender Evidenzbasis beginnt Phase 2 automatisch innerhalb
+   desselben Warteschlangenjobs und in einer neuen Claude-Session.
 8. Phase 2 erzeugt exakt die drei Levels `assistive`, `delegated` und
    `agentic`. Nach vollständiger Validierung werden alle drei gemeinsam
    atomar gespeichert und angezeigt.
@@ -98,8 +99,8 @@ interface OpportunityDiscoveryConfig {
     scenarios: string;
   };
   ai: {
-    model: "sonnet";
-    reasoningEffort: "medium";
+    model: "claude-opus-4-8";
+    reasoningEffort: "high";
     timeoutMs: number;
     maxOutputTokens: number;
     maxInputCharacters: number;
@@ -328,10 +329,10 @@ Verbindliche Szenarioregeln:
 - die Antwort enthält exakt ein Szenario je Level in der Reihenfolge
   `assistive`, `delegated`, `agentic`;
 - IDs werden serverseitig aus dem Level vergeben;
-- jedes Szenario enthält mindestens eine hoch-konfidente Hypothese;
-- nur hoch-konfidente Hypothesen derselben Analyse dürfen referenziert werden;
+- jedes Szenario enthält mindestens eine ausgewählte Hypothese;
+- nur deterministisch ausgewählte Hypothesen derselben Analyse dürfen referenziert werden;
 - je Szenario bilden `includedHypothesisIds` und `excludedHypotheses` eine
-  disjunkte, vollständige Partition aller hoch-konfidenten Hypothesen;
+  disjunkte, vollständige Partition aller ausgewählten Hypothesen;
 - alle Prozessschritt- und Evidenzreferenzen müssen im Snapshot existieren;
 - `assistive` enthält keine Aktion mit `executionMode: autonomous`;
 - `delegated` enthält mindestens eine autonome Routineaktion und mindestens
@@ -462,7 +463,7 @@ Der Hypothesenprompt erzwingt:
 
 Der Szenarioprompt erzwingt:
 
-- ausschließliche Verwendung der übergebenen hoch-konfidenten Hypothesen;
+- ausschließliche Verwendung der übergebenen ausgewählten Hypothesen;
 - Assistiert, Teilautonom und Agentisch als drei Human-Oversight-Level;
 - explizite Aktionsmodi, Eskalationen und menschliche Kontrollen;
 - Trennung von Integrationsbedarf und Zugriffsmechanismus;
@@ -478,16 +479,16 @@ discoverHypotheses(request): Promise<AiResult<HypothesisAiOutput>>;
 createScenarios(request): Promise<AiResult<ScenarioAiOutput>>;
 ```
 
-Beide verwenden `SandboxRunner.runStructured`, Sonnet, Reasoning-Aufwand
-`medium`, eine neue logische Session und `tools: none`. Es werden keine Uploads
+Beide verwenden `SandboxRunner.runStructured`, Claude Opus 4.8,
+Reasoning-Aufwand `high`, eine neue logische Session und `tools: none`. Es werden keine Uploads
 gestaged, keine Workspace-Tools freigegeben, kein Webzugriff erlaubt und keine
 Session fortgesetzt. MCP erscheint ausschließlich im beschriebenen
 Zukunftsszenario und wird dem ausführenden Claude-Prozess nicht als Tool
 bereitgestellt.
 
 Phase 2 erhält den gleichen unveränderten Prozesssnapshot und ausschließlich
-die normalisierten hoch-konfidenten Hypothesen. Mittlere und niedrige
-Hypothesen, fremde Prozesse und Repository-Dateien werden nicht gesendet.
+die deterministisch ausgewählten hohen oder mittleren Hypothesen. Nicht
+ausgewählte Hypothesen, fremde Prozesse und Repository-Dateien werden nicht gesendet.
 
 ## API und Operationsmanager
 
@@ -553,7 +554,7 @@ Eine bestätigte Prozesszeile zeigt abhängig von der Summary:
 
 - ohne Analyse: Button `KI-Potenziale entdecken`;
 - laufend: Status `Potenziale werden untersucht` und Link zur Detailseite;
-- ohne hoch-konfidente Hypothese: Status `Analyse abgeschlossen`;
+- ohne ausreichende hohe oder gebündelte mittlere Evidenzbasis: Status `Analyse abgeschlossen`;
 - abgeschlossen: Status `3 Szenarien verfügbar`;
 - technisch fehlgeschlagen: Status `Analyse prüfen`;
 - veraltet: sichtbare Kennzeichnung `Prozess später geändert`.
@@ -811,10 +812,10 @@ zwischen AI-Output und kanonischer Domain.
 
 Erwartete Outputs:
 
-- beide Calls verwenden Sonnet, `medium`, neue Sessions und `tools: none`;
+- beide Calls verwenden Claude Opus 4.8, `high`, neue Sessions und `tools: none`;
 - Phase 1 erhält nur den minimierten bestätigten Prozesssnapshot;
-- Phase 2 erhält denselben Snapshot und ausschließlich hoch-konfidente
-  normalisierte Hypothesen;
+- Phase 2 erhält denselben Snapshot und ausschließlich deterministisch
+  ausgewählte normalisierte Hypothesen;
 - Uploadpfade, Personendaten, ursprüngliche Antworten und fremde Prozesse
   erscheinen in keinem Request;
 - rein deterministische Ideen werden nicht als Hypothese akzeptiert;
@@ -971,10 +972,10 @@ Daten ausgerollt, der Dienst neu gestartet und anschließend geprüft:
 
 - getrennte Base-, Hypothesen- und Szenarioprompts;
 - Runtime-Schema entspricht der Zod-Domain;
-- Sonnet, `medium`, keine Session-Persistenz und neue Session je Phase;
+- Claude Opus 4.8, `high`, keine Session-Persistenz und neue Session je Phase;
 - keine Tools, Uploads oder Webfunktionen;
 - minimierter Phase-1-Input ohne Personendaten;
-- Phase-2-Input enthält ausschließlich hohe Hypothesen;
+- Phase-2-Input enthält ausschließlich ausgewählte hohe oder mittlere Hypothesen;
 - Potenzial und Konfidenz werden getrennt begründet;
 - deterministische Unterstützung und Integration werden nicht als Ausschluss
   behandelt;

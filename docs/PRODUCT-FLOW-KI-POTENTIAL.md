@@ -121,7 +121,7 @@ prototype performs no document conversion and uses no external viewer.
 - no rare-edge-case or exhaustive variant modeling;
 - maximum five selected documents;
 - maximum 20 MB per file and 100 MB per process capture;
-- Claude model `sonnet`, reasoning effort `medium`;
+- Claude model `claude-opus-4-8`, reasoning effort `medium`;
 - one global AI operation at a time;
 - no web tools or autonomous loops.
 
@@ -335,7 +335,7 @@ Replace the assessment and workshop defaults with:
   question and help text are editable;
 - separate follow-up and synthesis instruction fields;
 - supported upload types and size/count limits;
-- `sonnet`, `medium`, timeout, input limit, output limit, and budget.
+- `claude-opus-4-8`, `medium`, timeout, input limit, output limit, and budget.
 
 The settings page may edit departments, visible topic wording, help text, and
 the two instruction fields through browser-local overrides. It may also edit
@@ -731,7 +731,7 @@ Expected outputs:
 - zero to five unique-topic follow-ups;
 - one valid process understanding with five to eight steps;
 - exact evidence/upload referential integrity;
-- `--model sonnet --effort medium --no-session-persistence` in the Claude
+- `--model claude-opus-4-8 --effort medium --no-session-persistence` in the Claude
   command contract;
 - no tools without selected files and workspace-only tools with selected files;
 - retryable canonical state after timeout, cancellation, malformed output, or
@@ -886,7 +886,7 @@ Required live evidence at `https://claims-ai.ian-buck.dev`:
 
 ### AI contract
 
-- command uses Sonnet and medium effort;
+- command uses Claude Opus 4.8 and medium effort;
 - no upload means no workspace tools;
 - selected upload enables only sandboxed workspace tools;
 - no session continuation or web tools;

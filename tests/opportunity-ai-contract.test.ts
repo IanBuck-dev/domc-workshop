@@ -50,6 +50,10 @@ describe("opportunity Claude contract", () => {
     const process = await confirmedProcess(new ProcessCaptureRepository(root));
     const sourceProcess = createOpportunityProcessSnapshot(process);
     const defaults = await opportunityDefaults();
+    expect(defaults.config.ai).toMatchObject({
+      model: "claude-opus-4-8",
+      reasoningEffort: "high",
+    });
     const captured: SandboxTransportRequest[] = [];
     const responses = [hypothesisAiResult(), scenarioResult()];
     const runner = new SandboxRunner({
@@ -68,8 +72,8 @@ describe("opportunity Claude contract", () => {
     });
     const adapter = new ClaudeOpportunityAiAdapter(runner);
     const model = {
-      model: defaults.config.ai.model,
-      effort: defaults.config.ai.reasoningEffort,
+      model: "claude-opus-4-8",
+      effort: "high",
       timeoutMs: defaults.config.ai.timeoutMs,
       maxOutputTokens: defaults.config.ai.maxOutputTokens,
       maxInputCharacters: defaults.config.ai.maxInputCharacters,
@@ -83,8 +87,9 @@ describe("opportunity Claude contract", () => {
       contracts: defaults.contracts,
       instructions: defaults.config.instructions.hypotheses,
     });
-    const highConfidenceHypotheses =
-      normalizedHypotheses().stepAnalyses.flatMap((item) => item.hypotheses);
+    const scenarioHypotheses = normalizedHypotheses().stepAnalyses.flatMap(
+      (item) => item.hypotheses,
+    );
     const scenarios = await adapter.createScenarios({
       processId: process.id,
       configHash: "a".repeat(64),
@@ -92,7 +97,8 @@ describe("opportunity Claude contract", () => {
       sourceProcess,
       contracts: defaults.contracts,
       instructions: defaults.config.instructions.scenarios,
-      highConfidenceHypotheses,
+      scenarioBasis: "high",
+      scenarioHypotheses,
     });
 
     expect(captured).toHaveLength(2);
@@ -103,7 +109,7 @@ describe("opportunity Claude contract", () => {
       ).toBe("");
       expect(
         request.command.slice(request.command.indexOf("--effort") + 1)[0],
-      ).toBe("medium");
+      ).toBe("high");
       expect(request.stdin).not.toContain(process.cover.participantEmail);
       expect(request.stdin).not.toContain(process.cover.participantName);
       expect(request.stdin).toContain("Keine ausgewählten Dateien");

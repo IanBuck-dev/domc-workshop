@@ -6,7 +6,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import { OpportunityHypothesesView } from "../components/opportunity-hypotheses-view";
 import { OpportunityProgress } from "../components/opportunity-progress";
 import { OpportunityScenariosView } from "../components/opportunity-scenarios-view";
@@ -20,13 +20,14 @@ const runningStates = new Set([
   "scenarios_running",
 ]);
 
-export function OpportunityDiscoveryPage() {
+export function OpportunityDiscoveryPage({
+  phase,
+}: {
+  phase: "hypotheses" | "scenarios";
+}) {
   const { id = "" } = useParams();
   const [process, setProcess] = useState<ProcessCaptureRecord | null>(null);
   const [detail, setDetail] = useState<OpportunityDiscoveryDetail | null>(null);
-  const [active, setActive] = useState<"hypotheses" | "scenarios">(
-    "hypotheses",
-  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const discoveryState = detail?.record.state;
@@ -74,11 +75,26 @@ export function OpportunityDiscoveryPage() {
     return <main className="app-loading">Potenzialanalyse wird geladen …</main>;
 
   const record = detail.record;
+  const scenariosAvailable = [
+    "scenarios_running",
+    "scenarios_failed",
+    "completed",
+  ].includes(record.state);
+  if (phase === "scenarios" && !scenariosAvailable)
+    return (
+      <Navigate to={`/processes/${id}/opportunities/hypotheses`} replace />
+    );
   const failed = record.state.endsWith("failed");
+  const highConfidenceCount = hypotheses.filter(
+    (hypothesis) => hypothesis.confidenceLevel === "high",
+  ).length;
+  const mediumConfidenceCount = hypotheses.filter(
+    (hypothesis) => hypothesis.confidenceLevel === "medium",
+  ).length;
   return (
     <section className="opportunity-page">
-      <Link className="back-link" to="/">
-        <ArrowLeft /> Zur Prozessübersicht
+      <Link className="back-link" to={`/processes/${id}`}>
+        <ArrowLeft /> Zum Prozess
       </Link>
       <div className="opportunity-heading">
         <div>
@@ -88,12 +104,7 @@ export function OpportunityDiscoveryPage() {
             {process.cover.department} · {process.id}
           </p>
         </div>
-        <OpportunityProgress
-          record={record}
-          isStale={detail.isStale}
-          active={active}
-          onSelect={setActive}
-        />
+        <OpportunityProgress record={record} processId={id} active={phase} />
       </div>
 
       {detail.isStale && (
@@ -105,6 +116,13 @@ export function OpportunityDiscoveryPage() {
       {error && (
         <p className="notice error" role="alert">
           {error}
+        </p>
+      )}
+      {phase === "scenarios" && record.scenarioBasis === "medium_fallback" && (
+        <p className="notice warning" role="status">
+          <AlertTriangle /> Diese Szenarien basieren auf mehreren plausiblen,
+          aber noch nicht hoch-konfidenten Potenzialen. Klären Sie die offenen
+          Fachfragen vor einer weiteren Bewertung mit dem Fachbereich.
         </p>
       )}
       {failed && record.lastError && (
@@ -137,7 +155,7 @@ export function OpportunityDiscoveryPage() {
         </section>
       )}
 
-      {active === "hypotheses" && !record.hypotheses && (
+      {phase === "hypotheses" && !record.hypotheses && (
         <section className="center-stage panel" aria-live="polite">
           <LoaderCircle className="spin" />
           <span className="kicker">PHASE 1 VON 2</span>
@@ -147,17 +165,29 @@ export function OpportunityDiscoveryPage() {
           </p>
         </section>
       )}
-      {active === "hypotheses" && record.hypotheses && (
+      {phase === "hypotheses" && record.hypotheses && (
         <>
           {record.state === "no_supported_hypotheses" && (
             <section className="panel no-supported">
               <Sparkles />
               <h2>Analyse abgeschlossen</h2>
-              <p>
-                Auf Basis der aktuellen Prozessbeschreibung konnten keine
-                ausreichend belegten Szenarien erzeugt werden. Dies ist keine
-                endgültige Aussage gegen ein mögliches KI-Potenzial.
-              </p>
+              {highConfidenceCount > 0 || mediumConfidenceCount >= 2 ? (
+                <p>
+                  Diese bestehende Analyse wurde noch mit der früheren,
+                  strengeren Auswahlregel abgeschlossen. Die gefundenen{" "}
+                  {mediumConfidenceCount} mittel-konfidenten Hypothesen würden
+                  nach der aktuellen Regel eine Szenarioanalyse ermöglichen.
+                </p>
+              ) : (
+                <p>
+                  Es wurden {hypotheses.length} Potenzialhypothesen gefunden,
+                  davon {highConfidenceCount} mit hoher und{" "}
+                  {mediumConfidenceCount} mit mittlerer Konfidenz. Für Szenarien
+                  werden mindestens eine hoch-konfidente oder zwei
+                  mittel-konfidente Hypothesen benötigt. Fehlende
+                  Fachinformationen können weiterhin geklärt werden.
+                </p>
+              )}
             </section>
           )}
           <OpportunityHypothesesView
@@ -166,7 +196,7 @@ export function OpportunityDiscoveryPage() {
           />
         </>
       )}
-      {active === "scenarios" && !record.scenarios && (
+      {phase === "scenarios" && !record.scenarios && (
         <section className="center-stage panel" aria-live="polite">
           {record.state === "scenarios_failed" ? (
             <AlertTriangle />
@@ -184,10 +214,11 @@ export function OpportunityDiscoveryPage() {
           </p>
         </section>
       )}
-      {active === "scenarios" && record.scenarios && (
+      {phase === "scenarios" && record.scenarios && (
         <OpportunityScenariosView
           scenarios={record.scenarios.scenarios}
           hypotheses={hypotheses}
+          totalProcessSteps={record.sourceProcess.understanding.steps.length}
         />
       )}
     </section>

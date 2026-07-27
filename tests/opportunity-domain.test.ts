@@ -5,6 +5,7 @@ import {
   createOpportunityProcessSnapshot,
   normalizeOpportunityHypotheses,
   normalizeOpportunityScenarioScope,
+  selectScenarioHypotheses,
   opportunityScenarioAiResultSchema,
   opportunityScenarioResultSchema,
   type OpportunityScenario,
@@ -19,12 +20,14 @@ import { tmpdir } from "node:os";
 import {
   confirmedProcess,
   hypothesisAiResult,
+  normalizedHypotheses,
 } from "./opportunity-fixtures.ts";
 
 const context: OpportunityScenarioReferenceContext = {
-  highConfidenceHypotheses: [
-    { id: "HYP-001", processStepId: "step-1" },
-    { id: "HYP-002", processStepId: "step-2" },
+  scenarioBasis: "high",
+  scenarioHypotheses: [
+    { id: "HYP-001", processStepId: "step-1", confidenceLevel: "high" },
+    { id: "HYP-002", processStepId: "step-2", confidenceLevel: "high" },
   ],
   processStepIds: ["step-1", "step-2"],
   evidenceIds: ["evidence-1", "evidence-2"],
@@ -183,11 +186,11 @@ describe("opportunity scenario contract", () => {
     );
   });
 
-  test("requires each scenario to partition every high-confidence hypothesis", () => {
+  test("requires each scenario to partition every selected hypothesis", () => {
     const missing = result();
     missing.scenarios[1]!.excludedHypotheses = [];
     expect(() => assertOpportunityScenarioReferences(missing, context)).toThrow(
-      "include or exclude every high-confidence hypothesis",
+      "include or exclude every selected hypothesis",
     );
 
     const overlapping = result();
@@ -265,6 +268,31 @@ describe("opportunity scenario contract", () => {
     expect(() => opportunityScenarioResultSchema.parse(wrongOrder)).toThrow(
       "ordered assistive, delegated, agentic",
     );
+  });
+
+  test("limits medium fallback to two or three candidates and caps scenario confidence", () => {
+    expect(selectScenarioHypotheses(normalizedHypotheses("medium", 1))).toEqual(
+      { basis: null, hypotheses: [] },
+    );
+    const two = selectScenarioHypotheses(normalizedHypotheses("medium", 2));
+    expect(two.basis).toBe("medium_fallback");
+    expect(two.hypotheses).toHaveLength(2);
+    const four = selectScenarioHypotheses(normalizedHypotheses("medium", 4));
+    expect(four.hypotheses).toHaveLength(3);
+
+    const mediumContext: OpportunityScenarioReferenceContext = {
+      ...context,
+      scenarioBasis: "medium_fallback",
+      scenarioHypotheses: context.scenarioHypotheses.map((hypothesis) => ({
+        ...hypothesis,
+        confidenceLevel: "medium",
+      })),
+    };
+    const overconfident = result();
+    overconfident.scenarios[0]!.confidenceLevel = "high";
+    expect(() =>
+      assertOpportunityScenarioReferences(overconfident, mediumContext),
+    ).toThrow("cannot have high confidence with a medium evidence basis");
   });
 });
 

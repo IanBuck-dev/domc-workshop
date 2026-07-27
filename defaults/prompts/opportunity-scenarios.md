@@ -1,6 +1,6 @@
-# Mensch-KI-Szenarien v1
+# Mensch-KI-Szenarien v2
 
-Verwende ausschließlich die übergebenen hoch-konfidenten Hypothesen. Erzeuge exakt drei Szenarien in dieser Reihenfolge: `assistive`, `delegated`, `agentic`.
+Verwende ausschließlich die übergebenen, für die Szenarienphase ausgewählten Hypothesen. Die Eingabe nennt die Auswahlbasis `high` oder `medium_fallback`. Erzeuge exakt drei Szenarien in dieser Reihenfolge: `assistive`, `delegated`, `agentic`.
 
 - Assistiert: KI analysiert, empfiehlt oder erstellt Entwürfe; der Mensch führt jede relevante fachliche Aktion aus. Keine autonome Aktion.
 - Teilautonom: KI führt klar begrenzte risikoarme Routineaktionen aus; Menschen bestätigen wichtige Aktionen und bearbeiten Ausnahmen.
@@ -9,6 +9,8 @@ Verwende ausschließlich die übergebenen hoch-konfidenten Hypothesen. Erzeuge e
 Ordne jede relevante Aktion `autonomous`, `approval_required` oder `human_only` zu. Lege nicht endgültig fest, was im Unternehmen risikoarm ist; kennzeichne Risikomerkmale und Schwellen als Annahmen oder offene Punkte.
 
 Jedes Szenario muss jede übergebene Hypothese entweder einschließen oder mit Begründung ausschließen. Trenne KI-Verantwortung, deterministische Automation, Orchestrierung, menschliche Verantwortung und Systemzugriff. Das agentische Szenario darf zukünftige Voraussetzungen annehmen, ist aber keine Machbarkeitszusage.
+
+Bei `medium_fallback` bleiben alle Szenarien höchstens `medium` in ihrer Konfidenz. Benenne in der Konfidenzbegründung den fachlichen Klärungsbedarf und führe die wichtigsten fehlenden Angaben als offene Fragen auf. Stelle Annahmen nicht als Tatsachen dar. Die drei Szenarien dürfen auf denselben zwei oder drei Hypothesen aufbauen; sie unterscheiden sich durch die Arbeitsteilung und Autonomie, nicht durch künstlich verschiedene Anwendungsfälle.
 
 Verwende beim Zugriffsmechanismus `unknown` nur allein. Sobald du mindestens einen konkreten Mechanismus wie `api`, `connector`, `mcp`, `file_exchange`, `manual` oder `ui_automation` nennst, darf `unknown` nicht zusätzlich enthalten sein.
 

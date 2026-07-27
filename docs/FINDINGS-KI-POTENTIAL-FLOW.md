@@ -99,6 +99,6 @@ and only decisions required to understand the normal path.
 - The setup page contains no voluntary process-description field.
 - All records need a red, two-stage permanent delete action in the primary
   list. The prototype intentionally has no per-process archive or restore flow.
-- Claude reasoning effort remains `medium`; the slow `ASSESS-0009` run was
-  already executed with that setting.
+- Die Prozessaufnahme verwendet Claude Opus 4.8 mit `medium`; die getrennte
+  Potenzialanalyse verwendet Claude Opus 4.8 mit `high`.
 - Few relevant, current documents are the normal prototype assumption.

@@ -86,8 +86,8 @@ const identifierArraySchema = (minimum = 0, maximum = 100) =>
 
 const aiRuntimeConfigSchema = z
   .object({
-    model: z.literal("sonnet"),
-    reasoningEffort: z.literal("medium"),
+    model: z.enum(["sonnet", "claude-opus-4-8"]),
+    reasoningEffort: z.enum(["medium", "high"]),
     timeoutMs: z.number().int().min(10_000).max(300_000),
     maxOutputTokens: z.number().int().min(512).max(32_768),
     maxInputCharacters: z.number().int().min(10_000).max(2_000_000),
@@ -350,6 +350,35 @@ export function normalizeOpportunityHypotheses(
   });
 }
 
+export const scenarioEvidenceBases = ["high", "medium_fallback"] as const;
+export const scenarioEvidenceBasisSchema = z.enum(scenarioEvidenceBases);
+
+export function selectScenarioHypotheses(input: unknown) {
+  const result = opportunityHypothesisResultSchema.parse(input);
+  const hypotheses = result.stepAnalyses.flatMap((analysis, stepIndex) =>
+    analysis.hypotheses.map((hypothesis) => ({ hypothesis, stepIndex })),
+  );
+  const high = hypotheses
+    .filter(({ hypothesis }) => hypothesis.confidenceLevel === "high")
+    .map(({ hypothesis }) => hypothesis);
+  if (high.length) return { basis: "high" as const, hypotheses: high };
+
+  const medium = hypotheses
+    .filter(({ hypothesis }) => hypothesis.confidenceLevel === "medium")
+    .sort(
+      (left, right) =>
+        rank[left.hypothesis.potentialLevel] -
+          rank[right.hypothesis.potentialLevel] ||
+        left.stepIndex - right.stepIndex ||
+        left.hypothesis.title.localeCompare(right.hypothesis.title, "de"),
+    )
+    .slice(0, 3)
+    .map(({ hypothesis }) => hypothesis);
+  return medium.length >= 2
+    ? { basis: "medium_fallback" as const, hypotheses: medium }
+    : { basis: null, hypotheses: [] };
+}
+
 export const opportunityDiscoveryStates = [
   "hypotheses_queued",
   "hypotheses_running",
@@ -605,12 +634,14 @@ export const opportunityScenarioAiResultSchema = z.preprocess((input) => {
 
 export const opportunityScenarioReferenceContextSchema = z
   .object({
-    highConfidenceHypotheses: z
+    scenarioBasis: scenarioEvidenceBasisSchema,
+    scenarioHypotheses: z
       .array(
         z
           .object({
             id: hypothesisIdSchema,
             processStepId: identifierSchema,
+            confidenceLevel: confidenceLevelSchema,
           })
           .strict(),
       )
@@ -621,21 +652,42 @@ export const opportunityScenarioReferenceContextSchema = z
   })
   .strict()
   .superRefine((context, ctx) => {
-    const hypothesisIds = context.highConfidenceHypotheses.map(
+    const hypothesisIds = context.scenarioHypotheses.map(
       (hypothesis) => hypothesis.id,
     );
     if (new Set(hypothesisIds).size !== hypothesisIds.length)
       ctx.addIssue({
         code: "custom",
-        path: ["highConfidenceHypotheses"],
-        message: "High-confidence hypothesis IDs must be unique.",
+        path: ["scenarioHypotheses"],
+        message: "Scenario hypothesis IDs must be unique.",
+      });
+    const expectedConfidence =
+      context.scenarioBasis === "high" ? "high" : "medium";
+    if (
+      context.scenarioHypotheses.some(
+        (hypothesis) => hypothesis.confidenceLevel !== expectedConfidence,
+      )
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["scenarioHypotheses"],
+        message: "Scenario hypotheses must match their evidence basis.",
+      });
+    if (
+      context.scenarioBasis === "medium_fallback" &&
+      ![2, 3].includes(context.scenarioHypotheses.length)
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["scenarioHypotheses"],
+        message: "Medium fallback requires two or three hypotheses.",
       });
     const stepIds = new Set(context.processStepIds);
-    context.highConfidenceHypotheses.forEach((hypothesis, index) => {
+    context.scenarioHypotheses.forEach((hypothesis, index) => {
       if (!stepIds.has(hypothesis.processStepId))
         ctx.addIssue({
           code: "custom",
-          path: ["highConfidenceHypotheses", index, "processStepId"],
+          path: ["scenarioHypotheses", index, "processStepId"],
           message: "Hypothesis references an unknown process step.",
         });
     });
@@ -648,7 +700,7 @@ export function normalizeOpportunityScenarioScope(
   const result = opportunityScenarioResultSchema.parse(resultInput);
   const context = opportunityScenarioReferenceContextSchema.parse(contextInput);
   const hypothesisSteps = new Map(
-    context.highConfidenceHypotheses.map((hypothesis) => [
+    context.scenarioHypotheses.map((hypothesis) => [
       hypothesis.id,
       hypothesis.processStepId,
     ]),
@@ -688,10 +740,7 @@ export function assertOpportunityScenarioReferences(
   const result = opportunityScenarioResultSchema.parse(resultInput);
   const context = opportunityScenarioReferenceContextSchema.parse(contextInput);
   const hypotheses = new Map(
-    context.highConfidenceHypotheses.map((hypothesis) => [
-      hypothesis.id,
-      hypothesis,
-    ]),
+    context.scenarioHypotheses.map((hypothesis) => [hypothesis.id, hypothesis]),
   );
   const expectedHypothesisIds = [...hypotheses.keys()].sort();
   const processStepIds = new Set(context.processStepIds);
@@ -707,7 +756,15 @@ export function assertOpportunityScenarioReferences(
       JSON.stringify(expectedHypothesisIds)
     )
       throw new Error(
-        `Scenario ${scenario.id} must include or exclude every high-confidence hypothesis exactly once.`,
+        `Scenario ${scenario.id} must include or exclude every selected hypothesis exactly once.`,
+      );
+
+    if (
+      context.scenarioBasis === "medium_fallback" &&
+      scenario.confidenceLevel === "high"
+    )
+      throw new Error(
+        `Scenario ${scenario.id} cannot have high confidence with a medium evidence basis.`,
       );
 
     if (scenario.affectedProcessStepIds.some((id) => !processStepIds.has(id)))
@@ -828,6 +885,7 @@ export const opportunityDiscoveryPublicRecordSchema = z
     id: z.string().regex(/^OPP-PROC-\d{4}$/),
     processId: z.string().regex(/^PROC-\d{4}$/),
     state: opportunityDiscoveryStateSchema,
+    scenarioBasis: scenarioEvidenceBasisSchema.nullable(),
     sourceProcess: opportunityProcessSnapshotSchema,
     hypotheses: opportunityHypothesisResultSchema.nullable(),
     scenarios: opportunityScenarioResultSchema.nullable(),
@@ -844,6 +902,10 @@ export function toOpportunityDiscoveryPublicRecord(input: unknown) {
     id: record.id,
     processId: record.processId,
     state: record.state,
+    scenarioBasis:
+      record.hypotheses && record.state !== "no_supported_hypotheses"
+        ? selectScenarioHypotheses(record.hypotheses).basis
+        : null,
     sourceProcess: record.sourceProcess,
     hypotheses: record.hypotheses,
     scenarios: record.scenarios,
@@ -861,6 +923,7 @@ export type AccessMechanism = z.infer<typeof accessMechanismSchema>;
 export type AiCapability = z.infer<typeof aiCapabilitySchema>;
 export type ConfidenceLevel = z.infer<typeof confidenceLevelSchema>;
 export type PotentialLevel = z.infer<typeof potentialLevelSchema>;
+export type ScenarioEvidenceBasis = z.infer<typeof scenarioEvidenceBasisSchema>;
 export type OpportunityDiscoveryConfig = z.infer<
   typeof opportunityDiscoveryConfigSchema
 >;

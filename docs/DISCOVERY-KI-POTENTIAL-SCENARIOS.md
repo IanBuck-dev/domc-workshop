@@ -40,7 +40,7 @@ einer späteren Szenariobewertung.
 Bestätigter Prozess
         ↓ manueller Start
 Phase 1: Prozessschritte untersuchen und Potenzialhypothesen erzeugen
-        ↓ validierter Übergang mit hoch-konfidenten Hypothesen
+        ↓ validierter Übergang mit hoher oder gebündelter mittlerer Evidenzbasis
 Phase 2: Assistiertes, teilautonomes und agentisches Szenario erzeugen
         ↓
 Read-only-Ergebnis als Grundlage einer späteren Bewertung
@@ -62,7 +62,7 @@ Das Modul beantwortet zwei Fragen:
 - Untersuchung jedes Hauptschritts auf KI-Potenziale;
 - null bis mehrere begründete Hypothesen je Prozessschritt;
 - Potenzial- und Konfidenzeinordnung jeder Hypothese;
-- Auswahl hoch-konfidenter Hypothesen als Szenarioeingabe;
+- deterministische Auswahl ausreichend belegter Hypothesen als Szenarioeingabe;
 - standardmäßig drei Szenarien: `assistive`, `delegated`, `agentic`;
 - live aktualisierte, wieder aufrufbare Zwei-Phasen-Oberfläche;
 - versionierte, phasenspezifische KI-Anweisungen und Antwortschemata;
@@ -227,26 +227,29 @@ Die Antwort aus Phase 1 wird vollständig gegen das versionierte Schema und die
 fachlichen Regeln validiert und atomar gespeichert. Erst danach darf Phase 2
 beginnen.
 
-Als Eingabe für Phase 2 dienen ausschließlich Hypothesen mit
-`confidenceLevel: high`. Hypothesen mittlerer und niedriger Konfidenz bleiben in
-der UI sichtbar, werden aber nicht verdeckt in Szenarien übernommen.
+Als Eingabe für Phase 2 dienen alle Hypothesen mit `confidenceLevel: high`.
+Existiert keine solche Hypothese, startet Phase 2 ersatzweise ab mindestens zwei
+Hypothesen mit `confidenceLevel: medium`; verwendet werden höchstens die drei
+nach Potenzial und Prozessreihenfolge priorisierten mittleren Hypothesen. Eine
+einzelne mittlere oder ausschließlich niedrige Hypothesen reichen nicht.
 
-Wenn keine hoch-konfidente Hypothese vorhanden ist, endet die Pipeline nach
-Phase 1 erfolgreich ohne Szenarien. Die UI erklärt, dass die aktuelle
-Prozessbeschreibung keine ausreichend belegte Grundlage für Szenarien liefert,
-und zeigt die erkannten Informationslücken. Das Modell darf die
-Konfidenzschwelle nicht selbst absenken.
+Die Auswahlbasis wird als `high` oder `medium_fallback` gespeichert und an
+Phase 2 übergeben. Bei `medium_fallback` weist die UI auf fachlichen
+Klärungsbedarf hin, und kein Szenario darf hohe Konfidenz ausweisen. Hypothesen,
+die nicht ausgewählt wurden, bleiben sichtbar. Das Modell darf die
+deterministische Schwelle nicht selbst verändern.
 
-Wenn mindestens eine hoch-konfidente Hypothese vorhanden ist, startet Phase 2
-automatisch. Es gibt keinen fachlichen Bestätigungs- oder Auswahlstopp zwischen
-den Phasen.
+Wenn die Auswahlregel keine Szenarioeingabe liefert, endet die Pipeline nach
+Phase 1 erfolgreich ohne Szenarien und zeigt die Informationslücken. Andernfalls
+startet Phase 2 automatisch. Es gibt keinen fachlichen Bestätigungs- oder
+Auswahlstopp zwischen den Phasen.
 
 ### Phase 2 — Szenarien
 
 Phase 2 erhält:
 
 - einen unveränderten Snapshot des bestätigten Prozessbilds;
-- alle hoch-konfidenten Hypothesen aus Phase 1;
+- die deterministisch ausgewählten Hypothesen samt Auswahlbasis;
 - die versionierten Szenario-Anweisungen;
 - das versionierte Szenario-Antwortschema.
 
@@ -285,7 +288,7 @@ kombinieren und müssen ihre Auswahl transparent machen.
 #### Agentisch — Mensch überwacht und übernimmt kritische Fälle
 
 - strategische Vision für die breiteste fachlich kohärente Nutzung der
-  hoch-konfidenten Hypothesen;
+  ausgewählten Hypothesen;
 - ein Agent plant und bearbeitet risikoarme Fälle innerhalb definierter
   Leitplanken über mehrere Schritte hinweg;
 - der Mensch definiert Leitplanken, überwacht Ergebnisse und übernimmt
@@ -321,7 +324,7 @@ Jedes Szenario enthält mindestens:
 - Szenariotyp, Titel und kompakte Zusammenfassung;
 - Zielbild und Umfang;
 - enthaltene Hypothesen-IDs;
-- nicht enthaltene hoch-konfidente Hypothesen mit Ausschlussbegründung;
+- nicht enthaltene ausgewählte Hypothesen mit Ausschlussbegründung;
 - betroffene Prozessschritte;
 - konkrete Veränderung gegenüber dem heutigen Ablauf;
 - KI-Verantwortlichkeiten und KI-spezifische Fähigkeiten;
@@ -486,7 +489,7 @@ Das spätere Domänenmodell benötigt mindestens folgende unterscheidbare Zustä
 - Hypothesen warten auf Ausführung;
 - Hypothesen werden erstellt;
 - Hypothesen sind verfügbar;
-- keine hoch-konfidenten Hypothesen vorhanden;
+- keine ausreichende hohe oder gebündelte mittlere Evidenzbasis vorhanden;
 - Szenarien warten auf Ausführung;
 - Szenarien werden erstellt;
 - Szenarien sind verfügbar;
@@ -502,8 +505,10 @@ Implementierungsplan festgelegt.
 - Jede Hypothese referenziert genau einen vorhandenen Prozessschritt.
 - Jede hoch-konfidente Hypothese besitzt mindestens eine gültige Evidenzreferenz
   und keine ungelöste materielle Annahme.
-- Jede Szenario-Hypothesenreferenz verweist auf eine hoch-konfidente Hypothese
-  aus derselben Analyse.
+- Jede Szenario-Hypothesenreferenz verweist auf eine deterministisch ausgewählte
+  Hypothese aus derselben Analyse.
+- Szenarien auf Basis von `medium_fallback` besitzen höchstens mittlere
+  Konfidenz und zeigen fachlichen Rücksprachebedarf.
 - Jede relevante Szenarioaktion besitzt genau eine Ausführungsregel:
   `autonomous`, `approval_required` oder `human_only`.
 - Jeder angenommene Systemzugriff beschreibt Ziel, Zugriffsart und bekannten
@@ -529,7 +534,8 @@ Implementierungsplan festgelegt.
 - Der Start erfolgt ausschließlich manuell aus der Prozessübersicht.
 - Jeder Prozessschritt wird untersucht; Hypothesen werden nicht erzwungen.
 - Potenzial und Konfidenz werden getrennt ausgewiesen.
-- Nur hoch-konfidente Hypothesen werden für Szenarien verwendet.
+- Alle hohen Hypothesen oder ersatzweise zwei bis drei priorisierte mittlere
+  Hypothesen werden für Szenarien verwendet.
 - Phase 2 startet nach erfolgreicher Phase 1 automatisch.
 - Es entstehen standardmäßig Assistiert, Teilautonom und Agentisch.
 - Der Szenariolevel beschreibt primär die Arbeitsteilung zwischen Mensch und KI;

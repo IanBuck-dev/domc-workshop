@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import {
   normalizeOpportunityHypotheses,
+  selectScenarioHypotheses,
   toOpportunityDiscoveryPublicRecord,
 } from "../../../../packages/domain/src/opportunity-discovery.ts";
 import type { ProcessCaptureRepository } from "../../../../packages/storage/src/process-capture-repository.ts";
@@ -37,8 +38,8 @@ export function opportunityRoutes(
           let record = await opportunities.required(processId);
           const contracts = await opportunities.contracts(processId);
           const model = {
-            model: record.configSnapshot.ai.model,
-            effort: record.configSnapshot.ai.reasoningEffort,
+            model: "claude-opus-4-8",
+            effort: "high",
             timeoutMs: record.configSnapshot.ai.timeoutMs,
             maxOutputTokens: record.configSnapshot.ai.maxOutputTokens,
             maxInputCharacters: record.configSnapshot.ai.maxInputCharacters,
@@ -68,9 +69,11 @@ export function opportunityRoutes(
           }
 
           if (record.state !== "scenarios_running") return;
-          const highConfidenceHypotheses = record
-            .hypotheses!.stepAnalyses.flatMap((analysis) => analysis.hypotheses)
-            .filter((hypothesis) => hypothesis.confidenceLevel === "high");
+          const selection = selectScenarioHypotheses(record.hypotheses);
+          if (!selection.basis)
+            throw new Error(
+              "Die Evidenzbasis für die Szenarienphase ist nicht ausreichend.",
+            );
           const result = await ai.createScenarios({
             processId,
             configHash: record.configHash,
@@ -78,7 +81,8 @@ export function opportunityRoutes(
             sourceProcess: record.sourceProcess,
             contracts,
             instructions: record.configSnapshot.instructions.scenarios,
-            highConfidenceHypotheses,
+            scenarioBasis: selection.basis,
+            scenarioHypotheses: selection.hypotheses,
             signal,
           });
           await opportunities.saveScenarios(

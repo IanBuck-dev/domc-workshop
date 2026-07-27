@@ -13,10 +13,11 @@ export class OpportunityScenarioAdapter {
     return this.runner.runStructured({
       processId: request.processId,
       operationName: "opportunity-scenarios",
-      prompt: `## Bestätigter Prozesssnapshot und hoch-konfidente Hypothesen\n${boundedOpportunityJson(
+      prompt: `## Bestätigter Prozesssnapshot und ausgewählte Szenariohypothesen\n${boundedOpportunityJson(
         {
           sourceProcess: request.sourceProcess,
-          highConfidenceHypotheses: request.highConfidenceHypotheses,
+          scenarioBasis: request.scenarioBasis,
+          scenarioHypotheses: request.scenarioHypotheses,
         },
         request.model.maxInputCharacters,
       )}`,

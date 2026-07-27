@@ -8,6 +8,7 @@ import {
   assertOpportunityDiscoveryTransition,
   createOpportunityProcessSnapshot,
   normalizeOpportunityScenarioScope,
+  selectScenarioHypotheses,
   opportunityContractManifestSchema,
   opportunityDiscoveryConfigSchema,
   opportunityDiscoveryRecordSchema,
@@ -292,12 +293,23 @@ export class OpportunityDiscoveryRepository {
     const high = allHypotheses(result).filter(
       (hypothesis) => hypothesis.confidenceLevel === "high",
     );
+    const medium = allHypotheses(result).filter(
+      (hypothesis) => hypothesis.confidenceLevel === "medium",
+    );
+    const selection = selectScenarioHypotheses(result);
     await this.writeJson(processId, "hypotheses.json", result);
     await this.recordOperation(processId, "opportunity-hypotheses", trace);
-    const state = high.length ? "scenarios_running" : "no_supported_hypotheses";
+    const state = selection.basis
+      ? "scenarios_running"
+      : "no_supported_hypotheses";
     return this.transition(record, state, null, "hypotheses-completed", {
       count: allHypotheses(result).length,
       highConfidenceCount: high.length,
+      mediumConfidenceCount: medium.length,
+      scenarioBasis: selection.basis,
+      selectedHypothesisIds: selection.hypotheses.map(
+        (hypothesis) => hypothesis.id,
+      ),
       trace,
     });
   }
@@ -308,14 +320,18 @@ export class OpportunityDiscoveryRepository {
       throw new Error(
         "Die Szenarien können in diesem Zustand nicht gespeichert werden.",
       );
-    const high = allHypotheses(record.hypotheses).filter(
-      (hypothesis) => hypothesis.confidenceLevel === "high",
-    );
+    const selection = selectScenarioHypotheses(record.hypotheses);
+    if (!selection.basis)
+      throw new Error("Die Evidenzbasis für Szenarien ist nicht ausreichend.");
     const referenceContext = {
-      highConfidenceHypotheses: high.map(({ id, processStepId }) => ({
-        id,
-        processStepId,
-      })),
+      scenarioBasis: selection.basis,
+      scenarioHypotheses: selection.hypotheses.map(
+        ({ id, processStepId, confidenceLevel }) => ({
+          id,
+          processStepId,
+          confidenceLevel,
+        }),
+      ),
       processStepIds: record.sourceProcess.understanding.steps.map(
         (step) => step.id,
       ),

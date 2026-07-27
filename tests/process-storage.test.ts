@@ -36,7 +36,7 @@ async function fixture() {
 const trace = () => ({
   operationId: crypto.randomUUID(),
   sessionId: crypto.randomUUID(),
-  model: "sonnet",
+  model: "claude-opus-4-8",
   durationMs: 10,
   inputTokens: 2,
   outputTokens: 4,

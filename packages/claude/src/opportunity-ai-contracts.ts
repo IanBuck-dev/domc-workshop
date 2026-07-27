@@ -4,6 +4,7 @@ import type {
   OpportunityContractSnapshot,
   OpportunityProcessSnapshot,
   OpportunityScenarioResult,
+  ScenarioEvidenceBasis,
 } from "../../domain/src/opportunity-discovery.ts";
 import type {
   AiRuntimeModelConfig,
@@ -25,7 +26,8 @@ export interface OpportunityHypothesisRequest extends OpportunityAiContext {
 
 export interface OpportunityScenarioRequest extends OpportunityAiContext {
   instructions: string;
-  highConfidenceHypotheses: OpportunityHypothesis[];
+  scenarioBasis: ScenarioEvidenceBasis;
+  scenarioHypotheses: OpportunityHypothesis[];
 }
 
 export interface OpportunityAiAdapter {

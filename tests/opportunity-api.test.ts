@@ -31,6 +31,7 @@ afterEach(async () => {
 async function fixture(
   confidence: "high" | "medium" = "high",
   failures: { hypotheses?: number; scenarios?: number } = {},
+  hypothesisCount = 1,
 ) {
   const root = await mkdtemp(join(tmpdir(), "opportunity-api-"));
   roots.push(root);
@@ -38,22 +39,36 @@ async function fixture(
   const process = await confirmedProcess(processes);
   const opportunities = new OpportunityDiscoveryRepository(root);
   const calls: string[] = [];
+  const modelCalls: Array<{ model: string; effort: string }> = [];
+  const scenarioBases: string[] = [];
   let hypothesisAttempt = 0;
   let scenarioAttempt = 0;
   const ai: OpportunityAiAdapter = {
-    discoverHypotheses: async () => {
+    discoverHypotheses: async (request) => {
       calls.push("hypotheses");
+      modelCalls.push({
+        model: request.model.model,
+        effort: request.model.effort,
+      });
       hypothesisAttempt += 1;
       if (hypothesisAttempt <= (failures.hypotheses ?? 0))
         throw new Error("Fiktiver Hypothesenfehler.");
-      return { value: hypothesisAiResult(confidence), trace: aiTrace() };
+      return {
+        value: hypothesisAiResult(confidence, hypothesisCount),
+        trace: aiTrace(),
+      };
     },
-    createScenarios: async () => {
+    createScenarios: async (request) => {
       calls.push("scenarios");
+      scenarioBases.push(request.scenarioBasis);
+      modelCalls.push({
+        model: request.model.model,
+        effort: request.model.effort,
+      });
       scenarioAttempt += 1;
       if (scenarioAttempt <= (failures.scenarios ?? 0))
         throw new Error("Fiktiver Szenariofehler.");
-      return { value: scenarioResult(), trace: aiTrace() };
+      return { value: scenarioResult(hypothesisCount), trace: aiTrace() };
     },
   };
   const app = new Hono();
@@ -67,7 +82,15 @@ async function fixture(
       join(import.meta.dir, "..", "defaults"),
     ),
   );
-  return { app, process, processes, opportunities, calls };
+  return {
+    app,
+    process,
+    processes,
+    opportunities,
+    calls,
+    modelCalls,
+    scenarioBases,
+  };
 }
 
 async function waitForState(
@@ -76,8 +99,13 @@ async function waitForState(
   state: string,
 ) {
   for (let attempt = 0; attempt < 100; attempt++) {
-    const record = await repository.required(processId);
-    if (record.state === state) return record;
+    try {
+      const record = await repository.required(processId);
+      if (record.state === state) return record;
+    } catch {
+      // Scenario output and metadata are separate atomic files; retry while
+      // their bounded state transition is in flight.
+    }
     await Bun.sleep(5);
   }
   throw new Error(`State ${state} was not reached.`);
@@ -96,7 +124,7 @@ async function waitForOperation(operationId: string, state?: string) {
 
 describe("opportunity discovery API", () => {
   test("runs hypotheses and scenarios in order and exposes progress", async () => {
-    const { app, process, opportunities, calls } = await fixture();
+    const { app, process, opportunities, calls, modelCalls } = await fixture();
     expect((await app.request(`/api/opportunities/${process.id}`)).status).toBe(
       404,
     );
@@ -114,6 +142,10 @@ describe("opportunity discovery API", () => {
     );
     expect(completed.scenarios?.scenarios).toHaveLength(3);
     expect(calls).toEqual(["hypotheses", "scenarios"]);
+    expect(modelCalls).toEqual([
+      { model: "claude-opus-4-8", effort: "high" },
+      { model: "claude-opus-4-8", effort: "high" },
+    ]);
     const detail = await app.request(`/api/opportunities/${process.id}`);
     expect(detail.status).toBe(200);
     const detailBody = await detail.json();
@@ -153,7 +185,7 @@ describe("opportunity discovery API", () => {
     expect(await opportunities.get(draft.id)).toBeNull();
   });
 
-  test("does not call scenario generation without high-confidence support", async () => {
+  test("does not call scenario generation for only one medium hypothesis", async () => {
     const { app, process, opportunities, calls } = await fixture("medium");
     expect(
       (
@@ -164,6 +196,31 @@ describe("opportunity discovery API", () => {
     ).toBe(202);
     await waitForState(opportunities, process.id, "no_supported_hypotheses");
     expect(calls).toEqual(["hypotheses"]);
+  });
+
+  test("creates scenarios from two medium hypotheses with an explicit fallback basis", async () => {
+    const { app, process, opportunities, calls, scenarioBases } = await fixture(
+      "medium",
+      {},
+      2,
+    );
+    expect(
+      (
+        await app.request(`/api/opportunities/${process.id}`, {
+          method: "POST",
+        })
+      ).status,
+    ).toBe(202);
+    const completed = await waitForState(
+      opportunities,
+      process.id,
+      "completed",
+    );
+    expect(completed.scenarios?.scenarios).toHaveLength(3);
+    expect(calls).toEqual(["hypotheses", "scenarios"]);
+    expect(scenarioBases).toEqual(["medium_fallback"]);
+    const detail = await app.request(`/api/opportunities/${process.id}`);
+    expect((await detail.json()).record.scenarioBasis).toBe("medium_fallback");
   });
 
   test("retries the complete pipeline after a phase-one failure", async () => {

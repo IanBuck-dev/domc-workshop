@@ -55,11 +55,15 @@ describe("process AI contract", () => {
       },
     });
     const config = await processConfig();
+    expect(config.ai).toMatchObject({
+      model: "claude-opus-4-8",
+      reasoningEffort: "medium",
+    });
     const result = await new ProcessFollowUpAdapter(runner).run({
       processId: "PROC-0001",
       configHash: "a".repeat(64),
       model: {
-        model: "sonnet",
+        model: "claude-opus-4-8",
         effort: "medium",
         timeoutMs: 90_000,
         maxOutputTokens: 6_000,
@@ -81,7 +85,7 @@ describe("process AI contract", () => {
     ).toBe("medium");
     expect(
       captured?.command.slice(captured.command.indexOf("--model") + 1)[0],
-    ).toBe("sonnet");
+    ).toBe("claude-opus-4-8");
     expect(
       captured?.command.slice(captured.command.indexOf("--tools") + 1)[0],
     ).toBe("");
@@ -145,7 +149,7 @@ describe("process AI contract", () => {
         processId: "PROC-0001",
         configHash: "a".repeat(64),
         model: {
-          model: "sonnet",
+          model: "claude-opus-4-8",
           effort: "medium",
           timeoutMs: 90_000,
           maxOutputTokens: 6_000,
@@ -231,7 +235,7 @@ describe("process AI contract", () => {
       processId: "PROC-0001",
       configHash: "a".repeat(64),
       model: {
-        model: "sonnet",
+        model: "claude-opus-4-8",
         effort: "medium",
         timeoutMs: 90_000,
         maxOutputTokens: 6_000,
@@ -283,7 +287,7 @@ describe("process AI contract", () => {
       processId: "PROC-0001",
       configHash: "a".repeat(64),
       model: {
-        model: "sonnet" as const,
+        model: "claude-opus-4-8" as const,
         effort: "medium" as const,
         timeoutMs: 90_000,
         maxOutputTokens: 6_000,
@@ -379,7 +383,7 @@ describe("process AI contract", () => {
         processId: "PROC-0001",
         configHash: "a".repeat(64),
         model: {
-          model: "sonnet",
+          model: "claude-opus-4-8",
           effort: "medium",
           timeoutMs: 90_000,
           maxOutputTokens: 6_000,

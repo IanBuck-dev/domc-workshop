@@ -213,8 +213,8 @@ export function ProcessCapturePage() {
 
   return (
     <section className="capture-page">
-      <Link className="back-link" to="/">
-        <ArrowLeft /> Zur Prozessübersicht
+      <Link className="back-link" to={`/processes/${id}`}>
+        <ArrowLeft /> Zum Prozess
       </Link>
       <div className="capture-heading">
         <div>

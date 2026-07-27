@@ -21,7 +21,7 @@ import {
 export const aiTrace = () => ({
   operationId: crypto.randomUUID(),
   sessionId: crypto.randomUUID(),
-  model: "sonnet",
+  model: "claude-opus-4-8",
   durationMs: 10,
   inputTokens: 2,
   outputTokens: 4,
@@ -53,6 +53,7 @@ export async function opportunityDefaults() {
 
 export function hypothesisAiResult(
   confidence: "high" | "medium" | "low" = "high",
+  hypothesisCount = 1,
 ): OpportunityHypothesisAiResult {
   return {
     stepAnalyses: understanding().steps.map((step, index) => ({
@@ -64,42 +65,40 @@ export function hypothesisAiResult(
           : "Für diesen Schritt ist kein belastbares KI-Potenzial belegt.",
       hypotheses:
         index === 0
-          ? [
-              {
-                processStepId: step.id,
-                title: "Kontaktentwurf aus Falldaten vorbereiten",
-                currentSituation:
-                  "Informationen werden heute manuell zusammengeführt.",
-                aiContribution:
-                  "KI interpretiert Falldaten und erstellt einen begründeten Entwurf.",
-                aiCapabilities: ["interpretation", "generation"],
-                expectedChange:
-                  "Der Mensch startet mit einem fachlich begründeten Entwurf.",
-                supportingDeterministicAutomation: ["Freigabestatus prüfen"],
-                requiredInformationAndSystemAccess: [
-                  "Lesender Zugriff auf CRM-Angaben",
-                ],
-                expectedHumanRole:
-                  "Fachliche Prüfung und Freigabe kritischer Fälle.",
-                potentialLevel: "high",
-                potentialRationale:
-                  "Der wiederkehrende Interpretations- und Formulierungsaufwand ist hoch.",
-                confidenceLevel: confidence,
-                confidenceRationale:
-                  "Der Prozessschritt und seine Quellen sind im Prozessbild dokumentiert.",
-                evidenceIds: ["flow-roles"],
-                assumptions:
-                  confidence === "high"
-                    ? []
-                    : [
-                        {
-                          text: "Die CRM-Daten sind vollständig.",
-                          material: true,
-                        },
-                      ],
-                openQuestions: [],
-              },
-            ]
+          ? Array.from({ length: hypothesisCount }, (_, hypothesisIndex) => ({
+              processStepId: step.id,
+              title: `Kontaktentwurf ${hypothesisIndex + 1} aus Falldaten vorbereiten`,
+              currentSituation:
+                "Informationen werden heute manuell zusammengeführt.",
+              aiContribution:
+                "KI interpretiert Falldaten und erstellt einen begründeten Entwurf.",
+              aiCapabilities: ["interpretation", "generation"],
+              expectedChange:
+                "Der Mensch startet mit einem fachlich begründeten Entwurf.",
+              supportingDeterministicAutomation: ["Freigabestatus prüfen"],
+              requiredInformationAndSystemAccess: [
+                "Lesender Zugriff auf CRM-Angaben",
+              ],
+              expectedHumanRole:
+                "Fachliche Prüfung und Freigabe kritischer Fälle.",
+              potentialLevel: "high",
+              potentialRationale:
+                "Der wiederkehrende Interpretations- und Formulierungsaufwand ist hoch.",
+              confidenceLevel: confidence,
+              confidenceRationale:
+                "Der Prozessschritt und seine Quellen sind im Prozessbild dokumentiert.",
+              evidenceIds: ["flow-roles"],
+              assumptions:
+                confidence === "high"
+                  ? []
+                  : [
+                      {
+                        text: "Die CRM-Daten sind vollständig.",
+                        material: true,
+                      },
+                    ],
+              openQuestions: [],
+            }))
           : [],
     })),
   };
@@ -107,23 +106,29 @@ export function hypothesisAiResult(
 
 export function normalizedHypotheses(
   confidence: "high" | "medium" | "low" = "high",
+  hypothesisCount = 1,
 ): OpportunityHypothesisResult {
+  let sequence = 0;
   return {
     schemaVersion: 1,
-    stepAnalyses: hypothesisAiResult(confidence).stepAnalyses.map(
-      (analysis, index) => ({
-        ...analysis,
-        hypotheses: analysis.hypotheses.map((hypothesis) => ({
-          ...hypothesis,
-          id: `HYP-${String(index + 1).padStart(3, "0")}`,
-          provenance: "ai_inferred" as const,
-        })),
-      }),
-    ),
+    stepAnalyses: hypothesisAiResult(
+      confidence,
+      hypothesisCount,
+    ).stepAnalyses.map((analysis) => ({
+      ...analysis,
+      hypotheses: analysis.hypotheses.map((hypothesis) => ({
+        ...hypothesis,
+        id: `HYP-${String(++sequence).padStart(3, "0")}`,
+        provenance: "ai_inferred" as const,
+      })),
+    })),
   };
 }
 
-function scenario(level: ScenarioLevel): OpportunityScenario {
+function scenario(
+  level: ScenarioLevel,
+  hypothesisCount: number,
+): OpportunityScenario {
   const autonomous = level !== "assistive";
   return {
     id: `SCN-${level}`,
@@ -132,7 +137,10 @@ function scenario(level: ScenarioLevel): OpportunityScenario {
     title: `${level}es Zukunftsszenario`,
     summary: "Ein abgegrenztes Zukunftsbild mit klarer menschlicher Kontrolle.",
     targetState: "Der Kontaktentwurf wird risikogerecht unterstützt.",
-    includedHypothesisIds: ["HYP-001"],
+    includedHypothesisIds: Array.from(
+      { length: hypothesisCount },
+      (_, index) => `HYP-${String(index + 1).padStart(3, "0")}`,
+    ),
     excludedHypotheses: [],
     affectedProcessStepIds: ["step-1"],
     changesFromToday: ["Falldaten werden für einen Entwurf interpretiert."],
@@ -190,13 +198,13 @@ function scenario(level: ScenarioLevel): OpportunityScenario {
   };
 }
 
-export function scenarioResult(): OpportunityScenarioResult {
+export function scenarioResult(hypothesisCount = 1): OpportunityScenarioResult {
   return {
     schemaVersion: 1,
     scenarios: [
-      scenario("assistive"),
-      scenario("delegated"),
-      scenario("agentic"),
+      scenario("assistive", hypothesisCount),
+      scenario("delegated", hypothesisCount),
+      scenario("agentic", hypothesisCount),
     ],
   };
 }

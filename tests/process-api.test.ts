@@ -24,7 +24,7 @@ afterEach(async () =>
 const trace = () => ({
   operationId: crypto.randomUUID(),
   sessionId: crypto.randomUUID(),
-  model: "sonnet",
+  model: "claude-opus-4-8",
   durationMs: 10,
   inputTokens: 2,
   outputTokens: 4,
@@ -34,23 +34,36 @@ async function fixture(followUp = false, aiOverride?: ProcessAiAdapter) {
   const root = await mkdtemp(join(tmpdir(), "process-api-"));
   roots.push(root);
   const repo = new ProcessCaptureRepository(root);
+  const modelCalls: Array<{ model: string; effort: string }> = [];
   const ai: ProcessAiAdapter = aiOverride ?? {
-    followUps: async () => ({
-      value: {
-        followUps: followUp
-          ? [
-              {
-                id: "question-1",
-                topicId: "purpose-scope",
-                question: "Welches Ergebnis entsteht?",
-                rationale: "Ergebnis präzisieren.",
-              },
-            ]
-          : [],
-      },
-      trace: trace(),
-    }),
-    synthesize: async () => ({ value: understanding(), trace: trace() }),
+    followUps: async (request) => {
+      modelCalls.push({
+        model: request.model.model,
+        effort: request.model.effort,
+      });
+      return {
+        value: {
+          followUps: followUp
+            ? [
+                {
+                  id: "question-1",
+                  topicId: "purpose-scope",
+                  question: "Welches Ergebnis entsteht?",
+                  rationale: "Ergebnis präzisieren.",
+                },
+              ]
+            : [],
+        },
+        trace: trace(),
+      };
+    },
+    synthesize: async (request) => {
+      modelCalls.push({
+        model: request.model.model,
+        effort: request.model.effort,
+      });
+      return { value: understanding(), trace: trace() };
+    },
   };
   const app = new Hono();
   app.onError((error, c) =>
@@ -60,7 +73,7 @@ async function fixture(followUp = false, aiOverride?: ProcessAiAdapter) {
     ),
   );
   app.route("/api/processes", processCaptureRoutes(repo, ai));
-  return { app, repo, config: await processConfig() };
+  return { app, repo, config: await processConfig(), modelCalls };
 }
 async function waitForOperation(
   processId: string,
@@ -105,7 +118,7 @@ async function waitForNoActiveOperation(processId: string) {
 
 describe("process capture API", () => {
   test("completes the no-followup happy path", async () => {
-    const { app, repo, config } = await fixture();
+    const { app, repo, config, modelCalls } = await fixture();
     const createdResponse = await app.request("/api/processes", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -140,6 +153,10 @@ describe("process capture API", () => {
       (await waitForState(repo, created.id, "review_required")).understanding
         ?.steps,
     ).toHaveLength(5);
+    expect(modelCalls).toEqual([
+      { model: "claude-opus-4-8", effort: "medium" },
+      { model: "claude-opus-4-8", effort: "medium" },
+    ]);
     await waitForNoActiveOperation(created.id);
     const correctedCharacteristics = workCharacteristicAnswers();
     correctedCharacteristics[3]!.selectedOptionIds = ["unsure"];
