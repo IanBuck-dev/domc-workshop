@@ -7,6 +7,7 @@ import type {
 import type { ProcessUnderstanding } from "../lib/process-types";
 import { Badge, type BadgeTone } from "./ui/badge";
 import { IconButton } from "./ui/button";
+import { Card } from "./ui/card";
 import { Meter } from "./ui/meter";
 
 type ProcessStep = ProcessUnderstanding["steps"][number];
@@ -148,8 +149,9 @@ function ScenarioColumn({
   const included = scenario.includedHypothesisIds.length;
 
   return (
-    <li
-      className={`panel scenario-column scenario-${scenario.level}${
+    <Card
+      as="li"
+      className={`scenario-column scenario-${scenario.level}${
         open ? " is-open" : ""
       }`}
     >
@@ -219,7 +221,7 @@ function ScenarioColumn({
         {open ? "Details schließen" : "Details ansehen"}
         <ChevronDown aria-hidden />
       </button>
-    </li>
+    </Card>
   );
 }
 
@@ -243,9 +245,10 @@ function ScenarioDetail({
     .sort((a, b) => a.order - b.order);
 
   return (
-    <article
+    <Card
+      as="article"
       id={id}
-      className={`panel scenario-detail scenario-${scenario.level}`}
+      className={`scenario-detail scenario-${scenario.level}`}
     >
       <header className="scenario-detail-head">
         <div>
@@ -392,7 +395,7 @@ function ScenarioDetail({
           <p>{scenario.confidenceRationale}</p>
         </footer>
       </div>
-    </article>
+    </Card>
   );
 }
 

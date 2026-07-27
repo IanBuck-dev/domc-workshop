@@ -36,6 +36,12 @@
   border: 1px solid var(--green-border);
   box-shadow: none;
 }
+/* Eigene Hover-Regel, weil .button:hover die höhere Spezifität hat und den
+   sekundären Button sonst grün füllt, ohne die Schriftfarbe mitzuziehen. */
+.button.secondary:hover:not(:disabled) {
+  background: var(--surface-accent);
+  border-color: var(--focus-ring);
+}
 .button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
