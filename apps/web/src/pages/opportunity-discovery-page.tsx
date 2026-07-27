@@ -218,7 +218,7 @@ export function OpportunityDiscoveryPage({
         <OpportunityScenariosView
           scenarios={record.scenarios.scenarios}
           hypotheses={hypotheses}
-          totalProcessSteps={record.sourceProcess.understanding.steps.length}
+          steps={record.sourceProcess.understanding.steps}
         />
       )}
     </section>

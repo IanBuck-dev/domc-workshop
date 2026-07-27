@@ -37,10 +37,13 @@ export function AppShell({
       </header>
       <DemoDataWarning />
       <AiOperationQueue />
-      <main>{children}</main>
-      <footer>
-        Workshop-Prototyp · Prozessverständnis durch den Fachbereich bestätigen
-      </footer>
+      <div className="app-scroll">
+        <main>{children}</main>
+        <footer>
+          Workshop-Prototyp · Prozessverständnis durch den Fachbereich
+          bestätigen
+        </footer>
+      </div>
     </div>
   );
 }
