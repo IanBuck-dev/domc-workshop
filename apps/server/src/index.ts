@@ -103,7 +103,7 @@ if (hasWebDist()) {
 const port = process.env.PORT
   ? Number(process.env.PORT)
   : await availablePort(3210);
-console.log(`Prozessaufnahme: http://127.0.0.1:${port}`);
+console.log(`Zukunftswerkstatt: http://127.0.0.1:${port}`);
 if (!process.env.BUN_WATCH) void openBrowser(`http://127.0.0.1:${port}`);
 export default {
   port,

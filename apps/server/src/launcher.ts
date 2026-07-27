@@ -2,11 +2,14 @@ import { existsSync } from "node:fs";
 import { open, readFile, rm } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
 import { createServer } from "node:net";
+
+function isPackagedExecutable() {
+  return basename(process.execPath).startsWith("Zukunftswerkstatt");
+}
+
 export function appBase() {
   if (process.env.APP_BASE_PATH) return process.env.APP_BASE_PATH;
-  return basename(process.execPath).startsWith("Prozessaufnahme")
-    ? dirname(process.execPath)
-    : process.cwd();
+  return isPackagedExecutable() ? dirname(process.execPath) : process.cwd();
 }
 export async function openBrowser(url: string) {
   if (process.env.NO_OPEN === "1") return;
@@ -22,7 +25,7 @@ export function workspacePath() {
   return process.env.WORKSPACE_PATH ?? join(appBase(), "workspace");
 }
 export function webDist() {
-  return basename(process.execPath).startsWith("Prozessaufnahme")
+  return isPackagedExecutable()
     ? join(appBase(), "web")
     : join(appBase(), "dist", "web");
 }
@@ -63,7 +66,7 @@ export async function acquireInstanceLock(root: string) {
     if (pid === process.pid) return;
     try {
       process.kill(pid, 0);
-      throw new Error("Die Prozessaufnahme läuft bereits.");
+      throw new Error("Die Zukunftswerkstatt läuft bereits.");
     } catch (error) {
       if (error instanceof Error && error.message.includes("läuft bereits"))
         throw error;

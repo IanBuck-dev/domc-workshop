@@ -1,6 +1,6 @@
-# Prozessaufnahme
+# Zukunftswerkstatt
 
-German workshop prototype for capturing and confirming how department processes work today. The compact two-page form produces an evidence-backed process brief and high-level process map. For a confirmed process, a separate read-only module can then discover evidence-backed KI-potential hypotheses and generate three human-oversight scenarios (`assistive`, `delegated`, `agentic`). Project assessment, scoring, prioritization, and ranking remain later phases. Repository-local files are the system of record, and the backend invokes the authenticated Claude CLI only for explicit, bounded actions.
+German workshop prototype for understanding department processes and exploring their KI potential. The first module, `Prozessaufnahme`, uses a compact two-page form to produce an evidence-backed process brief and high-level process map. For a confirmed process, a separate read-only module discovers evidence-backed KI-potential hypotheses and compares three human-oversight scenarios (`assistive`, `delegated`, `agentic`). Project assessment, scoring, prioritization, and ranking remain later phases. Repository-local files are the system of record, and the backend invokes the authenticated Claude CLI only for explicit, bounded actions. Authenticated server-sent events update active browser views without periodic polling.
 
 ## Start development
 

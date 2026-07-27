@@ -1,5 +1,5 @@
 [Unit]
-Description=Claims process capture prototype
+Description=Zukunftswerkstatt process prototype
 After=network-online.target
 Wants=network-online.target
 
