@@ -1,0 +1,82 @@
+/* Farben, Abstände, Radien, Schriftgrade — die einzige Stelle,
+   an der ein Farbwert steht. */
+
+:root {
+  color-scheme: light;
+  font-family: "Open Sans Variable", system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--canvas);
+  font-synthesis: none;
+  /* Marke und Text: ein warmes Waldgrün, kein Petrol und kein Violett */
+  --green: #14563c;
+  --green-2: #1d7050;
+  --ink: #16302a;
+  --ink-soft: #3a5148;
+  --muted: #61736e;
+  --line: #d8e2dd;
+  --green-border: #9dc0ae;
+  /* Rand eines Eingabefelds und der Fokusring: Bedienelemente brauchen 3:1
+     auf Weiß, ein zarter Kartenrand nicht. */
+  --field-border: #7a998e;
+  --focus-ring: #2f9070;
+  /* Schattenleiter: ruhend, Karte, schwebend, Dialog */
+  --shadow-sm: 0 3px 12px rgb(25 50 44 / 4%);
+  --shadow: 0 10px 30px rgb(27 58 50 / 8%);
+  --shadow-hover: 0 8px 22px rgb(25 50 44 / 10%);
+  --shadow-lg: 0 18px 45px rgb(16 48 40 / 18%);
+  --shadow-xl: 0 24px 70px rgb(16 47 40 / 28%);
+
+  /* Flächen: canvas liegt hinter allem, sunken ist eine Vertiefung in Karten */
+  --canvas: #f3f6f4;
+  --surface: #fff;
+  --surface-sunken: #f8faf9;
+  --surface-accent: #e8f1ec;
+  --surface-accent-strong: #dbeae1;
+
+  /* Statusrollen: je Rolle Fläche, Schriftfarbe und Rahmen */
+  --success-bg: #dbeae1;
+  --success-fg: #14563c;
+  --success-border: #a8c8b6;
+  --warning-bg: #fff2cf;
+  --warning-fg: #725300;
+  --warning-border: #edd89b;
+  --danger-bg: #feeceb;
+  --danger-fg: #b42318;
+  --danger-fg-strong: #7a271a;
+  --danger-border: #f0b7b0;
+  --info-bg: #e1f0f4;
+  --info-fg: #17556a;
+  /* Ganze Flächen in einer Statusfarbe, heller als die Etikettenfüllung */
+  --surface-warning: #fffdf7;
+  --surface-danger: #fff7f6;
+
+  /* Konfidenzpunkte: drei Stufen, alle über 3:1 auf Weiß */
+  --confidence-high: #009171;
+  --confidence-medium: #b07d1a;
+  --confidence-low: #7d8c88;
+
+  /* Abstandsskala */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  /* Eckenradien: sm = Etiketten, md = Bedienelemente, lg = Karten */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1rem;
+  --radius-pill: 999px;
+
+  /* Schriftgrade */
+  --text-xs: 0.72rem;
+  --text-sm: 0.8rem;
+  --text-md: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.3rem;
+  --text-2xl: 1.8rem;
+}

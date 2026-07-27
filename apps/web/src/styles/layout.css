@@ -1,0 +1,103 @@
+/* Seitengerüst: Titelbereich, Formularraster, Hero und
+   Abschnittsköpfe. */
+
+.narrow-page {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.page-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+.page-title p {
+  color: var(--muted);
+  max-width: 720px;
+}
+.page-title h1 {
+  margin-bottom: var(--space-3);
+}
+.title-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.setup-form {
+  padding: var(--space-5);
+  display: grid;
+  gap: var(--space-5);
+}
+.confirmation-box {
+  display: flex;
+  align-items: flex-start;
+  padding: var(--space-4);
+  border: 1px solid var(--green-border);
+  border-radius: var(--radius-md);
+  background: var(--surface-accent);
+  gap: var(--space-3);
+}
+.confirmation-box input {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: var(--space-1);
+}
+.confirmation-box svg {
+  color: var(--green);
+}
+.confirmation-box span {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.hero {
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(120deg, var(--green), var(--green-2));
+  color: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  box-shadow: var(--shadow-lg);
+}
+.hero p {
+  max-width: 720px;
+  color: rgb(255 255 255 / 82%);
+  margin-bottom: 0;
+}
+.hero .kicker {
+  color: rgb(255 255 255 / 75%);
+}
+.hero .button {
+  background: var(--surface);
+  color: var(--green);
+  white-space: nowrap;
+}
+.compact-hero h1 {
+  margin-bottom: var(--space-2);
+}
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: var(--space-4);
+  margin: var(--space-6) 0 var(--space-3);
+}
+.section-head h2 {
+  margin: 0;
+}
+.section-head > span {
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+.section-head.compact {
+  margin: 0 0 var(--space-3);
+}

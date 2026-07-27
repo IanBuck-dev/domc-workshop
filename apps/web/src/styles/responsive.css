@@ -1,0 +1,219 @@
+/* Alle Breakpoints an einer Stelle, damit sie zuletzt greifen. */
+
+@media (max-width: 1024px) {
+  .app > header {
+    height: auto;
+    min-height: 70px;
+  }
+  nav a {
+    font-size: var(--text-sm);
+    padding: var(--space-2);
+  }
+  .logout-button {
+    font-size: 0;
+    padding: var(--space-2);
+  }
+  .capture-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .capture-progress {
+    width: 100%;
+    min-width: 0;
+  }
+  .opportunity-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .opportunity-progress {
+    width: 100%;
+    min-width: 0;
+  }
+  .opportunity-progress-wrap {
+    width: 100%;
+    min-width: 0;
+  }
+  .process-module-grid {
+    grid-template-columns: 1fr;
+  }
+  .brief-list-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .work-characteristic-options {
+    grid-template-columns: 1fr;
+  }
+  .process-map {
+    display: grid;
+    overflow: visible;
+  }
+  .map-node-wrap {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .map-node {
+    min-height: auto;
+  }
+  .map-arrow {
+    transform: rotate(90deg);
+    justify-self: center;
+  }
+}
+
+@media (max-width: 1099px) {
+  .scenario-title {
+    font-size: var(--text-base);
+  }
+  .scenario-metric,
+  .scenario-column-head,
+  .scenario-title,
+  .scenario-pitch,
+  .scenario-toggle {
+    padding-right: var(--space-3);
+    padding-left: var(--space-3);
+  }
+}
+
+@media (max-width: 860px) {
+  .scenario-compare-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .scenario-column {
+    grid-template-rows: none;
+  }
+  .scenario-pitch {
+    min-height: 0;
+    -webkit-line-clamp: 3;
+  }
+  .scenario-title,
+  .scenario-human-role,
+  .scenario-column .capability-list {
+    min-height: 0;
+  }
+  .scenario-title {
+    -webkit-line-clamp: none;
+  }
+  .scenario-toggle {
+    align-self: auto;
+  }
+}
+
+@media (max-width: 900px) {
+  .process-row-link {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .process-row-main {
+    grid-column: 1 / -1;
+    padding-bottom: var(--space-3);
+  }
+  .process-row-side {
+    grid-template-columns: minmax(0, 1fr) 2.4rem;
+    padding: 0 var(--space-3) var(--space-3) var(--space-8);
+  }
+  .process-row-side .navigation-state {
+    justify-self: start;
+  }
+}
+
+@media (max-width: 720px) {
+  .brand small {
+    display: none;
+  }
+  .brand img {
+    width: 110px;
+  }
+  nav a {
+    font-size: 0;
+  }
+  .app-scroll > main {
+    width: min(100% - 1rem, 1240px);
+    padding-top: var(--space-4);
+  }
+  .data-warning {
+    align-items: flex-start;
+  }
+  .hero,
+  .page-title,
+  .brief-heading,
+  .confirmation-panel,
+  .submit-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .form-grid,
+  .brief-grid,
+  .brief-list-grid {
+    grid-template-columns: 1fr;
+  }
+  .process-row-main {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .hypothesis-card-head,
+  .hypothesis-rationales {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .process-row-side {
+    padding-left: var(--space-4);
+  }
+  .process-module-card {
+    grid-template-columns: 1fr;
+  }
+  .process-module-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .process-module-action {
+    justify-content: stretch;
+  }
+  .process-module-action .button {
+    width: 100%;
+  }
+  .process-detail-heading {
+    position: relative;
+    padding-right: var(--space-7);
+  }
+  .process-detail-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+  .confirmation-dialog > footer {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+  .confirmation-dialog > footer .button,
+  .confirmation-dialog > footer .danger-button {
+    width: 100%;
+  }
+  .edit-actions {
+    grid-template-columns: 1fr;
+  }
+  .edit-actions > div {
+    flex-wrap: wrap;
+  }
+  .work-characteristics-section .list-title,
+  .work-characteristics-review-list article > div,
+  .edit-actions-inline {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .scenario-potential-grid,
+  .scenario-responsibility-grid {
+    grid-template-columns: 1fr;
+  }
+  .step-list dl {
+    grid-template-columns: 1fr;
+  }
+  .step-list dd {
+    margin-bottom: var(--space-1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *:before,
+  *:after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
