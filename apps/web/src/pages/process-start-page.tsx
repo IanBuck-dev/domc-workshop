@@ -130,7 +130,11 @@ export function ProcessStartPage() {
           </span>
         </label>
         {error && <p className="notice error">{error}</p>}
-        <Button variant="primary" disabled={!config || !confirmed || busy}>
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={!config || !confirmed || busy}
+        >
           {busy ? "Wird angelegt …" : "Weiter zur Prozessbeschreibung"}
         </Button>
       </Card>

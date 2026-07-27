@@ -63,7 +63,7 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
             {error}
           </p>
         )}
-        <Button variant="primary" disabled={busy}>
+        <Button type="submit" variant="primary" disabled={busy}>
           {busy ? "Anmeldung läuft …" : "Anmelden"}
         </Button>
         <small>Nur anonymisierte oder freigegebene Testdaten verwenden.</small>

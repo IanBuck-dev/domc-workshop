@@ -298,6 +298,7 @@ export function ProcessCapturePage() {
               </span>
             </div>
             <Button
+              type="submit"
               variant="primary"
               disabled={
                 locked ||
@@ -359,6 +360,7 @@ export function ProcessCapturePage() {
               </span>
             </div>
             <Button
+              type="submit"
               variant="primary"
               disabled={
                 locked ||
