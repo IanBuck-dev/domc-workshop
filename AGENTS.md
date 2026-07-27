@@ -22,7 +22,7 @@ Build a local prototype that captures and confirms how a department process work
 - AI output is advisory. Only a user action can confirm the process understanding.
 - Claude prompts and structured response schemas are versioned repository files, not inline strings scattered through application code.
 - Do not send unrelated repository content to Claude. Pass only the idea data required for the current operation.
-- Avoid autonomous loops. Process capture actions trigger one bounded operation. The explicitly started opportunity-discovery job is the sole exception: it may perform exactly one bounded hypothesis call followed deterministically by exactly one bounded scenario call when high-confidence hypotheses exist.
+- Avoid autonomous loops. Process capture actions trigger one bounded operation. The explicitly started opportunity-discovery job is the sole exception: it may perform exactly one bounded hypothesis call followed deterministically by exactly one bounded scenario call when at least one high-confidence hypothesis or the defined fallback of two to three medium-confidence hypotheses exists.
 - Do not resume Claude sessions. Every follow-up, synthesis, hypothesis, and scenario operation uses a fresh session; autonomous follow-up loops remain prohibited.
 - Keep editable product behavior in `defaults/process-capture-config.json` and versioned prompts and schemas; do not bury workshop policy in React components.
 - Keep automated testing lean for this prototype: cover domain rules, file/reset safety, and the Claude process contract.

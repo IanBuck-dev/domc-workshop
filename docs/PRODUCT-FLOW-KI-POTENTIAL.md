@@ -1,8 +1,10 @@
-# Implementation Plan — Two-Page Process Understanding Prototype
+# Implementation Plan — Zukunftswerkstatt: Process Capture Module
 
 ## Status, objective, and cleanup decision
 
-Status: implementation plan approved for the current repository iteration.
+Status: process-capture module implemented. The separate opportunity-discovery
+module is implemented according to
+[PLAN-KI-POTENTIAL-SCENARIOS.md](PLAN-KI-POTENTIAL-SCENARIOS.md).
 
 Objective: replace the current assessment prototype and the older discovery/PDD
 prototype with one compact two-page form that captures how a department process
@@ -463,7 +465,9 @@ request:
 4. Success validates and persists the result, audits it, and advances state.
 5. Failure records a sanitized error and leaves the record in its retryable
    pre-operation state.
-6. The page polls operation and process state and may be left and reopened.
+6. An authenticated server-sent event stream publishes queue and process-change
+   events. The page reloads canonical process data after a matching event and
+   may be left and reopened; the browser reconnects the stream automatically.
 7. A service restart discards in-memory queued/running work but leaves canonical
    data unchanged; the user sees a retry action.
 
@@ -495,6 +499,7 @@ Mount only authentication, config, process, health, and operation APIs.
 | `DELETE` | `/api/processes/:id`                              | `200 { id, deleted: true }`             |
 | `GET`    | `/api/ai-operations`                              | active operations only                  |
 | `DELETE` | `/api/ai-operations/:operationId`                 | `200 { cancelled: true }`               |
+| `GET`    | `/api/events`                                     | authenticated SSE event stream          |
 | `GET`    | `/api/config/defaults`                            | validated process config                |
 | `POST`   | `/api/config/instruction-preview`                 | complete read-only instruction Markdown |
 
@@ -547,7 +552,7 @@ and removes the row.
 - optional upload picker showing selected/processed status;
 - one submit action for main answers;
 - zero to five follow-up cards grouped by topic;
-- queue/running status that survives navigation and polling;
+- queue/running status that survives navigation and event-stream reconnection;
 - explicit retry after failure;
 - process brief with six review sections;
 - a separately reviewable and auditable `Arbeitsmerkmale` section containing
@@ -769,8 +774,9 @@ Hard gate:
 
 ### Phase 4 — two-page UI and process map
 
-Implement list, page 1, page 2 states, upload selection, progress, polling,
-review/correction, map, confirmation, settings, and delete confirmation.
+Implement list, page 1, page 2 states, upload selection, progress, authenticated
+live event updates, review/correction, map, confirmation, settings, and delete
+confirmation.
 
 Expected outputs:
 

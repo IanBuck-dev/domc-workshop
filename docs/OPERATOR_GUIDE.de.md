@@ -1,4 +1,4 @@
-# Bedienungsanleitung – Prozesserfassung
+# Bedienungsanleitung – Zukunftswerkstatt
 
 ## Vor dem Workshop
 
@@ -30,12 +30,18 @@ Nach der fachlichen Bestätigung zeigt die Prozessübersicht die Aktion
 
 1. Claude untersucht jeden bestätigten Hauptschritt und dokumentiert mögliche
    KI-Beiträge mit Begründung, Evidenz, Annahmen, Potenzial und Konfidenz.
-2. Nur wenn mindestens eine Hypothese eine hohe Konfidenz besitzt, erstellt eine
-   neue Claude-Session drei Zukunftsbilder: assistiert, teilautonom und agentisch.
+2. Mit mindestens einer Hypothese hoher Konfidenz erstellt eine neue
+   Claude-Session drei Zukunftsbilder: assistiert, teilautonom und agentisch.
+   Gibt es keine hohe, aber mindestens zwei mittlere Hypothesen, werden
+   ersatzweise die besten zwei bis drei verwendet. Die Oberfläche kennzeichnet
+   dann den fachlichen Klärungsbedarf; die Szenarien erhalten höchstens mittlere
+   Konfidenz.
 
 Die Ergebnisse werden während der Verarbeitung schrittweise sichtbar. Nach
 Beginn der zweiten Phase kann zwischen Hypothesen und Szenarien gewechselt
-werden. Ohne ausreichend belastbare Hypothese endet die Analyse neutral und
+werden. Ein authentifizierter Ereignisstrom aktualisiert Warteschlange und
+Prozessstand ohne periodische Abfragen; nach einem Verbindungsabbruch verbindet
+sich der Browser erneut. Ohne ausreichend belastbare Hypothese endet die Analyse neutral und
 ohne erfundene Szenarien. Ein technischer Fehler kann wiederholt werden; bereits
 gespeicherte Hypothesen bleiben bei einem Fehler der Szenariophase erhalten.
 Die Ergebnisse sind in diesem Prototyp read-only und enthalten keine

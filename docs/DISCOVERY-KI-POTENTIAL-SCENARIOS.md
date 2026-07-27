@@ -2,9 +2,9 @@
 
 ## Status und Zweck
 
-Status: abgestimmte Discovery-Grundlage für die nachgelagerte Planung. Dieses
-Dokument erweitert die aktive Prozessaufnahme noch nicht und ist kein
-Implementierungsplan.
+Status: abgestimmte und implementierte Discovery-Grundlage. Die verbindlichen
+Implementierungsdetails und Abnahmekriterien stehen in
+[`PLAN-KI-POTENTIAL-SCENARIOS.md`](./PLAN-KI-POTENTIAL-SCENARIOS.md).
 
 Die bestehende Prozessaufnahme endet weiterhin mit einem fachlich bestätigten,
 strukturierten Prozessbild. Ein neues, getrennt entwickelbares Modul soll auf
@@ -374,11 +374,14 @@ Die Hypothesenansicht gruppiert Karten nach den chronologisch angeordneten
 Prozessschritten. Jede Karte zeigt mindestens Titel, Erklärung, Potenzial,
 Konfidenz, KI-Begründung, Evidenz, Annahmen und offene Punkte.
 
-Die Szenarioansicht zeigt Assistiert, Teilautonom und Agentisch in einer
-vergleichbaren Reihenfolge. Kurze Untertitel erklären die jeweilige
-Arbeitsteilung zwischen Mensch und KI. Enthaltene Hypothesen, betroffene
-Prozessschritte, Systemzugriffe und menschliche Kontrollpunkte sind direkt
-nachvollziehbar.
+Die Szenarioansicht zeigt Assistiert, Teilautonom und Agentisch auf dem Desktop
+als drei ausgerichtete Vergleichsspalten. Titel, kurzer Pitch, Konfidenz,
+betroffene Prozessschritte, enthaltene Potenziale, Rolle des Menschen und
+KI-Fähigkeiten stehen in identischen Zeilen und sind ohne Öffnen vergleichbar.
+Genau ein Szenario kann seine vollständigen Inhalte in einer gemeinsamen,
+spaltenübergreifenden Detailfläche darunter zeigen. Auf Tabletbreite stehen die
+drei Szenarien untereinander. Diese Vergleichsansicht ersetzt die frühere Idee
+horizontaler Szenariozeilen.
 
 ### Bedeutung von „live aktualisiert“
 

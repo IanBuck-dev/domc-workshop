@@ -559,6 +559,11 @@ Eine bestätigte Prozesszeile zeigt abhängig von der Summary:
 - technisch fehlgeschlagen: Status `Analyse prüfen`;
 - veraltet: sichtbare Kennzeichnung `Prozess später geändert`.
 
+Der Einstieg aus der Prozessdetailseite öffnet bei mindestens einem bereits
+gespeicherten Szenario direkt den Schritt `KI-Szenarien`. Solange noch kein
+Szenario verfügbar ist, öffnet er `Potenzialhypothesen`. Beide Schritte bleiben
+anschließend über den Stepper erreichbar.
+
 Nicht bestätigte Prozesse zeigen keine Startaktion. Der bestehende Link zum
 Prozessbild und die permanente Löschfunktion bleiben zugänglich. Der Startbutton
 ist eine eigene Schaltfläche und wird nicht in einen anderen Link verschachtelt.
@@ -569,9 +574,17 @@ Nach erfolgreichem `POST` navigiert die UI zu
 ### Opportunity-Detailseite
 
 Die Route `/processes/:id/opportunities` lädt Prozess und Opportunity-Record.
-Solange ein nicht-terminaler Zustand vorliegt, pollt sie den Detailendpoint im
-Sekundentakt. Das Polling endet bei terminalem Zustand oder beim Unmount und
-erzeugt keine neue KI-Aktion.
+Ein an der Anwendungssitzung authentifizierter EventSource auf `/api/events`
+liefert beim Verbinden den aktuellen Stand der Warteschlange und meldet danach
+`operations`- sowie `process-changed`-Ereignisse. Bei einer Meldung für den
+geöffneten Prozess lädt die Seite den kanonischen Detaildatensatz neu. Der
+Browser stellt unterbrochene Verbindungen automatisch wieder her; es gibt kein
+periodisches Polling und ein Ereignis startet keine neue KI-Aktion.
+
+Server und Browser verwenden denselben strikt validierten Ereignisvertrag.
+Unbekannte Ereignistypen, zusätzliche Felder, ungültige IDs und unvollständige
+Operationsdaten werden verworfen. Ein Heartbeat hält ruhige Verbindungen offen,
+enthält aber keine Fachdaten.
 
 Die Seite zeigt permanent:
 
@@ -629,10 +642,16 @@ Jedes Szenario zeigt:
 `freigegebener Werkzeugzugriff (MCP)` angezeigt. Rohes JSON, Prompts,
 Modellantworten, CLI-Begriffe und Stacktraces bleiben verborgen.
 
-Desktop zeigt die drei Szenariokarten vergleichbar nebeneinander, wenn der
-verfügbare Raum mindestens `1100px` breit ist. Tablet und kleinere Breiten
-zeigen sie untereinander. Alle Stepper, Akkordeons und Retry-Aktionen sind per
-Tastatur bedienbar und besitzen sichtbare Fokuszustände.
+Bei mehr als `860px` verfügbarem Raum zeigt die Übersicht die drei Szenarien als
+ausgerichtete Vergleichsspalten. Jede Spalte enthält Titel, kompakten Pitch und
+dieselben Kennzahlenzeilen für Konfidenz, betroffene Prozessschritte,
+enthaltene Potenziale, Rolle des Menschen und KI-Fähigkeiten. Genau ein
+Szenario kann ausgewählt sein; seine vollständigen Inhalte erscheinen in einer
+gemeinsamen, über alle drei Spalten reichenden Detailfläche unter dem
+Vergleich. Bis einschließlich `860px` werden die Szenarien untereinander
+angeordnet. Alle Stepper, Detailaktionen und Retry-Aktionen sind per Tastatur
+bedienbar und besitzen sichtbare Fokuszustände. Die frühere Darstellung als
+drei eigenständige horizontale Detailzeilen wird nicht fortgeführt.
 
 Es gibt keine Edit-, Add-, Delete-, Confirm-, Select- oder Recalculate-Aktion
 für Hypothesen oder Szenarien.
@@ -840,10 +859,10 @@ Erwartete Outputs:
 
 - ein manueller Start erzeugt genau einen Queue-Job und höchstens zwei
   Claude-Aufrufe;
-- ohne hohe Konfidenz erfolgt exakt ein Claude-Aufruf und der terminale Zustand
-  `no_supported_hypotheses`;
-- mit hoher Konfidenz erfolgen exakt zwei frische Calls und der Zustand
-  `completed` mit drei Szenarien;
+- ohne eine hohe und ohne mindestens zwei mittlere Hypothesen erfolgt exakt ein
+  Claude-Aufruf und der terminale Zustand `no_supported_hypotheses`;
+- mit mindestens einer hohen oder mindestens zwei mittleren Hypothesen erfolgen
+  exakt zwei frische Calls und der Zustand `completed` mit drei Szenarien;
 - ein zweiter Start, ein Start für einen Draft und ein Recalc nach Abschluss
   liefern `409`;
 - Phase-2-Retry ruft Phase 1 nicht erneut auf;
@@ -860,8 +879,9 @@ Hard Gate:
 
 ### 5. Prozessübersicht und Live-Detailseite
 
-Implementiere Summary-Zusammenführung, Startaktion, Route, Polling, Stepper,
-Hypothesengruppen, Szenariokarten, Stale- und Fehlerzustände.
+Implementiere Summary-Zusammenführung, Startaktion, Route, authentifizierten
+SSE-Ereignisstrom, Stepper, Hypothesengruppen, Szenariovergleich, Stale- und
+Fehlerzustände.
 
 Erwartete Outputs:
 
@@ -895,8 +915,8 @@ Chrome-DevTools-Verifikation auf `1440x900` und `768x1024`:
 6. Stale-Hinweis mit einer lokalen Testfixture prüfen;
 7. Fokusreihenfolge, Stepper, aufklappbare Details und Retry prüfen;
 8. gefilterte Console auf Errors und Warnings prüfen;
-9. Network auf unerwartete `4xx/5xx`, doppelte Starts und Polling nach
-   terminalem Zustand prüfen.
+9. Network auf unerwartete `4xx/5xx`, doppelte Starts, genau eine
+   `/api/events`-Verbindung und ausbleibende periodische Detailabfragen prüfen.
 
 ### 6. Vollständige Regression, Release und Live-Abnahme
 
@@ -913,9 +933,9 @@ git diff --check
 
 Erwartete Release-Artefakte:
 
-- `dist/Prozessaufnahme-linux-arm64`;
-- `dist/Prozessaufnahme-macos-arm64`;
-- `dist/Prozessaufnahme-windows-x64.exe`;
+- `dist/Zukunftswerkstatt-linux-arm64`;
+- `dist/Zukunftswerkstatt-macos-arm64`;
+- `dist/Zukunftswerkstatt-windows-x64.exe`;
 - drei Plattform-ZIPs mit den neuen Defaults, Prompts und Schemas.
 
 Vor dem Pi-Deploy werden Dateianzahl und Checksummen des vorhandenen
@@ -927,7 +947,7 @@ Daten ausgerollt, der Dienst neu gestartet und anschließend geprüft:
 - anonyme private API-Aufrufe liefern `401`;
 - bestehende bestätigte Prozessaufnahmen bleiben unverändert lesbar;
 - ein fiktiver Prozess durchläuft Hypothesen und drei Szenarien;
-- Claude-Trace zeigt genau zwei frische Sessions, `medium` und keinen
+- Claude-Trace zeigt genau zwei frische Sessions, `high` und keinen
   Workspace-/Web-/MCP-Toolzugriff;
 - Browser-Refresh erzeugt keinen zusätzlichen Call;
 - Prozesslöschung entfernt auch das Opportunity-Unterverzeichnis;
