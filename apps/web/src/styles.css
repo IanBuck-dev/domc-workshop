@@ -4,7 +4,7 @@
   color-scheme: light;
   font-family: "Open Sans Variable", system-ui, sans-serif;
   color: var(--ink);
-  background: #f3f6f4;
+  background: var(--canvas);
   font-synthesis: none;
   /* Marke und Text */
   --green: #005744;
@@ -14,9 +14,10 @@
   --line: #d6dfdc;
   --shadow: 0 10px 30px rgb(27 58 50 / 8%);
 
-  /* Flächen */
+  /* Flächen: canvas liegt hinter allem, sunken ist eine Vertiefung in Karten */
+  --canvas: #f3f6f4;
   --surface: #fff;
-  --surface-muted: #f8faf9;
+  --surface-sunken: #f8faf9;
   --surface-accent: #e7f2ee;
   --surface-accent-strong: #dff3eb;
 
@@ -69,7 +70,12 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 80% 0, #e7f2ee 0, transparent 32rem), #f3f6f4;
+    radial-gradient(
+      circle at 80% 0,
+      var(--surface-accent) 0,
+      transparent 32rem
+    ),
+    var(--canvas);
 }
 button,
 input,
@@ -147,11 +153,10 @@ small {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgb(255 255 255 / 94%);
+  background: var(--surface);
   border-bottom: 1px solid var(--line);
   position: relative;
   z-index: 20;
-  backdrop-filter: blur(12px);
 }
 .brand {
   display: flex;
@@ -488,7 +493,7 @@ textarea:hover {
 }
 .process-row-link:hover {
   border-color: #8db6ab;
-  background: var(--surface-muted);
+  background: var(--surface-sunken);
   box-shadow: 0 8px 22px rgb(25 50 44 / 10%);
   transform: translateY(-1px);
 }
@@ -792,7 +797,7 @@ textarea:hover {
 .opportunity-progress li + li:before {
   content: "";
   position: absolute;
-  top: 1rem;
+  top: var(--space-4);
   right: 50%;
   width: 100%;
   height: 2px;
@@ -887,7 +892,7 @@ textarea:hover {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   padding: var(--space-4);
-  background: var(--surface-muted);
+  background: var(--surface-sunken);
 }
 .hypothesis-card-head {
   display: flex;
@@ -1273,7 +1278,7 @@ textarea:hover {
   padding: var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  background: var(--surface-muted);
+  background: var(--surface-sunken);
 }
 .scenario-detail ul:not(.capability-list),
 .scenario-detail ol:not(.scenario-step-chips) {
@@ -1466,7 +1471,7 @@ textarea:hover {
   border-radius: var(--radius-md);
   padding: var(--space-4) var(--space-4) var(--space-4);
   margin: var(--space-3) 0 0;
-  background: var(--surface-muted);
+  background: var(--surface-sunken);
 }
 .work-characteristic.is-invalid {
   border-color: var(--danger-fg);
@@ -1579,18 +1584,17 @@ textarea:hover {
 }
 .submit-bar {
   position: sticky;
-  bottom: 1rem;
+  bottom: var(--space-4);
   z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
   padding: var(--space-4) var(--space-4);
-  background: rgb(255 255 255 / 96%);
+  background: var(--surface);
   border: 1px solid #b8cbc5;
   border-radius: var(--radius-md);
   box-shadow: 0 12px 35px rgb(18 50 41 / 15%);
-  backdrop-filter: blur(12px);
 }
 .submit-bar > div {
   display: grid;
@@ -1684,7 +1688,7 @@ textarea:hover {
 .brief-grid article,
 .brief-section {
   padding: var(--space-4);
-  background: var(--surface-muted);
+  background: var(--surface-sunken);
   border: 1px solid #e0e7e5;
   border-radius: var(--radius-md);
 }
@@ -2237,7 +2241,7 @@ textarea:hover {
   gap: var(--space-3);
 }
 .settings-topics .settings-work-characteristic {
-  background: var(--surface-muted);
+  background: var(--surface-sunken);
   border-color: #b9d0c9;
 }
 .fixed-options-preview {
@@ -2257,13 +2261,13 @@ textarea:hover {
 .ai-operation-queue {
   position: fixed;
   z-index: 30;
-  right: 1rem;
-  bottom: 1rem;
+  right: var(--space-4);
+  bottom: var(--space-4);
   width: min(410px, calc(100% - 2rem));
   padding: var(--space-3);
   border: 1px solid #9fbfb6;
   border-radius: var(--radius-md);
-  background: rgb(255 255 255 / 97%);
+  background: var(--surface);
   box-shadow: 0 15px 45px rgb(15 48 39 / 22%);
 }
 .ai-operation-queue > b {
@@ -2298,7 +2302,7 @@ textarea:hover {
   background: linear-gradient(
     145deg,
     #e5f2ee,
-    var(--surface-muted) 48%,
+    var(--surface-sunken) 48%,
     #dbece7
   );
 }
