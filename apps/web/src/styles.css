@@ -6,12 +6,16 @@
   color: var(--ink);
   background: var(--canvas);
   font-synthesis: none;
-  /* Marke und Text */
-  --green: #005744;
-  --green-2: #087461;
-  --ink: #18332d;
+  /* Marke und Text: ein warmes Waldgrün, kein Petrol und kein Violett */
+  --green: #14563c;
+  --green-2: #1d7050;
+  --ink: #16302a;
+  --ink-soft: #3a5148;
   --muted: #61736e;
-  --line: #d6dfdc;
+  --line: #d8e2dd;
+  /* Rand einer angetippten Karte und der Fokusring, beide über 3:1 auf Weiß */
+  --green-border: #9dc0ae;
+  --focus-ring: #2f9070;
   /* Schattenleiter: ruhend, Karte, schwebend, Dialog */
   --shadow-sm: 0 3px 12px rgb(25 50 44 / 4%);
   --shadow: 0 10px 30px rgb(27 58 50 / 8%);
@@ -23,13 +27,13 @@
   --canvas: #f3f6f4;
   --surface: #fff;
   --surface-sunken: #f8faf9;
-  --surface-accent: #e7f2ee;
-  --surface-accent-strong: #dff3eb;
+  --surface-accent: #e8f1ec;
+  --surface-accent-strong: #dbeae1;
 
   /* Statusrollen: je Rolle Fläche, Schriftfarbe und Rahmen */
-  --success-bg: #dff3eb;
-  --success-fg: #006247;
-  --success-border: #acd8ca;
+  --success-bg: #dbeae1;
+  --success-fg: #14563c;
+  --success-border: #a8c8b6;
   --warning-bg: #fff2cf;
   --warning-fg: #725300;
   --warning-border: #edd89b;
@@ -171,8 +175,19 @@ small {
   align-items: center;
   text-decoration: none;
 }
-.brand img {
-  width: 132px;
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--green);
+}
+.brand-lockup b {
+  font-size: var(--text-lg);
+  letter-spacing: -0.015em;
+}
+.brand-mark {
+  width: 1.9rem;
+  height: 1.9rem;
 }
 .brand small {
   padding-left: var(--space-3);
@@ -194,16 +209,22 @@ nav a,
   border: 0;
   border-radius: var(--radius-md);
   background: transparent;
-  color: #36504a;
+  color: var(--ink-soft);
   font-weight: 650;
   text-decoration: none;
   cursor: pointer;
 }
 nav a:hover,
-nav a.active,
 .logout-button:hover {
   background: var(--surface-accent);
   color: var(--green);
+}
+/* Die aktuelle Seite wird gefüllt, nicht nur getönt: eine hellgrüne Fläche auf
+   der weißen Kopfzeile ist zu schwach, um den Zustand zu erkennen. */
+nav a.active,
+nav a.active:hover {
+  background: var(--green);
+  color: var(--surface);
 }
 .app-scroll > main {
   width: min(1240px, calc(100% - 2rem));
@@ -269,7 +290,7 @@ nav a.active,
   background: var(--green);
   color: var(--surface);
   text-decoration: none;
-  box-shadow: 0 4px 14px rgb(0 87 68 / 18%);
+  box-shadow: 0 4px 14px rgb(20 86 60 / 18%);
 }
 .button:hover:not(:disabled) {
   background: var(--green-2);
@@ -278,7 +299,7 @@ nav a.active,
 .button.secondary {
   color: var(--green);
   background: var(--surface);
-  border: 1px solid #a9c0ba;
+  border: 1px solid var(--green-border);
   box-shadow: none;
 }
 .button:disabled {
@@ -315,7 +336,7 @@ input:focus-visible,
 textarea:focus-visible,
 select:focus-visible,
 summary:focus-visible {
-  outline: 3px solid #45a896;
+  outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
@@ -366,6 +387,19 @@ summary:focus-visible {
 }
 .panel-floating {
   box-shadow: var(--shadow-lg);
+}
+/* Anfassbare Karte: eine einzige Hover-Behandlung für alle klickbaren Flächen.
+   Rand und Schatten reagieren, die Karte springt nicht. */
+.panel-interactive {
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.panel-interactive:hover {
+  border-color: var(--green-border);
+  box-shadow: var(--shadow-hover);
 }
 .kicker {
   color: var(--green-2);
@@ -477,7 +511,7 @@ textarea:hover {
 .hero {
   padding: var(--space-6);
   border-radius: var(--radius-lg);
-  background: linear-gradient(120deg, #004f3e, var(--green-2));
+  background: linear-gradient(120deg, var(--green), var(--green-2));
   color: var(--surface);
   display: flex;
   align-items: center;
@@ -487,11 +521,11 @@ textarea:hover {
 }
 .hero p {
   max-width: 720px;
-  color: #d7ede6;
+  color: rgb(255 255 255 / 82%);
   margin-bottom: 0;
 }
 .hero .kicker {
-  color: #a9dfd0;
+  color: rgb(255 255 255 / 75%);
 }
 .hero .button {
   background: var(--surface);
@@ -528,28 +562,7 @@ textarea:hover {
 .process-row-link {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
   min-height: 82px;
-  color: inherit;
-  text-decoration: none;
-  box-shadow: var(--shadow-sm);
-  transition:
-    border-color 0.15s,
-    background 0.15s,
-    box-shadow 0.15s,
-    transform 0.15s;
-}
-.process-row-link:hover {
-  border-color: #8db6ab;
-  background: var(--surface-sunken);
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-1px);
-}
-.process-row-link:focus-visible {
-  outline: 3px solid #45a896;
-  outline-offset: 2px;
 }
 .process-row-main {
   min-width: 0;
@@ -582,10 +595,12 @@ textarea:hover {
 }
 .process-row-side {
   display: grid;
-  grid-template-columns: minmax(8.5rem, auto) 2.4rem;
+  /* Die zweite Spalte ist genau der Kreis, damit rundherum gleich viel Luft
+     bleibt: ein Feld Abstand zum Etikett und eines zum Kartenrand. */
+  grid-template-columns: minmax(8.5rem, auto) 2.25rem;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-3);
+  gap: var(--space-4);
+  padding: var(--space-4);
 }
 .process-row-side .navigation-state {
   justify-self: end;
@@ -1441,7 +1456,7 @@ textarea:hover {
   border-color: var(--danger-fg);
 }
 .work-characteristic:focus-visible {
-  outline: 3px solid rgb(21 91 80 / 28%);
+  outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
 }
 .work-characteristic legend {
@@ -2242,9 +2257,9 @@ textarea:hover {
   padding: var(--space-4);
   background: linear-gradient(
     145deg,
-    #e5f2ee,
+    var(--surface-accent),
     var(--surface-sunken) 48%,
-    #dbece7
+    var(--surface-accent-strong)
   );
 }
 .login-card {
@@ -2253,9 +2268,12 @@ textarea:hover {
   gap: var(--space-4);
   padding: var(--space-6);
 }
-.login-card > img {
-  width: 155px;
+.login-card .brand-lockup {
   margin-bottom: var(--space-2);
+}
+.login-card .brand-mark {
+  width: 2.2rem;
+  height: 2.2rem;
 }
 .login-card h1 {
   font-size: var(--text-2xl);

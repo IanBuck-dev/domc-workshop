@@ -9,12 +9,15 @@ import { classNames } from "./class-names";
 export function Card({
   as: Tag = "div",
   elevation = "raised",
+  interactive = false,
   className,
   children,
   ...props
 }: {
   as?: ElementType;
   elevation?: "flat" | "raised" | "floating";
+  /** Setzen, wenn die ganze Karte anklickbar ist: Rand und Schatten reagieren. */
+  interactive?: boolean;
   className?: string;
   children: ReactNode;
   [key: string]: unknown;
@@ -26,6 +29,7 @@ export function Card({
         "panel",
         elevation === "flat" && "panel-flat",
         elevation === "floating" && "panel-floating",
+        interactive && "panel-interactive",
         className,
       )}
     >

@@ -73,7 +73,10 @@ export function ProcessListPage() {
             const navigation = processNavigationModel(record, opportunity);
             return (
               <article className="process-row" key={record.id}>
-                <Link
+                <Card
+                  as={Link}
+                  elevation="flat"
+                  interactive
                   className="process-row-link"
                   to={`/processes/${record.id}`}
                   aria-label={`Prozess „${record.cover.processName}“ öffnen`}
@@ -105,7 +108,7 @@ export function ProcessListPage() {
                       <ArrowRight />
                     </span>
                   </div>
-                </Link>
+                </Card>
               </article>
             );
           })}

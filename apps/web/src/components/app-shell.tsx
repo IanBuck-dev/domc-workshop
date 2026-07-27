@@ -1,6 +1,6 @@
 import { ListTree, LogOut, PlusCircle, Settings } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import domcuraLogo from "../assets/domcura-logo-colored.svg";
+import { BrandLockup } from "./ui/brand-mark";
 import { DemoDataWarning } from "./demo-data-warning";
 import { AiOperationQueue } from "./ai-operation-queue";
 const nav = [
@@ -19,7 +19,7 @@ export function AppShell({
     <div className="app">
       <header>
         <NavLink className="brand" to="/">
-          <img src={domcuraLogo} alt="DOMCURA" />
+          <BrandLockup />
           <small>Prozessaufnahme</small>
         </NavLink>
         <nav aria-label="Hauptnavigation">

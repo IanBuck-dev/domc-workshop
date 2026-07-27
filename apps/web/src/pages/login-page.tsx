@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 import { LockKeyhole } from "lucide-react";
 import { api } from "../lib/api-client";
-import domcuraLogo from "../assets/domcura-logo-colored.svg";
+import { BrandLockup } from "../components/ui/brand-mark";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
 
@@ -31,7 +31,7 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
         className="login-card"
         onSubmit={submit}
       >
-        <img src={domcuraLogo} alt="DOMCURA" />
+        <BrandLockup />
         <span className="login-icon">
           <LockKeyhole />
         </span>
