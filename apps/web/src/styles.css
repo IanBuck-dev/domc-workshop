@@ -13,8 +13,10 @@
   --ink-soft: #3a5148;
   --muted: #61736e;
   --line: #d8e2dd;
-  /* Rand einer angetippten Karte und der Fokusring, beide über 3:1 auf Weiß */
   --green-border: #9dc0ae;
+  /* Rand eines Eingabefelds und der Fokusring: Bedienelemente brauchen 3:1
+     auf Weiß, ein zarter Kartenrand nicht. */
+  --field-border: #7a998e;
   --focus-ring: #2f9070;
   /* Schattenleiter: ruhend, Karte, schwebend, Dialog */
   --shadow-sm: 0 3px 12px rgb(25 50 44 / 4%);
@@ -43,6 +45,14 @@
   --danger-border: #f0b7b0;
   --info-bg: #e1f0f4;
   --info-fg: #17556a;
+  /* Ganze Flächen in einer Statusfarbe, heller als die Etikettenfüllung */
+  --surface-warning: #fffdf7;
+  --surface-danger: #fff7f6;
+
+  /* Konfidenzpunkte: drei Stufen, alle über 3:1 auf Weiß */
+  --confidence-high: #009171;
+  --confidence-medium: #b07d1a;
+  --confidence-low: #7d8c88;
 
   /* Abstandsskala */
   --space-1: 0.25rem;
@@ -452,7 +462,7 @@ summary:focus-visible {
 label {
   display: grid;
   gap: var(--space-2);
-  color: #304c45;
+  color: var(--ink-soft);
   font-weight: 650;
   font-size: var(--text-md);
 }
@@ -460,7 +470,7 @@ input,
 select,
 textarea {
   width: 100%;
-  border: 1px solid #b9c9c4;
+  border: 1px solid var(--field-border);
   background: var(--surface);
   color: var(--ink);
   border-radius: var(--radius-md);
@@ -474,7 +484,7 @@ textarea {
 input:hover,
 select:hover,
 textarea:hover {
-  border-color: #789a91;
+  border-color: var(--focus-ring);
 }
 .form-grid {
   display: grid;
@@ -490,7 +500,7 @@ textarea:hover {
   display: flex;
   align-items: flex-start;
   padding: var(--space-4);
-  border: 1px solid #bad2cb;
+  border: 1px solid var(--green-border);
   border-radius: var(--radius-md);
   background: var(--surface-accent);
   gap: var(--space-3);
@@ -957,7 +967,7 @@ textarea:hover {
   color: var(--muted);
 }
 .not-used-note {
-  border-left: 3px solid #c69b34;
+  border-left: 3px solid var(--warning-fg);
   padding-left: var(--space-3);
   color: var(--warning-fg);
   font-size: var(--text-sm);
@@ -1104,7 +1114,7 @@ textarea:hover {
   justify-items: start;
   gap: var(--space-1);
   padding: var(--space-3) var(--space-4);
-  border-top: 1px solid #eaf0ee;
+  border-top: 1px solid var(--line);
 }
 .scenario-metric > small {
   color: var(--muted);
@@ -1137,7 +1147,7 @@ textarea:hover {
   flex: 1;
   height: 6px;
   border-radius: var(--radius-pill);
-  background: #e3eae8;
+  background: var(--line);
 }
 .meter > span.on {
   background: var(--scenario-accent);
@@ -1152,13 +1162,13 @@ textarea:hover {
   flex: none;
 }
 .meter.dots.confidence-high > span.on {
-  background: #009171;
+  background: var(--confidence-high);
 }
 .meter.dots.confidence-medium > span.on {
-  background: #c69b34;
+  background: var(--confidence-medium);
 }
 .meter.dots.confidence-low > span.on {
-  background: #8b9a96;
+  background: var(--confidence-low);
 }
 .scenario-column .capability-list {
   padding: 0;
@@ -1253,7 +1263,7 @@ textarea:hover {
 .scenario-target-state {
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  background: #f7faf9;
+  background: var(--surface-sunken);
 }
 .scenario-target-state p {
   margin-bottom: 0;
@@ -1354,7 +1364,7 @@ textarea:hover {
   display: grid;
   justify-items: center;
   gap: var(--space-1);
-  color: #84918e;
+  color: var(--muted);
 }
 .capture-progress li:before {
   content: "";
@@ -1363,7 +1373,7 @@ textarea:hover {
   top: 14px;
   left: 0;
   right: 0;
-  background: #cad5d2;
+  background: var(--line);
   z-index: -1;
 }
 .capture-progress li:first-child:before {
@@ -1378,7 +1388,7 @@ textarea:hover {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: #dfe6e4;
+  background: var(--surface-accent-strong);
   font-size: var(--text-xs);
   font-weight: 800;
 }
@@ -1446,7 +1456,7 @@ textarea:hover {
   display: block;
 }
 .work-characteristic {
-  border: 1px solid #c8d8d3;
+  border: 1px solid var(--line);
   border-radius: var(--radius-md);
   padding: var(--space-4) var(--space-4) var(--space-4);
   margin: var(--space-3) 0 0;
@@ -1482,7 +1492,7 @@ textarea:hover {
   gap: var(--space-2);
   min-width: 0;
   padding: var(--space-3) var(--space-3);
-  border: 1px solid #d7e2df;
+  border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--surface);
   cursor: pointer;
@@ -1490,7 +1500,7 @@ textarea:hover {
   line-height: 1.4;
 }
 .work-characteristic-options label:has(input:checked) {
-  border-color: #4d9d89;
+  border-color: var(--green-2);
   background: var(--surface-accent);
 }
 .work-characteristic-options input {
@@ -1510,14 +1520,14 @@ textarea:hover {
 }
 .follow-up-card {
   padding: var(--space-4);
-  border: 1px solid #e1c983;
+  border: 1px solid var(--warning-border);
   border-radius: var(--radius-md);
-  background: #fffdf7;
+  background: var(--surface-warning);
   display: grid;
   gap: var(--space-3);
 }
 .follow-up-card > small {
-  color: #806000;
+  color: var(--warning-fg);
   font-weight: 800;
 }
 .follow-up-card > b {
@@ -1571,7 +1581,7 @@ textarea:hover {
   gap: var(--space-4);
   padding: var(--space-4) var(--space-4);
   background: var(--surface);
-  border: 1px solid #b8cbc5;
+  border: 1px solid var(--green-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
 }
@@ -1608,7 +1618,7 @@ textarea:hover {
   align-items: center;
   gap: var(--space-4);
   margin-bottom: var(--space-4);
-  border-color: #a9c9c0;
+  border-color: var(--green-border);
 }
 .operation-panel > svg {
   width: 1.5rem;
@@ -1623,8 +1633,8 @@ textarea:hover {
   color: var(--muted);
 }
 .operation-panel.failed {
-  border-color: #efb2aa;
-  background: #fff7f6;
+  border-color: var(--danger-border);
+  background: var(--surface-danger);
 }
 .operation-panel.failed > svg {
   color: var(--danger-fg);
@@ -1668,7 +1678,7 @@ textarea:hover {
 .brief-section {
   padding: var(--space-4);
   background: var(--surface-sunken);
-  border: 1px solid #e0e7e5;
+  border: 1px solid var(--line);
   border-radius: var(--radius-md);
 }
 .brief-grid article > div,
@@ -1689,7 +1699,7 @@ textarea:hover {
 }
 .assumption {
   display: block;
-  color: #805b00;
+  color: var(--warning-fg);
   margin-top: var(--space-2);
 }
 .step-list {
@@ -1850,7 +1860,7 @@ textarea:hover {
   justify-content: space-between;
   align-items: center;
   gap: var(--space-4);
-  border-color: #a5cabe;
+  border-color: var(--green-border);
 }
 .confirmation-panel > div {
   display: flex;
@@ -1877,7 +1887,7 @@ textarea:hover {
   padding: var(--space-4) var(--space-4);
   background: var(--success-bg);
   color: var(--success-fg);
-  border: 1px solid #a9d3c5;
+  border: 1px solid var(--success-border);
   border-radius: var(--radius-md);
   font-weight: 750;
 }
@@ -1904,10 +1914,10 @@ textarea:hover {
   min-height: 145px;
   flex: 1;
   padding: var(--space-3);
-  border: 1px solid #a7c7be;
+  border: 1px solid var(--green-border);
   border-top: 4px solid var(--green);
   border-radius: var(--radius-md);
-  background: #f7fbf9;
+  background: var(--surface-sunken);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -1980,10 +1990,10 @@ textarea:hover {
   height: 1.1rem;
 }
 .coverage-complete {
-  color: #087052;
+  color: var(--success-fg);
 }
 .coverage-partial {
-  color: #856000;
+  color: var(--warning-fg);
 }
 .coverage-failed {
   color: var(--danger-fg);
@@ -2032,7 +2042,7 @@ textarea:hover {
   min-height: 0;
   padding: var(--space-4);
   overflow: auto;
-  background: #eef3f1;
+  background: var(--canvas);
 }
 .document-preview-content iframe {
   width: 100%;
@@ -2142,7 +2152,7 @@ textarea:hover {
 .instruction-markdown code {
   padding: var(--space-1) var(--space-1);
   border-radius: var(--radius-sm);
-  background: #eaf1ef;
+  background: var(--surface-accent);
   font-size: 0.9em;
 }
 
@@ -2198,7 +2208,7 @@ textarea:hover {
 }
 .settings-topics .settings-work-characteristic {
   background: var(--surface-sunken);
-  border-color: #b9d0c9;
+  border-color: var(--green-border);
 }
 .fixed-options-preview {
   color: var(--muted);
@@ -2221,7 +2231,7 @@ textarea:hover {
   bottom: var(--space-4);
   width: min(410px, calc(100% - 2rem));
   padding: var(--space-3);
-  border: 1px solid #9fbfb6;
+  border: 1px solid var(--green-border);
   border-radius: var(--radius-md);
   background: var(--surface);
   box-shadow: var(--shadow-lg);
