@@ -6,13 +6,27 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { ProcessOperationStatus } from "./process-types";
+import {
+  processEventSchema,
+  type ProcessEvent,
+  type ProcessOperationStatus,
+} from "../../../../packages/domain/src/process-events";
 
 type ProcessChangeHandler = (processId: string) => void;
 type Subscribe = (handler: ProcessChangeHandler) => () => void;
 
 const OperationsContext = createContext<ProcessOperationStatus[]>([]);
 const SubscribeContext = createContext<Subscribe>(() => () => undefined);
+
+export function parseProcessEventData(value: unknown): ProcessEvent | null {
+  if (typeof value !== "string") return null;
+  try {
+    const parsed = processEventSchema.safeParse(JSON.parse(value));
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Hält eine Verbindung zum Ereignisstrom des Servers offen. Der Server meldet
@@ -32,13 +46,19 @@ export function ProcessEventsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const source = new EventSource("/api/events");
     source.addEventListener("operations", (event) => {
-      const payload = JSON.parse(event.data) as {
-        operations: ProcessOperationStatus[];
-      };
+      const payload = parseProcessEventData(event.data);
+      if (payload?.type !== "operations") {
+        console.warn("[process-events] Ungültiges operations-Ereignis.");
+        return;
+      }
       setOperations(payload.operations);
     });
     source.addEventListener("process-changed", (event) => {
-      const payload = JSON.parse(event.data) as { processId: string };
+      const payload = parseProcessEventData(event.data);
+      if (payload?.type !== "process-changed") {
+        console.warn("[process-events] Ungültiges process-changed-Ereignis.");
+        return;
+      }
       for (const handler of [...handlers.current]) handler(payload.processId);
     });
     return () => source.close();

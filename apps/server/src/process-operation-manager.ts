@@ -1,16 +1,9 @@
 import { publishProcessEvent } from "./process-events.ts";
+import type {
+  ProcessOperationName,
+  ProcessOperationStatus,
+} from "../../../packages/domain/src/process-events.ts";
 
-export type ProcessOperationName =
-  "process-follow-ups" | "process-synthesis" | "opportunity-discovery";
-export interface ProcessOperationStatus {
-  operationId: string;
-  processId: string;
-  operationName: ProcessOperationName;
-  state: "queued" | "running" | "failed";
-  position: number;
-  createdAt: string;
-  error?: string;
-}
 interface ManagedOperation extends Omit<ProcessOperationStatus, "position"> {
   controller: AbortController;
   onQueuedCancel?: () => Promise<void>;
