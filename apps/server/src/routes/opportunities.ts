@@ -15,6 +15,7 @@ import {
   enqueueProcessOperation,
   hasActiveProcessOperation,
 } from "../process-operation-manager.ts";
+import { publishProcessChanged } from "../process-events.ts";
 import { loadOpportunityDefaults } from "../opportunity-defaults.ts";
 
 function publicFailure() {
@@ -48,6 +49,7 @@ export function opportunityRoutes(
 
           if (record.state === "hypotheses_queued") {
             record = await opportunities.markHypothesesRunning(processId);
+            publishProcessChanged(processId);
             const result = await ai.discoverHypotheses({
               processId,
               configHash: record.configHash,
@@ -66,6 +68,7 @@ export function opportunityRoutes(
               normalized,
               result.trace,
             );
+            publishProcessChanged(processId);
           }
 
           if (record.state !== "scenarios_running") return;
@@ -90,6 +93,7 @@ export function opportunityRoutes(
             result.value,
             result.trace,
           );
+          publishProcessChanged(processId);
         } catch (error) {
           const record = await opportunities.get(processId);
           if (
@@ -104,6 +108,7 @@ export function opportunityRoutes(
               publicFailure(),
               signal.aborted,
             );
+          publishProcessChanged(processId);
           throw error;
         }
       },
@@ -117,6 +122,7 @@ export function opportunityRoutes(
           publicFailure(),
           true,
         );
+        publishProcessChanged(processId);
       },
     );
 

@@ -26,6 +26,7 @@ import {
   enqueueProcessOperation,
   hasActiveProcessOperation,
 } from "../process-operation-manager.ts";
+import { publishProcessChanged } from "../process-events.ts";
 
 const createSchema = z.object({
   cover: z.unknown(),
@@ -268,6 +269,7 @@ export function processCaptureRoutes(
             result.value.followUps,
             result.trace,
           );
+          publishProcessChanged(record.id);
         } catch (error) {
           await repo.recordAiOperation(
             record.id,
@@ -276,6 +278,7 @@ export function processCaptureRoutes(
             undefined,
             "Die Aktion konnte nicht abgeschlossen werden.",
           );
+          publishProcessChanged(record.id);
           throw error;
         }
       },
@@ -326,6 +329,7 @@ export function processCaptureRoutes(
             signal,
           });
           await repo.saveUnderstanding(record.id, result.value, result.trace);
+          publishProcessChanged(record.id);
         } catch (error) {
           await repo.recordAiOperation(
             record.id,
@@ -334,6 +338,7 @@ export function processCaptureRoutes(
             undefined,
             "Die Aktion konnte nicht abgeschlossen werden.",
           );
+          publishProcessChanged(record.id);
           throw error;
         }
       },

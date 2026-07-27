@@ -9,6 +9,7 @@ import { ProcessStartPage } from "./pages/process-start-page";
 import { ProcessCapturePage } from "./pages/process-capture-page";
 import { SettingsPage } from "./pages/settings-page";
 import { OpportunityDiscoveryPage } from "./pages/opportunity-discovery-page";
+import { ProcessEventsProvider } from "./lib/process-events";
 
 export function App() {
   const [auth, setAuth] = useState<"loading" | "yes" | "no">("loading");
@@ -22,31 +23,36 @@ export function App() {
     return <main className="app-loading">Anwendung wird geladen …</main>;
   if (auth === "no") return <LoginPage onLogin={() => setAuth("yes")} />;
   return (
-    <AppShell
-      onLogout={async () => {
-        await api.logout();
-        setAuth("no");
-      }}
-    >
-      <Routes>
-        <Route path="/" element={<ProcessListPage />} />
-        <Route path="/processes/new" element={<ProcessStartPage />} />
-        <Route path="/processes/:id" element={<ProcessDetailPage />} />
-        <Route path="/processes/:id/capture" element={<ProcessCapturePage />} />
-        <Route path="/processes/:id/opportunities">
-          <Route index element={<Navigate to="hypotheses" replace />} />
+    <ProcessEventsProvider>
+      <AppShell
+        onLogout={async () => {
+          await api.logout();
+          setAuth("no");
+        }}
+      >
+        <Routes>
+          <Route path="/" element={<ProcessListPage />} />
+          <Route path="/processes/new" element={<ProcessStartPage />} />
+          <Route path="/processes/:id" element={<ProcessDetailPage />} />
           <Route
-            path="hypotheses"
-            element={<OpportunityDiscoveryPage phase="hypotheses" />}
+            path="/processes/:id/capture"
+            element={<ProcessCapturePage />}
           />
-          <Route
-            path="scenarios"
-            element={<OpportunityDiscoveryPage phase="scenarios" />}
-          />
-        </Route>
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </AppShell>
+          <Route path="/processes/:id/opportunities">
+            <Route index element={<Navigate to="hypotheses" replace />} />
+            <Route
+              path="hypotheses"
+              element={<OpportunityDiscoveryPage phase="hypotheses" />}
+            />
+            <Route
+              path="scenarios"
+              element={<OpportunityDiscoveryPage phase="scenarios" />}
+            />
+          </Route>
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AppShell>
+    </ProcessEventsProvider>
   );
 }

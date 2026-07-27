@@ -1,27 +1,9 @@
 import { AlertTriangle, LoaderCircle, X } from "lucide-react";
-import { useEffect, useState } from "react";
 import { api } from "../lib/api-client";
-import type { ProcessOperationStatus } from "../lib/process-types";
+import { useAiOperations } from "../lib/process-events";
 
 export function AiOperationQueue() {
-  const [operations, setOperations] = useState<ProcessOperationStatus[]>([]);
-  useEffect(() => {
-    let active = true;
-    const refresh = async () => {
-      try {
-        const next = await api.operations();
-        if (active) setOperations(next);
-      } catch {
-        // The normal page error handling covers expired sessions.
-      }
-    };
-    void refresh();
-    const interval = window.setInterval(refresh, 1000);
-    return () => {
-      active = false;
-      window.clearInterval(interval);
-    };
-  }, []);
+  const operations = useAiOperations();
   if (!operations.length) return null;
   return (
     <aside className="ai-operation-queue" aria-live="polite">
@@ -47,12 +29,8 @@ export function AiOperationQueue() {
             type="button"
             aria-label={`${operationLabel(operation.operationName)} abbrechen`}
             onClick={async () => {
+              // Die aktualisierte Warteschlange kommt über den Ereignisstrom.
               await api.cancelOperation(operation.operationId);
-              setOperations((current) =>
-                current.filter(
-                  (item) => item.operationId !== operation.operationId,
-                ),
-              );
             }}
           >
             <X />

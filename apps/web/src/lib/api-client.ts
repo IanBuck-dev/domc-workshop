@@ -2,7 +2,6 @@ import type {
   FollowUpAnswer,
   ProcessCaptureConfig,
   ProcessCaptureRecord,
-  ProcessOperationStatus,
   ProcessUnderstanding,
   TopicAnswer,
   WorkCharacteristicAnswer,
@@ -140,7 +139,6 @@ export const api = {
     req<{ id: string; deleted: true }>(`/processes/${id}`, {
       method: "DELETE",
     }),
-  operations: () => req<ProcessOperationStatus[]>("/ai-operations"),
   cancelOperation: (id: string) =>
     req<{ cancelled: true }>(`/ai-operations/${id}`, { method: "DELETE" }),
   history: (id: string) =>

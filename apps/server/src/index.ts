@@ -14,6 +14,7 @@ import { processCaptureRoutes } from "./routes/process-captures.ts";
 import { authRoutes } from "./routes/auth.ts";
 import { configRoutes } from "./routes/config.ts";
 import { aiOperationRoutes } from "./routes/ai-operations.ts";
+import { eventRoutes } from "./routes/events.ts";
 import { opportunityRoutes } from "./routes/opportunities.ts";
 import { requireSession } from "./session.ts";
 import {
@@ -77,6 +78,7 @@ app.route(
   ),
 );
 app.route("/api/ai-operations", aiOperationRoutes());
+app.route("/api/events", eventRoutes());
 app.all("/api/*", (c) =>
   c.json({ error: "API-Endpunkt nicht gefunden." }, 404),
 );

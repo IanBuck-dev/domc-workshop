@@ -16,12 +16,7 @@ import type { ProcessCaptureRecord } from "../lib/process-types";
 import { Button } from "../components/ui/button";
 import { Kicker } from "../components/ui/kicker";
 import { Card } from "../components/ui/card";
-
-const runningStates = new Set([
-  "hypotheses_queued",
-  "hypotheses_running",
-  "scenarios_running",
-]);
+import { useProcessChanged } from "../lib/process-events";
 
 export function OpportunityDiscoveryPage({
   phase,
@@ -33,7 +28,6 @@ export function OpportunityDiscoveryPage({
   const [detail, setDetail] = useState<OpportunityDiscoveryDetail | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const discoveryState = detail?.record.state;
 
   useEffect(() => {
     let mounted = true;
@@ -49,16 +43,13 @@ export function OpportunityDiscoveryPage({
     };
   }, [id]);
 
-  useEffect(() => {
-    if (!discoveryState || !runningStates.has(discoveryState)) return;
-    const timer = window.setInterval(() => {
-      api
-        .opportunity(id)
-        .then(setDetail)
-        .catch((reason: Error) => setError(reason.message));
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [discoveryState, id]);
+  // Zwischenstände der laufenden Analyse meldet der Server von sich aus.
+  useProcessChanged(id, () => {
+    api
+      .opportunity(id)
+      .then(setDetail)
+      .catch((reason: Error) => setError(reason.message));
+  });
 
   const hypotheses = useMemo(
     () =>

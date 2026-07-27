@@ -1,3 +1,5 @@
+import { publishProcessEvent } from "./process-events.ts";
+
 export type ProcessOperationName =
   "process-follow-ups" | "process-synthesis" | "opportunity-discovery";
 export interface ProcessOperationStatus {
@@ -38,6 +40,14 @@ export function listProcessOperations(): ProcessOperationStatus[] {
     ...(operation.error ? { error: operation.error } : {}),
   }));
 }
+/** Nach jeder Änderung an der Warteschlange melden, damit niemand pollen muss. */
+function publishOperations() {
+  publishProcessEvent({
+    type: "operations",
+    operations: listProcessOperations(),
+  });
+}
+
 export function hasActiveProcessOperation(processId: string) {
   return [...operations.values()].some(
     (operation) =>
@@ -51,6 +61,7 @@ export async function cancelProcessOperation(operationId: string) {
   if (operation.state === "queued") {
     operations.delete(operationId);
     await operation.onQueuedCancel?.();
+    publishOperations();
   }
   return true;
 }
@@ -58,6 +69,7 @@ export function dismissFailedOperation(operationId: string) {
   const operation = operations.get(operationId);
   if (!operation || operation.state !== "failed") return false;
   operations.delete(operationId);
+  publishOperations();
   return true;
 }
 
@@ -69,6 +81,7 @@ export function dismissFailedProcessOperations(processId: string) {
     operations.delete(operationId);
     dismissed += 1;
   }
+  if (dismissed) publishOperations();
   return dismissed;
 }
 
@@ -95,20 +108,25 @@ export function enqueueProcessOperation(
     onQueuedCancel,
   };
   operations.set(operationId, operation);
+  publishOperations();
   const previous = queueTail;
   queueTail = (async () => {
     await previous.catch(() => undefined);
     if (controller.signal.aborted) {
       operations.delete(operationId);
+      publishOperations();
       return;
     }
     operation.state = "running";
+    publishOperations();
     try {
       await action(controller.signal);
       operations.delete(operationId);
+      publishOperations();
     } catch (error) {
       if (controller.signal.aborted) {
         operations.delete(operationId);
+        publishOperations();
         return;
       }
       console.error(
@@ -117,6 +135,7 @@ export function enqueueProcessOperation(
       );
       operation.state = "failed";
       operation.error = publicError(error);
+      publishOperations();
     }
   })();
   return { operationId, state: "queued" as const };

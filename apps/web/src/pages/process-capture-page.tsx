@@ -23,6 +23,7 @@ import type {
 import { Button } from "../components/ui/button";
 import { Kicker } from "../components/ui/kicker";
 import { Card } from "../components/ui/card";
+import { useAiOperations, useProcessChanged } from "../lib/process-events";
 
 const stateIndex: Record<ProcessCaptureRecord["state"], number> = {
   capture_in_progress: 1,
@@ -35,7 +36,7 @@ const stateIndex: Record<ProcessCaptureRecord["state"], number> = {
 export function ProcessCapturePage() {
   const { id = "" } = useParams();
   const [record, setRecord] = useState<ProcessCaptureRecord | null>(null);
-  const [operations, setOperations] = useState<ProcessOperationStatus[]>([]);
+  const operations = useAiOperations();
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [workCharacteristicSelections, setWorkCharacteristicSelections] =
     useState<Record<string, string[]>>({});
@@ -51,26 +52,23 @@ export function ProcessCapturePage() {
   const initializedId = useRef<string | null>(null);
 
   const refresh = useCallback(async () => {
-    const [nextRecord, nextOperations] = await Promise.all([
-      api.process(id),
-      api.operations(),
-    ]);
+    const nextRecord = await api.process(id);
     setRecord(nextRecord);
-    setOperations(nextOperations);
     return nextRecord;
   }, [id]);
 
   useEffect(() => {
     let active = true;
     refresh().catch((reason: Error) => active && setError(reason.message));
-    const interval = window.setInterval(() => {
-      refresh().catch(() => undefined);
-    }, 1500);
     return () => {
       active = false;
-      window.clearInterval(interval);
     };
   }, [refresh]);
+
+  // Der Server meldet, wenn eine KI-Aktion an diesem Prozess etwas geändert hat.
+  useProcessChanged(id, () => {
+    refresh().catch(() => undefined);
+  });
 
   useEffect(() => {
     if (!record || initializedId.current === record.id) return;

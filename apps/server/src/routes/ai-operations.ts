@@ -2,12 +2,11 @@ import { Hono } from "hono";
 import {
   cancelProcessOperation,
   dismissFailedOperation,
-  listProcessOperations,
 } from "../process-operation-manager.ts";
 
 export function aiOperationRoutes() {
   const app = new Hono();
-  app.get("/", (c) => c.json(listProcessOperations()));
+  // Den Stand der Warteschlange liefert /api/events, nicht dieser Router.
   app.delete("/:operationId", async (c) => {
     const id = c.req.param("operationId");
     const cancelled =
