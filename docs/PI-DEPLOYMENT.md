@@ -40,7 +40,7 @@ ssh -t ian_claw@pi-ianclaw.local \
 
 ```zsh
 ssh ian_claw@pi-ianclaw.local \
-  "sudo -u claims-ai zsh -c 'find /var/lib/claims-ai/workspace -type f -print0 | sort -z | xargs -0 -r sha256sum'" \
+  "sudo -u claims-ai zsh -c 'cd / && find /var/lib/claims-ai/workspace -type f ! -name .instance.lock -print0 | sort -z | xargs -0 -r sha256sum'" \
   > /tmp/claims-ai-workspace-before.sha256
 ```
 
@@ -71,12 +71,14 @@ und baut Anwendung sowie ARM64-Release. Der persistente Workspace unter
 ssh ian_claw@pi-ianclaw.local \
   'systemctl is-active claims-ai-portfolio && curl --fail --silent --show-error http://127.0.0.1:3210/api/health'
 ssh ian_claw@pi-ianclaw.local \
-  "sudo -u claims-ai zsh -c 'find /var/lib/claims-ai/workspace -type f -print0 | sort -z | xargs -0 -r sha256sum'" \
+  "sudo -u claims-ai zsh -c 'cd / && find /var/lib/claims-ai/workspace -type f ! -name .instance.lock -print0 | sort -z | xargs -0 -r sha256sum'" \
   > /tmp/claims-ai-workspace-after.sha256
 diff -u /tmp/claims-ai-workspace-before.sha256 /tmp/claims-ai-workspace-after.sha256
 ```
 
-Der `diff` muss vor neuen Live-Tests leer sein. Danach werden Anmeldung,
+Der `diff` muss vor neuen Live-Tests leer sein. Die bewusst ausgeschlossene
+Datei `.instance.lock` enthält die Kennung der laufenden Serverinstanz und wird
+bei jedem Neustart ersetzt. Danach werden Anmeldung,
 Upload, Prozessaufnahme, Prozessbestätigung und Potenzialanalyse über
 `https://claims-ai.ian-buck.dev` geprüft. Browserkonsole und fehlgeschlagene
 Netzwerkanfragen müssen leer bleiben.
