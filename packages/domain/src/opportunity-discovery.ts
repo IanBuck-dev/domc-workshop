@@ -601,32 +601,116 @@ export const opportunityScenarioResultSchema = z
     });
   });
 
+function normalizeKnownKeyCasing(
+  input: Record<string, unknown>,
+  canonicalKeys: readonly string[],
+) {
+  for (const suppliedKey of Object.keys(input)) {
+    if (canonicalKeys.includes(suppliedKey)) continue;
+    const matchingKeys = canonicalKeys.filter(
+      (canonicalKey) =>
+        canonicalKey.toLowerCase() === suppliedKey.toLowerCase(),
+    );
+    if (matchingKeys.length !== 1) continue;
+    const canonicalKey = matchingKeys[0]!;
+    if (canonicalKey in input) continue;
+    input[canonicalKey] = input[suppliedKey];
+    delete input[suppliedKey];
+  }
+}
+
+const scenarioResultKeys = ["schemaVersion", "scenarios"] as const;
+const scenarioKeys = [
+  "id",
+  "provenance",
+  "level",
+  "title",
+  "summary",
+  "targetState",
+  "includedHypothesisIds",
+  "excludedHypotheses",
+  "affectedProcessStepIds",
+  "changesFromToday",
+  "aiResponsibilities",
+  "aiCapabilities",
+  "deterministicAutomation",
+  "orchestration",
+  "humanResponsibilities",
+  "actions",
+  "humanOversight",
+  "informationAndDocuments",
+  "systemAccess",
+  "prerequisites",
+  "risksAndFailureModes",
+  "assumptions",
+  "openQuestions",
+  "evidenceIds",
+  "confidenceLevel",
+  "confidenceRationale",
+] as const;
+const excludedHypothesisKeys = ["hypothesisId", "rationale"] as const;
+const scenarioActionKeys = [
+  "name",
+  "description",
+  "processStepIds",
+  "executionMode",
+  "humanDecisionPoint",
+  "escalationTriggers",
+] as const;
+const systemAccessKeys = [
+  "systemName",
+  "purpose",
+  "accessType",
+  "possibleMechanisms",
+  "assumptions",
+] as const;
+
 export const opportunityScenarioAiResultSchema = z.preprocess((input) => {
   const value = structuredClone(input);
-  if (!value || typeof value !== "object" || !("scenarios" in value))
-    return value;
-  const scenarios = (value as { scenarios?: unknown }).scenarios;
+  if (!value || typeof value !== "object") return value;
+  const resultRecord = value as Record<string, unknown>;
+  normalizeKnownKeyCasing(resultRecord, scenarioResultKeys);
+  if (!("scenarios" in resultRecord)) return value;
+  const scenarios = resultRecord.scenarios;
   if (!Array.isArray(scenarios)) return value;
   for (const scenario of scenarios) {
     if (!scenario || typeof scenario !== "object") continue;
     const scenarioRecord = scenario as Record<string, unknown>;
+    normalizeKnownKeyCasing(scenarioRecord, scenarioKeys);
     scenarioRecord.id = `SCN-${String(scenarioRecord.level)}`;
     scenarioRecord.provenance = "ai_inferred";
+
+    const excludedHypotheses = scenarioRecord.excludedHypotheses;
+    if (Array.isArray(excludedHypotheses))
+      for (const excludedHypothesis of excludedHypotheses)
+        if (excludedHypothesis && typeof excludedHypothesis === "object")
+          normalizeKnownKeyCasing(
+            excludedHypothesis as Record<string, unknown>,
+            excludedHypothesisKeys,
+          );
+
+    const actions = scenarioRecord.actions;
+    if (Array.isArray(actions))
+      for (const action of actions)
+        if (action && typeof action === "object")
+          normalizeKnownKeyCasing(
+            action as Record<string, unknown>,
+            scenarioActionKeys,
+          );
+
     if (!("systemAccess" in scenarioRecord)) continue;
     const accesses = scenarioRecord.systemAccess;
     if (!Array.isArray(accesses)) continue;
     for (const access of accesses) {
-      if (
-        !access ||
-        typeof access !== "object" ||
-        !("possibleMechanisms" in access)
-      )
-        continue;
-      const mechanisms = (access as { possibleMechanisms?: unknown })
-        .possibleMechanisms;
+      if (!access || typeof access !== "object") continue;
+      const accessRecord = access as Record<string, unknown>;
+      normalizeKnownKeyCasing(accessRecord, systemAccessKeys);
+      if (!("possibleMechanisms" in accessRecord)) continue;
+      const mechanisms = accessRecord.possibleMechanisms;
       if (Array.isArray(mechanisms) && mechanisms.length > 1)
-        (access as { possibleMechanisms: unknown[] }).possibleMechanisms =
-          mechanisms.filter((mechanism) => mechanism !== "unknown");
+        accessRecord.possibleMechanisms = mechanisms.filter(
+          (mechanism) => mechanism !== "unknown",
+        );
     }
   }
   return value;

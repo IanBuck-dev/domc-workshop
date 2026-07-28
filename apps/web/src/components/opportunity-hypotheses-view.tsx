@@ -108,8 +108,8 @@ function HypothesisCard({
       </dl>
       {item.confidenceLevel !== "high" && (
         <p className="not-used-note">
-          Diese Hypothese wurde wegen ihrer Konfidenz nicht für die Szenarien
-          verwendet.
+          Vor einer Umsetzung sind die offenen Fachinformationen mit dem
+          Fachbereich zu klären.
         </p>
       )}
       <details>

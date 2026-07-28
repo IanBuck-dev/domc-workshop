@@ -162,6 +162,31 @@ describe("opportunity scenario contract", () => {
     ).toBeTrue();
   });
 
+  test("normalizes unambiguous casing drift in known AI contract fields", () => {
+    const aiOutput = structuredClone(result()) as unknown as {
+      scenarios: Array<Record<string, unknown>>;
+    };
+    const first = aiOutput.scenarios[0]!;
+    first.changesFromtoday = first.changesFromToday;
+    delete first.changesFromToday;
+
+    const parsed = opportunityScenarioAiResultSchema.parse(aiOutput);
+    expect(parsed.scenarios[0]!.changesFromToday).toEqual([
+      "Informationen werden automatisch zusammengeführt.",
+    ]);
+  });
+
+  test("rejects casing aliases when the canonical AI contract field exists", () => {
+    const aiOutput = structuredClone(result()) as unknown as {
+      scenarios: Array<Record<string, unknown>>;
+    };
+    aiOutput.scenarios[0]!.changesFromtoday = ["Konflikt"];
+
+    expect(() => opportunityScenarioAiResultSchema.parse(aiOutput)).toThrow(
+      "Unrecognized key",
+    );
+  });
+
   test("enforces the autonomy policy for every level", () => {
     const assistive = result();
     assistive.scenarios[0]!.actions[0]!.executionMode = "autonomous";
