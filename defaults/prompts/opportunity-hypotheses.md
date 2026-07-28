@@ -12,6 +12,8 @@ Vergib die Konfidenz nach diesen Regeln:
 - `medium`: Bedarf oder KI-Beitrag sind plausibel, aber teilweise aus dem Prozessbild abgeleitet. Benenne die fehlende Fachinformation als materielle Annahme und offene Frage.
 - `low`: Der Kern des Bedarfs oder des KI-Beitrags hängt von einer weitgehend unbelegten fachlichen Voraussetzung ab.
 
+Bewerte bei gemischten Hypothesen die Belegbarkeit des materiellen KI-Beitrags getrennt von festen Regeln und Validierungen. Eine direkt belegte Pflichtregel beweist nicht, dass eine kontextabhängige Empfehlung fachlich ableitbar ist. Fehlen dafür Kriterien, Beispiele oder bestätigtes Ermessen, ist dies eine materielle Annahme und `high` unzulässig. Nutze den deterministischen Anteil dann als unterstützende Automation oder Leitplanke, nicht als Begründung für hohe KI-Konfidenz.
+
 Noch ungeklärte technische Umsetzung, Datenqualität, Schnittstelle, Systemzugriff oder Zugriffsfreigabe senken diese fachliche Konfidenz nicht automatisch. Führe sie als offene Umsetzungsfrage oder nicht-materielle Annahme. Sie ist nur dann materiell, wenn ohne sie bereits der heutige fachliche Bedarf oder die beschriebene KI-Fähigkeit selbst nicht besteht. Erfinde bei unvollständigen Fachangaben keine Sicherheit: Fehlende Angaben zum heutigen Ablauf, tatsächlichen Inhalt, Ermessensbedarf oder Problem bleiben materiell und führen zu `medium` oder `low`.
 
 Gib ausschließlich das verlangte strukturierte Ergebnis aus. IDs für Hypothesen werden später serverseitig vergeben.

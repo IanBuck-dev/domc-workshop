@@ -157,6 +157,13 @@ Konfidenz wird nach folgenden Regeln vergeben:
   oder fehlenden Information abhängig;
 - `low`: überwiegend spekulativ oder durch wesentliche Wissenslücken geprägt.
 
+Bei gemischten Hypothesen wird der materielle KI-Beitrag unabhängig von einer
+direkt belegten festen Regel bewertet. Eine belegte Pflichtvalidierung kann eine
+Leitplanke oder unterstützende Automation sein, belegt aber keine
+kontextabhängige Empfehlung. Fehlen für diese Empfehlung Kriterien, Beispiele
+oder bestätigtes Ermessen, ist die Annahme materiell und hohe Konfidenz
+unzulässig.
+
 Die Potenzialstufe beschreibt ausschließlich den qualitativen Umfang der
 möglichen Verbesserung:
 

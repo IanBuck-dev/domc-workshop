@@ -250,6 +250,8 @@ Verbindliche Hypothesenregeln:
 - jede Evidenz-ID muss im Prozesssnapshot existieren;
 - `confidenceLevel: high` benötigt mindestens eine Evidenz-ID und darf keine
   Annahme mit `material: true` enthalten;
+- eine direkt belegte feste Regel darf nicht als Beleg für einen davon
+  getrennten, unbestätigten kontextabhängigen KI-Beitrag verwendet werden;
 - Potenzial und Konfidenz bleiben qualitative, voneinander unabhängige Werte;
 - es gibt keine numerische Bewertung.
 

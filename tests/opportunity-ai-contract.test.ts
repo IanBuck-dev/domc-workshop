@@ -121,8 +121,14 @@ describe("opportunity Claude contract", () => {
     expect(captured[0]!.command.join(" ")).toContain(
       "senken diese fachliche Konfidenz nicht automatisch",
     );
+    expect(captured[0]!.command.join(" ")).toContain(
+      "Eine direkt belegte Pflichtregel beweist nicht",
+    );
     expect(captured[1]!.command.join(" ")).toContain(
       "pro Szenario höchstens vier Aktionen",
+    );
+    expect(captured[1]!.command.join(" ")).toContain(
+      "regelbasierte Buchungsbedingungen",
     );
     expect(JSON.stringify(defaults.contracts.scenariosSchema)).toContain(
       '"maxLength":700',
