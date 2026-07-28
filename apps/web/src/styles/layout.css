@@ -81,6 +81,9 @@
   color: var(--green);
   white-space: nowrap;
 }
+.hero .button:hover:not(:disabled) {
+  background: var(--surface-accent);
+}
 .compact-hero h1 {
   margin-bottom: var(--space-2);
 }

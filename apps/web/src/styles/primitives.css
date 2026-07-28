@@ -26,6 +26,11 @@
   text-decoration: none;
   box-shadow: 0 4px 14px rgb(20 86 60 / 18%);
 }
+/* Wer Fläche und Schriftfarbe eines Knopfes neu setzt, muss auch dessen
+   Hover-Fläche setzen: diese Regel liegt mit 0,3,0 über jeder Variante mit
+   0,2,0 und würde ihr sonst eine fremde Füllung unter den eigenen Text legen.
+   Bekannte Varianten sind .button.secondary hier und .hero .button in
+   layout.css. */
 .button:hover:not(:disabled) {
   background: var(--green-2);
   transform: translateY(-1px);
@@ -36,8 +41,6 @@
   border: 1px solid var(--green-border);
   box-shadow: none;
 }
-/* Eigene Hover-Regel, weil .button:hover die höhere Spezifität hat und den
-   sekundären Button sonst grün füllt, ohne die Schriftfarbe mitzuziehen. */
 .button.secondary:hover:not(:disabled) {
   background: var(--surface-accent);
   border-color: var(--focus-ring);
