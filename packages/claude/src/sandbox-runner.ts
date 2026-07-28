@@ -182,7 +182,20 @@ function validateSandboxSettings(value: unknown) {
   return value as object;
 }
 
-async function defaultTransport(
+function killProcessTree(proc: Bun.Subprocess<"pipe", "pipe", "pipe">) {
+  if (proc.exitCode !== null) return;
+  if (process.platform !== "win32") {
+    try {
+      process.kill(-proc.pid, "SIGKILL");
+      return;
+    } catch {
+      // Fall back to the direct child if a process group is unavailable.
+    }
+  }
+  proc.kill("SIGKILL");
+}
+
+export async function runSandboxTransport(
   request: SandboxTransportRequest,
 ): Promise<SandboxTransportResult> {
   const proc = Bun.spawn(request.command, {
@@ -191,9 +204,10 @@ async function defaultTransport(
     stdin: "pipe",
     stdout: "pipe",
     stderr: "pipe",
+    detached: process.platform !== "win32",
   });
-  const timeout = setTimeout(() => proc.kill("SIGKILL"), request.timeoutMs);
-  const cancel = () => proc.kill("SIGKILL");
+  const cancel = () => killProcessTree(proc);
+  const timeout = setTimeout(cancel, request.timeoutMs);
   request.signal?.addEventListener("abort", cancel, { once: true });
   if (request.signal?.aborted) cancel();
   proc.stdin.write(request.stdin);
@@ -299,7 +313,7 @@ export class SandboxRunner {
         responseSchema,
       );
       if (operation.signal?.aborted) throw abortError();
-      const transport = this.options.transport ?? defaultTransport;
+      const transport = this.options.transport ?? runSandboxTransport;
       const result = await transport({
         command,
         cwd: operationDir,

@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createHash } from "node:crypto";
 import {
+  runSandboxTransport,
   SandboxRunner,
   type SandboxTransportRequest,
 } from "../packages/claude/src/sandbox-runner.ts";
@@ -37,6 +38,38 @@ function envelope(value: unknown) {
 }
 
 describe("process AI contract", () => {
+  test("terminates the complete sandbox process group at the timeout", async () => {
+    if (process.platform === "win32") return;
+    const temporary = await root();
+    const childPidPath = join(temporary, "child.pid");
+    const startedAt = performance.now();
+    const result = await runSandboxTransport({
+      command: [
+        "sh",
+        "-c",
+        'sleep 30 & child=$!; printf "%s" "$child" > "$1"; wait "$child"',
+        "sh",
+        childPidPath,
+      ],
+      cwd: temporary,
+      env: { PATH: process.env.PATH },
+      stdin: "",
+      timeoutMs: 100,
+      maxOutputBytes: 1_000,
+    });
+    expect(result.exitCode).not.toBe(0);
+    expect(performance.now() - startedAt).toBeLessThan(3_000);
+    const childPid = (await Bun.file(childPidPath).text()).trim();
+    const childCheck = Bun.spawn([
+      "sh",
+      "-c",
+      'kill -0 "$1" 2>/dev/null',
+      "sh",
+      childPid,
+    ]);
+    expect(await childCheck.exited).not.toBe(0);
+  });
+
   test("uses medium effort, no persistence, and no tools without uploads", async () => {
     const temporary = await root();
     let captured: SandboxTransportRequest | undefined;
