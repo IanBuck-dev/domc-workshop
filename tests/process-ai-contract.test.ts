@@ -271,6 +271,10 @@ describe("process AI contract", () => {
     );
     expect(captured?.command).not.toContain("--json-schema");
     expect(captured?.stdin).toContain("Verbindliches Ausgabeschema");
+    expect(captured?.command.join(" ")).toContain(
+      "gebündelten lokalen Arbeitsschritt",
+    );
+    expect(captured?.command.join(" ")).toContain("python3");
   });
 
   test("rejects foreign, changed, and unsandboxed selected files before Claude runs", async () => {

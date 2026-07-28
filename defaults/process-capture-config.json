@@ -158,7 +158,7 @@
   "ai": {
     "model": "claude-opus-4-8",
     "reasoningEffort": "medium",
-    "timeoutMs": 180000,
+    "timeoutMs": 300000,
     "maxOutputTokens": 12000,
     "maxInputCharacters": 200000,
     "maxBudgetUsd": 1

@@ -30,6 +30,7 @@ describe("compact-v1 process domain", () => {
       ".jpg",
       ".jpeg",
     ]);
+    expect(config.ai.timeoutMs).toBe(300_000);
     expect(() =>
       processCaptureConfigSchema.parse({
         ...config,
