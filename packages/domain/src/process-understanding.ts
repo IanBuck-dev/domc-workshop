@@ -145,24 +145,40 @@ export const processInstructionsSchema = z.object({
   synthesis: z.string().trim().min(1).max(30_000),
 });
 
+const legacyAllowedExtensionsSchema = z.tuple([
+  z.literal(".pdf"),
+  z.literal(".xlsx"),
+  z.literal(".csv"),
+  z.literal(".docx"),
+  z.literal(".txt"),
+  z.literal(".md"),
+  z.literal(".png"),
+  z.literal(".jpg"),
+  z.literal(".jpeg"),
+]);
+const allowedExtensionsSchema = z.union([
+  legacyAllowedExtensionsSchema,
+  z.tuple([
+    z.literal(".pdf"),
+    z.literal(".xlsx"),
+    z.literal(".csv"),
+    z.literal(".docx"),
+    z.literal(".pptx"),
+    z.literal(".txt"),
+    z.literal(".md"),
+    z.literal(".png"),
+    z.literal(".jpg"),
+    z.literal(".jpeg"),
+  ]),
+]);
+
 const processCaptureConfigBase = {
   schemaVersion: z.literal(1),
   departments: z.array(z.string().trim().min(1).max(120)).min(1).max(100),
   topics: z.array(topicDefinitionSchema).length(5),
   instructions: processInstructionsSchema,
   uploads: z.object({
-    allowedExtensions: z.tuple([
-      z.literal(".pdf"),
-      z.literal(".xlsx"),
-      z.literal(".csv"),
-      z.literal(".docx"),
-      z.literal(".pptx"),
-      z.literal(".txt"),
-      z.literal(".md"),
-      z.literal(".png"),
-      z.literal(".jpg"),
-      z.literal(".jpeg"),
-    ]),
+    allowedExtensions: allowedExtensionsSchema,
     maxFiles: z.literal(5),
     maxFileBytes: z.literal(20 * 1024 * 1024),
     maxProcessBytes: z.literal(100 * 1024 * 1024),

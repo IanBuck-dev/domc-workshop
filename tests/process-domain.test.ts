@@ -102,6 +102,17 @@ describe("compact-v1 process domain", () => {
     expect(legacy.workCharacteristicAnswers).toEqual([]);
   });
 
+  test("keeps config snapshots from before PowerPoint support readable", async () => {
+    const current = await processConfig();
+    const legacyInput: Record<string, unknown> = structuredClone(current);
+    const uploads = legacyInput.uploads as { allowedExtensions: string[] };
+    uploads.allowedExtensions = uploads.allowedExtensions.filter(
+      (extension) => extension !== ".pptx",
+    );
+    const legacy = processCaptureConfigSchema.parse(legacyInput);
+    expect(legacy.uploads.allowedExtensions).not.toContain(".pptx");
+  });
+
   test("locks work-characteristic semantics while allowing wording changes", async () => {
     const config = await processConfig();
     expect(
