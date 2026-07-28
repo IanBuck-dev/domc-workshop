@@ -238,7 +238,11 @@
   margin-top: auto;
   min-height: 2.75rem;
 }
+/* Der Grund einer Sperre ist ein ganzer Satz und beginnt links, während eine
+   Schaltfläche rechts am Kartenrand sitzt. */
 .process-module-action > span {
+  margin-right: auto;
   color: var(--muted);
   font-size: var(--text-sm);
+  line-height: 1.45;
 }

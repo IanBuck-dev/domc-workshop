@@ -109,13 +109,47 @@ describe("process navigation model", () => {
     ).toMatchObject({
       status: "Nach Bestätigung",
       action: null,
+      blockedReason:
+        "Zuerst die Prozessaufnahme abschließen und das Prozessbild fachlich bestätigen.",
     });
     expect(
       processNavigationModel(process("confirmed", 1)).opportunity,
     ).toMatchObject({
       status: "Nicht verfügbar",
       action: null,
+      blockedReason:
+        "Dieser Prozess wurde in einer früheren Fassung erfasst und enthält die dafür nötigen Angaben nicht.",
     });
+  });
+
+  test("nennt bei jedem gesperrten Modul einen Grund und sonst keinen", () => {
+    const states: Parameters<typeof process>[0][] = [
+      "capture_in_progress",
+      "follow_up_required",
+      "synthesis_ready",
+      "review_required",
+      "confirmed",
+    ];
+    const analyses: (OpportunityDiscoverySummary | undefined)[] = [
+      undefined,
+      opportunity("hypotheses_running"),
+      opportunity("scenarios_failed"),
+      opportunity("no_supported_hypotheses"),
+      opportunity("completed"),
+      opportunity("completed", { isStale: true }),
+    ];
+    for (const version of [1, 2])
+      for (const state of states)
+        for (const analysis of analyses)
+          for (const module of Object.values(
+            processNavigationModel(process(state, version), analysis),
+          )) {
+            if (typeof module === "string") continue;
+            // Eine Karte ohne Schaltfläche muss sagen, was ihr fehlt.
+            if (module.action === null)
+              expect(module.blockedReason).toBeTruthy();
+            else expect(module.blockedReason).toBeNull();
+          }
   });
 
   test("öffnet vorhandene Szenarien direkt und sonst die Hypothesen", () => {

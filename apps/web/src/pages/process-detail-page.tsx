@@ -253,7 +253,7 @@ function ProcessModuleCard({
         </div>
         <p>{description}</p>
         <div className="process-module-action">
-          {action ?? <span>Aktuell keine Aktion erforderlich</span>}
+          {action ?? <span>{state.blockedReason}</span>}
         </div>
       </div>
     </Card>
