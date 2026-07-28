@@ -9,6 +9,7 @@ const textTypes = new Set(["text/plain", "text/markdown", "text/csv"]);
 const officeTypes = new Set([
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   "application/zip",
 ]);
 
@@ -90,8 +91,9 @@ export function DocumentPreviewDialog({
             <FileText />
             <h3>Vorschau nicht verfügbar</h3>
             <p>
-              Word- und Excel-Dateien können in diesem Prototyp nicht direkt
-              angezeigt werden. Laden Sie die Originaldatei zum Öffnen herunter.
+              Word-, PowerPoint- und Excel-Dateien können in diesem Prototyp
+              nicht direkt angezeigt werden. Laden Sie die Originaldatei zum
+              Öffnen herunter.
             </p>
           </div>
         )}
@@ -134,5 +136,6 @@ function friendlyType(mediaType: string) {
   if (mediaType === "text/plain") return "Text";
   if (mediaType.includes("wordprocessingml")) return "Word";
   if (mediaType.includes("spreadsheetml")) return "Excel";
+  if (mediaType.includes("presentationml")) return "PowerPoint";
   return "Office-Datei";
 }

@@ -113,6 +113,8 @@ describe("process AI contract", () => {
     );
     expect(systemPrompt).toContain("Nicht sicher");
     expect(systemPrompt).toContain("nicht als KI-Eignung");
+    expect(systemPrompt).toContain("DOCX, XLSX und PPTX");
+    expect(systemPrompt).toContain("Fehlende Bilder, Platzhalter");
   });
 
   test("rejects duplicate topic followups", async () => {

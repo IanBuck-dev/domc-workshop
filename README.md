@@ -34,4 +34,4 @@ The process flow is specified in [docs/PRODUCT-FLOW-KI-POTENTIAL.md](docs/PRODUC
 
 Release outputs are written to `dist/`, including the Linux ARM64 target for the Raspberry Pi. Claude CLI and Anthropic Sandbox Runtime must be installed separately on the deployment host. Production startup intentionally fails AI workspace operations when sandboxing is unavailable.
 
-See [operator instructions](docs/OPERATOR_GUIDE.de.md) and [data notice](docs/PRIVACY_NOTICE.de.md).
+See [operator instructions](docs/OPERATOR_GUIDE.de.md), the [Raspberry Pi deployment runbook](docs/PI-DEPLOYMENT.md), and [data notice](docs/PRIVACY_NOTICE.de.md).

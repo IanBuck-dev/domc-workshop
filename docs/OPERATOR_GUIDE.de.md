@@ -20,7 +20,7 @@
 5. Prüfen Sie Prozesssteckbrief, Arbeitsmerkmale,
    High-Level-Prozesskarte, Unterlagenabdeckung und offene Wissenslücken. Eine
    Korrektur der Arbeitsmerkmale benötigt eine kurze fachliche Begründung.
-6. Öffnen Sie bei Bedarf die Vorschau einer berücksichtigten Unterlage. PDF-, Bild- und Textdateien werden direkt angezeigt; Word- und Excel-Dateien stehen als Originaldownload bereit.
+6. Öffnen Sie bei Bedarf die Vorschau einer berücksichtigten Unterlage. PDF-, Bild- und Textdateien werden direkt angezeigt; Word-, PowerPoint- und Excel-Dateien stehen als Originaldownload bereit.
 7. Korrigieren Sie missverstandene Bereiche und bestätigen Sie anschließend die Prozessbeschreibung als fachliche Ausgangsbasis.
 
 ## KI-Potenziale und Szenarien entdecken
@@ -74,7 +74,7 @@ Wiederherstellung; während einer laufenden KI-Aktion ist das Löschen gesperrt.
 - Der Dienst bindet ausschließlich an `127.0.0.1:3210`; Cloudflare Tunnel übernimmt den HTTPS-Zugang.
 - Der produktive Tunnel-Hostname ist `claims-ai.ian-buck.dev`; sein DNS-Eintrag zeigt auf den bestehenden Pi-Tunnel, dessen zweite Ingress-Regel nur diesen Dienst an Port `3210` weiterleitet.
 - Claude-Aktionen laufen nacheinander in Wegwerf-Arbeitsbereichen. Ein fehlendes Sandbox Runtime ist im Produktionsbetrieb ein Fehler, kein stiller Rückfall.
-- Der Claude-Login ist für den Dienstbenutzer `claims-ai` eingerichtet. Prüfen: `sudo -u claims-ai env HOME=/var/lib/claims-ai CLAUDE_CONFIG_DIR=/var/lib/claims-ai/.claude claude auth status`.
+- Der Claude-Login ist für den Dienstbenutzer `claims-ai` eingerichtet. Status und Deployment werden im [Pi-Runbook](PI-DEPLOYMENT.md) mit den vollständigen, reproduzierbaren Befehlen beschrieben.
 - Die Service-Härtung bleibt aktiv; `ProtectKernelTunables` und `ProtectKernelLogs` sind bewusst nicht gesetzt, weil Bubblewrap sonst keinen privaten `/proc`-Mount anlegen kann. `/tmp/claude` liegt durch `PrivateTmp=yes` im privaten temporären Namensraum des Dienstes.
 - Claude benötigt lesenden Zugriff auf `/var/lib/claims-ai/.claude`. Diese Authentifizierungskonfiguration ist deshalb auch für die im Sandbox-Prozess erlaubten Werkzeuge lesbar. Andere Home-Verzeichnisse, Service-Secrets, fremde Prozessaufnahmen und lokale Dienste bleiben gesperrt. Das ist eine bewusste Einschränkung des Prototyps.
 - `CLAUDE_CODE_SAFE_MODE=1` und `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1` bleiben gesetzt. `CLAUDE_CODE_SIMPLE` darf nicht gesetzt werden, weil es die Claude-Pro-Anmeldung im CLI-Prozess deaktiviert.

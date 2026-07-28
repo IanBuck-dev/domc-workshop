@@ -156,6 +156,7 @@ const processCaptureConfigBase = {
       z.literal(".xlsx"),
       z.literal(".csv"),
       z.literal(".docx"),
+      z.literal(".pptx"),
       z.literal(".txt"),
       z.literal(".md"),
       z.literal(".png"),

@@ -79,6 +79,10 @@ const mediaTypes: Record<string, string[]> = {
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "application/zip",
   ],
+  ".pptx": [
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/zip",
+  ],
   ".txt": ["text/plain"],
   ".md": ["text/markdown", "text/plain"],
   ".png": ["image/png"],
@@ -129,7 +133,7 @@ function validateFileBytes(extension: string, bytes: Uint8Array) {
     !hasPrefix(bytes, [0xff, 0xd8, 0xff])
   )
     throw new Error("Der Dateiinhalt ist kein gültiges JPEG-Bild.");
-  if ([".docx", ".xlsx"].includes(extension)) {
+  if ([".docx", ".xlsx", ".pptx"].includes(extension)) {
     let entries: Record<string, Uint8Array>;
     try {
       entries = unzipSync(bytes);
@@ -139,9 +143,20 @@ function validateFileBytes(extension: string, bytes: Uint8Array) {
     const required =
       extension === ".docx"
         ? ["[Content_Types].xml", "word/document.xml"]
-        : ["[Content_Types].xml", "xl/workbook.xml"];
+        : extension === ".xlsx"
+          ? ["[Content_Types].xml", "xl/workbook.xml"]
+          : ["[Content_Types].xml", "ppt/presentation.xml"];
     if (required.some((name) => !entries[name]))
       throw new Error("Der Inhalt passt nicht zur angegebenen Office-Datei.");
+    if (
+      extension === ".pptx" &&
+      !Object.keys(entries).some((name) =>
+        /^ppt\/slides\/slide\d+\.xml$/.test(name),
+      )
+    )
+      throw new Error(
+        "Die Office-Datei enthält keine lesbare Präsentationsfolie.",
+      );
   }
   if ([".txt", ".md", ".csv"].includes(extension) && bytes.includes(0))
     throw new Error("Die Textdatei enthält ungültige Binärdaten.");

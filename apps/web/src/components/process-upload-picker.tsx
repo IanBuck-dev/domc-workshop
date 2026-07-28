@@ -112,7 +112,7 @@ export function ProcessUploadPicker({
         name="process-upload"
         hidden
         type="file"
-        accept=".pdf,.xlsx,.csv,.docx,.txt,.md,.png,.jpg,.jpeg"
+        accept=".pdf,.xlsx,.csv,.docx,.pptx,.txt,.md,.png,.jpg,.jpeg"
         disabled={disabled || busy || uploads.length >= configLimit}
         onChange={(event) => {
           const file = event.target.files?.[0];
@@ -129,7 +129,8 @@ export function ProcessUploadPicker({
         {busy ? "Datei wird verarbeitet …" : "Unterlage hinzufügen"}
       </Button>
       <small>
-        PDF, Word, Excel, CSV, Text oder Bild · höchstens 20 MB je Datei
+        PDF, Word, PowerPoint, Excel, CSV, Text oder Bild · höchstens 20 MB je
+        Datei
       </small>
     </Card>
   );

@@ -104,8 +104,8 @@ confirmation timestamp. It does not silently change fact provenance or mark
 The result section `Unterlagen und offene Punkte` retains each document's
 coverage status and offers an authenticated preview dialog. PDF, PNG, JPEG,
 TXT, Markdown, and CSV are shown in the browser; text is rendered as escaped
-plain text. DOCX and XLSX show file metadata and a clear preview-unavailable
-message. Every format can be downloaded with its safe original filename. The
+plain text. DOCX, PPTX, and XLSX show file metadata and a clear
+preview-unavailable message. Every format can be downloaded with its safe original filename. The
 prototype performs no document conversion and uses no external viewer.
 
 ### Fixed prototype constraints

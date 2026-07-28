@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { zipSync } from "fflate";
 import { processCaptureRoutes } from "../apps/server/src/routes/process-captures.ts";
 import { listProcessOperations } from "../apps/server/src/process-operation-manager.ts";
 import type { ProcessAiAdapter } from "../packages/claude/src/process-ai-contracts.ts";
@@ -30,6 +31,14 @@ const trace = () => ({
   outputTokens: 4,
   sandboxed: true,
 });
+function pptxBytes({ withSlide = true } = {}) {
+  const xml = new TextEncoder().encode('<?xml version="1.0"?><root />');
+  return zipSync({
+    "[Content_Types].xml": xml,
+    "ppt/presentation.xml": xml,
+    ...(withSlide ? { "ppt/slides/slide1.xml": xml } : {}),
+  });
+}
 async function fixture(followUp = false, aiOverride?: ProcessAiAdapter) {
   const root = await mkdtemp(join(tmpdir(), "process-api-"));
   roots.push(root);
@@ -335,6 +344,23 @@ describe("process capture API", () => {
     expect(new Uint8Array(await download.arrayBuffer())).toEqual(
       new TextEncoder().encode("Ablauf"),
     );
+    const presentation = new FormData();
+    presentation.set(
+      "file",
+      new File([pptxBytes()], "prozess.pptx", {
+        type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      }),
+    );
+    const presentationResponse = await app.request(
+      `/api/processes/${created.id}/uploads`,
+      { method: "POST", body: presentation },
+    );
+    expect(presentationResponse.status).toBe(201);
+    expect(await presentationResponse.json()).toMatchObject({
+      name: "prozess.pptx",
+      mediaType:
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    });
     expect(
       (
         await app.request(
@@ -371,6 +397,21 @@ describe("process capture API", () => {
         await app.request(`/api/processes/${created.id}/uploads`, {
           method: "POST",
           body: bad,
+        })
+      ).status,
+    ).toBe(415);
+    const emptyPresentation = new FormData();
+    emptyPresentation.set(
+      "file",
+      new File([pptxBytes({ withSlide: false })], "ohne-folien.pptx", {
+        type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      }),
+    );
+    expect(
+      (
+        await app.request(`/api/processes/${created.id}/uploads`, {
+          method: "POST",
+          body: emptyPresentation,
         })
       ).status,
     ).toBe(415);

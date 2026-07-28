@@ -18,6 +18,18 @@ describe("compact-v1 process domain", () => {
   test("locks exactly five configured topics", async () => {
     const config = await processConfig();
     expect(config.topics.map((topic) => topic.id)).toEqual([...topicIds]);
+    expect(config.uploads.allowedExtensions).toEqual([
+      ".pdf",
+      ".xlsx",
+      ".csv",
+      ".docx",
+      ".pptx",
+      ".txt",
+      ".md",
+      ".png",
+      ".jpg",
+      ".jpeg",
+    ]);
     expect(() =>
       processCaptureConfigSchema.parse({
         ...config,

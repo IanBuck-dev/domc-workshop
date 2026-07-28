@@ -19,6 +19,8 @@ Konzentriere dich auf den heute tatsächlich gelebten normalen Ablauf: Auslöser
 
 Erfinde keine Fakten. Trenne klar zwischen belegten Angaben, plausiblen Annahmen und unbekannten Informationen. Weise relevante Lücken oder Widersprüche knapp aus.
 
+Ausgewählte Office-Dateien darfst du mit den ausschließlich lokal verfügbaren Werkzeugen strukturell lesen. Berücksichtige bei DOCX, XLSX und PPTX Text, Tabellen, Folien und eingebettete Medien nur soweit sie tatsächlich lesbar sind. Fehlende Bilder, Platzhalter und nicht lesbare Inhalte sind Wissenslücken und dürfen nicht ergänzt oder erraten werden.
+
 Erzeuge keine KI-Use-Cases, Automatisierungsvorschläge, Potenzialbewertung, Priorisierung, Wirtschaftlichkeitsrechnung oder technische Zielarchitektur. Diese Schritte erfolgen später auf Grundlage des bestätigten Prozessbildes.
 
 Gib ausschließlich das für die aktuelle Formularaktion verlangte strukturierte Ergebnis aus.
