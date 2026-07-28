@@ -80,6 +80,8 @@
 }
 
 .process-detail-heading {
+  /* Der Knopf gehört neben die Überschrift, nicht neben den Kicker darüber. */
+  align-items: center;
   margin-bottom: var(--space-4);
 }
 .process-detail-heading p {
@@ -91,13 +93,9 @@
 .process-context-menu {
   position: relative;
 }
-.process-context-trigger {
-  width: 2.7rem;
-  height: 2.7rem;
-  border: 1px solid var(--line);
-  background: var(--surface);
-}
-.process-context-trigger:hover,
+/* Bewusst ohne Fläche und Rahmen: ein weißes Kästchen auf der getönten
+   Seitenfläche liest sich wie ein Eingabefeld. Das Aufgeklappt-Sein zeigt
+   dieselbe Tönung wie der Hover. */
 .process-context-trigger[aria-expanded="true"] {
   color: var(--green);
   background: var(--surface-accent);

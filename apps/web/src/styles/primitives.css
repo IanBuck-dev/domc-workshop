@@ -69,7 +69,13 @@
   background: transparent;
   color: var(--muted);
 }
-.icon-button.danger:hover {
+/* Dieselbe Tönung, die Navigation, Listenzeile und heller Knopf beim
+   Überfahren zeigen. */
+.icon-button:hover:not(:disabled) {
+  background: var(--surface-accent);
+  color: var(--green);
+}
+.icon-button.danger:hover:not(:disabled) {
   color: var(--danger-fg);
   background: var(--danger-bg);
 }
