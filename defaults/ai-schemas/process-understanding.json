@@ -1,9 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "claims-ai/process-understanding/v1",
+  "$id": "claims-ai/process-understanding/v2",
   "type": "object",
   "additionalProperties": false,
   "required": [
+    "schemaVersion",
     "purpose",
     "trigger",
     "outcome",
@@ -24,6 +25,7 @@
     "conflicts"
   ],
   "properties": {
+    "schemaVersion": { "const": 2 },
     "purpose": { "$ref": "#/$defs/stringFact" },
     "trigger": { "$ref": "#/$defs/stringFact" },
     "outcome": { "$ref": "#/$defs/stringFact" },
@@ -56,18 +58,37 @@
     "knowledgeGaps": {
       "type": "array",
       "maxItems": 50,
-      "items": { "type": "string", "minLength": 1 }
+      "items": { "type": "string", "minLength": 1, "maxLength": 2000 }
     },
     "conflicts": {
       "type": "array",
       "maxItems": 50,
-      "items": { "type": "string", "minLength": 1 }
+      "items": { "type": "string", "minLength": 1, "maxLength": 2000 }
     }
   },
   "$defs": {
-    "factBase": {
+    "provenance": {
+      "type": "string",
+      "enum": [
+        "user_stated",
+        "file_evidence",
+        "ai_structured",
+        "ai_inferred",
+        "user_confirmed",
+        "unknown"
+      ]
+    },
+    "confidence": {
+      "anyOf": [
+        { "type": "integer", "minimum": 0, "maximum": 100 },
+        { "type": "null" }
+      ]
+    },
+    "stringFact": {
       "type": "object",
+      "additionalProperties": false,
       "required": [
+        "value",
         "provenance",
         "evidenceIds",
         "confidence",
@@ -75,75 +96,26 @@
         "confirmed"
       ],
       "properties": {
-        "provenance": {
-          "type": "string",
-          "enum": [
-            "user_stated",
-            "file_evidence",
-            "ai_structured",
-            "ai_inferred",
-            "user_confirmed",
-            "unknown"
-          ]
-        },
-        "evidenceIds": {
-          "type": "array",
-          "items": { "type": "string", "minLength": 1 }
-        },
-        "confidence": {
+        "value": {
           "anyOf": [
-            { "type": "integer", "minimum": 0, "maximum": 100 },
+            { "type": "string", "minLength": 1, "maxLength": 12000 },
             { "type": "null" }
           ]
         },
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "evidenceIds": {
+          "type": "array",
+          "maxItems": 50,
+          "items": { "type": "string", "minLength": 1, "maxLength": 120 }
+        },
+        "confidence": { "$ref": "#/$defs/confidence" },
         "assumptions": {
           "type": "array",
-          "items": { "type": "string", "minLength": 1 }
+          "maxItems": 20,
+          "items": { "type": "string", "minLength": 1, "maxLength": 1000 }
         },
         "confirmed": { "type": "boolean" }
       }
-    },
-    "stringFact": {
-      "allOf": [
-        { "$ref": "#/$defs/factBase" },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "value",
-            "provenance",
-            "evidenceIds",
-            "confidence",
-            "assumptions",
-            "confirmed"
-          ],
-          "properties": {
-            "value": {
-              "anyOf": [
-                { "type": "string", "minLength": 1 },
-                { "type": "null" }
-              ]
-            },
-            "provenance": {
-              "type": "string",
-              "enum": [
-                "user_stated",
-                "file_evidence",
-                "ai_structured",
-                "ai_inferred",
-                "user_confirmed",
-                "unknown"
-              ]
-            },
-            "evidenceIds": { "type": "array", "items": { "type": "string" } },
-            "confidence": {
-              "anyOf": [{ "type": "integer" }, { "type": "null" }]
-            },
-            "assumptions": { "type": "array", "items": { "type": "string" } },
-            "confirmed": { "type": "boolean" }
-          }
-        }
-      ]
     },
     "listFact": {
       "type": "object",
@@ -159,30 +131,98 @@
       "properties": {
         "value": {
           "anyOf": [
-            { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            {
+              "type": "array",
+              "maxItems": 100,
+              "items": { "type": "string", "minLength": 1, "maxLength": 2000 }
+            },
             { "type": "null" }
           ]
         },
-        "provenance": {
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "evidenceIds": {
+          "type": "array",
+          "maxItems": 50,
+          "items": { "type": "string", "minLength": 1, "maxLength": 120 }
+        },
+        "confidence": { "$ref": "#/$defs/confidence" },
+        "assumptions": {
+          "type": "array",
+          "maxItems": 20,
+          "items": { "type": "string", "minLength": 1, "maxLength": 1000 }
+        },
+        "confirmed": { "type": "boolean" }
+      }
+    },
+    "informationItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "source", "type"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "source": {
+          "anyOf": [
+            { "type": "string", "minLength": 1, "maxLength": 1000 },
+            { "type": "null" }
+          ]
+        },
+        "type": {
           "type": "string",
           "enum": [
-            "user_stated",
-            "file_evidence",
-            "ai_structured",
-            "ai_inferred",
-            "user_confirmed",
+            "system_field",
+            "email",
+            "spreadsheet",
+            "document",
+            "image_or_scan",
+            "free_text",
+            "database_or_report",
+            "other",
             "unknown"
           ]
-        },
-        "evidenceIds": { "type": "array", "items": { "type": "string" } },
-        "confidence": {
+        }
+      }
+    },
+    "decisionOption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "determination", "consequence", "nextStepId"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "determination": {
           "anyOf": [
-            { "type": "integer", "minimum": 0, "maximum": 100 },
+            { "type": "string", "minLength": 1, "maxLength": 2000 },
             { "type": "null" }
           ]
         },
-        "assumptions": { "type": "array", "items": { "type": "string" } },
-        "confirmed": { "type": "boolean" }
+        "consequence": {
+          "anyOf": [
+            { "type": "string", "minLength": 1, "maxLength": 2000 },
+            { "type": "null" }
+          ]
+        },
+        "nextStepId": {
+          "anyOf": [
+            { "type": "string", "minLength": 1, "maxLength": 120 },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["question", "mode", "options"],
+      "properties": {
+        "question": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "mode": {
+          "type": "string",
+          "enum": ["rule_based", "professional_judgement", "mixed", "unknown"]
+        },
+        "options": {
+          "type": "array",
+          "maxItems": 20,
+          "items": { "$ref": "#/$defs/decisionOption" }
+        }
       }
     },
     "step": {
@@ -192,17 +232,12 @@
         "id",
         "order",
         "name",
-        "trigger",
-        "responsibleRoles",
         "activity",
-        "information",
-        "output",
-        "systems",
-        "decision",
-        "ruleOrJudgement",
-        "handover",
-        "controls",
-        "painPoints",
+        "inputs",
+        "outputs",
+        "informationItems",
+        "decisions",
+        "miscellaneous",
         "provenance",
         "evidenceIds",
         "confidence",
@@ -210,69 +245,49 @@
         "confirmed"
       ],
       "properties": {
-        "id": { "type": "string" },
+        "id": { "type": "string", "minLength": 1, "maxLength": 120 },
         "order": { "type": "integer", "minimum": 1, "maximum": 8 },
-        "name": { "type": "string", "minLength": 1 },
-        "trigger": {
-          "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
-        },
-        "responsibleRoles": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "activity": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "inputs": {
           "type": "array",
-          "items": { "type": "string", "minLength": 1 }
+          "maxItems": 30,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 1000 }
         },
-        "activity": { "type": "string", "minLength": 1 },
-        "information": {
+        "outputs": {
           "type": "array",
-          "items": { "type": "string", "minLength": 1 }
+          "maxItems": 30,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 1000 }
         },
-        "output": {
-          "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
-        },
-        "systems": {
+        "informationItems": {
           "type": "array",
-          "items": { "type": "string", "minLength": 1 }
+          "maxItems": 40,
+          "items": { "$ref": "#/$defs/informationItem" }
         },
-        "decision": {
-          "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
-        },
-        "ruleOrJudgement": {
-          "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
-        },
-        "handover": {
-          "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
-        },
-        "controls": {
+        "decisions": {
           "type": "array",
-          "items": { "type": "string", "minLength": 1 }
+          "maxItems": 20,
+          "items": { "$ref": "#/$defs/decision" }
         },
-        "painPoints": {
-          "type": "array",
-          "items": { "type": "string", "minLength": 1 }
-        },
-        "provenance": {
-          "type": "string",
-          "enum": [
-            "user_stated",
-            "file_evidence",
-            "ai_structured",
-            "ai_inferred",
-            "user_confirmed",
-            "unknown"
-          ]
-        },
-        "evidenceIds": {
-          "type": "array",
-          "items": { "type": "string", "minLength": 1 }
-        },
-        "confidence": {
+        "miscellaneous": {
           "anyOf": [
-            { "type": "integer", "minimum": 0, "maximum": 100 },
+            { "type": "string", "minLength": 1, "maxLength": 4000 },
             { "type": "null" }
           ]
         },
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "evidenceIds": {
+          "type": "array",
+          "maxItems": 50,
+          "items": { "type": "string", "minLength": 1, "maxLength": 120 }
+        },
+        "confidence": { "$ref": "#/$defs/confidence" },
         "assumptions": {
           "type": "array",
-          "items": { "type": "string", "minLength": 1 }
+          "maxItems": 20,
+          "items": { "type": "string", "minLength": 1, "maxLength": 1000 }
         },
         "confirmed": { "type": "boolean" }
       }
@@ -282,18 +297,13 @@
       "additionalProperties": false,
       "required": ["id", "kind", "sourceId", "excerpt"],
       "properties": {
-        "id": { "type": "string" },
+        "id": { "type": "string", "minLength": 1, "maxLength": 120 },
         "kind": {
           "type": "string",
-          "enum": [
-            "main_answer",
-            "follow_up_answer",
-            "upload",
-            "human_correction"
-          ]
+          "enum": ["main_answer", "follow_up_answer", "upload"]
         },
-        "sourceId": { "type": "string" },
-        "excerpt": { "type": "string" }
+        "sourceId": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "excerpt": { "type": "string", "minLength": 1, "maxLength": 2000 }
       }
     },
     "coverage": {
@@ -307,8 +317,8 @@
         "limitation"
       ],
       "properties": {
-        "uploadId": { "type": "string" },
-        "name": { "type": "string" },
+        "uploadId": { "type": "string", "format": "uuid" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 240 },
         "status": {
           "type": "string",
           "enum": ["complete", "partial", "failed"]
@@ -316,7 +326,12 @@
         "processedCharacters": {
           "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }]
         },
-        "limitation": { "anyOf": [{ "type": "string" }, { "type": "null" }] }
+        "limitation": {
+          "anyOf": [
+            { "type": "string", "minLength": 1, "maxLength": 2000 },
+            { "type": "null" }
+          ]
+        }
       }
     }
   }

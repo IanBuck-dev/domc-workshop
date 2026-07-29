@@ -3,7 +3,10 @@ import type {
   ProcessAiResult,
   SynthesisRequest,
 } from "./process-ai-contracts.ts";
-import type { ProcessUnderstanding } from "../../domain/src/process-understanding.ts";
+import {
+  normalizeProcessSynthesisResult,
+  type ProcessUnderstanding,
+} from "../../domain/src/process-understanding.ts";
 import { processSynthesisResultSchema } from "./process-response-schemas.ts";
 import {
   boundedProcessJson,
@@ -22,7 +25,7 @@ export class ProcessSynthesisAdapter {
       loadProcessPrompt("process-synthesis"),
     ]);
     const jsonSchema = await loadProcessSchema("process-understanding");
-    return this.runner.runStructured({
+    const result = await this.runner.runStructured({
       processId: request.processId,
       operationName: "process-synthesis",
       prompt: `## Prozessangaben\n${boundedProcessJson({ cover: request.cover, topics: request.topics, mainAnswers: request.mainAnswers, workCharacteristics: request.workCharacteristicDefinitions.map((definition) => ({ id: definition.id, topicId: definition.topicId, question: definition.question, selectedAnswers: request.workCharacteristicAnswers.find((answer) => answer.characteristicId === definition.id)?.selectedOptionIds.map((optionId) => definition.options.find((option) => option.id === optionId)?.label ?? optionId) ?? [] })), followUps: request.followUps, followUpAnswers: request.followUpAnswers, selectedUploads: request.selectedUploads.map(({ id, name }) => ({ id, name })) }, request.model.maxInputCharacters)}`,
@@ -39,5 +42,9 @@ export class ProcessSynthesisAdapter {
       selectedUploads: request.selectedUploads,
       signal: request.signal,
     });
+    return {
+      ...result,
+      value: normalizeProcessSynthesisResult(result.value),
+    };
   }
 }

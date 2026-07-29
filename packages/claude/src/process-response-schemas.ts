@@ -1,7 +1,7 @@
 import { z } from "zod";
 import {
   followUpQuestionSchema,
-  processUnderstandingSchema,
+  processSynthesisAiResultSchema,
 } from "../../domain/src/process-understanding.ts";
 
 export const processFollowUpResultSchema = z
@@ -22,4 +22,4 @@ export const processFollowUpResultSchema = z
         message: "Follow-up IDs must be unique.",
       });
   });
-export { processUnderstandingSchema as processSynthesisResultSchema };
+export { processSynthesisAiResultSchema as processSynthesisResultSchema };

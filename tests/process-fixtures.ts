@@ -89,6 +89,7 @@ const listFact = (value: string[] | null, evidenceIds = ["flow-roles"]) => ({
 
 export function understanding(stepCount = 5): ProcessUnderstanding {
   return processUnderstandingSchema.parse({
+    schemaVersion: 2,
     purpose: stringFact("Kalte Leads fachlich korrekt erneut ansprechen."),
     trigger: stringFact("Ein Lead wurde länger nicht kontaktiert."),
     outcome: stringFact("Eine geprüfte Nachricht wurde versendet."),
@@ -120,18 +121,44 @@ export function understanding(stepCount = 5): ProcessUnderstanding {
       id: `step-${index + 1}`,
       order: index + 1,
       name: `Hauptschritt ${index + 1}`,
-      trigger:
-        index === 0 ? "Lead ist fällig" : `Schritt ${index} ist abgeschlossen`,
-      responsibleRoles: ["Vertrieb"],
       activity: `Fachliche Tätigkeit ${index + 1}`,
-      information: ["CRM-Angaben"],
-      output: `Ergebnis ${index + 1}`,
-      systems: ["CRM"],
-      decision: "Keine zusätzliche Entscheidung",
-      ruleOrJudgement: "Bekannte fachliche Regel",
-      handover: "Weiter zum nächsten Hauptschritt",
-      controls: ["Plausibilitätsprüfung"],
-      painPoints: ["Manuelle Bearbeitung"],
+      inputs: [index === 0 ? "Fälliger Lead" : `Ergebnis ${index}`],
+      outputs: [`Ergebnis ${index + 1}`],
+      informationItems: [
+        {
+          id: `info-${index + 1}-1`,
+          name: "CRM-Angaben",
+          source: "Vertriebs-CRM",
+          type: "system_field" as const,
+        },
+      ],
+      decisions:
+        index === 0
+          ? [
+              {
+                id: "decision-1-1",
+                question: "Ist die erneute Kontaktaufnahme erlaubt?",
+                mode: "rule_based" as const,
+                options: [
+                  {
+                    id: "option-1-1-1",
+                    label: "Ja",
+                    determination: "Eine gültige Einwilligung ist hinterlegt.",
+                    consequence: "Der Lead wird weiterbearbeitet.",
+                    nextStepId: stepCount > 1 ? "step-2" : null,
+                  },
+                  {
+                    id: "option-1-1-2",
+                    label: "Nein",
+                    determination: "Keine gültige Einwilligung ist hinterlegt.",
+                    consequence: "Die Kontaktaufnahme wird beendet.",
+                    nextStepId: null,
+                  },
+                ],
+              },
+            ]
+          : [],
+      miscellaneous: "Plausibilitätsprüfung durch den Vertrieb.",
       provenance: "ai_structured" as const,
       evidenceIds: [
         "flow-roles",
@@ -153,4 +180,66 @@ export function understanding(stepCount = 5): ProcessUnderstanding {
     knowledgeGaps: ["Exakte Fallzahl unbekannt"],
     conflicts: [],
   });
+}
+
+export function legacyUnderstanding(stepCount = 5) {
+  const current = understanding(stepCount);
+  const globalFacts = structuredClone(current) as Record<string, unknown>;
+  delete globalFacts.schemaVersion;
+  delete globalFacts.steps;
+  return {
+    ...globalFacts,
+    steps: Array.from({ length: stepCount }, (_, index) => ({
+      id: `step-${index + 1}`,
+      order: index + 1,
+      name: `Hauptschritt ${index + 1}`,
+      trigger:
+        index === 0 ? "Lead ist fällig" : `Schritt ${index} ist abgeschlossen`,
+      responsibleRoles: ["Vertrieb"],
+      activity: `Fachliche Tätigkeit ${index + 1}`,
+      information: ["CRM-Angaben"],
+      output: `Ergebnis ${index + 1}`,
+      systems: ["CRM"],
+      decision: index === 0 ? "Ist die Kontaktaufnahme erlaubt?" : null,
+      ruleOrJudgement: "Bekannte fachliche Regel",
+      handover: "Weiter zum nächsten Hauptschritt",
+      controls: ["Plausibilitätsprüfung"],
+      painPoints: ["Manuelle Bearbeitung"],
+      provenance: "ai_structured" as const,
+      evidenceIds: [
+        "flow-roles",
+        "information-systems",
+        "decisions-controls-handoffs",
+        "effort-pain-goals",
+      ],
+      confidence: 85,
+      assumptions: [],
+      confirmed: false,
+    })),
+  };
+}
+
+export function synthesisUnderstanding(stepCount = 5) {
+  const current = understanding(stepCount);
+  return {
+    ...current,
+    steps: current.steps.map((step) => ({
+      ...step,
+      informationItems: step.informationItems.map((item) => ({
+        name: item.name,
+        source: item.source,
+        type: item.type,
+      })),
+      decisions: step.decisions.map((decision) => ({
+        question: decision.question,
+        mode: decision.mode,
+        options: decision.options.map((option) => ({
+          label: option.label,
+          determination: option.determination,
+          consequence: option.consequence,
+          nextStepId: option.nextStepId,
+        })),
+      })),
+    })),
+  };
 }

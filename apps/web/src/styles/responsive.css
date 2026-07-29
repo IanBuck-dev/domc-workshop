@@ -13,13 +13,14 @@
     font-size: 0;
     padding: var(--space-2);
   }
-  .capture-heading {
+  .capture-title-row {
     align-items: flex-start;
     flex-direction: column;
   }
   .capture-progress {
     width: 100%;
     min-width: 0;
+    transform: none;
   }
   .opportunity-heading {
     align-items: flex-start;
@@ -41,21 +42,6 @@
   }
   .work-characteristic-options {
     grid-template-columns: 1fr;
-  }
-  .process-map {
-    display: grid;
-    overflow: visible;
-  }
-  .map-node-wrap {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-  .map-node {
-    min-height: auto;
-  }
-  .map-arrow {
-    transform: rotate(90deg);
-    justify-self: center;
   }
 }
 
@@ -191,6 +177,17 @@
   .edit-actions > div {
     flex-wrap: wrap;
   }
+  .step-editor-basics,
+  .step-input-output-editor,
+  .information-editor-row,
+  .decision-editor-head,
+  .decision-option-editor {
+    grid-template-columns: 1fr;
+  }
+  .nested-remove-button,
+  .decision-editor-head .icon-button {
+    justify-self: start;
+  }
   .work-characteristics-section .list-title,
   .work-characteristics-review-list article > div,
   .edit-actions-inline {
@@ -201,11 +198,48 @@
   .scenario-responsibility-grid {
     grid-template-columns: 1fr;
   }
-  .step-list dl {
-    grid-template-columns: 1fr;
+}
+
+@media (max-width: 900px) {
+  .step-information-table,
+  .decision-option-table,
+  .step-information-table tbody,
+  .decision-option-table tbody,
+  .step-information-table tr,
+  .decision-option-table tr,
+  .step-information-table td,
+  .decision-option-table td {
+    display: block;
+    width: 100%;
   }
-  .step-list dd {
-    margin-bottom: var(--space-1);
+  .step-information-table thead,
+  .decision-option-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .step-information-table tr + tr,
+  .decision-option-table tr + tr {
+    border-top: 1px solid var(--line);
+  }
+  .step-information-table td,
+  .decision-option-table td {
+    display: grid;
+    grid-template-columns: minmax(110px, 0.35fr) minmax(0, 1fr);
+    gap: var(--space-3);
+    border-top: 0;
+  }
+  .step-information-table td::before,
+  .decision-option-table td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-weight: 700;
   }
 }
 @media (prefers-reduced-motion: reduce) {

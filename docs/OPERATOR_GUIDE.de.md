@@ -17,11 +17,20 @@
    Schnittstellenkenntnisse sind nicht erforderlich.
 3. Wählen Sie bei Bedarf bis zu fünf relevante Unterlagen aus. Nur ausgewählte Dateien werden für die ausdrücklich gestartete KI-Aktion verwendet.
 4. Beantworten Sie die von der KI erzeugten Rückfragen. Pro Themenblock ist höchstens eine Rückfrage zulässig; es gibt keine zweite Rückfragerunde.
-5. Prüfen Sie Prozesssteckbrief, Arbeitsmerkmale,
-   High-Level-Prozesskarte, Unterlagenabdeckung und offene Wissenslücken. Eine
-   Korrektur der Arbeitsmerkmale benötigt eine kurze fachliche Begründung.
+5. Prüfen Sie zuerst das Diagramm. Öffnen Sie danach unter `Schritte` die
+   einzelnen Schritte und kontrollieren Sie Input, Output, Informationen mit
+   Quelle und Art, Varianten und Entscheidungen sowie Sonstiges.
 6. Öffnen Sie bei Bedarf die Vorschau einer berücksichtigten Unterlage. PDF-, Bild- und Textdateien werden direkt angezeigt; Word-, PowerPoint- und Excel-Dateien stehen als Originaldownload bereit.
-7. Korrigieren Sie missverstandene Bereiche und bestätigen Sie anschließend die Prozessbeschreibung als fachliche Ausgangsbasis.
+7. Öffnen Sie `Prozessbild korrigieren`, wenn Schrittbezeichnungen, Reihenfolge,
+   Inputs, Outputs, Informationsquellen, Entscheidungsoptionen oder Sonstiges
+   nicht stimmen. Jede Information kann einzeln ergänzt oder entfernt werden;
+   Entscheidungen enthalten Frage, Modus, Optionen, Feststellung, Folge und
+   einen optionalen Folgeschritt. Speichern Sie mit einer kurzen fachlichen
+   Begründung.
+8. Prüfen Sie unter `Unterlagen und offene Punkte` Dateieinschränkungen und
+   erkannte Widersprüche. Nicht belegte Angaben bleiben separat unter
+   `Noch unbekannt` sichtbar. Bestätigen Sie anschließend das Prozessbild als
+   fachliche Ausgangsbasis.
 
 ## KI-Potenziale und Szenarien entdecken
 

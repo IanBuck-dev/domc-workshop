@@ -124,6 +124,15 @@ describe("opportunity Claude contract", () => {
     expect(captured[0]!.command.join(" ")).toContain(
       "Eine direkt belegte Pflichtregel beweist nicht",
     );
+    expect(captured[0]!.command.join(" ")).toContain(
+      "`rule_based` allein begründet kein KI-Potenzial",
+    );
+    expect(captured[0]!.command.join(" ")).toContain(
+      "Fehlende Quellen, Informationsarten, Optionen oder Feststellungskriterien",
+    );
+    expect(captured[0]!.stdin).toContain('"informationItems"');
+    expect(captured[0]!.stdin).toContain('"decisions"');
+    expect(captured[0]!.stdin).toContain('"mode": "rule_based"');
     expect(captured[1]!.command.join(" ")).toContain(
       "pro Szenario höchstens vier Aktionen",
     );

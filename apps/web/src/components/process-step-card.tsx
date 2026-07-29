@@ -1,54 +1,63 @@
-import { provenanceCopy, provenanceTone } from "../lib/process-provenance";
+import { ChevronDown } from "lucide-react";
+import { useState } from "react";
 import type { ProcessUnderstanding } from "../lib/process-types";
-import { Badge } from "./ui/badge";
+import { ProcessStepDecisions } from "./process-step-decisions";
+import { ProcessStepInformation } from "./process-step-information";
 
 export function ProcessStepCard({
   step,
+  steps,
 }: {
   step: ProcessUnderstanding["steps"][number];
+  steps: ProcessUnderstanding["steps"];
 }) {
+  const [open, setOpen] = useState(false);
   return (
     <li className="process-step-card">
-      <div className="step-number">{step.order}</div>
-      <details>
+      <details onToggle={(event) => setOpen(event.currentTarget.open)}>
         <summary>
-          <span>
-            <b>{step.name}</b>
+          <span className="step-number">{step.order}</span>
+          <span className="step-summary-copy">
+            <strong>{step.name}</strong>
             <small>{step.activity}</small>
           </span>
-          {!["ai_structured", "user_stated"].includes(step.provenance) && (
-            <Badge as="em" tone={provenanceTone[step.provenance]}>
-              {provenanceCopy[step.provenance]}
-            </Badge>
-          )}
+          <ChevronDown
+            className="step-chevron"
+            aria-hidden="true"
+            data-open={open ? "true" : "false"}
+          />
         </summary>
-        <dl>
-          <dt>Auslöser</dt>
-          <dd>{step.trigger || "Noch nicht bekannt"}</dd>
-          <dt>Verantwortlich</dt>
-          <dd>{join(step.responsibleRoles)}</dd>
-          <dt>Benötigte Informationen</dt>
-          <dd>{join(step.information)}</dd>
-          <dt>Ergebnis</dt>
-          <dd>{step.output || "Noch nicht bekannt"}</dd>
-          <dt>Systeme</dt>
-          <dd>{join(step.systems)}</dd>
-          <dt>Entscheidung</dt>
-          <dd>{step.decision || "Keine benannt"}</dd>
-          <dt>Regel oder Einschätzung</dt>
-          <dd>{step.ruleOrJudgement || "Noch nicht bekannt"}</dd>
-          <dt>Übergabe</dt>
-          <dd>{step.handover || "Keine benannt"}</dd>
-          <dt>Kontrollen</dt>
-          <dd>{join(step.controls)}</dd>
-          <dt>Probleme</dt>
-          <dd>{join(step.painPoints)}</dd>
-        </dl>
+        <div className="step-details">
+          <StepValueList title="Input" values={step.inputs ?? []} />
+          <StepValueList title="Output" values={step.outputs ?? []} />
+          <ProcessStepInformation items={step.informationItems ?? []} />
+          <ProcessStepDecisions
+            decisions={step.decisions ?? []}
+            steps={steps}
+          />
+          <section className="step-detail-section">
+            <h3>Sonstiges</h3>
+            <p>{step.miscellaneous ?? "Keine weiteren Angaben"}</p>
+          </section>
+        </div>
       </details>
     </li>
   );
 }
 
-function join(value: string[]) {
-  return value.length ? value.join(", ") : "Noch nicht bekannt";
+function StepValueList({ title, values }: { title: string; values: string[] }) {
+  return (
+    <section className="step-detail-section">
+      <h3>{title}</h3>
+      {values.length ? (
+        <ul>
+          {values.map((value) => (
+            <li key={value}>{value}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="empty-value">Noch nicht bekannt</p>
+      )}
+    </section>
+  );
 }

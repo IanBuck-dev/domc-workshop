@@ -9,6 +9,8 @@ import {
 } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { createHash } from "node:crypto";
+import { dump, load } from "js-yaml";
 import { ProcessCaptureRepository } from "../packages/storage/src/process-capture-repository.ts";
 import { OpportunityDiscoveryRepository } from "../packages/storage/src/opportunity-discovery-repository.ts";
 import { WorkspaceRepository } from "../packages/storage/src/workspace-repository.ts";
@@ -19,6 +21,7 @@ import {
   opportunityDefaults,
   scenarioResult,
 } from "./opportunity-fixtures.ts";
+import { legacyUnderstanding } from "./process-fixtures.ts";
 
 const roots: string[] = [];
 afterEach(async () => {
@@ -35,6 +38,20 @@ async function fixture() {
   const opportunities = new OpportunityDiscoveryRepository(root);
   const defaults = await opportunityDefaults();
   return { root, processes, process, opportunities, defaults };
+}
+
+function canonical(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
+  if (value && typeof value === "object")
+    return `{${Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, item]) => `${JSON.stringify(key)}:${canonical(item)}`)
+      .join(",")}}`;
+  return JSON.stringify(value);
+}
+
+function snapshotHash(value: unknown) {
+  return createHash("sha256").update(canonical(value)).digest("hex");
 }
 
 describe("opportunity discovery repository", () => {
@@ -174,6 +191,47 @@ describe("opportunity discovery repository", () => {
     await expect(opportunities.contracts(process.id)).rejects.toThrow(
       "verändert",
     );
+  });
+
+  test("reads completed historical opportunity snapshots with legacy understanding", async () => {
+    const { process, opportunities, defaults } = await fixture();
+    await opportunities.create(process, defaults.config, defaults.contracts);
+    await opportunities.markHypothesesRunning(process.id);
+    await opportunities.saveHypotheses(
+      process.id,
+      normalizedHypotheses(),
+      aiTrace(),
+    );
+    await opportunities.saveScenarios(process.id, scenarioResult(), aiTrace());
+
+    const sourcePath = join(
+      opportunities.dir(process.id),
+      "source-process.json",
+    );
+    const metadataPath = join(opportunities.dir(process.id), "metadata.yaml");
+    const source = JSON.parse(await readFile(sourcePath, "utf8"));
+    source.understanding = legacyUnderstanding();
+    const metadata = load(await readFile(metadataPath, "utf8")) as Record<
+      string,
+      unknown
+    >;
+    metadata.sourceProcessHash = snapshotHash(source);
+    await Promise.all([
+      writeFile(sourcePath, `${JSON.stringify(source, null, 2)}\n`),
+      writeFile(metadataPath, dump(metadata, { noRefs: true, lineWidth: 120 })),
+    ]);
+
+    const historical = await opportunities.required(process.id);
+    expect(historical.state).toBe("completed");
+    expect(historical.sourceProcess.understanding.schemaVersion).toBe(2);
+    expect(historical.sourceProcess.understanding.steps[0]).toMatchObject({
+      inputs: ["Lead ist fällig"],
+      informationItems: [
+        expect.objectContaining({ source: null, type: "unknown" }),
+      ],
+    });
+    expect(historical.hypotheses?.stepAnalyses[0]?.hypotheses).toHaveLength(1);
+    expect(historical.scenarios?.scenarios).toHaveLength(3);
   });
 
   test("cascades process deletion and moves the dependent module on reset", async () => {

@@ -49,28 +49,20 @@ export function DocumentCoverage({
           })}
         </ul>
       ) : (
-        <p>Keine Unterlagen ausgewählt.</p>
+        <p>Keine Unterlagen ausgewählt</p>
       )}
-      {!!understanding.knowledgeGaps.length && (
-        <>
-          <h3>Noch unbekannt</h3>
-          <ul>
-            {understanding.knowledgeGaps.map((gap) => (
-              <li key={gap}>{gap}</li>
-            ))}
-          </ul>
-        </>
-      )}
-      {!!understanding.conflicts.length && (
-        <>
-          <h3>Widersprüche</h3>
+      <div className="conflict-section">
+        <h3>Erkannte Widersprüche</h3>
+        {understanding.conflicts.length ? (
           <ul>
             {understanding.conflicts.map((conflict) => (
               <li key={conflict}>{conflict}</li>
             ))}
           </ul>
-        </>
-      )}
+        ) : (
+          <p>Keine Widersprüche erkannt</p>
+        )}
+      </div>
       <DocumentPreviewDialog
         processId={processId}
         upload={preview}

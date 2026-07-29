@@ -3,12 +3,14 @@ import {
   assertExactlyFiveAnswers,
   processCaptureConfigSchema,
   processCaptureRecordSchema,
+  processUnderstandingStorageSchema,
   processUnderstandingSchema,
   topicIds,
   workCharacteristicAnswersSchema,
 } from "../packages/domain/src/process-understanding.ts";
 import {
   answers,
+  legacyUnderstanding,
   processConfig,
   understanding,
   workCharacteristicAnswers,
@@ -163,6 +165,94 @@ describe("compact-v1 process domain", () => {
     const reordered = structuredClone(understanding(5));
     reordered.steps[2]!.order = 4;
     expect(() => processUnderstandingSchema.parse(reordered)).toThrow();
+  });
+
+  test("requires every v2 step area and accepts explicit unknown states", () => {
+    const missing = structuredClone(understanding());
+    delete (missing.steps[0] as unknown as Record<string, unknown>).inputs;
+    expect(() => processUnderstandingSchema.parse(missing)).toThrow();
+
+    const unknown = structuredClone(understanding());
+    unknown.steps[0]!.inputs = [];
+    unknown.steps[0]!.outputs = [];
+    unknown.steps[0]!.informationItems = [];
+    unknown.steps[0]!.decisions = [];
+    unknown.steps[0]!.miscellaneous = null;
+    expect(processUnderstandingSchema.parse(unknown).steps[0]).toMatchObject({
+      inputs: [],
+      outputs: [],
+      informationItems: [],
+      decisions: [],
+      miscellaneous: null,
+    });
+  });
+
+  test("rejects duplicate nested IDs, unknown enums, and foreign next steps", () => {
+    const duplicateInformation = structuredClone(understanding());
+    duplicateInformation.steps[1]!.informationItems[0]!.id =
+      duplicateInformation.steps[0]!.informationItems[0]!.id;
+    expect(() =>
+      processUnderstandingSchema.parse(duplicateInformation),
+    ).toThrow("Information IDs must be unique");
+
+    const duplicateDecision = structuredClone(understanding());
+    duplicateDecision.steps[1]!.decisions = [
+      structuredClone(duplicateDecision.steps[0]!.decisions[0]!),
+    ];
+    expect(() => processUnderstandingSchema.parse(duplicateDecision)).toThrow(
+      "Decision IDs must be unique",
+    );
+
+    const duplicateOption = structuredClone(understanding());
+    duplicateOption.steps[0]!.decisions[0]!.options[1]!.id =
+      duplicateOption.steps[0]!.decisions[0]!.options[0]!.id;
+    expect(() => processUnderstandingSchema.parse(duplicateOption)).toThrow(
+      "Decision option IDs must be unique",
+    );
+
+    const invalidType = structuredClone(understanding());
+    (invalidType.steps[0]!.informationItems[0] as { type: string }).type =
+      "pdf_property";
+    expect(() => processUnderstandingSchema.parse(invalidType)).toThrow();
+
+    const invalidMode = structuredClone(understanding());
+    (invalidMode.steps[0]!.decisions[0] as { mode: string }).mode = "automatic";
+    expect(() => processUnderstandingSchema.parse(invalidMode)).toThrow();
+
+    const danglingNextStep = structuredClone(understanding());
+    danglingNextStep.steps[0]!.decisions[0]!.options[0]!.nextStepId =
+      "step-missing";
+    expect(() => processUnderstandingSchema.parse(danglingNextStep)).toThrow(
+      "Unknown next step ID",
+    );
+  });
+
+  test("migrates legacy steps deterministically without inventing detail", () => {
+    const legacy = legacyUnderstanding();
+    const migrated = processUnderstandingStorageSchema.parse(legacy);
+    const first = migrated.steps[0]!;
+    expect(migrated.schemaVersion).toBe(2);
+    expect(first.inputs).toEqual(["Lead ist fällig"]);
+    expect(first.outputs).toEqual(["Ergebnis 1"]);
+    expect(first.informationItems).toEqual([
+      {
+        id: "info-1-1",
+        name: "CRM-Angaben",
+        source: null,
+        type: "unknown",
+      },
+    ]);
+    expect(first.decisions).toEqual([
+      {
+        id: "decision-1-1",
+        question: "Ist die Kontaktaufnahme erlaubt?",
+        mode: "unknown",
+        options: [],
+      },
+    ]);
+    expect(first.miscellaneous).toContain("Verantwortlich: Vertrieb");
+    expect(first.miscellaneous).toContain("Systeme: CRM");
+    expect(processUnderstandingStorageSchema.parse(legacy)).toEqual(migrated);
   });
 
   test("rejects dangling evidence references", () => {

@@ -89,13 +89,22 @@ does not generate prose and structured data in separate model calls: one
 structured result contains both the brief fields and step data. The UI derives
 all visible text and the map from that validated result.
 
-Review allows correction of:
+The review page is deliberately reduced. It renders, in this fixed order:
 
-- purpose, trigger, outcome, and boundaries;
-- participant, information-source, system, decision, control, handoff,
-  pain-point, and improvement-goal lists;
-- every process step and its order;
-- knowledge gaps and conflicts.
+1. the compact result header;
+2. `Diagramm` with only step number and name;
+3. `Schritte` with five to eight expandable step cards;
+4. `Unterlagen und offene Punkte`, including document limitations and
+   contradictions;
+5. a separate `Noch unbekannt` section;
+6. the final confirmation action.
+
+Each expanded step shows exactly `Input`, `Output`, `Informationen`,
+`Varianten und Entscheidungen`, and `Sonstiges`. Review allows correction of
+the step name, activity, order, inputs, outputs, information items, decisions,
+options, and miscellaneous text. The former global brief fields and work
+characteristics remain stored for traceability and downstream compatibility,
+but they are neither shown nor corrected on this page.
 
 The final button `Prozessbeschreibung bestätigen` sets only the record-level
 confirmation timestamp. It does not silently change fact provenance or mark
@@ -209,21 +218,55 @@ interface ProcessFact<T> {
   confirmed: boolean;
 }
 
-interface ProcessStep {
+type ProcessInformationType =
+  | "system_field"
+  | "email"
+  | "spreadsheet"
+  | "document"
+  | "image_or_scan"
+  | "free_text"
+  | "database_or_report"
+  | "other"
+  | "unknown";
+
+type ProcessDecisionMode =
+  | "rule_based"
+  | "professional_judgement"
+  | "mixed"
+  | "unknown";
+
+interface ProcessInformationItem {
+  id: string;
+  name: string;
+  source: string | null;
+  type: ProcessInformationType;
+}
+
+interface ProcessDecisionOption {
+  id: string;
+  label: string;
+  determination: string | null;
+  consequence: string | null;
+  nextStepId: string | null;
+}
+
+interface ProcessDecision {
+  id: string;
+  question: string;
+  mode: ProcessDecisionMode;
+  options: ProcessDecisionOption[];
+}
+
+interface ProcessStepV2 {
   id: string;
   order: number;
   name: string;
-  trigger: string | null;
-  responsibleRoles: string[];
   activity: string;
-  information: string[];
-  output: string | null;
-  systems: string[];
-  decision: string | null;
-  ruleOrJudgement: string | null;
-  handover: string | null;
-  controls: string[];
-  painPoints: string[];
+  inputs: string[];
+  outputs: string[];
+  informationItems: ProcessInformationItem[];
+  decisions: ProcessDecision[];
+  miscellaneous: string | null;
   provenance: FactProvenance;
   evidenceIds: string[];
   confidence: number | null;
@@ -245,6 +288,7 @@ interface DocumentCoverage {
 }
 
 interface ProcessUnderstanding {
+  schemaVersion: 2;
   purpose: ProcessFact<string>;
   trigger: ProcessFact<string>;
   outcome: ProcessFact<string>;
@@ -258,12 +302,20 @@ interface ProcessUnderstanding {
   volumeAndTime: ProcessFact<string[]>;
   painPoints: ProcessFact<string[]>;
   improvementGoals: ProcessFact<string[]>;
-  steps: ProcessStep[];
+  steps: ProcessStepV2[];
   evidence: EvidenceReference[];
   documentCoverage: DocumentCoverage[];
   knowledgeGaps: string[];
   conflicts: string[];
 }
+
+Existing understanding files without `schemaVersion` are validated with the
+legacy schema and deterministically migrated in memory. Reading does not
+rewrite them. Trigger and output become input/output entries; existing
+information becomes information items with unknown source and type; existing
+decision text becomes an unknown-mode decision without invented options.
+Only a later human correction persists the canonical v2 structure and records
+the complete before/after state in the append-only audit history.
 
 interface ProcessCaptureRecord {
   schemaVersion: 1;
@@ -554,24 +606,23 @@ and removes the row.
 - zero to five follow-up cards grouped by topic;
 - queue/running status that survives navigation and event-stream reconnection;
 - explicit retry after failure;
-- process brief with six review sections;
-- a separately reviewable and auditable `Arbeitsmerkmale` section containing
-  the direct user selections without score or interpretation;
-- deterministic process map;
-- expandable step detail cards;
-- visible provenance, document coverage, conflicts, and knowledge gaps;
-- section edit actions;
+- compact process-brief result header;
+- deterministic `Diagramm` before the step list;
+- expandable step cards with Input, Output, structured information, structured
+  decisions, and miscellaneous details;
+- document coverage and conflicts in `Unterlagen und offene Punkte`;
+- knowledge gaps in a separate `Noch unbekannt` section;
+- one structured process-step correction action;
 - one final confirmation action.
 
 ### Process map
 
 Create `process-map.tsx` without a graph dependency. Render the ordered steps as
-CSS/SVG-connected cards horizontally on desktop and vertically at tablet width.
-Each node shows step number, name, optional role, and optional system. Decision
-text may appear inside the relevant node; no exception tree is rendered.
-
-The same steps are available as an ordered semantic list. Keyboard access and
-screen-reader understanding must not depend on the SVG connectors.
+CSS-connected cards in a horizontally scrollable internal region at desktop
+and tablet widths. Each node shows only the step number and name. The ordered
+semantic list is the diagram itself; there is no duplicate visible long-text
+list below it. Keyboard and screen-reader understanding must not depend on the
+decorative connectors.
 
 ## Mandatory cleanup
 

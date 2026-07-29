@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createHash } from "node:crypto";
@@ -10,11 +10,16 @@ import {
 } from "../packages/claude/src/sandbox-runner.ts";
 import { ProcessFollowUpAdapter } from "../packages/claude/src/process-follow-up-adapter.ts";
 import { ProcessSynthesisAdapter } from "../packages/claude/src/process-synthesis-adapter.ts";
-import { processFollowUpResultSchema } from "../packages/claude/src/process-response-schemas.ts";
+import {
+  processFollowUpResultSchema,
+  processSynthesisResultSchema,
+} from "../packages/claude/src/process-response-schemas.ts";
 import {
   answers,
   cover,
+  legacyUnderstanding,
   processConfig,
+  synthesisUnderstanding,
   understanding,
   workCharacteristicAnswers,
 } from "./process-fixtures.ts";
@@ -237,7 +242,7 @@ describe("process AI contract", () => {
         return {
           stdout: JSON.stringify({
             result: JSON.stringify({
-              ...understanding(),
+              ...synthesisUnderstanding(),
               documentCoverage: [
                 {
                   uploadId: "00000000-0000-4000-8000-000000000001",
@@ -296,6 +301,14 @@ describe("process AI contract", () => {
       followUpAnswers: [],
     });
     expect(result.value.steps).toHaveLength(5);
+    expect(result.value.schemaVersion).toBe(2);
+    expect(result.value.steps[0]?.informationItems[0]?.id).toBe(
+      "info-step-1-1",
+    );
+    expect(result.value.steps[0]?.decisions[0]?.id).toBe("decision-step-1-1");
+    expect(result.value.steps[0]?.decisions[0]?.options[0]?.id).toBe(
+      "option-step-1-1-1",
+    );
     expect(
       captured?.command.slice(captured.command.indexOf("--tools") + 1)[0],
     ).toBe("Read,Glob,Bash");
@@ -308,6 +321,74 @@ describe("process AI contract", () => {
       "gebündelten lokalen Arbeitsschritt",
     );
     expect(captured?.command.join(" ")).toContain("python3");
+  });
+
+  test("requires the v2 synthesis fields and keeps nested IDs server-owned", async () => {
+    const schema = JSON.parse(
+      await readFile(
+        join(
+          import.meta.dir,
+          "..",
+          "defaults",
+          "ai-schemas",
+          "process-understanding.json",
+        ),
+        "utf8",
+      ),
+    );
+    expect(schema.$id).toBe("claims-ai/process-understanding/v2");
+    expect(schema.required).toContain("schemaVersion");
+    expect(schema.$defs.step.required).toEqual(
+      expect.arrayContaining([
+        "inputs",
+        "outputs",
+        "informationItems",
+        "decisions",
+        "miscellaneous",
+      ]),
+    );
+    expect(
+      processSynthesisResultSchema.safeParse(synthesisUnderstanding()).success,
+    ).toBe(true);
+    expect(
+      processSynthesisResultSchema.safeParse(understanding()).success,
+    ).toBe(false);
+    expect(
+      processSynthesisResultSchema.safeParse(legacyUnderstanding()).success,
+    ).toBe(false);
+    const forgedCorrection = synthesisUnderstanding();
+    (
+      forgedCorrection.evidence as Array<{
+        id: string;
+        kind: string;
+        sourceId: string;
+        excerpt: string;
+      }>
+    ).push({
+      id: "forged-correction",
+      kind: "human_correction",
+      sourceId: "forged-correction",
+      excerpt: "Darf nicht aus der KI stammen.",
+    });
+    expect(
+      processSynthesisResultSchema.safeParse(forgedCorrection).success,
+    ).toBe(false);
+
+    const prompt = await readFile(
+      join(
+        import.meta.dir,
+        "..",
+        "defaults",
+        "prompts",
+        "process-synthesis.md",
+      ),
+      "utf8",
+    );
+    expect(prompt).toContain("# Prozessverständnis-Synthese v2");
+    expect(prompt).toContain("`source` bezeichnet");
+    expect(prompt).toContain("`type` ausschließlich einen Enumwert");
+    expect(prompt).toContain('`mode: "rule_based"`');
+    expect(prompt).toContain("Erfinde keinen plausiblen Entscheidungsbaum");
   });
 
   test("rejects foreign, changed, and unsandboxed selected files before Claude runs", async () => {

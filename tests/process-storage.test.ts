@@ -13,6 +13,7 @@ import { ProcessCaptureRepository } from "../packages/storage/src/process-captur
 import {
   answers,
   cover,
+  legacyUnderstanding,
   processConfig,
   understanding,
   workCharacteristicAnswers,
@@ -268,6 +269,62 @@ describe("process capture repository", () => {
     const restarted = new ProcessCaptureRepository(root);
     await expect(restarted.required(record.id)).rejects.toThrow();
     expect(await readFile(answersPath, "utf8")).toBe(before);
+  });
+
+  test("reads legacy understanding without rewriting and persists v2 on nested correction", async () => {
+    const { root, repo, config } = await fixture();
+    let record = await repo.create(cover, config);
+    record = await repo.saveMainAnswers(
+      record.id,
+      answers(),
+      workCharacteristicAnswers(),
+      [],
+    );
+    record = await repo.saveFollowUps(record.id, [], trace());
+    record = await repo.saveUnderstanding(record.id, understanding(), trace());
+
+    const path = join(repo.dir(record.id), "process-understanding.json");
+    const legacyJson = `${JSON.stringify(legacyUnderstanding(), null, 2)}\n`;
+    await writeFile(path, legacyJson, "utf8");
+
+    const restarted = new ProcessCaptureRepository(root);
+    const migrated = await restarted.required(record.id);
+    expect(migrated.understanding?.schemaVersion).toBe(2);
+    expect(migrated.understanding?.steps[0]?.informationItems[0]).toMatchObject(
+      { source: null, type: "unknown" },
+    );
+    expect(await readFile(path, "utf8")).toBe(legacyJson);
+
+    const corrected = structuredClone(migrated.understanding!);
+    corrected.steps[0]!.informationItems[0]!.source = "Vertriebs-CRM";
+    corrected.steps[0]!.informationItems[0]!.type = "system_field";
+    corrected.steps[0]!.miscellaneous = "Fachlich ergänzter Hinweis.";
+    const saved = await restarted.correctUnderstanding(
+      record.id,
+      corrected,
+      "Informationsquelle und Hinweis ergänzt.",
+    );
+    expect(saved.understanding?.steps[0]?.provenance).toBe("user_confirmed");
+    expect(saved.understanding?.steps[1]?.provenance).toBe("ai_structured");
+    expect(
+      saved.understanding?.evidence.filter(
+        (item) => item.kind === "human_correction",
+      ),
+    ).toHaveLength(1);
+    const stored = JSON.parse(await readFile(path, "utf8"));
+    expect(stored.schemaVersion).toBe(2);
+    expect(stored.steps[0].informationItems[0]).toMatchObject({
+      source: "Vertriebs-CRM",
+      type: "system_field",
+    });
+    const correction = (await restarted.history(record.id)).find(
+      (entry) => entry.event === "understanding-corrected",
+    );
+    expect(correction?.detail).toMatchObject({
+      note: "Informationsquelle und Hinweis ergänzt.",
+      previous: { schemaVersion: 2 },
+      next: { schemaVersion: 2 },
+    });
   });
 
   test("rejects forged correction evidence and keeps canonical output unchanged", async () => {

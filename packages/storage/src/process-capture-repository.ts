@@ -15,6 +15,7 @@ import {
   processCaptureConfigSchema,
   processCaptureRecordSchema,
   processStateSchema,
+  processUnderstandingStorageSchema,
   processUnderstandingSchema,
   topicAnswerSchema,
   uploadRecordSchema,
@@ -273,7 +274,9 @@ export class ProcessCaptureRepository {
           followUpsFileSchema.parse(JSON.parse(text)),
         ),
         readFile(join(dir, "process-understanding.json"), "utf8").then((text) =>
-          processUnderstandingSchema.nullable().parse(JSON.parse(text)),
+          z
+            .union([processUnderstandingStorageSchema, z.null()])
+            .parse(JSON.parse(text)),
         ),
         readdir(join(dir, "uploads")),
       ]);

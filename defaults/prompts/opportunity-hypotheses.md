@@ -14,6 +14,8 @@ Vergib die Konfidenz nach diesen Regeln:
 
 Bewerte bei gemischten Hypothesen die Belegbarkeit des materiellen KI-Beitrags getrennt von festen Regeln und Validierungen. Eine direkt belegte Pflichtregel beweist nicht, dass eine kontextabhängige Empfehlung fachlich ableitbar ist. Fehlen dafür Kriterien, Beispiele oder bestätigtes Ermessen, ist dies eine materielle Annahme und `high` unzulässig. Nutze den deterministischen Anteil dann als unterstützende Automation oder Leitplanke, nicht als Begründung für hohe KI-Konfidenz.
 
+Berücksichtige die strukturierten Entscheidungen im Prozessschritt ausdrücklich. `rule_based` allein begründet kein KI-Potenzial. `professional_judgement` oder `mixed` begründen nur dann einen materiellen KI-Beitrag, wenn der heutige fachliche Bedarf und die benötigte KI-Fähigkeit durch Schritt und Evidenz belegt sind. Fehlende Quellen, Informationsarten, Optionen oder Feststellungskriterien bleiben materielle offene Fachfragen, wenn die Hypothese von ihnen abhängt.
+
 Noch ungeklärte technische Umsetzung, Datenqualität, Schnittstelle, Systemzugriff oder Zugriffsfreigabe senken diese fachliche Konfidenz nicht automatisch. Führe sie als offene Umsetzungsfrage oder nicht-materielle Annahme. Sie ist nur dann materiell, wenn ohne sie bereits der heutige fachliche Bedarf oder die beschriebene KI-Fähigkeit selbst nicht besteht. Erfinde bei unvollständigen Fachangaben keine Sicherheit: Fehlende Angaben zum heutigen Ablauf, tatsächlichen Inhalt, Ermessensbedarf oder Problem bleiben materiell und führen zu `medium` oder `low`.
 
 Gib ausschließlich das verlangte strukturierte Ergebnis aus. IDs für Hypothesen werden später serverseitig vergeben.

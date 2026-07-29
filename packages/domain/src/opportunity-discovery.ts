@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   processCaptureRecordSchema,
+  processUnderstandingStorageSchema,
   processUnderstandingSchema,
   workCharacteristicIdSchema,
 } from "./process-understanding.ts";
@@ -147,6 +148,16 @@ export const opportunityProcessSnapshotSchema = z
         message: "Work-characteristic IDs must be unique.",
       });
   });
+
+export const opportunityProcessSnapshotStorageSchema = z.preprocess((input) => {
+  if (!input || typeof input !== "object") return input;
+  const value = structuredClone(input) as Record<string, unknown>;
+  if ("understanding" in value)
+    value.understanding = processUnderstandingStorageSchema.parse(
+      value.understanding,
+    );
+  return value;
+}, opportunityProcessSnapshotSchema);
 
 export function createOpportunityProcessSnapshot(input: unknown) {
   const record = processCaptureRecordSchema.parse(input);

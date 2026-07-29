@@ -22,6 +22,7 @@ import {
   hypothesisAiResult,
   normalizedHypotheses,
 } from "./opportunity-fixtures.ts";
+import { understanding } from "./process-fixtures.ts";
 
 const context: OpportunityScenarioReferenceContext = {
   scenarioBasis: "high",
@@ -461,13 +462,8 @@ describe("opportunity discovery input and hypotheses", () => {
       );
       const snapshot = createOpportunityProcessSnapshot(process);
       const input = hypothesisAiResult();
+      snapshot.understanding = understanding(8);
       for (let order = 6; order <= 8; order += 1) {
-        snapshot.understanding.steps.push({
-          ...structuredClone(snapshot.understanding.steps[0]!),
-          id: `step-${order}`,
-          order,
-          name: `Zusätzlicher Hauptschritt ${order}`,
-        });
         input.stepAnalyses.push({
           processStepId: `step-${order}`,
           summary: `Der Hauptschritt ${order} wurde geprüft.`,

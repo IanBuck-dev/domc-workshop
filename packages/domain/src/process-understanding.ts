@@ -291,17 +291,19 @@ export const followUpAnswerSchema = z.object({
   text: textSchema,
   answeredAt: z.string().datetime(),
 });
-export const evidenceReferenceSchema = z.object({
-  id: identifierSchema,
-  kind: z.enum([
-    "main_answer",
-    "follow_up_answer",
-    "upload",
-    "human_correction",
-  ]),
-  sourceId: identifierSchema,
-  excerpt: z.string().trim().min(1).max(2_000),
-});
+export const evidenceReferenceSchema = z
+  .object({
+    id: identifierSchema,
+    kind: z.enum([
+      "main_answer",
+      "follow_up_answer",
+      "upload",
+      "human_correction",
+    ]),
+    sourceId: identifierSchema,
+    excerpt: z.string().trim().min(1).max(2_000),
+  })
+  .strict();
 
 const factBase = {
   provenance: provenanceSchema,
@@ -310,117 +312,432 @@ const factBase = {
   assumptions: z.array(z.string().trim().min(1).max(1_000)).max(20),
   confirmed: z.boolean(),
 };
-export const stringFactSchema = z.object({
-  value: z.string().trim().min(1).max(12_000).nullable(),
-  ...factBase,
-});
-export const stringListFactSchema = z.object({
-  value: z.array(z.string().trim().min(1).max(2_000)).max(100).nullable(),
-  ...factBase,
-});
-
-export const processStepSchema = z.object({
-  id: identifierSchema,
-  order: z.number().int().min(1).max(8),
-  name: z.string().trim().min(1).max(500),
-  trigger: z.string().trim().min(1).max(2_000).nullable(),
-  responsibleRoles: z.array(z.string().trim().min(1).max(500)).max(20),
-  activity: z.string().trim().min(1).max(4_000),
-  information: z.array(z.string().trim().min(1).max(1_000)).max(30),
-  output: z.string().trim().min(1).max(2_000).nullable(),
-  systems: z.array(z.string().trim().min(1).max(500)).max(20),
-  decision: z.string().trim().min(1).max(2_000).nullable(),
-  ruleOrJudgement: z.string().trim().min(1).max(2_000).nullable(),
-  handover: z.string().trim().min(1).max(2_000).nullable(),
-  controls: z.array(z.string().trim().min(1).max(1_000)).max(30),
-  painPoints: z.array(z.string().trim().min(1).max(1_000)).max(30),
-  ...factBase,
-});
-export const documentCoverageSchema = z.object({
-  uploadId: z.string().uuid(),
-  name: z.string().trim().min(1).max(240),
-  status: z.enum(["complete", "partial", "failed"]),
-  processedCharacters: z.number().int().nonnegative().nullable(),
-  limitation: z.string().trim().min(1).max(2_000).nullable(),
-});
-export const processUnderstandingSchema = z
+export const stringFactSchema = z
   .object({
-    purpose: stringFactSchema,
-    trigger: stringFactSchema,
-    outcome: stringFactSchema,
-    boundaries: stringFactSchema,
-    participants: stringListFactSchema,
-    informationSources: stringListFactSchema,
-    systems: stringListFactSchema,
-    decisions: stringListFactSchema,
-    controls: stringListFactSchema,
-    handoffs: stringListFactSchema,
-    volumeAndTime: stringListFactSchema,
-    painPoints: stringListFactSchema,
-    improvementGoals: stringListFactSchema,
-    steps: z.array(processStepSchema).min(5).max(8),
-    evidence: z.array(evidenceReferenceSchema).max(250),
-    documentCoverage: z.array(documentCoverageSchema).max(5),
-    knowledgeGaps: z.array(z.string().trim().min(1).max(2_000)).max(50),
-    conflicts: z.array(z.string().trim().min(1).max(2_000)).max(50),
+    value: z.string().trim().min(1).max(12_000).nullable(),
+    ...factBase,
   })
-  .superRefine((value, ctx) => {
-    const stepIds = value.steps.map((step) => step.id);
-    const orders = value.steps.map((step) => step.order);
-    if (new Set(stepIds).size !== stepIds.length)
+  .strict();
+export const stringListFactSchema = z
+  .object({
+    value: z.array(z.string().trim().min(1).max(2_000)).max(100).nullable(),
+    ...factBase,
+  })
+  .strict();
+
+export const processInformationTypes = [
+  "system_field",
+  "email",
+  "spreadsheet",
+  "document",
+  "image_or_scan",
+  "free_text",
+  "database_or_report",
+  "other",
+  "unknown",
+] as const;
+export const processInformationTypeSchema = z.enum(processInformationTypes);
+export const processDecisionModes = [
+  "rule_based",
+  "professional_judgement",
+  "mixed",
+  "unknown",
+] as const;
+export const processDecisionModeSchema = z.enum(processDecisionModes);
+
+const uniqueStepTextArray = (maximum: number) =>
+  z
+    .array(z.string().trim().min(1).max(1_000))
+    .max(maximum)
+    .superRefine((values, ctx) => {
+      if (new Set(values).size !== values.length)
+        ctx.addIssue({
+          code: "custom",
+          message: "Step values must be unique.",
+        });
+    });
+
+export const processInformationItemSchema = z
+  .object({
+    id: identifierSchema,
+    name: z.string().trim().min(1).max(1_000),
+    source: z.string().trim().min(1).max(1_000).nullable(),
+    type: processInformationTypeSchema,
+  })
+  .strict();
+
+export const processDecisionOptionSchema = z
+  .object({
+    id: identifierSchema,
+    label: z.string().trim().min(1).max(1_000),
+    determination: z.string().trim().min(1).max(2_000).nullable(),
+    consequence: z.string().trim().min(1).max(2_000).nullable(),
+    nextStepId: identifierSchema.nullable(),
+  })
+  .strict();
+
+export const processDecisionSchema = z
+  .object({
+    id: identifierSchema,
+    question: z.string().trim().min(1).max(2_000),
+    mode: processDecisionModeSchema,
+    options: z.array(processDecisionOptionSchema).max(20),
+  })
+  .strict()
+  .superRefine((decision, ctx) => {
+    const optionIds = decision.options.map((option) => option.id);
+    if (new Set(optionIds).size !== optionIds.length)
       ctx.addIssue({
         code: "custom",
-        path: ["steps"],
-        message: "Step IDs must be unique.",
+        path: ["options"],
+        message: "Decision option IDs must be unique.",
       });
-    if (!orders.every((order, index) => order === index + 1))
-      ctx.addIssue({
-        code: "custom",
-        path: ["steps"],
-        message: "Steps must be ordered contiguously.",
-      });
-    const listedEvidenceIds = value.evidence.map((evidence) => evidence.id);
-    const evidenceIds = new Set(listedEvidenceIds);
-    if (evidenceIds.size !== listedEvidenceIds.length)
-      ctx.addIssue({
-        code: "custom",
-        path: ["evidence"],
-        message: "Evidence IDs must be unique.",
-      });
-    const coverageIds = value.documentCoverage.map((item) => item.uploadId);
-    if (new Set(coverageIds).size !== coverageIds.length)
-      ctx.addIssue({
-        code: "custom",
-        path: ["documentCoverage"],
-        message: "Document coverage upload IDs must be unique.",
-      });
-    const facts = [
-      value.purpose,
-      value.trigger,
-      value.outcome,
-      value.boundaries,
-      value.participants,
-      value.informationSources,
-      value.systems,
-      value.decisions,
-      value.controls,
-      value.handoffs,
-      value.volumeAndTime,
-      value.painPoints,
-      value.improvementGoals,
-      ...value.steps,
-    ];
-    facts.forEach((fact, factIndex) =>
-      fact.evidenceIds.forEach((id) => {
-        if (!evidenceIds.has(id))
+  });
+
+export const processStepSchema = z
+  .object({
+    id: identifierSchema,
+    order: z.number().int().min(1).max(8),
+    name: z.string().trim().min(1).max(500),
+    activity: z.string().trim().min(1).max(1_000),
+    inputs: uniqueStepTextArray(30),
+    outputs: uniqueStepTextArray(30),
+    informationItems: z.array(processInformationItemSchema).max(40),
+    decisions: z.array(processDecisionSchema).max(20),
+    miscellaneous: z.string().trim().min(1).max(4_000).nullable(),
+    ...factBase,
+  })
+  .strict();
+
+const legacyProcessStepSchema = z
+  .object({
+    id: identifierSchema,
+    order: z.number().int().min(1).max(8),
+    name: z.string().trim().min(1).max(500),
+    trigger: z.string().trim().min(1).max(2_000).nullable(),
+    responsibleRoles: z.array(z.string().trim().min(1).max(500)).max(20),
+    activity: z.string().trim().min(1).max(4_000),
+    information: z.array(z.string().trim().min(1).max(1_000)).max(30),
+    output: z.string().trim().min(1).max(2_000).nullable(),
+    systems: z.array(z.string().trim().min(1).max(500)).max(20),
+    decision: z.string().trim().min(1).max(2_000).nullable(),
+    ruleOrJudgement: z.string().trim().min(1).max(2_000).nullable(),
+    handover: z.string().trim().min(1).max(2_000).nullable(),
+    controls: z.array(z.string().trim().min(1).max(1_000)).max(30),
+    painPoints: z.array(z.string().trim().min(1).max(1_000)).max(30),
+    ...factBase,
+  })
+  .strict();
+export const documentCoverageSchema = z
+  .object({
+    uploadId: z.string().uuid(),
+    name: z.string().trim().min(1).max(240),
+    status: z.enum(["complete", "partial", "failed"]),
+    processedCharacters: z.number().int().nonnegative().nullable(),
+    limitation: z.string().trim().min(1).max(2_000).nullable(),
+  })
+  .strict();
+const processUnderstandingFields = {
+  purpose: stringFactSchema,
+  trigger: stringFactSchema,
+  outcome: stringFactSchema,
+  boundaries: stringFactSchema,
+  participants: stringListFactSchema,
+  informationSources: stringListFactSchema,
+  systems: stringListFactSchema,
+  decisions: stringListFactSchema,
+  controls: stringListFactSchema,
+  handoffs: stringListFactSchema,
+  volumeAndTime: stringListFactSchema,
+  painPoints: stringListFactSchema,
+  improvementGoals: stringListFactSchema,
+  evidence: z.array(evidenceReferenceSchema).max(250),
+  documentCoverage: z.array(documentCoverageSchema).max(5),
+  knowledgeGaps: z.array(z.string().trim().min(1).max(2_000)).max(50),
+  conflicts: z.array(z.string().trim().min(1).max(2_000)).max(50),
+};
+
+function addUnderstandingIssues(
+  value: {
+    steps: Array<z.infer<typeof processStepSchema>>;
+    evidence: Array<z.infer<typeof evidenceReferenceSchema>>;
+    documentCoverage: Array<z.infer<typeof documentCoverageSchema>>;
+    purpose: z.infer<typeof stringFactSchema>;
+    trigger: z.infer<typeof stringFactSchema>;
+    outcome: z.infer<typeof stringFactSchema>;
+    boundaries: z.infer<typeof stringFactSchema>;
+    participants: z.infer<typeof stringListFactSchema>;
+    informationSources: z.infer<typeof stringListFactSchema>;
+    systems: z.infer<typeof stringListFactSchema>;
+    decisions: z.infer<typeof stringListFactSchema>;
+    controls: z.infer<typeof stringListFactSchema>;
+    handoffs: z.infer<typeof stringListFactSchema>;
+    volumeAndTime: z.infer<typeof stringListFactSchema>;
+    painPoints: z.infer<typeof stringListFactSchema>;
+    improvementGoals: z.infer<typeof stringListFactSchema>;
+  },
+  ctx: z.RefinementCtx,
+) {
+  const stepIds = value.steps.map((step) => step.id);
+  const orders = value.steps.map((step) => step.order);
+  if (new Set(stepIds).size !== stepIds.length)
+    ctx.addIssue({
+      code: "custom",
+      path: ["steps"],
+      message: "Step IDs must be unique.",
+    });
+  if (!orders.every((order, index) => order === index + 1))
+    ctx.addIssue({
+      code: "custom",
+      path: ["steps"],
+      message: "Steps must be ordered contiguously.",
+    });
+
+  const informationIds = value.steps.flatMap((step) =>
+    step.informationItems.map((item) => item.id),
+  );
+  if (new Set(informationIds).size !== informationIds.length)
+    ctx.addIssue({
+      code: "custom",
+      path: ["steps"],
+      message: "Information IDs must be unique.",
+    });
+  const decisionIds = value.steps.flatMap((step) =>
+    step.decisions.map((decision) => decision.id),
+  );
+  if (new Set(decisionIds).size !== decisionIds.length)
+    ctx.addIssue({
+      code: "custom",
+      path: ["steps"],
+      message: "Decision IDs must be unique.",
+    });
+  const knownStepIds = new Set(stepIds);
+  value.steps.forEach((step, stepIndex) =>
+    step.decisions.forEach((decision, decisionIndex) =>
+      decision.options.forEach((option, optionIndex) => {
+        if (option.nextStepId && !knownStepIds.has(option.nextStepId))
           ctx.addIssue({
             code: "custom",
-            path: ["evidence", factIndex],
-            message: `Unknown evidence ID: ${id}`,
+            path: [
+              "steps",
+              stepIndex,
+              "decisions",
+              decisionIndex,
+              "options",
+              optionIndex,
+              "nextStepId",
+            ],
+            message: `Unknown next step ID: ${option.nextStepId}`,
           });
       }),
-    );
+    ),
+  );
+
+  const listedEvidenceIds = value.evidence.map((evidence) => evidence.id);
+  const evidenceIds = new Set(listedEvidenceIds);
+  if (evidenceIds.size !== listedEvidenceIds.length)
+    ctx.addIssue({
+      code: "custom",
+      path: ["evidence"],
+      message: "Evidence IDs must be unique.",
+    });
+  const coverageIds = value.documentCoverage.map((item) => item.uploadId);
+  if (new Set(coverageIds).size !== coverageIds.length)
+    ctx.addIssue({
+      code: "custom",
+      path: ["documentCoverage"],
+      message: "Document coverage upload IDs must be unique.",
+    });
+  const facts = [
+    value.purpose,
+    value.trigger,
+    value.outcome,
+    value.boundaries,
+    value.participants,
+    value.informationSources,
+    value.systems,
+    value.decisions,
+    value.controls,
+    value.handoffs,
+    value.volumeAndTime,
+    value.painPoints,
+    value.improvementGoals,
+    ...value.steps,
+  ];
+  facts.forEach((fact, factIndex) =>
+    fact.evidenceIds.forEach((id) => {
+      if (!evidenceIds.has(id))
+        ctx.addIssue({
+          code: "custom",
+          path: ["evidence", factIndex],
+          message: `Unknown evidence ID: ${id}`,
+        });
+    }),
+  );
+}
+
+export const processUnderstandingSchema = z
+  .object({
+    schemaVersion: z.literal(2),
+    ...processUnderstandingFields,
+    steps: z.array(processStepSchema).min(5).max(8),
+  })
+  .strict()
+  .superRefine(addUnderstandingIssues);
+
+export const processUnderstandingV2Schema = processUnderstandingSchema;
+
+const legacyProcessUnderstandingSchema = z
+  .object({
+    ...processUnderstandingFields,
+    steps: z.array(legacyProcessStepSchema).min(5).max(8),
+  })
+  .strict();
+
+function legacyMiscellaneous(step: z.infer<typeof legacyProcessStepSchema>) {
+  const values: Array<[string, string | string[] | null]> = [
+    ["Verantwortlich", step.responsibleRoles],
+    ["Systeme", step.systems],
+    ["Regel oder fachliche Einschätzung", step.ruleOrJudgement],
+    ["Übergabe", step.handover],
+    ["Kontrollen", step.controls],
+    ["Probleme", step.painPoints],
+  ];
+  const lines = values.flatMap(([label, value]) => {
+    if (Array.isArray(value))
+      return value.length ? [`${label}: ${value.join(", ")}`] : [];
+    return value ? [`${label}: ${value}`] : [];
   });
+  return lines.length ? lines.join("\n") : null;
+}
+
+export function migrateLegacyProcessUnderstanding(input: unknown) {
+  const legacy = legacyProcessUnderstandingSchema.parse(input);
+  return processUnderstandingSchema.parse({
+    ...legacy,
+    schemaVersion: 2,
+    steps: legacy.steps.map((step) => ({
+      id: step.id,
+      order: step.order,
+      name: step.name,
+      activity: step.activity.slice(0, 1_000),
+      inputs: step.trigger ? [step.trigger] : [],
+      outputs: step.output ? [step.output] : [],
+      informationItems: step.information.map((name, index) => ({
+        id: `info-${step.order}-${index + 1}`,
+        name,
+        source: null,
+        type: "unknown" as const,
+      })),
+      decisions: step.decision
+        ? [
+            {
+              id: `decision-${step.order}-1`,
+              question: step.decision,
+              mode: "unknown" as const,
+              options: [],
+            },
+          ]
+        : [],
+      miscellaneous: legacyMiscellaneous(step),
+      provenance: step.provenance,
+      evidenceIds: step.evidenceIds,
+      confidence: step.confidence,
+      assumptions: step.assumptions,
+      confirmed: step.confirmed,
+    })),
+  });
+}
+
+export const processUnderstandingStorageSchema = z
+  .union([processUnderstandingSchema, legacyProcessUnderstandingSchema])
+  .transform((value) =>
+    "schemaVersion" in value
+      ? processUnderstandingSchema.parse(value)
+      : migrateLegacyProcessUnderstanding(value),
+  );
+
+const processInformationItemAiSchema = processInformationItemSchema.omit({
+  id: true,
+});
+const processDecisionOptionAiSchema = processDecisionOptionSchema.omit({
+  id: true,
+});
+const processDecisionAiSchema = z
+  .object({
+    question: z.string().trim().min(1).max(2_000),
+    mode: processDecisionModeSchema,
+    options: z.array(processDecisionOptionAiSchema).max(20),
+  })
+  .strict();
+const processStepAiSchema = processStepSchema
+  .omit({ informationItems: true, decisions: true })
+  .extend({
+    informationItems: z.array(processInformationItemAiSchema).max(40),
+    decisions: z.array(processDecisionAiSchema).max(20),
+  })
+  .strict();
+
+const processSynthesisEvidenceSchema = evidenceReferenceSchema
+  .extend({
+    kind: z.enum(["main_answer", "follow_up_answer", "upload"]),
+  })
+  .strict();
+
+export const processSynthesisAiResultSchema = z
+  .object({
+    schemaVersion: z.literal(2),
+    ...processUnderstandingFields,
+    evidence: z.array(processSynthesisEvidenceSchema).max(250),
+    steps: z.array(processStepAiSchema).min(5).max(8),
+  })
+  .strict();
+
+function deterministicNestedId(
+  prefix: "info" | "decision" | "option",
+  stepId: string,
+  positions: number[],
+) {
+  const suffix = `-${positions.join("-")}`;
+  const fixed = `${prefix}-`;
+  const maximumStepLength = 120 - fixed.length - suffix.length;
+  let component = stepId;
+  if (component.length > maximumStepLength) {
+    let hash = 2_166_136_261;
+    for (const character of component) {
+      hash ^= character.codePointAt(0) ?? 0;
+      hash = Math.imul(hash, 16_777_619);
+    }
+    const digest = (hash >>> 0).toString(36);
+    component = `${component.slice(0, maximumStepLength - digest.length - 1)}-${digest}`;
+  }
+  return `${fixed}${component}${suffix}`;
+}
+
+export function normalizeProcessSynthesisResult(input: unknown) {
+  const value = processSynthesisAiResultSchema.parse(input);
+  return processUnderstandingSchema.parse({
+    ...value,
+    steps: value.steps.map((step) => ({
+      ...step,
+      informationItems: step.informationItems.map((item, index) => ({
+        ...item,
+        id: deterministicNestedId("info", step.id, [index + 1]),
+      })),
+      decisions: step.decisions.map((decision, decisionIndex) => ({
+        ...decision,
+        id: deterministicNestedId("decision", step.id, [decisionIndex + 1]),
+        options: decision.options.map((option, optionIndex) => ({
+          ...option,
+          id: deterministicNestedId("option", step.id, [
+            decisionIndex + 1,
+            optionIndex + 1,
+          ]),
+        })),
+      })),
+    })),
+  });
+}
 
 export const uploadRecordSchema = z.object({
   id: z.string().uuid(),

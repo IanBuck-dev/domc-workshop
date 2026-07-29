@@ -521,4 +521,95 @@ describe("process capture API", () => {
     await waitForNoActiveOperation(created.id);
     expect(synthesisCalls).toBe(2);
   });
+
+  test("accepts valid nested v2 corrections and rejects dangling step references", async () => {
+    const { app, repo, config } = await fixture();
+    const created = await (
+      await app.request("/api/processes", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ cover, config, demoDataConfirmed: true }),
+      })
+    ).json();
+    await app.request(`/api/processes/${created.id}/answers`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        answers: answers(),
+        workCharacteristicAnswers: workCharacteristicAnswers(),
+      }),
+    });
+    await app.request(`/api/processes/${created.id}/analyze`, {
+      method: "POST",
+    });
+    await waitForState(repo, created.id, "synthesis_ready");
+    await waitForNoActiveOperation(created.id);
+    await app.request(`/api/processes/${created.id}/synthesize`, {
+      method: "POST",
+    });
+    const review = await waitForState(repo, created.id, "review_required");
+    await waitForNoActiveOperation(created.id);
+
+    const corrected = structuredClone(review.understanding!);
+    corrected.steps[0]!.informationItems.push({
+      id: crypto.randomUUID(),
+      name: "Kontaktstatus",
+      source: "Vertriebs-CRM",
+      type: "system_field",
+    });
+    corrected.steps[0]!.decisions[0]!.options[0]!.consequence =
+      "Die Bearbeitung wird mit dem nächsten Schritt fortgesetzt.";
+    const response = await app.request(
+      `/api/processes/${created.id}/understanding/flow`,
+      {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          understanding: corrected,
+          note: "Information und Entscheidungsfolge ergänzt.",
+        }),
+      },
+    );
+    expect(response.status).toBe(200);
+    const saved = await response.json();
+    expect(saved.understanding.steps[0]).toMatchObject({
+      provenance: "user_confirmed",
+      confirmed: true,
+    });
+    expect(saved.understanding.steps[1].provenance).toBe("ai_structured");
+
+    const invalid = structuredClone(saved.understanding);
+    invalid.steps[0].decisions[0].options[0].nextStepId = "step-missing";
+    const rejected = await app.request(
+      `/api/processes/${created.id}/understanding/flow`,
+      {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          understanding: invalid,
+          note: "Ungültiger Zielschritt.",
+        }),
+      },
+    );
+    expect(rejected.status).toBe(400);
+    expect(
+      (await repo.required(created.id)).understanding?.steps[0]?.decisions[0]
+        ?.options[0]?.nextStepId,
+    ).not.toBe("step-missing");
+
+    expect(
+      (
+        await app.request(`/api/processes/${created.id}/confirm`, {
+          method: "POST",
+        })
+      ).status,
+    ).toBe(200);
+    expect(
+      (
+        await app.request(`/api/processes/${created.id}/confirm`, {
+          method: "POST",
+        })
+      ).status,
+    ).toBe(409);
+  });
 });

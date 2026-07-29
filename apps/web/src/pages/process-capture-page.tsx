@@ -218,15 +218,15 @@ export function ProcessCapturePage() {
         <ArrowLeft /> Zum Prozess
       </Link>
       <div className="capture-heading">
-        <div>
-          <Kicker>Seite 2 von 2 · {record.id}</Kicker>
+        <Kicker>Seite 2 von 2 · {record.id}</Kicker>
+        <div className="capture-title-row">
           <h1>{record.cover.processName}</h1>
-          <p>
-            {record.cover.department} · eingereicht von{" "}
-            {record.cover.participantName}
-          </p>
+          <CaptureProgress current={progress} />
         </div>
-        <CaptureProgress current={progress} />
+        <p>
+          {record.cover.department} · eingereicht von{" "}
+          {record.cover.participantName}
+        </p>
       </div>
 
       {error && (
@@ -402,8 +402,6 @@ export function ProcessCapturePage() {
           <ProcessBrief
             processId={record.id}
             understanding={record.understanding}
-            config={record.configSnapshot}
-            workCharacteristicAnswers={record.workCharacteristicAnswers}
             uploads={record.uploads}
             confirmed={record.state === "confirmed"}
             saving={busy}
@@ -416,23 +414,7 @@ export function ProcessCapturePage() {
                 );
               } catch (reason) {
                 setError((reason as Error).message);
-              } finally {
-                setBusy(false);
-              }
-            }}
-            onSaveWorkCharacteristics={async (answers, reason) => {
-              setBusy(true);
-              setError("");
-              try {
-                setRecord(
-                  await api.correctWorkCharacteristics(
-                    record.id,
-                    answers,
-                    reason,
-                  ),
-                );
-              } catch (reason) {
-                setError((reason as Error).message);
+                throw reason;
               } finally {
                 setBusy(false);
               }
@@ -461,12 +443,21 @@ function CaptureProgress({ current }: { current: number }) {
       className="capture-progress"
       aria-label={`Fortschritt: Schritt ${current} von 4`}
     >
-      {labels.map((label, index) => (
-        <li className={index + 1 <= current ? "active" : ""} key={label}>
-          <span>{index + 1}</span>
-          <small>{label}</small>
-        </li>
-      ))}
+      {labels.map((label, index) => {
+        const step = index + 1;
+        const state =
+          step === current ? "current" : step < current ? "completed" : "";
+        return (
+          <li
+            className={state}
+            key={label}
+            aria-current={step === current ? "step" : undefined}
+          >
+            <span>{index + 1}</span>
+            <small>{label}</small>
+          </li>
+        );
+      })}
     </ol>
   );
 }

@@ -13,6 +13,7 @@ import {
   opportunityDiscoveryConfigSchema,
   opportunityDiscoveryRecordSchema,
   opportunityHypothesisResultSchema,
+  opportunityProcessSnapshotStorageSchema,
   type OpportunityContractSnapshot,
   type OpportunityDiscoveryConfig,
   type OpportunityDiscoveryRecord,
@@ -131,15 +132,16 @@ export class OpportunityDiscoveryRepository {
           Bun.file(join(dir, "hypotheses.json")).json(),
           Bun.file(join(dir, "scenarios.json")).json(),
         ]);
+      if (hash(sourceProcess) !== metadata.sourceProcessHash)
+        throw new Error("Der Prozesssnapshot wurde verändert.");
       const record = opportunityDiscoveryRecordSchema.parse({
         ...metadata,
-        sourceProcess,
+        sourceProcess:
+          opportunityProcessSnapshotStorageSchema.parse(sourceProcess),
         configSnapshot,
         hypotheses,
         scenarios,
       });
-      if (hash(record.sourceProcess) !== record.sourceProcessHash)
-        throw new Error("Der Prozesssnapshot wurde verändert.");
       if (hash(record.configSnapshot) !== record.configHash)
         throw new Error("Der Konfigurationssnapshot wurde verändert.");
       return record;
