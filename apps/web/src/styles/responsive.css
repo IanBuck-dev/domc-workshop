@@ -128,6 +128,17 @@
     align-items: stretch;
     flex-direction: column;
   }
+  .setup-form {
+    padding: var(--space-4);
+    gap: var(--space-5);
+  }
+  .process-start-heading {
+    margin-bottom: var(--space-5);
+  }
+  .setup-submit {
+    width: 100%;
+    justify-self: stretch;
+  }
   .form-grid,
   .brief-grid,
   .brief-list-grid {
