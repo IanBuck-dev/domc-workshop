@@ -347,6 +347,7 @@ describe("process AI contract", () => {
         "miscellaneous",
       ]),
     );
+    expect(schema.$defs.informationItem.required).toContain("typeDetail");
     expect(
       processSynthesisResultSchema.safeParse(synthesisUnderstanding()).success,
     ).toBe(true);
@@ -356,6 +357,29 @@ describe("process AI contract", () => {
     expect(
       processSynthesisResultSchema.safeParse(legacyUnderstanding()).success,
     ).toBe(false);
+    const missingTypeDetail = synthesisUnderstanding();
+    delete (
+      missingTypeDetail.steps[0]!.informationItems[0] as unknown as Record<
+        string,
+        unknown
+      >
+    ).typeDetail;
+    expect(
+      processSynthesisResultSchema.safeParse(missingTypeDetail).success,
+    ).toBe(false);
+    const invalidStandardDetail = synthesisUnderstanding();
+    invalidStandardDetail.steps[0]!.informationItems[0]!.typeDetail =
+      "CRM-Eigenschaft";
+    expect(
+      processSynthesisResultSchema.safeParse(invalidStandardDetail).success,
+    ).toBe(false);
+    const customDetail = synthesisUnderstanding();
+    customDetail.steps[0]!.informationItems[0]!.type = "other";
+    customDetail.steps[0]!.informationItems[0]!.typeDetail =
+      "Fachliche Prüfliste";
+    expect(processSynthesisResultSchema.safeParse(customDetail).success).toBe(
+      true,
+    );
     const forgedCorrection = synthesisUnderstanding();
     (
       forgedCorrection.evidence as Array<{
@@ -387,6 +411,7 @@ describe("process AI contract", () => {
     expect(prompt).toContain("# Prozessverständnis-Synthese v2");
     expect(prompt).toContain("`source` bezeichnet");
     expect(prompt).toContain("`type` ausschließlich einen Enumwert");
+    expect(prompt).toContain("`typeDetail` bei allen Standardarten auf `null`");
     expect(prompt).toContain('`mode: "rule_based"`');
     expect(prompt).toContain("Erfinde keinen plausiblen Entscheidungsbaum");
   });

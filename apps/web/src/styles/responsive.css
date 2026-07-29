@@ -174,10 +174,17 @@
   .edit-actions {
     grid-template-columns: 1fr;
   }
+  .edit-actions > label,
+  .edit-actions > .notice,
+  .edit-actions > div {
+    grid-column: 1;
+    grid-row: auto;
+  }
   .edit-actions > div {
     flex-wrap: wrap;
   }
   .step-editor-basics,
+  .step-basics-editor,
   .step-input-output-editor,
   .information-editor-row,
   .decision-editor-head,
@@ -187,6 +194,11 @@
   .nested-remove-button,
   .decision-editor-head .icon-button {
     justify-self: start;
+  }
+  .brief-edit-mode-actions,
+  .process-map-heading {
+    align-items: flex-start;
+    flex-direction: column;
   }
   .work-characteristics-section .list-title,
   .work-characteristics-review-list article > div,

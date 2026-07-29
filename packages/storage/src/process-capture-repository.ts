@@ -162,25 +162,27 @@ function validateFileBytes(extension: string, bytes: Uint8Array) {
   if ([".txt", ".md", ".csv"].includes(extension) && bytes.includes(0))
     throw new Error("Die Textdatei enthält ungültige Binärdaten.");
 }
-function factsOf(understanding: ProcessUnderstanding) {
-  return [
-    understanding.purpose,
-    understanding.trigger,
-    understanding.outcome,
-    understanding.boundaries,
-    understanding.participants,
-    understanding.informationSources,
-    understanding.systems,
-    understanding.decisions,
-    understanding.controls,
-    understanding.handoffs,
-    understanding.volumeAndTime,
-    understanding.painPoints,
-    understanding.improvementGoals,
-    ...understanding.steps,
-  ];
-}
-function comparableFactValue(fact: ReturnType<typeof factsOf>[number]) {
+const globalFactNames = [
+  "purpose",
+  "trigger",
+  "outcome",
+  "boundaries",
+  "participants",
+  "informationSources",
+  "systems",
+  "decisions",
+  "controls",
+  "handoffs",
+  "volumeAndTime",
+  "painPoints",
+  "improvementGoals",
+] as const;
+
+type CorrectionFact =
+  | ProcessUnderstanding[(typeof globalFactNames)[number]]
+  | ProcessUnderstanding["steps"][number];
+
+function comparableFactValue(fact: CorrectionFact) {
   if ("value" in fact) return fact.value;
   const value = structuredClone(fact) as Record<string, unknown>;
   delete value.provenance;
@@ -189,6 +191,30 @@ function comparableFactValue(fact: ReturnType<typeof factsOf>[number]) {
   delete value.assumptions;
   delete value.confirmed;
   return value;
+}
+
+function reconcileCorrectionFact(
+  previous: CorrectionFact | undefined,
+  next: CorrectionFact,
+  correctionId: string,
+) {
+  const changed =
+    !previous ||
+    JSON.stringify(comparableFactValue(previous)) !==
+      JSON.stringify(comparableFactValue(next));
+  if (changed) {
+    next.provenance = "user_confirmed";
+    next.confirmed = true;
+    next.confidence = null;
+    next.assumptions = [];
+    next.evidenceIds = [...new Set([...next.evidenceIds, correctionId])];
+    return;
+  }
+  next.provenance = previous.provenance;
+  next.confirmed = previous.confirmed;
+  next.confidence = previous.confidence;
+  next.assumptions = structuredClone(previous.assumptions);
+  next.evidenceIds = structuredClone(previous.evidenceIds);
 }
 
 export class ProcessCaptureNotFoundError extends Error {
@@ -517,22 +543,19 @@ export class ProcessCaptureRepository {
       allowHumanCorrections: true,
     });
     const correctionId = crypto.randomUUID();
-    const previousFacts = factsOf(record.understanding);
-    const nextFacts = factsOf(next);
-    nextFacts.forEach((fact, index) => {
-      const previous = previousFacts[index];
-      if (
-        previous &&
-        JSON.stringify(comparableFactValue(previous)) !==
-          JSON.stringify(comparableFactValue(fact))
-      ) {
-        fact.provenance = "user_confirmed";
-        fact.confirmed = true;
-        fact.confidence = null;
-        fact.assumptions = [];
-        fact.evidenceIds = [...new Set([...fact.evidenceIds, correctionId])];
-      }
-    });
+    globalFactNames.forEach((name) =>
+      reconcileCorrectionFact(
+        record.understanding![name],
+        next[name],
+        correctionId,
+      ),
+    );
+    const previousSteps = new Map(
+      record.understanding.steps.map((step) => [step.id, step]),
+    );
+    next.steps.forEach((step) =>
+      reconcileCorrectionFact(previousSteps.get(step.id), step, correctionId),
+    );
     next.evidence.push({
       id: correctionId,
       kind: "human_correction",

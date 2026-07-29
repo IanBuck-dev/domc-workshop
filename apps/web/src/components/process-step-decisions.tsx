@@ -2,6 +2,7 @@ import { Plus, Trash2 } from "lucide-react";
 import type { ProcessUnderstanding } from "../lib/process-types";
 import { Badge } from "./ui/badge";
 import { Button, IconButton } from "./ui/button";
+import { classNames } from "./ui/class-names";
 
 type Step = ProcessUnderstanding["steps"][number];
 type Decision = Step["decisions"][number];
@@ -14,12 +15,27 @@ const decisionModeCopy: Record<Decision["mode"], string> = {
 };
 
 export function ProcessStepDecisions({
+  stepId,
   decisions,
   steps,
+  isEditMode = false,
+  onChange = () => undefined,
 }: {
+  stepId?: string;
   decisions: Decision[];
   steps: ProcessUnderstanding["steps"];
+  isEditMode?: boolean;
+  onChange?: (decisions: Decision[]) => void;
 }) {
+  if (isEditMode)
+    return (
+      <ProcessStepDecisionsEditor
+        stepId={stepId ?? "step"}
+        decisions={decisions}
+        steps={steps}
+        onChange={onChange}
+      />
+    );
   const stepById = new Map(steps.map((step) => [step.id, step]));
   return (
     <section className="step-detail-section">
@@ -236,9 +252,14 @@ export function ProcessStepDecisionsEditor({
                           }
                         />
                       </label>
-                      <label>
+                      <label
+                        className={classNames(
+                          option.determination === null && "missing-field",
+                        )}
+                      >
                         Feststellung
                         <textarea
+                          name={`${stepId}-decision-${decision.id}-option-${option.id}-determination`}
                           rows={2}
                           value={option.determination ?? ""}
                           placeholder="Noch unbekannt"
@@ -248,10 +269,20 @@ export function ProcessStepDecisionsEditor({
                             })
                           }
                         />
+                        {option.determination === null && (
+                          <span className="missing-field-label">
+                            Angabe fehlt
+                          </span>
+                        )}
                       </label>
-                      <label>
+                      <label
+                        className={classNames(
+                          option.consequence === null && "missing-field",
+                        )}
+                      >
                         Folge
                         <textarea
+                          name={`${stepId}-decision-${decision.id}-option-${option.id}-consequence`}
                           rows={2}
                           value={option.consequence ?? ""}
                           placeholder="Noch unbekannt"
@@ -261,10 +292,16 @@ export function ProcessStepDecisionsEditor({
                             })
                           }
                         />
+                        {option.consequence === null && (
+                          <span className="missing-field-label">
+                            Angabe fehlt
+                          </span>
+                        )}
                       </label>
                       <label>
                         Optionaler Folgeschritt
                         <select
+                          name={`${stepId}-decision-${decision.id}-option-${option.id}-next-step`}
                           value={option.nextStepId ?? ""}
                           onChange={(event) =>
                             updateOption(decisionIndex, optionIndex, {

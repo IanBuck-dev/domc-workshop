@@ -21,12 +21,20 @@
    einzelnen Schritte und kontrollieren Sie Input, Output, Informationen mit
    Quelle und Art, Varianten und Entscheidungen sowie Sonstiges.
 6. Öffnen Sie bei Bedarf die Vorschau einer berücksichtigten Unterlage. PDF-, Bild- und Textdateien werden direkt angezeigt; Word-, PowerPoint- und Excel-Dateien stehen als Originaldownload bereit.
-7. Öffnen Sie `Prozessbild korrigieren`, wenn Schrittbezeichnungen, Reihenfolge,
+7. Öffnen Sie `Prozessbild bearbeiten`, wenn Schrittbezeichnungen, Reihenfolge,
    Inputs, Outputs, Informationsquellen, Entscheidungsoptionen oder Sonstiges
-   nicht stimmen. Jede Information kann einzeln ergänzt oder entfernt werden;
-   Entscheidungen enthalten Frage, Modus, Optionen, Feststellung, Folge und
-   einen optionalen Folgeschritt. Speichern Sie mit einer kurzen fachlichen
-   Begründung.
+   nicht stimmen. Diagramm und Schrittkarten bleiben an ihrer Position. Im
+   linearen Diagramm können Sie zwischen fünf und acht Schritten ergänzen,
+   umbenennen und verschieben. Ein Schritt lässt sich erst löschen, wenn keine
+   Entscheidungsoption mehr auf ihn verweist. Fehlende Angaben sind mit
+   `Angabe fehlt` markiert. Wählen Sie Quellen und Informationsarten aus den
+   angebotenen Listen oder verwenden Sie `Andere Quelle eingeben …` bzw.
+   `Andere Art eingeben …`. Jede Information kann einzeln ergänzt oder entfernt
+   werden; Entscheidungen enthalten Frage, Modus, Optionen, Feststellung,
+   Folge und einen optionalen Folgeschritt. `Bearbeitung abbrechen` verwirft
+   den gesamten Entwurf. Speichern Sie alle Änderungen gemeinsam mit einer
+   kurzen fachlichen Begründung. Bei einem bereits bestätigten Prozess hebt die
+   Korrektur die Bestätigung auf, bis das Prozessbild erneut bestätigt wird.
 8. Prüfen Sie unter `Unterlagen und offene Punkte` Dateieinschränkungen und
    erkannte Widersprüche. Nicht belegte Angaben bleiben separat unter
    `Noch unbekannt` sichtbar. Bestätigen Sie anschließend das Prozessbild als

@@ -9,6 +9,10 @@ import { listProcessOperations } from "../apps/server/src/process-operation-mana
 import type { ProcessAiAdapter } from "../packages/claude/src/process-ai-contracts.ts";
 import { ProcessCaptureRepository } from "../packages/storage/src/process-capture-repository.ts";
 import {
+  insertProcessStep,
+  removeProcessStep,
+} from "../packages/domain/src/process-understanding-editing.ts";
+import {
   answers,
   cover,
   processConfig,
@@ -556,6 +560,7 @@ describe("process capture API", () => {
       name: "Kontaktstatus",
       source: "Vertriebs-CRM",
       type: "system_field",
+      typeDetail: null,
     });
     corrected.steps[0]!.decisions[0]!.options[0]!.consequence =
       "Die Bearbeitung wird mit dem nächsten Schritt fortgesetzt.";
@@ -597,6 +602,78 @@ describe("process capture API", () => {
         ?.options[0]?.nextStepId,
     ).not.toBe("step-missing");
 
+    const withNewStep = insertProcessStep(saved.understanding, 5, "step-new");
+    withNewStep.steps[5] = {
+      ...withNewStep.steps[5],
+      name: "Abschluss dokumentieren",
+      activity: "Das geprüfte Ergebnis wird dokumentiert.",
+      inputs: ["Geprüftes Ergebnis"],
+      outputs: ["Dokumentierter Abschluss"],
+    };
+    const addedResponse = await app.request(
+      `/api/processes/${created.id}/understanding/flow`,
+      {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          understanding: withNewStep,
+          note: "Ein belegter Abschlussschritt wurde ergänzt.",
+        }),
+      },
+    );
+    expect(addedResponse.status).toBe(200);
+    const added = await addedResponse.json();
+    expect(added.understanding.steps).toHaveLength(6);
+
+    const danglingDeletion = structuredClone(added.understanding);
+    danglingDeletion.steps = danglingDeletion.steps
+      .filter((step: { id: string }) => step.id !== "step-2")
+      .map((step: { order: number }, index: number) => ({
+        ...step,
+        order: index + 1,
+      }));
+    expect(
+      (
+        await app.request(`/api/processes/${created.id}/understanding/flow`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            understanding: danglingDeletion,
+            note: "Referenzierten Schritt löschen.",
+          }),
+        })
+      ).status,
+    ).toBe(400);
+
+    const withoutNewStep = removeProcessStep(added.understanding, "step-new");
+    expect(
+      (
+        await app.request(`/api/processes/${created.id}/understanding/flow`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            understanding: withoutNewStep,
+            note: "Nicht benötigten Abschlussschritt entfernt.",
+          }),
+        })
+      ).status,
+    ).toBe(200);
+
+    const belowFormerMinimum = removeProcessStep(withoutNewStep, "step-5");
+    expect(belowFormerMinimum.steps).toHaveLength(4);
+    expect(
+      (
+        await app.request(`/api/processes/${created.id}/understanding/flow`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            understanding: belowFormerMinimum,
+            note: "Nicht benötigten fünften Hauptschritt entfernt.",
+          }),
+        })
+      ).status,
+    ).toBe(200);
+
     expect(
       (
         await app.request(`/api/processes/${created.id}/confirm`, {
@@ -604,12 +681,25 @@ describe("process capture API", () => {
         })
       ).status,
     ).toBe(200);
-    expect(
-      (
-        await app.request(`/api/processes/${created.id}/confirm`, {
-          method: "POST",
-        })
-      ).status,
-    ).toBe(409);
+    const confirmed = await repo.required(created.id);
+    const correctedConfirmed = structuredClone(confirmed.understanding!);
+    correctedConfirmed.steps[0]!.name = "Nach Bestätigung korrigierter Start";
+    const correctedConfirmedResponse = await app.request(
+      `/api/processes/${created.id}/understanding/flow`,
+      {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          understanding: correctedConfirmed,
+          note: "Fachliche Korrektur nach der Bestätigung.",
+        }),
+      },
+    );
+    expect(correctedConfirmedResponse.status).toBe(200);
+    const reopened = await correctedConfirmedResponse.json();
+    expect(reopened).toMatchObject({
+      state: "review_required",
+      confirmedAt: null,
+    });
   });
 });

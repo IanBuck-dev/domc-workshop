@@ -11,6 +11,11 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ProcessCaptureRepository } from "../packages/storage/src/process-capture-repository.ts";
 import {
+  insertProcessStep,
+  moveProcessStep,
+  removeProcessStep,
+} from "../packages/domain/src/process-understanding-editing.ts";
+import {
   answers,
   cover,
   legacyUnderstanding,
@@ -358,5 +363,81 @@ describe("process capture repository", () => {
         "utf8",
       ),
     ).toBe(before);
+  });
+
+  test("audits inserted, reordered, and deleted steps by stable ID", async () => {
+    const { repo, config } = await fixture();
+    let record = await repo.create(cover, config);
+    record = await repo.saveMainAnswers(
+      record.id,
+      answers(),
+      workCharacteristicAnswers(),
+      [],
+    );
+    record = await repo.saveFollowUps(record.id, [], trace());
+    record = await repo.saveUnderstanding(record.id, understanding(6), trace());
+
+    let corrected = removeProcessStep(record.understanding!, "step-6");
+    corrected = insertProcessStep(corrected, 5, "step-new");
+    corrected.steps[0]!.name = "Fachlich korrigierter Start";
+    corrected.steps[5] = {
+      ...corrected.steps[5]!,
+      name: "Neuer Abschluss",
+      activity: "Der Abschluss wird dokumentiert.",
+      inputs: ["Geprüftes Ergebnis"],
+      outputs: ["Dokumentierter Abschluss"],
+    };
+    record = await repo.correctUnderstanding(
+      record.id,
+      corrected,
+      "Start, Abschluss und Struktur fachlich berichtigt.",
+    );
+
+    const humanEvidence = record.understanding!.evidence.filter(
+      (item) => item.kind === "human_correction",
+    );
+    expect(humanEvidence).toHaveLength(1);
+    const correctionId = humanEvidence[0]!.id;
+    expect(record.understanding!.steps[0]).toMatchObject({
+      id: "step-1",
+      provenance: "user_confirmed",
+    });
+    expect(record.understanding!.steps[0]!.evidenceIds).toContain(correctionId);
+    expect(record.understanding!.steps[1]!.provenance).toBe("ai_structured");
+    expect(record.understanding!.steps[5]).toMatchObject({
+      id: "step-new",
+      provenance: "user_confirmed",
+    });
+    expect(record.understanding!.steps[5]!.evidenceIds).toContain(correctionId);
+
+    const reordered = moveProcessStep(record.understanding!, "step-1", 1);
+    const reorderedRecord = await repo.correctUnderstanding(
+      record.id,
+      reordered,
+      "Die ersten beiden Schritte wurden neu sortiert.",
+    );
+    expect(
+      reorderedRecord.understanding!.steps.slice(0, 2).map((step) => step.id),
+    ).toEqual(["step-2", "step-1"]);
+    expect(reorderedRecord.understanding!.steps[1]!.name).toBe(
+      "Fachlich korrigierter Start",
+    );
+
+    const corrections = (await repo.history(record.id)).filter(
+      (entry) => entry.event === "understanding-corrected",
+    );
+    expect(corrections).toHaveLength(2);
+    const structural = corrections.find(
+      (entry) =>
+        (entry.detail as { note?: string }).note ===
+        "Start, Abschluss und Struktur fachlich berichtigt.",
+    )!;
+    const detail = structural.detail as {
+      previous: { steps: Array<{ id: string }> };
+      next: { steps: Array<{ id: string }> };
+    };
+    expect(detail.previous.steps.map((step) => step.id)).toContain("step-6");
+    expect(detail.next.steps.map((step) => step.id)).not.toContain("step-6");
+    expect(detail.next.steps.map((step) => step.id)).toContain("step-new");
   });
 });

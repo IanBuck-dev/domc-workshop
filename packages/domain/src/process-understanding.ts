@@ -357,14 +357,38 @@ const uniqueStepTextArray = (maximum: number) =>
         });
     });
 
+const processInformationTypeDetailSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(200)
+  .nullable();
+
+function addInformationTypeDetailIssue(
+  item: {
+    type: z.infer<typeof processInformationTypeSchema>;
+    typeDetail: string | null;
+  },
+  ctx: z.RefinementCtx,
+) {
+  if (item.type !== "other" && item.typeDetail !== null)
+    ctx.addIssue({
+      code: "custom",
+      path: ["typeDetail"],
+      message: "Only information type 'other' may define typeDetail.",
+    });
+}
+
 export const processInformationItemSchema = z
   .object({
     id: identifierSchema,
     name: z.string().trim().min(1).max(1_000),
     source: z.string().trim().min(1).max(1_000).nullable(),
     type: processInformationTypeSchema,
+    typeDetail: processInformationTypeDetailSchema.default(null),
   })
-  .strict();
+  .strict()
+  .superRefine(addInformationTypeDetailIssue);
 
 export const processDecisionOptionSchema = z
   .object({
@@ -580,7 +604,7 @@ export const processUnderstandingSchema = z
   .object({
     schemaVersion: z.literal(2),
     ...processUnderstandingFields,
-    steps: z.array(processStepSchema).min(5).max(8),
+    steps: z.array(processStepSchema).min(1).max(8),
   })
   .strict()
   .superRefine(addUnderstandingIssues);
@@ -628,6 +652,7 @@ export function migrateLegacyProcessUnderstanding(input: unknown) {
         name,
         source: null,
         type: "unknown" as const,
+        typeDetail: null,
       })),
       decisions: step.decision
         ? [
@@ -657,9 +682,15 @@ export const processUnderstandingStorageSchema = z
       : migrateLegacyProcessUnderstanding(value),
   );
 
-const processInformationItemAiSchema = processInformationItemSchema.omit({
-  id: true,
-});
+const processInformationItemAiSchema = z
+  .object({
+    name: z.string().trim().min(1).max(1_000),
+    source: z.string().trim().min(1).max(1_000).nullable(),
+    type: processInformationTypeSchema,
+    typeDetail: processInformationTypeDetailSchema,
+  })
+  .strict()
+  .superRefine(addInformationTypeDetailIssue);
 const processDecisionOptionAiSchema = processDecisionOptionSchema.omit({
   id: true,
 });

@@ -10,6 +10,7 @@ Strukturiere jeden Hauptschritt nach diesen Regeln:
 - Benenne in `informationItems` jede verwendete Einzelinformation separat.
 - `source` bezeichnet die konkret belegte, für den Fachbereich sichtbare Herkunft, zum Beispiel `SAP FSCD / ZDECD_LI_UI / Spalte MS`, `Gruppenpostkorb` oder `Arbeitsanweisung FSCD Mahnung`.
 - Verwende für `type` ausschließlich einen Enumwert aus dem Ausgabeschema. `type` beschreibt die Form der Information, nicht deren fachliche Bedeutung.
+- Setze `typeDetail` bei allen Standardarten auf `null`. Verwende `type: "other"` mit einem knappen belegten `typeDetail` nur, wenn keine vorhandene Standardart passt.
 - Nenne eine Anwendung, Datei oder ein Feld nur als Quelle, wenn es durch Nutzereingabe oder Datei-Evidenz belegt ist. Andernfalls bleibt `source` `null`; eine unsichere Art bleibt `unknown`.
 - Formuliere jede Entscheidung als fachliche Frage. Trenne bekannte Optionen. `determination` beschreibt die belegten Merkmale, anhand derer eine Option festgestellt wird; `consequence` beschreibt die fachliche Folge.
 - Eine dokumentierte Pflichtregel erhält `mode: "rule_based"`. Einzelfallabhängiges fachliches Ermessen erhält `professional_judgement`. Verwende `mixed` nur bei einer belegten Kombination aus Regel und Ermessen. Fehlt diese Einordnung, verwende `unknown`.

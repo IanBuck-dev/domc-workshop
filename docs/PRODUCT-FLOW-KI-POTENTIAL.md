@@ -93,7 +93,8 @@ The review page is deliberately reduced. It renders, in this fixed order:
 
 1. the compact result header;
 2. `Diagramm` with only step number and name;
-3. `Schritte` with five to eight expandable step cards;
+3. `Schritte` with the five to eight step cards created by synthesis; manual
+   correction may reduce the confirmed linear flow to one step;
 4. `Unterlagen und offene Punkte`, including document limitations and
    contradictions;
 5. a separate `Noch unbekannt` section;
@@ -101,10 +102,23 @@ The review page is deliberately reduced. It renders, in this fixed order:
 
 Each expanded step shows exactly `Input`, `Output`, `Informationen`,
 `Varianten und Entscheidungen`, and `Sonstiges`. Review allows correction of
-the step name, activity, order, inputs, outputs, information items, decisions,
-options, and miscellaneous text. The former global brief fields and work
-characteristics remain stored for traceability and downstream compatibility,
-but they are neither shown nor corrected on this page.
+the same visible components through one page-wide `isEditMode`; there is no
+separate editor layout. The linear diagram can insert, rename, reorder, and
+delete steps while preserving the fixed five-to-eight-step boundary. A step
+referenced by a decision option cannot be deleted until that reference is
+changed. Step cards edit activity, inputs, outputs, information items,
+decisions, options, and miscellaneous text inline. The former global brief
+fields and work characteristics remain stored for traceability and downstream
+compatibility, but they are neither shown nor corrected on this page.
+
+Missing structured values are visibly marked in edit mode without forcing the
+department to invent unknown facts. Information sources are selected from the
+known process sources, systems, documents, and previously named sources, with
+an explicit free-text option. Information types use the fixed enum plus an
+`other` option whose human-readable value is stored as `typeDetail`. One
+explicit save validates and persists the complete draft atomically and records
+one correction reason and one before/after audit event. Cancelling discards the
+entire draft.
 
 The final button `Prozessbeschreibung bestätigen` sets only the record-level
 confirmation timestamp. It does not silently change fact provenance or mark
@@ -240,6 +254,7 @@ interface ProcessInformationItem {
   name: string;
   source: string | null;
   type: ProcessInformationType;
+  typeDetail: string | null;
 }
 
 interface ProcessDecisionOption {
@@ -610,9 +625,14 @@ and removes the row.
 - deterministic `Diagramm` before the step list;
 - expandable step cards with Input, Output, structured information, structured
   decisions, and miscellaneous details;
+- one page-wide edit mode that keeps the diagram and step cards in place;
+- linear add, rename, reorder, and reference-safe delete actions for five to
+  eight steps;
+- source and information-type selectors with explicit free-text options and
+  accessible missing-value markers;
 - document coverage and conflicts in `Unterlagen und offene Punkte`;
 - knowledge gaps in a separate `Noch unbekannt` section;
-- one structured process-step correction action;
+- one atomic structured correction action with a mandatory reason;
 - one final confirmation action.
 
 ### Process map

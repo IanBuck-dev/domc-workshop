@@ -130,6 +130,7 @@ export function understanding(stepCount = 5): ProcessUnderstanding {
           name: "CRM-Angaben",
           source: "Vertriebs-CRM",
           type: "system_field" as const,
+          typeDetail: null,
         },
       ],
       decisions:
@@ -229,6 +230,7 @@ export function synthesisUnderstanding(stepCount = 5) {
         name: item.name,
         source: item.source,
         type: item.type,
+        typeDetail: item.typeDetail,
       })),
       decisions: step.decisions.map((decision) => ({
         question: decision.question,

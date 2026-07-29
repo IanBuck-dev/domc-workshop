@@ -9,6 +9,12 @@ import {
   workCharacteristicAnswersSchema,
 } from "../packages/domain/src/process-understanding.ts";
 import {
+  insertProcessStep,
+  moveProcessStep,
+  referencesToStep,
+  removeProcessStep,
+} from "../packages/domain/src/process-understanding-editing.ts";
+import {
   answers,
   legacyUnderstanding,
   processConfig,
@@ -140,19 +146,23 @@ describe("compact-v1 process domain", () => {
     ).toThrow("immutable");
   });
 
-  test("requires five to eight contiguous unique steps", () => {
+  test("accepts one to eight contiguous unique stored steps", () => {
+    const oneStep = structuredClone(understanding(5));
+    oneStep.steps = oneStep.steps.slice(0, 1);
+    oneStep.steps[0]!.decisions[0]!.options[0]!.nextStepId = null;
+    expect(processUnderstandingSchema.parse(oneStep).steps).toHaveLength(1);
     expect(
       processUnderstandingSchema.parse(understanding(5)).steps,
     ).toHaveLength(5);
     expect(
       processUnderstandingSchema.parse(understanding(8)).steps,
     ).toHaveLength(8);
-    expect(() =>
+    expect(
       processUnderstandingSchema.parse({
         ...understanding(5),
         steps: understanding(5).steps.slice(0, 4),
-      }),
-    ).toThrow();
+      }).steps,
+    ).toHaveLength(4);
     expect(() =>
       processUnderstandingSchema.parse({
         ...understanding(8),
@@ -185,6 +195,75 @@ describe("compact-v1 process domain", () => {
       decisions: [],
       miscellaneous: null,
     });
+  });
+
+  test("normalizes missing type detail and restricts custom information types", () => {
+    const oldV2 = structuredClone(understanding()) as unknown as {
+      steps: Array<{ informationItems: Array<Record<string, unknown>> }>;
+    };
+    delete oldV2.steps[0]!.informationItems[0]!.typeDetail;
+    expect(
+      processUnderstandingStorageSchema.parse(oldV2).steps[0]!
+        .informationItems[0]!.typeDetail,
+    ).toBeNull();
+
+    const invalidStandard = structuredClone(understanding());
+    invalidStandard.steps[0]!.informationItems[0]!.typeDetail = "CRM-Feld";
+    expect(() => processUnderstandingSchema.parse(invalidStandard)).toThrow(
+      "Only information type 'other'",
+    );
+
+    const custom = structuredClone(understanding());
+    custom.steps[0]!.informationItems[0]!.type = "other";
+    custom.steps[0]!.informationItems[0]!.typeDetail = "Fachliche Prüfliste";
+    expect(
+      processUnderstandingSchema.parse(custom).steps[0]!.informationItems[0],
+    ).toMatchObject({ type: "other", typeDetail: "Fachliche Prüfliste" });
+  });
+
+  test("edits the linear step structure immutably and preserves references", () => {
+    const original = understanding(5);
+    const inserted = insertProcessStep(original, 2, "step-new");
+    expect(original.steps).toHaveLength(5);
+    expect(inserted.steps).toHaveLength(6);
+    expect(inserted.steps.map((step) => step.order)).toEqual([
+      1, 2, 3, 4, 5, 6,
+    ]);
+    expect(inserted.steps[2]).toMatchObject({
+      id: "step-new",
+      name: "",
+      activity: "",
+      provenance: "user_confirmed",
+    });
+    expect(() => insertProcessStep(understanding(8), 8, "step-9")).toThrow(
+      "höchstens acht",
+    );
+
+    const moved = moveProcessStep(inserted, "step-1", 1);
+    expect(moved.steps.map((step) => step.id).slice(0, 3)).toEqual([
+      "step-2",
+      "step-1",
+      "step-new",
+    ]);
+    expect(moved.steps[1]!.decisions[0]!.options[0]!.nextStepId).toBe("step-2");
+    expect(() => moveProcessStep(moved, "step-2", -1)).toThrow(
+      "nicht weiter verschoben",
+    );
+
+    expect(referencesToStep(inserted, "step-2")).toHaveLength(1);
+    expect(() => removeProcessStep(inserted, "step-2")).toThrow(
+      "Entscheidungsoption",
+    );
+    const removed = removeProcessStep(inserted, "step-new");
+    expect(removed.steps).toHaveLength(5);
+    expect(removed.steps.map((step) => step.order)).toEqual([1, 2, 3, 4, 5]);
+    let reduced = removed;
+    for (const stepId of ["step-1", "step-5", "step-4", "step-3"])
+      reduced = removeProcessStep(reduced, stepId);
+    expect(reduced.steps).toHaveLength(1);
+    expect(() => removeProcessStep(reduced, "step-2")).toThrow(
+      "mindestens einen",
+    );
   });
 
   test("rejects duplicate nested IDs, unknown enums, and foreign next steps", () => {
@@ -240,6 +319,7 @@ describe("compact-v1 process domain", () => {
         name: "CRM-Angaben",
         source: null,
         type: "unknown",
+        typeDetail: null,
       },
     ]);
     expect(first.decisions).toEqual([
