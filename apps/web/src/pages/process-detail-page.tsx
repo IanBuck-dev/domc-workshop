@@ -7,7 +7,7 @@ import {
   Trash2,
   Workflow,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ProcessDeleteDialog } from "../components/process-delete-dialog";
 import { Badge } from "../components/ui/badge";
@@ -19,9 +19,14 @@ import {
   type ModuleNavigationState,
 } from "../lib/process-navigation-model";
 import type { ProcessCaptureRecord } from "../lib/process-types";
-import { Button, IconButton, buttonClassName } from "../components/ui/button";
-import { Kicker } from "../components/ui/kicker";
-import { Card } from "../components/ui/card";
+import { Button, buttonVariants } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu";
 
 export function ProcessDetailPage() {
   const { id = "" } = useParams();
@@ -30,13 +35,9 @@ export function ProcessDetailPage() {
   const [opportunity, setOpportunity] = useState<OpportunityDiscoverySummary>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [menuOpen, setMenuOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
-  const menu = useRef<HTMLDivElement>(null);
-  const menuButton = useRef<HTMLButtonElement>(null);
-  const menuItem = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -52,28 +53,12 @@ export function ProcessDetailPage() {
     };
   }, [id]);
 
-  useEffect(() => {
-    if (!menuOpen) return;
-    menuItem.current?.focus();
-    const closeOnOutsideClick = (event: PointerEvent) => {
-      if (!menu.current?.contains(event.target as Node)) setMenuOpen(false);
-    };
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      setMenuOpen(false);
-      menuButton.current?.focus();
-    };
-    document.addEventListener("pointerdown", closeOnOutsideClick);
-    document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("pointerdown", closeOnOutsideClick);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [menuOpen]);
-
   if (error && !process)
     return (
-      <p className="notice error" role="alert">
+      <p
+        className="m-6 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+        role="alert"
+      >
         {error}
       </p>
     );
@@ -82,15 +67,22 @@ export function ProcessDetailPage() {
 
   const navigation = processNavigationModel(process, opportunity);
   return (
-    <section className="process-detail-page">
-      <Link className="back-link" to="/">
-        <ArrowLeft /> Zur Prozessübersicht
+    <section className="mx-auto w-full max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+      <Link
+        className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+        to="/"
+      >
+        <ArrowLeft className="size-4" /> Zur Prozessübersicht
       </Link>
-      <div className="page-title process-detail-heading">
+      <div className="flex items-start justify-between gap-5">
         <div>
-          <Kicker>Prozess</Kicker>
-          <h1>{process.cover.processName}</h1>
-          <p>
+          <p className="mb-2 text-sm font-bold uppercase tracking-[0.14em] text-primary">
+            Prozess
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
+            {process.cover.processName}
+          </h1>
+          <p className="mt-3 text-muted-foreground">
             {process.cover.department} · {process.id} · aktualisiert{" "}
             {new Date(process.updatedAt).toLocaleString("de-DE", {
               dateStyle: "short",
@@ -98,44 +90,34 @@ export function ProcessDetailPage() {
             })}
           </p>
         </div>
-        <div className="title-actions process-detail-actions">
-          <div className="process-context-menu" ref={menu}>
-            <IconButton
-              ref={menuButton}
-              label="Weitere Aktionen"
-              className="process-context-trigger"
-              aria-haspopup="menu"
-              aria-expanded={menuOpen}
-              onClick={() => setMenuOpen((value) => !value)}
-            >
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Weitere Aktionen">
               <EllipsisVertical />
-            </IconButton>
-            {menuOpen && (
-              <div className="process-context-popover" role="menu">
-                <button
-                  ref={menuItem}
-                  type="button"
-                  role="menuitem"
-                  className="process-context-danger"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    setDeleteError("");
-                    setDeleteOpen(true);
-                  }}
-                >
-                  <Trash2 /> Prozess löschen
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              variant="destructive"
+              onSelect={() => {
+                setDeleteError("");
+                setDeleteOpen(true);
+              }}
+            >
+              <Trash2 /> Prozess löschen
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       {error && (
-        <p className="notice error" role="alert">
+        <p
+          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+          role="alert"
+        >
           {error}
         </p>
       )}
-      <div className="process-module-grid">
+      <div className="grid gap-4 md:grid-cols-2">
         <ProcessModuleCard
           title="Prozessaufnahme"
           description="Erfasste Angaben, Rückfragen und das bestätigte Prozessbild."
@@ -143,7 +125,7 @@ export function ProcessDetailPage() {
           state={navigation.capture}
           action={
             <Link
-              className={buttonClassName("secondary")}
+              className={buttonVariants({ variant: "secondary" })}
               to={`/processes/${id}/capture`}
             >
               {navigation.capture.actionLabel} <ArrowRight />
@@ -192,7 +174,6 @@ export function ProcessDetailPage() {
     if (state.action === "start_opportunity")
       return (
         <Button
-          variant="primary"
           disabled={busy}
           onClick={async () => {
             setBusy(true);
@@ -208,7 +189,7 @@ export function ProcessDetailPage() {
         >
           {busy ? (
             <>
-              <LoaderCircle className="spin" /> Startet …
+              <LoaderCircle className="animate-spin" /> Startet …
             </>
           ) : (
             <>
@@ -220,7 +201,7 @@ export function ProcessDetailPage() {
     if (state.action === "view_opportunity")
       return (
         <Link
-          className={buttonClassName("secondary")}
+          className={buttonVariants({ variant: "secondary" })}
           to={`/processes/${id}/opportunities/${opportunityEntryPhase(opportunity)}`}
         >
           {state.actionLabel} <ArrowRight />
@@ -244,18 +225,36 @@ function ProcessModuleCard({
   action: React.ReactNode;
 }) {
   return (
-    <Card as="article" className="process-module-card">
-      <div className="process-module-icon">{icon}</div>
-      <div className="process-module-content">
-        <div className="process-module-title">
-          <h2>{title}</h2>
-          <Badge tone={state.tone}>{state.status}</Badge>
+    <Card className="py-0">
+      <CardContent className="grid min-h-52 grid-cols-[auto_minmax(0,1fr)] gap-4 p-5">
+        <div className="grid size-11 place-items-center rounded-lg bg-secondary text-primary">
+          {icon}
         </div>
-        <p>{description}</p>
-        <div className="process-module-action">
-          {action ?? <span>{state.blockedReason}</span>}
+        <div className="flex min-w-0 flex-col">
+          <div className="flex items-start justify-between gap-3">
+            <h2 className="text-xl font-semibold">{title}</h2>
+            <Badge
+              variant={
+                state.tone === "danger"
+                  ? "destructive"
+                  : state.tone === "warning"
+                    ? "outline"
+                    : "secondary"
+              }
+            >
+              {state.status}
+            </Badge>
+          </div>
+          <p className="mt-3 text-muted-foreground">{description}</p>
+          <div className="mt-auto flex min-h-11 items-center justify-end pt-4">
+            {action ?? (
+              <span className="mr-auto text-sm text-muted-foreground">
+                {state.blockedReason}
+              </span>
+            )}
+          </div>
         </div>
-      </div>
+      </CardContent>
     </Card>
   );
 }

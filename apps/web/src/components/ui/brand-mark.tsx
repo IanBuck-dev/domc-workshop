@@ -1,4 +1,4 @@
-import { classNames } from "./class-names";
+import { cn } from "../../lib/utils";
 
 /**
  * Bildmarke der Zukunftswerkstatt: ein Z, das zugleich eine Treppe ist —
@@ -8,7 +8,7 @@ import { classNames } from "./class-names";
 export function BrandMark({ className }: { className?: string }) {
   return (
     <svg
-      className={classNames("brand-mark", className)}
+      className={cn("size-8 shrink-0 text-primary", className)}
       viewBox="0 0 32 32"
       aria-hidden="true"
       focusable="false"
@@ -17,7 +17,7 @@ export function BrandMark({ className }: { className?: string }) {
       <path
         d="M10 10h12L10 22h12"
         fill="none"
-        stroke="var(--surface)"
+        stroke="white"
         strokeWidth="2.6"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -29,7 +29,12 @@ export function BrandMark({ className }: { className?: string }) {
 /** Bildmarke und Wortmarke, wie sie in der Kopfzeile und beim Anmelden stehen. */
 export function BrandLockup({ className }: { className?: string }) {
   return (
-    <span className={classNames("brand-lockup", className)}>
+    <span
+      className={cn(
+        "inline-flex items-center gap-2 text-lg font-bold tracking-tight",
+        className,
+      )}
+    >
       <BrandMark />
       <b>Zukunftswerkstatt</b>
     </span>

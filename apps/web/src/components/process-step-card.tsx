@@ -3,7 +3,7 @@ import type { ProcessUnderstanding } from "../lib/process-types";
 import { ProcessStepDecisions } from "./process-step-decisions";
 import { ProcessStepInformation } from "./process-step-information";
 import { Button, IconButton } from "./ui/button";
-import { classNames } from "./ui/class-names";
+import { cn } from "../lib/utils";
 
 type Step = ProcessUnderstanding["steps"][number];
 
@@ -169,7 +169,7 @@ function StepValueList({
   const valueKey = title.toLowerCase();
   return (
     <section
-      className={classNames(
+      className={cn(
         "step-detail-section",
         "step-list-editor",
         values.length === 0 && "missing-field",
@@ -190,7 +190,7 @@ function StepValueList({
       )}
       {values.map((value, index) => (
         <div
-          className={classNames(
+          className={cn(
             "step-list-editor-row",
             !value.trim() && "missing-field",
           )}

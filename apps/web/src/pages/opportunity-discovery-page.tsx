@@ -14,7 +14,6 @@ import { api } from "../lib/api-client";
 import type { OpportunityDiscoveryDetail } from "../lib/opportunity-types";
 import type { ProcessCaptureRecord } from "../lib/process-types";
 import { Button } from "../components/ui/button";
-import { Kicker } from "../components/ui/kicker";
 import { Card } from "../components/ui/card";
 import { useProcessChanged } from "../lib/process-events";
 
@@ -92,7 +91,9 @@ export function OpportunityDiscoveryPage({
       </Link>
       <div className="opportunity-heading">
         <div>
-          <Kicker>KI-Potenziale entdecken</Kicker>
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
+            KI-Potenziale entdecken
+          </p>
           <h1>{process.cover.processName}</h1>
           <p>
             {process.cover.department} · {process.id}
@@ -152,7 +153,9 @@ export function OpportunityDiscoveryPage({
       {phase === "hypotheses" && !record.hypotheses && (
         <Card as="section" className="center-stage" aria-live="polite">
           <LoaderCircle className="spin" />
-          <Kicker>Phase 1 von 2</Kicker>
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
+            Phase 1 von 2
+          </p>
           <h2>Die Prozessschritte werden untersucht.</h2>
           <p>
             Potenziale, Begründungen und ihre Evidenz werden gemeinsam geprüft.
@@ -197,7 +200,9 @@ export function OpportunityDiscoveryPage({
           ) : (
             <LoaderCircle className="spin" />
           )}
-          <Kicker>Phase 2 von 2</Kicker>
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
+            Phase 2 von 2
+          </p>
           <h2>
             {record.state === "scenarios_failed"
               ? "Die Szenarien sind noch nicht verfügbar."

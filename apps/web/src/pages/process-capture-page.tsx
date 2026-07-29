@@ -20,7 +20,6 @@ import type {
   ProcessOperationStatus,
 } from "../lib/process-types";
 import { Button } from "../components/ui/button";
-import { Kicker } from "../components/ui/kicker";
 import { Card } from "../components/ui/card";
 import { useAiOperations, useProcessChanged } from "../lib/process-events";
 
@@ -202,7 +201,9 @@ export function ProcessCapturePage() {
         <ArrowLeft /> Zum Prozess
       </Link>
       <div className="capture-heading">
-        <Kicker>Seite 2 von 2 · {record.id}</Kicker>
+        <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
+          Seite 2 von 2 · {record.id}
+        </p>
         <div className="capture-title-row">
           <h1>{record.cover.processName}</h1>
           <CaptureProgress current={progress} />
@@ -229,7 +230,9 @@ export function ProcessCapturePage() {
       ].includes(record.state) && (
         <form onSubmit={submitMainAnswers} className="capture-form">
           <Card className="intro-panel">
-            <Kicker>Angaben erfassen und prüfen</Kicker>
+            <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
+              Angaben erfassen und prüfen
+            </p>
             <h2>
               {hasCompletedValidation
                 ? "Prüfen und ergänzen Sie Ihre Angaben direkt im Formular."

@@ -1,23 +1,30 @@
 import { AlertTriangle, LoaderCircle, X } from "lucide-react";
 import { api } from "../lib/api-client";
 import { useAiOperations } from "../lib/process-events";
+import { Button } from "./ui/button";
 
 export function AiOperationQueue() {
   const operations = useAiOperations();
   if (!operations.length) return null;
   return (
-    <aside className="ai-operation-queue" aria-live="polite">
-      <b>KI-Aktionen</b>
+    <aside
+      className="fixed bottom-4 right-4 z-40 w-[min(26rem,calc(100vw-2rem))] space-y-2 rounded-lg border border-border bg-card p-3 shadow-lg"
+      aria-live="polite"
+    >
+      <b className="text-sm">KI-Aktionen</b>
       {operations.map((operation) => (
-        <div key={operation.operationId}>
+        <div
+          key={operation.operationId}
+          className="flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-sm"
+        >
           {operation.state === "failed" ? (
-            <AlertTriangle />
+            <AlertTriangle className="size-4 shrink-0 text-destructive" />
           ) : (
             <LoaderCircle
-              className={operation.state === "running" ? "spin" : ""}
+              className={`size-4 shrink-0 text-primary ${operation.state === "running" ? "animate-spin" : ""}`}
             />
           )}
-          <span>
+          <span className="min-w-0 flex-1">
             {operationLabel(operation.operationName)} ·{" "}
             {operation.state === "failed"
               ? "fehlgeschlagen"
@@ -25,16 +32,18 @@ export function AiOperationQueue() {
                 ? "wird ausgeführt"
                 : `Warteplatz ${operation.position}`}
           </span>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-xs"
             aria-label={`${operationLabel(operation.operationName)} abbrechen`}
             onClick={async () => {
               // Die aktualisierte Warteschlange kommt über den Ereignisstrom.
               await api.cancelOperation(operation.operationId);
             }}
           >
-            <X />
-          </button>
+            <X className="size-4" />
+          </Button>
         </div>
       ))}
     </aside>

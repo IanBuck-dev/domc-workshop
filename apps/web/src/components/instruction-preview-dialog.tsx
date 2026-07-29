@@ -2,7 +2,6 @@ import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import { IconButton } from "./ui/button";
-import { Kicker } from "./ui/kicker";
 
 export interface InstructionPreview {
   base: string;
@@ -38,7 +37,9 @@ export function InstructionPreviewDialog({
     >
       <header>
         <div>
-          <Kicker>KI-Unterstützung</Kicker>
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
+            KI-Unterstützung
+          </p>
           <h2 id="instruction-preview-title">Vollständige Anweisungen</h2>
           <small>
             Feste Leitplanken und Ihre aktuell eingetragenen Zusatzhinweise

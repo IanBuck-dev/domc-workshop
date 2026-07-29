@@ -3,7 +3,6 @@ import { useRef, useState } from "react";
 import { api } from "../lib/api-client";
 import type { ProcessCaptureRecord, UploadRecord } from "../lib/process-types";
 import { Button, IconButton } from "./ui/button";
-import { Kicker } from "./ui/kicker";
 import { Card } from "./ui/card";
 
 export function ProcessUploadPicker({
@@ -60,7 +59,9 @@ export function ProcessUploadPicker({
     <Card as="section" className="upload-panel" aria-labelledby="upload-title">
       <div className="section-head compact">
         <div>
-          <Kicker>Freiwillig</Kicker>
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
+            Freiwillig
+          </p>
           <h2 id="upload-title">Vorhandene Unterlagen</h2>
         </div>
         <span>

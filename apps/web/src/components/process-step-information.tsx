@@ -2,7 +2,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ProcessUnderstanding } from "../lib/process-types";
 import { Button, IconButton } from "./ui/button";
-import { classNames } from "./ui/class-names";
+import { cn } from "../lib/utils";
 
 type Step = ProcessUnderstanding["steps"][number];
 type InformationItem = Step["informationItems"][number];
@@ -91,7 +91,7 @@ export function ProcessStepInformation({
   const idPrefix = stepId ?? "step";
   return (
     <section
-      className={classNames(
+      className={cn(
         "step-editor-section",
         items.length === 0 && "missing-field",
       )}

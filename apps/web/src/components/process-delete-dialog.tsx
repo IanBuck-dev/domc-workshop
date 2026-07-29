@@ -1,6 +1,14 @@
-import { AlertTriangle, LoaderCircle, X } from "lucide-react";
-import { useEffect, useRef } from "react";
-import { Button, IconButton } from "./ui/button";
+import { AlertTriangle, LoaderCircle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 
 export function ProcessDeleteDialog({
   open,
@@ -17,74 +25,55 @@ export function ProcessDeleteDialog({
   onClose: () => void;
   onConfirm: () => void;
 }) {
-  const dialog = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    if (open && dialog.current && !dialog.current.open)
-      dialog.current.showModal();
-  }, [open]);
-
-  if (!open) return null;
   return (
-    <dialog
-      ref={dialog}
-      className="confirmation-dialog process-delete-dialog"
-      aria-labelledby="process-delete-title"
-      aria-describedby="process-delete-description"
-      onCancel={(event) => {
-        if (busy) event.preventDefault();
+    <AlertDialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next && !busy) onClose();
       }}
-      onClose={onClose}
     >
-      <header>
-        <div className="confirmation-dialog-icon" aria-hidden="true">
-          <AlertTriangle />
-        </div>
-        <IconButton
-          label="Löschen abbrechen"
-          disabled={busy}
-          onClick={() => dialog.current?.close()}
-        >
-          <X />
-        </IconButton>
-      </header>
-      <div className="confirmation-dialog-content">
-        <h2 id="process-delete-title">Prozessaufnahme löschen?</h2>
-        <p id="process-delete-description">
-          „{processName}“ und alle zugehörigen KI-Analysen werden dauerhaft
-          gelöscht. Dies kann nicht rückgängig gemacht werden.
-        </p>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <div
+            className="mb-1 grid size-11 place-items-center rounded-full bg-destructive/10 text-destructive"
+            aria-hidden="true"
+          >
+            <AlertTriangle className="size-5" />
+          </div>
+          <AlertDialogTitle>Prozessaufnahme löschen?</AlertDialogTitle>
+          <AlertDialogDescription>
+            „{processName}“ und alle zugehörigen KI-Analysen werden dauerhaft
+            gelöscht. Dies kann nicht rückgängig gemacht werden.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
         {error && (
-          <p className="notice error" role="alert">
+          <p
+            className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+            role="alert"
+          >
             {error}
           </p>
         )}
-      </div>
-      <footer>
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={busy}
-          autoFocus
-          onClick={() => dialog.current?.close()}
-        >
-          Abbrechen
-        </Button>
-        <Button
-          type="button"
-          variant="danger"
-          disabled={busy}
-          onClick={onConfirm}
-        >
-          {busy ? (
-            <>
-              <LoaderCircle className="spin" /> Wird gelöscht …
-            </>
-          ) : (
-            "Endgültig löschen"
-          )}
-        </Button>
-      </footer>
-    </dialog>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={busy} onClick={onClose}>
+            Abbrechen
+          </AlertDialogCancel>
+          <AlertDialogAction
+            type="button"
+            className="bg-destructive text-white hover:bg-destructive/90"
+            disabled={busy}
+            onClick={onConfirm}
+          >
+            {busy ? (
+              <>
+                <LoaderCircle className="animate-spin" /> Wird gelöscht …
+              </>
+            ) : (
+              "Endgültig löschen"
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

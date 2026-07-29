@@ -2,7 +2,7 @@ import { Plus, Trash2 } from "lucide-react";
 import type { ProcessUnderstanding } from "../lib/process-types";
 import { Badge } from "./ui/badge";
 import { Button, IconButton } from "./ui/button";
-import { classNames } from "./ui/class-names";
+import { cn } from "../lib/utils";
 
 type Step = ProcessUnderstanding["steps"][number];
 type Decision = Step["decisions"][number];
@@ -253,7 +253,7 @@ export function ProcessStepDecisionsEditor({
                         />
                       </label>
                       <label
-                        className={classNames(
+                        className={cn(
                           option.determination === null && "missing-field",
                         )}
                       >
@@ -276,7 +276,7 @@ export function ProcessStepDecisionsEditor({
                         )}
                       </label>
                       <label
-                        className={classNames(
+                        className={cn(
                           option.consequence === null && "missing-field",
                         )}
                       >

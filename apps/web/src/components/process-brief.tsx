@@ -16,8 +16,7 @@ import { ProcessUnknowns } from "./process-unknowns";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { classNames } from "./ui/class-names";
-import { Kicker } from "./ui/kicker";
+import { cn } from "../lib/utils";
 
 export function ProcessBrief({
   understanding,
@@ -161,11 +160,13 @@ export function ProcessBrief({
   }
 
   return (
-    <div className={classNames("review-layout", isEditMode && "edit-mode")}>
+    <div className={cn("review-layout", isEditMode && "edit-mode")}>
       <Card as="section" className="process-brief process-brief-heading-card">
         <div className="brief-heading">
           <div>
-            <Kicker>Ergebnis</Kicker>
+            <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
+              Ergebnis
+            </p>
             <h1>Prozesssteckbrief</h1>
             <p>
               Prüfen Sie das Diagramm und die Details der einzelnen

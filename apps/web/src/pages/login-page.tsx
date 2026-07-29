@@ -3,7 +3,9 @@ import { LockKeyhole } from "lucide-react";
 import { api } from "../lib/api-client";
 import { BrandLockup } from "../components/ui/brand-mark";
 import { Button } from "../components/ui/button";
-import { Card } from "../components/ui/card";
+import { Card, CardContent } from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
 
 export function LoginPage({ onLogin }: { onLogin: () => void }) {
   const [username, setUsername] = useState("testing");
@@ -24,49 +26,61 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
     }
   }
   return (
-    <main className="login-page">
-      <Card
-        as="form"
-        elevation="floating"
-        className="login-card"
-        onSubmit={submit}
-      >
-        <BrandLockup />
-        <span className="login-icon">
-          <LockKeyhole />
-        </span>
-        <h1>Geschäftsprozesse weiterdenken</h1>
-        <p>Bitte melden Sie sich für den geschützten Testbereich an.</p>
-        <label>
-          Benutzername
-          <input
-            name="username"
-            autoComplete="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </label>
-        <label>
-          Passwort
-          <input
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </label>
-        {error && (
-          <p className="notice error" role="alert">
-            {error}
-          </p>
-        )}
-        <Button type="submit" variant="primary" disabled={busy}>
-          {busy ? "Anmeldung läuft …" : "Anmelden"}
-        </Button>
-        <small>Nur anonymisierte oder freigegebene Testdaten verwenden.</small>
+    <main className="grid min-h-screen place-items-center px-4 py-10">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardContent className="space-y-6 p-7 sm:p-9">
+          <BrandLockup />
+          <span className="grid size-12 place-items-center rounded-lg bg-secondary text-primary">
+            <LockKeyhole className="size-6" />
+          </span>
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight">
+              Geschäftsprozesse weiterdenken
+            </h1>
+            <p className="text-muted-foreground">
+              Bitte melden Sie sich für den geschützten Testbereich an.
+            </p>
+          </div>
+          <form onSubmit={submit} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="username">Benutzername</Label>
+              <Input
+                id="username"
+                name="username"
+                autoComplete="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Passwort</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            {error && (
+              <p
+                className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+                role="alert"
+              >
+                {error}
+              </p>
+            )}
+            <Button type="submit" className="w-full" disabled={busy}>
+              {busy ? "Anmeldung läuft …" : "Anmelden"}
+            </Button>
+          </form>
+          <small className="block text-center text-xs text-muted-foreground">
+            Nur anonymisierte oder freigegebene Testdaten verwenden.
+          </small>
+        </CardContent>
       </Card>
     </main>
   );

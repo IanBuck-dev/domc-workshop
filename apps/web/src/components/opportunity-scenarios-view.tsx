@@ -8,7 +8,7 @@ import type { ProcessUnderstanding } from "../lib/process-types";
 import { Badge, type BadgeTone } from "./ui/badge";
 import { IconButton } from "./ui/button";
 import { Card } from "./ui/card";
-import { Meter } from "./ui/meter";
+import { Progress } from "./ui/progress";
 
 type ProcessStep = ProcessUnderstanding["steps"][number];
 
@@ -160,32 +160,29 @@ function ScenarioColumn({
           {label.rank}
         </span>
         <span className="scenario-level">{label.title}</span>
-        <Meter
-          className="ladder"
-          total={3}
-          filled={label.rank}
-          label={`KI-Autonomie: Stufe ${label.rank} von 3`}
+        <Progress
+          className="w-16"
+          value={(label.rank / 3) * 100}
+          aria-label={`KI-Autonomie: Stufe ${label.rank} von 3`}
         />
       </header>
       <h3 className="scenario-title">{scenario.title}</h3>
       <p className="scenario-pitch">{scenario.summary}</p>
       <div className="scenario-metric">
         <small>Konfidenz</small>
-        <Meter
-          className={`dots confidence-${scenario.confidenceLevel}`}
-          total={3}
-          filled={score.filled}
-          label={`Konfidenz: ${score.label}`}
+        <Progress
+          className="w-24"
+          value={(score.filled / 3) * 100}
+          aria-label={`Konfidenz: ${score.label}`}
         />
         <strong>{score.label}</strong>
       </div>
       <div className="scenario-metric">
         <small>Betroffene Prozessschritte</small>
-        <Meter
-          className="steps"
-          total={totalProcessSteps}
-          filled={affected}
-          label={`${affected} von ${totalProcessSteps} Prozessschritten betroffen`}
+        <Progress
+          className="w-24"
+          value={totalProcessSteps ? (affected / totalProcessSteps) * 100 : 0}
+          aria-label={`${affected} von ${totalProcessSteps} Prozessschritten betroffen`}
         />
         <strong>
           {affected} von {totalProcessSteps}

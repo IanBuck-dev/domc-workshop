@@ -21,7 +21,6 @@ import {
   type InstructionPreview,
 } from "../components/instruction-preview-dialog";
 import { Button } from "../components/ui/button";
-import { Kicker } from "../components/ui/kicker";
 import { Card } from "../components/ui/card";
 
 export function SettingsPage() {
@@ -92,7 +91,9 @@ export function SettingsPage() {
     <section className="settings">
       <div className="page-title">
         <div>
-          <Kicker>Testkonfiguration</Kicker>
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
+            Testkonfiguration
+          </p>
           <h1>Prozessaufnahme einstellen</h1>
           <p>
             Anpassungen werden nur in diesem Browser gespeichert. Jeder neue

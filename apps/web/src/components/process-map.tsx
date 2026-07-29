@@ -2,7 +2,7 @@ import { ArrowLeft, ArrowRight, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { ProcessUnderstanding } from "../lib/process-types";
 import { IconButton } from "./ui/button";
-import { classNames } from "./ui/class-names";
+import { cn } from "../lib/utils";
 
 export interface ProcessMapProps {
   understanding: ProcessUnderstanding;
@@ -40,7 +40,7 @@ export function ProcessMap({
 
   return (
     <section
-      className={classNames("process-map-section", isEditMode && "edit-mode")}
+      className={cn("process-map-section", isEditMode && "edit-mode")}
       aria-labelledby="process-map-title"
     >
       <div className="process-map-heading">
@@ -50,10 +50,7 @@ export function ProcessMap({
       <ol className="process-map">
         {steps.map((step, index) => (
           <li
-            className={classNames(
-              "map-node",
-              selectedStepId === step.id && "selected",
-            )}
+            className={cn("map-node", selectedStepId === step.id && "selected")}
             key={step.id}
             draggable={isEditMode}
             onDragStart={() => setDraggedStepId(step.id)}
@@ -70,7 +67,7 @@ export function ProcessMap({
             <small>Schritt {step.order}</small>
             {isEditMode ? (
               <label
-                className={classNames(
+                className={cn(
                   "map-node-name",
                   !step.name.trim() && "missing-field",
                 )}

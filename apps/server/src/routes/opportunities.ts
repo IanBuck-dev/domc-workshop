@@ -213,11 +213,27 @@ export function opportunityRoutes(
         },
         409,
       );
-    if (hasActiveProcessOperation(processId))
-      return c.json(
-        { error: "Für diesen Prozess läuft bereits eine KI-Aktion." },
-        409,
-      );
+    if (hasActiveProcessOperation(processId)) {
+      // Die fachliche Fehlertransition wird im Operation-Callback persistiert,
+      // unmittelbar bevor der Manager seinen Eintrag als fehlgeschlagen markiert.
+      // Ein Retry darf in diesem schmalen Übergang nicht fälschlich blockieren.
+      if (!record.state.endsWith("_failed"))
+        return c.json(
+          { error: "Für diesen Prozess läuft bereits eine KI-Aktion." },
+          409,
+        );
+      for (
+        let attempt = 0;
+        attempt < 20 && hasActiveProcessOperation(processId);
+        attempt += 1
+      )
+        await Bun.sleep(5);
+      if (hasActiveProcessOperation(processId))
+        return c.json(
+          { error: "Für diesen Prozess läuft bereits eine KI-Aktion." },
+          409,
+        );
+    }
     try {
       dismissFailedProcessOperations(processId);
       await opportunities.prepareTechnicalRetry(processId);

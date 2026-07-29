@@ -1,39 +1,105 @@
-import type { ElementType, ReactNode } from "react";
-import { classNames } from "./class-names";
+import * as React from "react";
 
-/**
- * Weiße Fläche mit Rahmen und Schatten. Die Höhe sagt, wie weit die Fläche
- * über dem Seitenhintergrund liegt: flat für ruhige Listen, raised für den
- * Regelfall, floating für Elemente, die über dem Inhalt liegen.
- */
-export function Card({
-  as: Tag = "div",
-  elevation = "raised",
-  interactive = false,
+import { cn } from "@/lib/utils";
+
+function Card({
   className,
-  children,
+  as: Comp = "div",
+  elevation: _elevation,
+  interactive: _interactive,
   ...props
-}: {
-  as?: ElementType;
-  elevation?: "flat" | "raised" | "floating";
-  /** Setzen, wenn die ganze Karte anklickbar ist: Rand und Schatten reagieren. */
+}: React.ComponentProps<"div"> & {
+  as?: React.ElementType;
+  elevation?: string;
   interactive?: boolean;
-  className?: string;
-  children: ReactNode;
-  [key: string]: unknown;
+  open?: boolean;
 }) {
+  void _elevation;
+  void _interactive;
   return (
-    <Tag
-      {...props}
-      className={classNames(
-        "panel",
-        elevation === "flat" && "panel-flat",
-        elevation === "floating" && "panel-floating",
-        interactive && "panel-interactive",
+    <Comp
+      data-slot="card"
+      className={cn(
+        "flex flex-col gap-6 rounded-xl border bg-card py-6 text-card-foreground shadow-sm",
         className,
       )}
-    >
-      {children}
-    </Tag>
+      {...props}
+    />
   );
 }
+
+function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-header"
+      className={cn(
+        "@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-title"
+      className={cn("leading-none font-semibold", className)}
+      {...props}
+    />
+  );
+}
+
+function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-description"
+      className={cn("text-sm text-muted-foreground", className)}
+      {...props}
+    />
+  );
+}
+
+function CardAction({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-action"
+      className={cn(
+        "col-start-2 row-span-2 row-start-1 self-start justify-self-end",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+function CardContent({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-content"
+      className={cn("px-6", className)}
+      {...props}
+    />
+  );
+}
+
+function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-footer"
+      className={cn("flex items-center px-6 [.border-t]:pt-6", className)}
+      {...props}
+    />
+  );
+}
+
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardAction,
+  CardDescription,
+  CardContent,
+};
