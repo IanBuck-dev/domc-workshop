@@ -12,6 +12,7 @@ import type {
   OpportunityDiscoveryPublicRecord,
   OpportunityDiscoverySummary,
 } from "./opportunity-types";
+import type { PublicSiteInformation } from "./public-site-information";
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
@@ -42,6 +43,8 @@ async function uploadBlob(processId: string, uploadId: string) {
 }
 
 export const api = {
+  publicSiteInformation: () =>
+    req<PublicSiteInformation>("/public/site-information"),
   session: () =>
     req<{ authenticated: boolean; username?: string }>("/auth/session"),
   login: (username: string, password: string) =>

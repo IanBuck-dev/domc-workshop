@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
 import { DemoDataWarning } from "./demo-data-warning";
 import { AiOperationQueue } from "./ai-operation-queue";
+import { PublicFooter } from "./public-footer";
 const nav = [
   ["/", "Prozesse", ListTree],
   ["/processes/new", "Prozess erfassen", PlusCircle],
@@ -63,10 +64,7 @@ export function AppShell({
       <AiOperationQueue />
       <div>
         <main>{children}</main>
-        <footer className="mx-auto max-w-7xl px-4 py-8 text-center text-xs text-muted-foreground sm:px-6 lg:px-8">
-          Workshop-Prototyp · Prozessverständnis durch den Fachbereich
-          bestätigen
-        </footer>
+        <PublicFooter />
       </div>
     </div>
   );

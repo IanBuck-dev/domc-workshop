@@ -65,6 +65,24 @@ Das Installationsskript kopiert den Release nach
 und baut Anwendung sowie ARM64-Release. Der persistente Workspace unter
 `/var/lib/claims-ai/workspace` bleibt unangetastet.
 
+## 4a. Öffentliche Betreiberangaben vor dem ersten Release hinterlegen
+
+Die Datei mit Impressums- und Datenschutzangaben liegt bewusst außerhalb des
+Repositorys. Sie wird nicht per `rsync` übertragen. Vor dem ersten Release
+wird die lokal geprüfte Datei mit restriktiven Rechten auf den Pi kopiert:
+
+```zsh
+scp .local/public-site-information.json \
+  ian_claw@pi-ianclaw.local:/tmp/public-site-information.json
+ssh ian_claw@pi-ianclaw.local \
+  'sudo install -o claims-ai -g claims-ai -m 0600 /tmp/public-site-information.json /var/lib/claims-ai/public-site-information.json && rm /tmp/public-site-information.json'
+```
+
+Danach öffnen Sie ohne Anmeldung `https://claims-ai.ian-buck.dev/impressum`,
+`/datenschutz` und `/nutzungshinweise` und lassen die Texte vor einer
+allgemeinen Veröffentlichung rechtlich prüfen. Das Installationsskript legt
+bei fehlender Datei nur eine nicht veröffentlichungsreife Vorlage an.
+
 ## 5. Release und Workspace prüfen
 
 ```zsh

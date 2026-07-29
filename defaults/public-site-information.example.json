@@ -1,0 +1,16 @@
+{
+  "operatorName": "Vollständiger Name",
+  "serviceAddress": ["Straße Hausnummer", "Postleitzahl Ort", "Deutschland"],
+  "contactEmail": "kontakt@example.de",
+  "vatId": null,
+  "register": null,
+  "supervisoryAuthority": null,
+  "dataProtectionAuthority": {
+    "name": "Zuständige Datenschutzaufsicht",
+    "address": ["Straße Hausnummer", "Postleitzahl Ort", "Deutschland"],
+    "email": "kontakt@example.de",
+    "website": "https://example.de"
+  },
+  "dataRetention": "Tatsächliche Aufbewahrungs- und Löschregel ergänzen.",
+  "lastUpdated": "2026-07-30"
+}

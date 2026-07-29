@@ -58,6 +58,14 @@ if [[ ! -f "${ENV_FILE}" ]]; then
   chmod 0640 "${ENV_FILE}"
 fi
 
+if [[ ! -f "${STATE_DIR}/public-site-information.json" ]]; then
+  install -o claims-ai -g claims-ai -m 0600 \
+    "${INSTALL_DIR}/defaults/public-site-information.example.json" \
+    "${STATE_DIR}/public-site-information.json"
+  print -u2 "Öffentliche Betreiberangaben wurden als Vorlage angelegt: ${STATE_DIR}/public-site-information.json"
+  print -u2 "Vor dem öffentlichen Betrieb bitte alle Platzhalter durch geprüfte Angaben ersetzen."
+fi
+
 install -o root -g root -m 0644 "${INSTALL_DIR}/deploy/pi/claims-ai-portfolio.service" /etc/systemd/system/claims-ai-portfolio.service
 systemctl daemon-reload
 systemctl enable claims-ai-portfolio.service

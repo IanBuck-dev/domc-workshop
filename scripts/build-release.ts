@@ -8,6 +8,11 @@ const vite = Bun.spawn(
 );
 if (await vite.exited) process.exit(1);
 if (mode === "release") {
+  const publicInformation = Bun.spawn(
+    ["bun", "run", "scripts/check-public-site-information.ts"],
+    { stdout: "inherit", stderr: "inherit" },
+  );
+  if (await publicInformation.exited) process.exit(1);
   await mkdir("dist/defaults", { recursive: true });
   await cp("defaults", "dist/defaults", { recursive: true });
   for (const [target, out] of [

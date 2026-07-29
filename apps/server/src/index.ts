@@ -15,6 +15,7 @@ import { authRoutes } from "./routes/auth.ts";
 import { configRoutes } from "./routes/config.ts";
 import { aiOperationRoutes } from "./routes/ai-operations.ts";
 import { eventRoutes } from "./routes/events.ts";
+import { loadPublicSiteInformation } from "./public-site-information.ts";
 import { opportunityRoutes } from "./routes/opportunities.ts";
 import { requireSession } from "./session.ts";
 import {
@@ -62,6 +63,9 @@ app.onError((error, c) => {
 });
 const instanceId = `${process.pid}-${Date.now()}`;
 app.get("/api/health", (c) => c.json({ ok: true, instanceId }));
+app.get("/api/public/site-information", async (c) =>
+  c.json(await loadPublicSiteInformation()),
+);
 app.route("/api/auth", authRoutes());
 app.use("/api/*", requireSession);
 app.route("/api/config", configRoutes());

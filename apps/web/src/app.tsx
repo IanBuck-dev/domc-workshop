@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AppShell } from "./components/app-shell";
 import { api } from "./lib/api-client";
 import { LoginPage } from "./pages/login-page";
@@ -10,8 +10,28 @@ import { ProcessCapturePage } from "./pages/process-capture-page";
 import { SettingsPage } from "./pages/settings-page";
 import { OpportunityDiscoveryPage } from "./pages/opportunity-discovery-page";
 import { ProcessEventsProvider } from "./lib/process-events";
+import { ImprintPage } from "./pages/imprint-page";
+import { PrivacyPage } from "./pages/privacy-page";
+import { UsageNoticePage } from "./pages/usage-notice-page";
+
+const publicPaths = new Set([
+  "/impressum",
+  "/datenschutz",
+  "/nutzungshinweise",
+]);
+
+function PublicRoutes() {
+  return (
+    <Routes>
+      <Route path="/impressum" element={<ImprintPage />} />
+      <Route path="/datenschutz" element={<PrivacyPage />} />
+      <Route path="/nutzungshinweise" element={<UsageNoticePage />} />
+    </Routes>
+  );
+}
 
 export function App() {
+  const location = useLocation();
   const [auth, setAuth] = useState<"loading" | "yes" | "no">("loading");
   useEffect(() => {
     api
@@ -19,6 +39,7 @@ export function App() {
       .then((session) => setAuth(session.authenticated ? "yes" : "no"))
       .catch(() => setAuth("no"));
   }, []);
+  if (publicPaths.has(location.pathname)) return <PublicRoutes />;
   if (auth === "loading")
     return <main className="app-loading">Anwendung wird geladen …</main>;
   if (auth === "no") return <LoginPage onLogin={() => setAuth("yes")} />;
