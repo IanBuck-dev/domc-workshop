@@ -21,6 +21,7 @@ import {
   legacyUnderstanding,
   processConfig,
   understanding,
+  validationInputSnapshot,
   workCharacteristicAnswers,
 } from "./process-fixtures.ts";
 
@@ -90,16 +91,18 @@ describe("process capture repository", () => {
         rationale: "Ergebnis fehlt.",
       },
     ];
-    record = await repo.saveFollowUps(record.id, questions, trace());
+    record = await repo.saveValidationRun(
+      record.id,
+      validationInputSnapshot(
+        record.mainAnswers,
+        record.workCharacteristicAnswers,
+      ),
+      [],
+      questions,
+      trace(),
+    );
     expect(record.state).toBe("follow_up_required");
-    record = await repo.saveFollowUpAnswers(record.id, [
-      {
-        questionId: "follow-purpose",
-        topicId: "purpose-scope",
-        text: "Eine Nachricht wurde versendet.",
-        answeredAt: new Date().toISOString(),
-      },
-    ]);
+    record = await repo.acceptOpenQuestionsForSynthesis(record.id);
     expect(record.state).toBe("synthesis_ready");
     const invalidEvidence = understanding();
     invalidEvidence.evidence[0]!.kind = "upload";
@@ -153,6 +156,91 @@ describe("process capture repository", () => {
       expect.arrayContaining([
         "understanding-confirmed",
         "work-characteristics-corrected",
+      ]),
+    );
+  });
+
+  test("materializes legacy follow-ups and appends revalidation history", async () => {
+    const { repo, config } = await fixture();
+    let record = await repo.create(cover, config);
+    const inputA = answers();
+    record = await repo.saveMainAnswers(
+      record.id,
+      inputA,
+      workCharacteristicAnswers(),
+      [],
+    );
+    const question = {
+      id: "legacy-question",
+      topicId: "purpose-scope" as const,
+      question: "Welches Ergebnis entsteht?",
+      rationale: "Das Ergebnis ist noch offen.",
+    };
+    record = await repo.saveValidationRun(
+      record.id,
+      validationInputSnapshot(
+        record.mainAnswers,
+        record.workCharacteristicAnswers,
+      ),
+      [],
+      [question],
+      trace(),
+    );
+    const followUpsPath = join(repo.dir(record.id), "follow-ups.json");
+    await writeFile(
+      followUpsPath,
+      `${JSON.stringify({ questions: [question], answers: [] }, null, 2)}\n`,
+    );
+
+    const legacy = await repo.required(record.id);
+    expect(legacy.validationRuns).toEqual([]);
+    const inputB = answers();
+    inputB[0] = {
+      ...inputB[0]!,
+      text: "Eine fachlich geprüfte Ansprache ist das normale Ergebnis.",
+    };
+    record = await repo.saveMainAnswers(
+      record.id,
+      inputB,
+      workCharacteristicAnswers(),
+      [],
+    );
+    expect(record.validationRuns).toHaveLength(1);
+    expect(record.validationRuns[0]?.trace).toBeNull();
+    expect(record.validationRuns[0]?.inputSnapshot.mainAnswers[0]?.text).toBe(
+      inputA[0]?.text,
+    );
+
+    record = await repo.saveValidationRun(
+      record.id,
+      validationInputSnapshot(
+        record.mainAnswers,
+        record.workCharacteristicAnswers,
+      ),
+      [
+        {
+          questionId: question.id,
+          topicId: question.topicId,
+          outcome: "addressed",
+          rationale: "Das Ergebnis ist jetzt konkret benannt.",
+        },
+      ],
+      [],
+      trace(),
+    );
+    expect(record.state).toBe("synthesis_ready");
+    expect(record.validationRuns.map((run) => run.runNumber)).toEqual([1, 2]);
+    expect(record.validationRuns[1]?.inputSnapshot.mainAnswers[0]?.text).toBe(
+      inputB[0]?.text,
+    );
+    expect(record.validationRuns[1]?.previousQuestionReviews[0]).toMatchObject({
+      questionId: "legacy-question",
+      outcome: "addressed",
+    });
+    expect((await repo.history(record.id)).map((entry) => entry.event)).toEqual(
+      expect.arrayContaining([
+        "validation-input-updated",
+        "validation-run-completed",
       ]),
     );
   });
@@ -230,7 +318,16 @@ describe("process capture repository", () => {
       workCharacteristicAnswers(),
       [],
     );
-    record = await repo.saveFollowUps(record.id, [], trace());
+    record = await repo.saveValidationRun(
+      record.id,
+      validationInputSnapshot(
+        record.mainAnswers,
+        record.workCharacteristicAnswers,
+      ),
+      [],
+      [],
+      trace(),
+    );
     record = await repo.saveUnderstanding(record.id, understanding(), trace());
     record = await repo.confirm(record.id);
 
@@ -285,7 +382,16 @@ describe("process capture repository", () => {
       workCharacteristicAnswers(),
       [],
     );
-    record = await repo.saveFollowUps(record.id, [], trace());
+    record = await repo.saveValidationRun(
+      record.id,
+      validationInputSnapshot(
+        record.mainAnswers,
+        record.workCharacteristicAnswers,
+      ),
+      [],
+      [],
+      trace(),
+    );
     record = await repo.saveUnderstanding(record.id, understanding(), trace());
 
     const path = join(repo.dir(record.id), "process-understanding.json");
@@ -341,7 +447,16 @@ describe("process capture repository", () => {
       workCharacteristicAnswers(),
       [],
     );
-    record = await repo.saveFollowUps(record.id, [], trace());
+    record = await repo.saveValidationRun(
+      record.id,
+      validationInputSnapshot(
+        record.mainAnswers,
+        record.workCharacteristicAnswers,
+      ),
+      [],
+      [],
+      trace(),
+    );
     record = await repo.saveUnderstanding(record.id, understanding(), trace());
     const before = await readFile(
       join(repo.dir(record.id), "process-understanding.json"),
@@ -374,7 +489,16 @@ describe("process capture repository", () => {
       workCharacteristicAnswers(),
       [],
     );
-    record = await repo.saveFollowUps(record.id, [], trace());
+    record = await repo.saveValidationRun(
+      record.id,
+      validationInputSnapshot(
+        record.mainAnswers,
+        record.workCharacteristicAnswers,
+      ),
+      [],
+      [],
+      trace(),
+    );
     record = await repo.saveUnderstanding(record.id, understanding(6), trace());
 
     let corrected = removeProcessStep(record.understanding!, "step-6");

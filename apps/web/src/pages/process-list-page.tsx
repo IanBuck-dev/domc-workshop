@@ -12,8 +12,8 @@ import { Card } from "../components/ui/card";
 
 const nextAction: Record<ProcessCaptureRecord["state"], string> = {
   capture_in_progress: "Fünf Themen beantworten",
-  follow_up_required: "Gezielte Rückfragen beantworten",
-  synthesis_ready: "Prozessbild erstellen",
+  follow_up_required: "Angaben ergänzen",
+  synthesis_ready: "Mit dem Prozessbild fortfahren",
   review_required: "Prozessbild fachlich prüfen",
   confirmed: "Prozessbild abgeschlossen",
 };

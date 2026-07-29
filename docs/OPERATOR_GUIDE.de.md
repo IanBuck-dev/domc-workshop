@@ -16,7 +16,14 @@
    Arbeitsmerkmale aus. Diese sind keine KI-Bewertung. Technische
    Schnittstellenkenntnisse sind nicht erforderlich.
 3. Wählen Sie bei Bedarf bis zu fünf relevante Unterlagen aus. Nur ausgewählte Dateien werden für die ausdrücklich gestartete KI-Aktion verwendet.
-4. Beantworten Sie die von der KI erzeugten Rückfragen. Pro Themenblock ist höchstens eine Rückfrage zulässig; es gibt keine zweite Rückfragerunde.
+4. Starten Sie `Angaben prüfen lassen`. Rückfragen erscheinen rechts neben dem
+   zugehörigen Eingabeblock; auf Tablets stehen sie darunter. Ergänzen Sie die
+   ursprüngliche Angabe links und wählen Sie bei Bedarf ausdrücklich `Erneut
+prüfen`. Jede Prüfung verwendet eine neue Claude-Session und startet keine
+   selbstständige Prüfschleife. Nach der ersten Prüfung können Sie jederzeit mit
+   `Mit Prozessbild fortfahren` weitergehen. Bei offenen Fragen heißt die Aktion
+   `Trotz offener Rückfragen fortfahren`; diese Entscheidung wird protokolliert
+   und die offenen Punkte bleiben im Prozessbild als Wissenslücken sichtbar.
 5. Prüfen Sie zuerst das Diagramm. Öffnen Sie danach unter `Schritte` die
    einzelnen Schritte und kontrollieren Sie Input, Output, Informationen mit
    Quelle und Art, Varianten und Entscheidungen sowie Sonstiges.
@@ -99,3 +106,18 @@ Wiederherstellung; während einer laufenden KI-Aktion ist das Löschen gesperrt.
 ## Beenden
 
 Abmelden beendet die Anwendungssitzung, löscht aber keine Prozesserfassung. Bei einem KI-Fehler bleiben kanonische Dateien unverändert; die ausdrücklich gestartete Aktion kann erneut ausgeführt werden. Dienststatus und Protokoll prüfen Sie auf dem Pi mit `systemctl status claims-ai-portfolio` und `journalctl -u claims-ai-portfolio`.
+
+# Lokaler Präsentationsmodus ohne KI-Sandbox
+
+Für eine lokale Vorführung mit ausschließlich fiktiven Demo-Daten kann die
+Anwendung ausdrücklich ohne KI-Sandbox gestartet werden:
+
+```bash
+bun run dev:local-no-sandbox
+```
+
+Dieser Opt-in gilt nur für den lokalen Bun-Entwicklungsbetrieb. Release- und
+Produktionsstarts weisen den Modus zurück. Claude erhält dabei weiterhin nur
+den je Aktion zusammengestellten Prozesskontext, verwendet für jede Aktion
+eine frische, nicht fortsetzbare Session und startet keine autonomen Schleifen.
+Der normale Start `bun run dev` verwendet weiterhin die Sandbox.

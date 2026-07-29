@@ -56,6 +56,13 @@ async function fixture(followUp = false, aiOverride?: ProcessAiAdapter) {
       });
       return {
         value: {
+          previousQuestionReviews:
+            request.validationHistory.at(-1)?.questions.map((question) => ({
+              questionId: question.id,
+              topicId: question.topicId,
+              outcome: "not_addressed" as const,
+              rationale: "Die Angabe schließt die Lücke noch nicht.",
+            })) ?? [],
           followUps: followUp
             ? [
                 {
@@ -127,6 +134,18 @@ async function waitForNoActiveOperation(processId: string) {
     await Bun.sleep(5);
   }
   throw new Error("Process operation did not finish.");
+}
+async function waitForValidationRuns(
+  repo: ProcessCaptureRepository,
+  id: string,
+  count: number,
+) {
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const record = await repo.required(id);
+    if (record.validationRuns.length === count) return record;
+    await Bun.sleep(5);
+  }
+  throw new Error(`Validation run count ${count} was not reached.`);
 }
 
 describe("process capture API", () => {
@@ -256,7 +275,7 @@ describe("process capture API", () => {
     ).toBe(400);
   });
 
-  test("permits exactly one returned followup round", async () => {
+  test("revalidates edited canonical input and explicitly accepts open questions", async () => {
     const { app, repo, config } = await fixture(true);
     const created = await (
       await app.request("/api/processes", {
@@ -278,32 +297,68 @@ describe("process capture API", () => {
     });
     const pending = await waitForState(repo, created.id, "follow_up_required");
     expect(pending.followUps).toHaveLength(1);
+    expect(pending.validationRuns).toHaveLength(1);
+    await waitForNoActiveOperation(created.id);
+    expect(
+      (
+        await app.request(`/api/processes/${created.id}/follow-ups`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ answers: [] }),
+        })
+      ).status,
+    ).toBe(404);
+    const editedAnswers = answers();
+    editedAnswers[0] = {
+      ...editedAnswers[0]!,
+      text: "Das normale Ergebnis ist eine fachlich geprüfte Ansprache.",
+    };
+    expect(
+      (
+        await app.request(`/api/processes/${created.id}/answers`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            answers: editedAnswers,
+            workCharacteristicAnswers: workCharacteristicAnswers(),
+          }),
+        })
+      ).status,
+    ).toBe(200);
     expect(
       (
         await app.request(`/api/processes/${created.id}/analyze`, {
           method: "POST",
         })
       ).status,
-    ).toBe(409);
+    ).toBe(202);
+    const revalidated = await waitForValidationRuns(repo, created.id, 2);
+    expect(
+      revalidated.validationRuns[0]?.inputSnapshot.mainAnswers[0]?.text,
+    ).not.toBe(
+      revalidated.validationRuns[1]?.inputSnapshot.mainAnswers[0]?.text,
+    );
+    expect(revalidated.validationRuns[1]?.previousQuestionReviews).toEqual([
+      expect.objectContaining({
+        questionId: "question-1",
+        outcome: "not_addressed",
+      }),
+    ]);
+    await waitForNoActiveOperation(created.id);
     const response = await app.request(
-      `/api/processes/${created.id}/follow-ups`,
+      `/api/processes/${created.id}/synthesize`,
       {
-        method: "PUT",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          answers: [
-            {
-              questionId: "question-1",
-              topicId: "purpose-scope",
-              text: "Eine geprüfte Ansprache wurde versendet.",
-              answeredAt: new Date().toISOString(),
-            },
-          ],
-        }),
+        method: "POST",
       },
     );
-    expect(response.status).toBe(200);
-    expect((await response.json()).state).toBe("synthesis_ready");
+    expect(response.status).toBe(202);
+    const review = await waitForState(repo, created.id, "review_required");
+    expect(review.understanding?.knowledgeGaps).toContain(
+      "Welches Ergebnis entsteht?",
+    );
+    expect(
+      (await repo.history(created.id)).map((entry) => entry.event),
+    ).toContain("open-validation-questions-accepted");
   });
 
   test("enforces upload statuses and permanent deletion", async () => {
@@ -465,7 +520,10 @@ describe("process capture API", () => {
       followUps: async () => {
         followUpCalls++;
         if (followUpCalls === 1) throw new Error("malformed model output");
-        return { value: { followUps: [] }, trace: trace() };
+        return {
+          value: { previousQuestionReviews: [], followUps: [] },
+          trace: trace(),
+        };
       },
       synthesize: async () => {
         synthesisCalls++;

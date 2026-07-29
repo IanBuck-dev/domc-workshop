@@ -1,5 +1,4 @@
 import type {
-  FollowUpAnswer,
   ProcessCaptureConfig,
   ProcessCaptureRecord,
   ProcessUnderstanding,
@@ -103,11 +102,6 @@ export const api = {
   analyze: (id: string) =>
     req<{ operationId: string; state: "queued" }>(`/processes/${id}/analyze`, {
       method: "POST",
-    }),
-  saveFollowUps: (id: string, answers: FollowUpAnswer[]) =>
-    req<ProcessCaptureRecord>(`/processes/${id}/follow-ups`, {
-      method: "PUT",
-      body: JSON.stringify({ answers }),
     }),
   synthesize: (id: string) =>
     req<{ operationId: string; state: "queued" }>(

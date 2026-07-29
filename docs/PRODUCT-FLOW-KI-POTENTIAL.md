@@ -27,8 +27,9 @@ and the reference commit `58ff74f` preserve the removed implementation.
 The completed process-capture module has one active product journey:
 
 1. `/processes/new` — setup only;
-2. `/processes/:id/capture` — five topic answers, at most one follow-up per
-   topic, bounded synthesis, review, correction, and final confirmation.
+2. `/processes/:id/capture` — five editable topic answers with explicit,
+   iterative validation, bounded synthesis, review, correction, and final
+   confirmation.
 
 The canonical result is a `ProcessUnderstandingRecord` containing five to eight
 high-level business steps, evidence and provenance, document coverage, conflicts,
@@ -80,9 +81,15 @@ The initial UI shows one open question and help text for every topic. The user
 submits all five answers together and may select up to five uploaded files for
 analysis.
 
-One explicit `analyze` action returns zero to five follow-up cards. A response
-may contain no more than one follow-up for each configured topic ID. The user
-answers all returned cards together. There is no second analysis round.
+Each explicit `analyze` action starts one fresh Claude session and returns zero
+to five read-only validation questions beside the corresponding editable topic.
+A run contains no more than one question per configured topic ID. Claude
+receives the current input, only the immediately preceding checked input and
+its questions, plus earlier question identifiers and texts to avoid repetition.
+The user may edit the original fields and explicitly revalidate; no autonomous
+validation loop runs. After the first run, the user may instead continue. If
+questions remain, `Trotz offener Rückfragen fortfahren` records that decision
+and preserves the unresolved questions as knowledge gaps during synthesis.
 
 One explicit `synthesize` action generates the canonical process record. It
 does not generate prose and structured data in separate model calls: one
@@ -140,7 +147,8 @@ prototype performs no document conversion and uses no external viewer.
 - exactly four required structured work-characteristic answers for active
   version-2 captures;
 - at most one follow-up per topic;
-- no second follow-up round;
+- any number of user-triggered validation rounds, each bounded to one fresh
+  Claude session and at most one question per topic;
 - five to eight high-level process steps;
 - one normal main path;
 - no rare-edge-case or exhaustive variant modeling;
@@ -349,6 +357,7 @@ interface ProcessCaptureRecord {
   workCharacteristicAnswers: WorkCharacteristicAnswer[];
   followUps: FollowUpQuestion[];
   followUpAnswers: FollowUpAnswer[];
+  validationRuns: ValidationRun[];
   selectedUploadIds: string[];
   understanding: ProcessUnderstanding | null;
   uploads: UploadRecord[];
@@ -365,10 +374,15 @@ interface ProcessCaptureRecord {
 - Active version-2 captures contain exactly one valid answer for each of the
   four work characteristics before analysis. `none` and `unsure` are exclusive
   selections; no option is preselected.
-- Follow-ups contain at most one item per topic and at most five items total.
-- Follow-up answers exactly match the generated follow-up IDs and topic IDs.
-- `synthesize` is permitted only after analysis and after all generated
-  follow-ups are answered.
+- Each validation run snapshots the five answers, four work characteristics,
+  and selected upload IDs and contains at most one question per topic.
+- Validation run numbers are contiguous. Every question from the immediately
+  preceding run is reviewed exactly once as `addressed` or `not_addressed`.
+- `capture_in_progress` has no completed validation. `follow_up_required` has
+  current questions. `synthesis_ready` has no questions or records the user's
+  explicit decision to continue with open questions.
+- Legacy follow-up answers remain readable history. Current edited topic
+  answers are always canonical.
 - A synthesized understanding contains five to eight uniquely identified steps
   ordered contiguously from `1`.
 - Every evidence ID referenced by a fact exists in `understanding.evidence`.
@@ -426,10 +440,13 @@ that KI-potential identification happens only later. Markdown is rendered
 without raw HTML. The dialog does not expose response schemas, process data,
 model settings, or editing controls.
 
-The follow-up result schema returns only:
+The validation result schema returns:
 
 ```ts
-{ followUps: FollowUpQuestion[] }
+{
+  previousQuestionReviews: PreviousQuestionReview[];
+  followUps: FollowUpQuestion[];
+}
 ```
 
 The synthesis result schema returns one complete `ProcessUnderstanding`.
@@ -470,7 +487,7 @@ Expected initial values:
 - `answers.json`: `{ "mainAnswers": [], "selectedUploadIds": [] }`; the five
   visible empty answer slots are derived from the immutable topic snapshot and
   become evidence records only when the user submits them;
-- `follow-ups.json`: `{ "questions": [], "answers": [] }`;
+- `follow-ups.json`: `{ "questions": [], "answers": [], "validationRuns": [] }`;
 - `process-understanding.json`: `null`;
 - `history.jsonl`: first event `process-created` with profile and config hash.
 
@@ -483,8 +500,8 @@ Repository operations:
 - `saveUpload`
 - `readUpload`
 - `selectUploads`
-- `saveFollowUps`
-- `saveFollowUpAnswers`
+- `saveValidationRun`
+- `acceptOpenQuestionsForSynthesis`
 - `saveUnderstanding`
 - `correctUnderstandingSection`
 - `confirmUnderstanding`
@@ -515,9 +532,13 @@ infrastructure. Replace all assessment/discovery adapters with:
 - `packages/claude/src/process-response-schemas.ts`
 - `packages/claude/src/sandbox-runner.ts`
 
-Both adapters use the same immutable config snapshot, only the current process
-answers, and only selected uploads. They use new Claude sessions with
-`--no-session-persistence`; no prior conversation is resumed.
+Both adapters use the same immutable config snapshot, current process answers,
+and only selected uploads. Validation additionally receives only the immediately
+preceding checked snapshot and the minimum earlier question metadata needed to
+avoid repetition. Synthesis receives validation history as advisory context;
+only current answers and selected files may become factual evidence. Every call
+uses a fresh Claude session with `--no-session-persistence`; no prior
+conversation is resumed.
 
 Follow-up generation uses no tools when no files are selected and workspace-only
 tools when files are selected. Synthesis follows the same rule. Web, task,
@@ -559,7 +580,6 @@ Mount only authentication, config, process, health, and operation APIs.
 | `GET`    | `/api/processes/:id/uploads/:uploadId?download=1` | validated attachment                    |
 | `DELETE` | `/api/processes/:id/uploads/:uploadId`            | `200 { removed: true }` before analysis |
 | `POST`   | `/api/processes/:id/analyze`                      | `202 { operationId, state }`            |
-| `PUT`    | `/api/processes/:id/follow-ups`                   | `200 ProcessCaptureRecord`              |
 | `POST`   | `/api/processes/:id/synthesize`                   | `202 { operationId, state }`            |
 | `PATCH`  | `/api/processes/:id/understanding/:sectionId`     | `200 ProcessCaptureRecord`              |
 | `POST`   | `/api/processes/:id/confirm`                      | `200 ProcessCaptureRecord`              |
@@ -618,7 +638,10 @@ and removes the row.
   related free-text fields; user-facing copy avoids technical KI terminology;
 - optional upload picker showing selected/processed status;
 - one submit action for main answers;
-- zero to five follow-up cards grouped by topic;
+- desktop `2fr 1fr` rows with every editable topic beside its read-only
+  validation feedback; at tablet widths the feedback stacks below the input;
+- explicit `Erneut prüfen` and `Mit Prozessbild fortfahren` actions after the
+  first successful run;
 - queue/running status that survives navigation and event-stream reconnection;
 - explicit retry after failure;
 - compact process-brief result header;
@@ -725,7 +748,7 @@ assessment, ranking, comparison, matrix, PDD, idea, and handover selectors.
 - `apps/web/src/pages/process-start-page.tsx`
 - `apps/web/src/pages/process-capture-page.tsx`
 - `apps/web/src/components/process-topic-card.tsx`
-- `apps/web/src/components/process-follow-up-card.tsx`
+- `apps/web/src/components/process-validation-comment.tsx`
 - `apps/web/src/components/process-brief.tsx`
 - `apps/web/src/components/process-map.tsx`
 - `apps/web/src/components/process-step-card.tsx`
@@ -1002,7 +1025,8 @@ Implementation is complete only when:
 1. the two-page flow produces and confirms a canonical process understanding;
 2. every generated result has five to eight evidence-backed high-level steps;
 3. users can validate the same steps in a brief, map, and accessible list;
-4. follow-ups are bounded to one per topic and one round;
+4. every validation run is user-triggered, fresh-session, and bounded to one
+   question per topic, while all prior runs remain append-only history;
 5. document coverage and limitations are explicit;
 6. old assessment, ranking, PDD, idea, and discovery implementations are absent
    from active code and dependencies;

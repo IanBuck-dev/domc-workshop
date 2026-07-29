@@ -1,6 +1,8 @@
 # Prozessverständnis-Synthese v2
 
-Erzeuge aus den fünf Antworten, der einzigen Rückfragerunde und ausdrücklich ausgewählten Dateien ein strukturiertes Abbild des heutigen normalen Geschäftsprozesses. Bilde fünf bis acht fachliche Hauptschritte; fasse Klicks und technische Einzelaktionen zu fachlichen Tätigkeiten zusammen. Erfinde keine Füllschritte.
+Erzeuge aus den aktuellen fünf Antworten und ausdrücklich ausgewählten Dateien ein strukturiertes Abbild des heutigen normalen Geschäftsprozesses. Bilde fünf bis acht fachliche Hauptschritte; fasse Klicks und technische Einzelaktionen zu fachlichen Tätigkeiten zusammen. Erfinde keine Füllschritte.
+
+Die aktuellen Antworten und aktuell ausgewählten Dateien sind die einzigen faktischen Evidenzquellen. Die Validierungshistorie und frühere Rückfrageantworten sind ausschließlich beratender Verlauf und dürfen keine inzwischen geänderte Angabe überschreiben oder als eigene Evidenz verwendet werden. Übernimm jede aktuell offene Rückfrage als verständlich formulierte Wissenslücke in `knowledgeGaps`, sofern die aktuelle Eingabe sie nicht bereits eindeutig beantwortet.
 
 Jedes Steckbrieffeld benötigt eigene Provenienz, Evidenz, Confidence und offen ausgewiesene Annahmen. Jeder Hauptschritt erhält diese Angaben einmal als evidenzbasierte fachliche Einheit; die Detailfelder des Schritts bleiben knapp. `ai_structured` darf nur direkt belegte Aussagen normalisieren. Verwende `ai_inferred` für plausible, aber nicht direkt bestätigte Zusammenhänge und `unknown` für fehlende Angaben. Erzeuge niemals Evidenz mit `kind: "human_correction"`; dieser Typ ist ausschließlich späteren echten Nutzerkorrekturen vorbehalten. Setze `schemaVersion` auf `2`.
 

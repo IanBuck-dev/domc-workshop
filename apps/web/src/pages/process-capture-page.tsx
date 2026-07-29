@@ -1,14 +1,13 @@
 import {
   AlertTriangle,
   ArrowLeft,
-  Check,
   LoaderCircle,
   RefreshCw,
 } from "lucide-react";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ProcessBrief } from "../components/process-brief";
-import { ProcessFollowUpCard } from "../components/process-follow-up-card";
+import { ProcessValidationComment } from "../components/process-validation-comment";
 import {
   ProcessTopicCard,
   makeTopicAnswers,
@@ -40,9 +39,6 @@ export function ProcessCapturePage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [workCharacteristicSelections, setWorkCharacteristicSelections] =
     useState<Record<string, string[]>>({});
-  const [followUpAnswers, setFollowUpAnswers] = useState<
-    Record<string, string>
-  >({});
   const [selectedUploadIds, setSelectedUploadIds] = useState<string[]>([]);
   const [invalidCharacteristicIds, setInvalidCharacteristicIds] = useState<
     Set<string>
@@ -86,14 +82,6 @@ export function ProcessCapturePage() {
         ]),
       ),
     );
-    setFollowUpAnswers(
-      Object.fromEntries(
-        record.followUpAnswers.map((answer) => [
-          answer.questionId,
-          answer.text,
-        ]),
-      ),
-    );
     setSelectedUploadIds(record.selectedUploadIds);
   }, [record]);
 
@@ -105,9 +93,12 @@ export function ProcessCapturePage() {
     record && "workCharacteristics" in record.configSnapshot
       ? record.configSnapshot.workCharacteristics
       : [];
+  const hasCompletedValidation =
+    record !== null &&
+    (record.validationRuns.length > 0 ||
+      record.state !== "capture_in_progress");
 
-  async function submitMainAnswers(event: FormEvent) {
-    event.preventDefault();
+  function inputIsValid() {
     if (!record) return;
     const invalidIds = workCharacteristicDefinitions
       .filter(
@@ -125,21 +116,33 @@ export function ProcessCapturePage() {
           )
           ?.focus();
       });
-      return;
+      return false;
     }
     setInvalidCharacteristicIds(new Set());
+    return true;
+  }
+
+  async function saveCurrentAnswers() {
+    if (!record) throw new Error("Prozess nicht geladen.");
+    return api.saveAnswers(
+      record.id,
+      makeTopicAnswers(record.configSnapshot, answers, record.mainAnswers),
+      makeWorkCharacteristicAnswers(
+        record.configSnapshot,
+        workCharacteristicSelections,
+        record.workCharacteristicAnswers,
+      ),
+      selectedUploadIds,
+    );
+  }
+
+  async function submitMainAnswers(event: FormEvent) {
+    event.preventDefault();
+    if (!record || !inputIsValid()) return;
     setBusy(true);
     setError("");
     try {
-      await api.saveAnswers(
-        record.id,
-        makeTopicAnswers(record.configSnapshot, answers),
-        makeWorkCharacteristicAnswers(
-          record.configSnapshot,
-          workCharacteristicSelections,
-        ),
-        selectedUploadIds,
-      );
+      await saveCurrentAnswers();
       await api.analyze(record.id);
       await refresh();
     } catch (reason) {
@@ -149,36 +152,12 @@ export function ProcessCapturePage() {
     }
   }
 
-  async function submitFollowUps(event: FormEvent) {
-    event.preventDefault();
-    if (!record) return;
-    setBusy(true);
-    setError("");
-    try {
-      const answeredAt = new Date().toISOString();
-      await api.saveFollowUps(
-        record.id,
-        record.followUps.map((question) => ({
-          questionId: question.id,
-          topicId: question.topicId,
-          text: followUpAnswers[question.id] ?? "",
-          answeredAt,
-        })),
-      );
-      await api.synthesize(record.id);
-      await refresh();
-    } catch (reason) {
-      setError((reason as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function synthesize() {
-    if (!record) return;
+    if (!record || !inputIsValid()) return;
     setBusy(true);
     setError("");
     try {
+      await saveCurrentAnswers();
       await api.synthesize(record.id);
       await refresh();
     } catch (reason) {
@@ -190,13 +169,18 @@ export function ProcessCapturePage() {
 
   async function retry() {
     if (!record || !operation) return;
+    if (!inputIsValid()) return;
     setBusy(true);
     setError("");
     try {
       await api.cancelOperation(operation.operationId);
-      if (operation.operationName === "process-follow-ups")
+      if (operation.operationName === "process-follow-ups") {
+        await saveCurrentAnswers();
         await api.analyze(record.id);
-      else await api.synthesize(record.id);
+      } else {
+        await saveCurrentAnswers();
+        await api.synthesize(record.id);
+      }
       await refresh();
     } catch (reason) {
       setError((reason as Error).message);
@@ -238,48 +222,78 @@ export function ProcessCapturePage() {
         <OperationPanel operation={operation} onRetry={retry} disabled={busy} />
       )}
 
-      {record.state === "capture_in_progress" && !operation && (
+      {[
+        "capture_in_progress",
+        "follow_up_required",
+        "synthesis_ready",
+      ].includes(record.state) && (
         <form onSubmit={submitMainAnswers} className="capture-form">
           <Card className="intro-panel">
-            <Kicker>Heutigen Normalfall beschreiben</Kicker>
-            <h2>Teilen Sie Ihr Fachwissen in fünf Themenblöcken.</h2>
+            <Kicker>Angaben erfassen und prüfen</Kicker>
+            <h2>
+              {hasCompletedValidation
+                ? "Prüfen und ergänzen Sie Ihre Angaben direkt im Formular."
+                : "Teilen Sie Ihr Fachwissen in fünf Themenblöcken."}
+            </h2>
             <p>
-              Antworten Sie in Ihren eigenen Worten und gern in Stichpunkten.
-              Technische Details sind nicht erforderlich. Auf Basis Ihrer
-              Angaben werden höchstens fünf gezielte Rückfragen gestellt.
+              {hasCompletedValidation
+                ? "Die Rückmeldungen rechts sind Hinweise. Ändern Sie bei Bedarf den zugehörigen Text links und starten Sie die Prüfung ausdrücklich erneut – oder fahren Sie mit dem aktuellen Stand fort."
+                : "Antworten Sie in Ihren eigenen Worten und gern in Stichpunkten. Auf Basis Ihrer Angaben werden höchstens fünf gezielte Rückfragen gestellt."}
             </p>
           </Card>
-          <div className="topic-list">
-            {[...record.configSnapshot.topics]
-              .sort((a, b) => a.displayOrder - b.displayOrder)
-              .map((topic) => (
-                <ProcessTopicCard
-                  key={topic.id}
-                  topic={topic}
-                  value={answers[topic.id] ?? ""}
-                  onChange={(value) =>
-                    setAnswers((current) => ({ ...current, [topic.id]: value }))
-                  }
-                  characteristics={workCharacteristicDefinitions.filter(
-                    (definition) => definition.topicId === topic.id,
-                  )}
-                  selections={workCharacteristicSelections}
-                  invalidCharacteristicIds={invalidCharacteristicIds}
-                  onSelectionChange={(characteristicId, selectedOptionIds) => {
-                    setWorkCharacteristicSelections((current) => ({
-                      ...current,
-                      [characteristicId]: selectedOptionIds,
-                    }));
-                    if (selectedOptionIds.length)
-                      setInvalidCharacteristicIds((current) => {
-                        const next = new Set(current);
-                        next.delete(characteristicId);
-                        return next;
-                      });
-                  }}
-                />
-              ))}
-          </div>
+          <fieldset className="validation-inputs" disabled={locked}>
+            <legend className="sr-only">Fachliche Prozessangaben</legend>
+            <div className="topic-list">
+              {[...record.configSnapshot.topics]
+                .sort((a, b) => a.displayOrder - b.displayOrder)
+                .map((topic) => {
+                  const question = record.followUps.find(
+                    (item) => item.topicId === topic.id,
+                  );
+                  return (
+                    <div className="validation-row" key={topic.id}>
+                      <ProcessTopicCard
+                        topic={topic}
+                        value={answers[topic.id] ?? ""}
+                        disabled={locked}
+                        validationCommentId={`validation-comment-${topic.id}`}
+                        onChange={(value) =>
+                          setAnswers((current) => ({
+                            ...current,
+                            [topic.id]: value,
+                          }))
+                        }
+                        characteristics={workCharacteristicDefinitions.filter(
+                          (definition) => definition.topicId === topic.id,
+                        )}
+                        selections={workCharacteristicSelections}
+                        invalidCharacteristicIds={invalidCharacteristicIds}
+                        onSelectionChange={(
+                          characteristicId,
+                          selectedOptionIds,
+                        ) => {
+                          setWorkCharacteristicSelections((current) => ({
+                            ...current,
+                            [characteristicId]: selectedOptionIds,
+                          }));
+                          if (selectedOptionIds.length)
+                            setInvalidCharacteristicIds((current) => {
+                              const next = new Set(current);
+                              next.delete(characteristicId);
+                              return next;
+                            });
+                        }}
+                      />
+                      <ProcessValidationComment
+                        id={`validation-comment-${topic.id}`}
+                        question={question}
+                        hasValidation={hasCompletedValidation}
+                      />
+                    </div>
+                  );
+                })}
+            </div>
+          </fieldset>
           <ProcessUploadPicker
             processId={record.id}
             uploads={record.uploads}
@@ -291,110 +305,56 @@ export function ProcessCapturePage() {
           />
           <div className="submit-bar">
             <div>
-              <b>Nächster Schritt</b>
+              <b>
+                {hasCompletedValidation
+                  ? record.followUps.length
+                    ? `${record.followUps.length} offene Rückfragen`
+                    : "Alle Angaben geprüft"
+                  : "Nächster Schritt"}
+              </b>
               <span>
-                Ihre Angaben werden geordnet; nur materielle Lücken führen zu
-                einer Rückfrage.
+                {hasCompletedValidation
+                  ? "Sie entscheiden, ob Sie erneut prüfen oder mit dem aktuellen Stand fortfahren."
+                  : "Nur materielle Verständnislücken führen zu einer Rückfrage."}
               </span>
             </div>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={
-                locked ||
-                record.configSnapshot.topics.some(
-                  (topic) => !(answers[topic.id] ?? "").trim(),
-                ) ||
-                workCharacteristicDefinitions.some(
-                  (definition) =>
-                    !(workCharacteristicSelections[definition.id] ?? []).length,
-                )
-              }
-            >
-              {busy ? "Wird gestartet …" : "Angaben prüfen lassen"}
-            </Button>
-          </div>
-        </form>
-      )}
-
-      {record.state === "follow_up_required" && !operation && (
-        <form className="follow-up-stage" onSubmit={submitFollowUps}>
-          <Card className="intro-panel">
-            <Kicker>Gezielte Ergänzung</Kicker>
-            <h2>
-              {record.followUps.length === 1
-                ? "Eine Rückfrage ist offen."
-                : `${record.followUps.length} Rückfragen sind offen.`}
-            </h2>
-            <p>
-              Diese Angaben helfen, den Prozess vollständig und ohne unnötige
-              technische Fragen abzubilden. Danach gibt es keine weitere
-              Rückfragerunde.
-            </p>
-          </Card>
-          <div className="follow-up-list">
-            {record.followUps.map((question) => (
-              <ProcessFollowUpCard
-                key={question.id}
-                question={question}
-                topicName={
-                  record.configSnapshot.topics.find(
-                    (topic) => topic.id === question.topicId,
-                  )?.name ?? "Themenbereich"
+            <div className="validation-actions">
+              <Button
+                type="submit"
+                variant={hasCompletedValidation ? "secondary" : "primary"}
+                disabled={
+                  locked ||
+                  record.configSnapshot.topics.some(
+                    (topic) => !(answers[topic.id] ?? "").trim(),
+                  ) ||
+                  workCharacteristicDefinitions.some(
+                    (definition) =>
+                      !(workCharacteristicSelections[definition.id] ?? [])
+                        .length,
+                  )
                 }
-                value={followUpAnswers[question.id] ?? ""}
-                onChange={(value) =>
-                  setFollowUpAnswers((current) => ({
-                    ...current,
-                    [question.id]: value,
-                  }))
-                }
-              />
-            ))}
-          </div>
-          <div className="submit-bar">
-            <div>
-              <b>Danach entsteht Ihr Prozessbild.</b>
-              <span>
-                Der Steckbrief und die Prozesskarte werden gemeinsam erstellt.
-              </span>
+              >
+                {busy
+                  ? "Wird gestartet …"
+                  : hasCompletedValidation
+                    ? "Erneut prüfen"
+                    : "Angaben prüfen lassen"}
+              </Button>
+              {hasCompletedValidation && (
+                <Button
+                  type="button"
+                  variant="primary"
+                  disabled={locked}
+                  onClick={() => void synthesize()}
+                >
+                  {record.followUps.length
+                    ? "Trotz offener Rückfragen fortfahren"
+                    : "Mit Prozessbild fortfahren"}
+                </Button>
+              )}
             </div>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={
-                locked ||
-                record.followUps.some(
-                  (question) => !(followUpAnswers[question.id] ?? "").trim(),
-                )
-              }
-            >
-              {busy
-                ? "Wird gestartet …"
-                : "Antworten senden und Prozessbild erstellen"}
-            </Button>
           </div>
         </form>
-      )}
-
-      {record.state === "synthesis_ready" && !operation && (
-        <Card as="section" className="center-stage">
-          <Check />
-          <Kicker>Angaben vollständig</Kicker>
-          <h2>Das Prozessbild kann erstellt werden.</h2>
-          <p>
-            Aus Ihren Antworten und den ausgewählten Unterlagen entstehen ein
-            kompakter Steckbrief und eine Prozesskarte mit fünf bis acht
-            Hauptschritten.
-          </p>
-          <Button
-            variant="primary"
-            disabled={busy}
-            onClick={() => void synthesize()}
-          >
-            {busy ? "Wird gestartet …" : "Prozessbild erstellen"}
-          </Button>
-        </Card>
       )}
 
       {(record.state === "review_required" || record.state === "confirmed") &&

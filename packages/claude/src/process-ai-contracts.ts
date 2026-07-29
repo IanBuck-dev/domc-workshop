@@ -2,9 +2,11 @@ import type {
   Cover,
   FollowUpAnswer,
   FollowUpQuestion,
+  PreviousQuestionReview,
   ProcessCaptureConfig,
   ProcessUnderstanding,
   TopicAnswer,
+  ValidationRun,
   WorkCharacteristicAnswer,
 } from "../../domain/src/process-understanding.ts";
 import type {
@@ -39,6 +41,7 @@ export interface FollowUpRequest extends ProcessAiContext {
     >["workCharacteristics"][number]
   >;
   workCharacteristicAnswers: WorkCharacteristicAnswer[];
+  validationHistory: ValidationRun[];
 }
 export interface SynthesisRequest extends FollowUpRequest {
   followUps: FollowUpQuestion[];
@@ -46,6 +49,7 @@ export interface SynthesisRequest extends FollowUpRequest {
 }
 export type ProcessAiResult<T> = AiStructuredResult<T>;
 export interface FollowUpResult {
+  previousQuestionReviews: PreviousQuestionReview[];
   followUps: FollowUpQuestion[];
 }
 export interface ProcessAiAdapter {

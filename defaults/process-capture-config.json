@@ -135,7 +135,7 @@
     }
   ],
   "instructions": {
-    "followUps": "Stelle nur Rückfragen, die das Verständnis des heutigen Prozesses materiell verbessern.",
+    "followUps": "Bewerte frühere Rückfragen gegen die aktuelle Angabe und stelle nur neue, nicht wiederholte Rückfragen, die das Verständnis des heutigen Prozesses materiell verbessern.",
     "synthesis": "Erzeuge ein evidenzbasiertes Prozessbild des heutigen normalen Ablaufs ohne KI-Lösung oder Bewertung."
   },
   "uploads": {

@@ -13,6 +13,8 @@ export function ProcessTopicCard({
   selections,
   onSelectionChange,
   invalidCharacteristicIds,
+  disabled = false,
+  validationCommentId,
 }: {
   topic: ProcessCaptureConfig["topics"][number];
   value: string;
@@ -21,6 +23,8 @@ export function ProcessTopicCard({
   selections: Record<string, string[]>;
   onSelectionChange: (id: string, optionIds: string[]) => void;
   invalidCharacteristicIds: ReadonlySet<string>;
+  disabled?: boolean;
+  validationCommentId?: string;
 }) {
   return (
     <Card as="article" elevation="flat" className="topic-card">
@@ -38,6 +42,8 @@ export function ProcessTopicCard({
             onChange={(e) => onChange(e.target.value)}
             placeholder="Antworten Sie gern in Stichpunkten …"
             required
+            disabled={disabled}
+            aria-describedby={validationCommentId}
           />
         </label>
         {characteristics.map((characteristic) => (
@@ -51,6 +57,7 @@ export function ProcessTopicCard({
             onChange={(optionIds) =>
               onSelectionChange(characteristic.id, optionIds)
             }
+            disabled={disabled}
           />
         ))}
       </span>
@@ -63,11 +70,13 @@ function WorkCharacteristicFieldset({
   selected,
   onChange,
   showValidationError,
+  disabled,
 }: {
   definition: WorkCharacteristicDefinition;
   selected: string[];
   onChange: (optionIds: string[]) => void;
   showValidationError: boolean;
+  disabled: boolean;
 }) {
   function toggle(optionId: string, checked: boolean) {
     if (definition.selection === "single") {
@@ -110,6 +119,7 @@ function WorkCharacteristicFieldset({
               required={
                 definition.selection === "single" && selected.length === 0
               }
+              disabled={disabled}
             />
             <span>{option.label}</span>
           </label>
@@ -130,26 +140,43 @@ function WorkCharacteristicFieldset({
 export function makeTopicAnswers(
   config: ProcessCaptureConfig,
   values: Record<string, string>,
+  previous: TopicAnswer[] = [],
 ): TopicAnswer[] {
   const answeredAt = new Date().toISOString();
   return [...config.topics]
     .sort((a, b) => a.displayOrder - b.displayOrder)
-    .map((topic) => ({
-      topicId: topic.id,
-      text: values[topic.id] ?? "",
-      answeredAt,
-    }));
+    .map((topic) => {
+      const text = values[topic.id] ?? "";
+      const existing = previous.find((answer) => answer.topicId === topic.id);
+      return {
+        topicId: topic.id,
+        text,
+        answeredAt: existing?.text === text ? existing.answeredAt : answeredAt,
+      };
+    });
 }
 
 export function makeWorkCharacteristicAnswers(
   config: ProcessCaptureConfig,
   selections: Record<string, string[]>,
+  previous: WorkCharacteristicAnswer[] = [],
 ): WorkCharacteristicAnswer[] {
   if (!("workCharacteristics" in config)) return [];
   const answeredAt = new Date().toISOString();
-  return config.workCharacteristics.map((definition) => ({
-    characteristicId: definition.id,
-    selectedOptionIds: selections[definition.id] ?? [],
-    answeredAt,
-  }));
+  return config.workCharacteristics.map((definition) => {
+    const selectedOptionIds = selections[definition.id] ?? [];
+    const existing = previous.find(
+      (answer) => answer.characteristicId === definition.id,
+    );
+    return {
+      characteristicId: definition.id,
+      selectedOptionIds,
+      answeredAt:
+        existing &&
+        JSON.stringify(existing.selectedOptionIds) ===
+          JSON.stringify(selectedOptionIds)
+          ? existing.answeredAt
+          : answeredAt,
+    };
+  });
 }

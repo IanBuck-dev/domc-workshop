@@ -2,6 +2,7 @@ import {
   lstat,
   mkdir,
   mkdtemp,
+  readdir,
   realpath,
   rm,
   writeFile,
@@ -66,6 +67,7 @@ export interface SandboxRunnerOptions {
   claudeCommand?: string;
   sandboxCommand?: string;
   sandboxSettingsTemplate?: string;
+  sandboxMode?: "required" | "off";
   allowUnsafeLocalFallback?: boolean;
   transport?: (
     request: SandboxTransportRequest,
@@ -91,6 +93,28 @@ function isWithin(root: string, target: string) {
     pathFromRoot === "" ||
     (!pathFromRoot.startsWith(`..${sep}`) && pathFromRoot !== "..")
   );
+}
+
+async function denyHomeEntriesExcept(
+  home: string,
+  allowedPaths: string[],
+): Promise<string[]> {
+  const allowedWithinHome = allowedPaths.filter((path) => isWithin(home, path));
+  const denied: string[] = [];
+  const visit = async (directory: string): Promise<void> => {
+    const names = await readdir(directory);
+    for (const name of names) {
+      const entry = join(directory, name);
+      if (allowedWithinHome.includes(entry)) continue;
+      if (allowedWithinHome.some((allowed) => isWithin(entry, allowed))) {
+        await visit(entry);
+      } else {
+        denied.push(entry);
+      }
+    }
+  };
+  await visit(home);
+  return denied;
 }
 
 async function readStreamBounded(
@@ -154,12 +178,52 @@ function claudeCompatibleSchema(schema: object) {
   delete value.$schema;
   return value;
 }
+function balancedJsonObjectEnd(value: string, start: number) {
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let index = start; index < value.length; index += 1) {
+    const character = value[index];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (character === "\\") escaped = true;
+      else if (character === '"') inString = false;
+      continue;
+    }
+    if (character === '"') inString = true;
+    else if (character === "{") depth += 1;
+    else if (character === "}") {
+      depth -= 1;
+      if (depth === 0) return index + 1;
+    }
+  }
+  return null;
+}
+
 function parsePromptedJson(value: string) {
   const trimmed = value.trim();
   const unfenced = trimmed
     .replace(/^```(?:json)?\s*/i, "")
     .replace(/\s*```$/, "");
-  return JSON.parse(unfenced);
+  try {
+    return JSON.parse(unfenced);
+  } catch (directError) {
+    let searchFrom = 0;
+    while (searchFrom < unfenced.length) {
+      const start = unfenced.indexOf("{", searchFrom);
+      if (start < 0) break;
+      const end = balancedJsonObjectEnd(unfenced, start);
+      if (end !== null) {
+        try {
+          return JSON.parse(unfenced.slice(start, end));
+        } catch {
+          // Continue with a later object candidate in the advisory prose.
+        }
+      }
+      searchFrom = start + 1;
+    }
+    throw directError;
+  }
 }
 
 function validateSandboxSettings(value: unknown) {
@@ -238,6 +302,7 @@ export class SandboxRunner {
       | "tempRoot"
       | "claudeCommand"
       | "sandboxCommand"
+      | "sandboxMode"
       | "allowUnsafeLocalFallback"
     >
   > &
@@ -246,6 +311,7 @@ export class SandboxRunner {
       | "tempRoot"
       | "claudeCommand"
       | "sandboxCommand"
+      | "sandboxMode"
       | "allowUnsafeLocalFallback"
     >;
 
@@ -258,10 +324,21 @@ export class SandboxRunner {
       sandboxCommand: options.sandboxCommand ?? "srt",
       sandboxSettingsTemplate:
         options.sandboxSettingsTemplate ?? process.env.AI_SANDBOX_SETTINGS,
+      sandboxMode:
+        options.sandboxMode ??
+        (process.env.AI_SANDBOX_MODE === "off" ? "off" : "required"),
       allowUnsafeLocalFallback:
         options.allowUnsafeLocalFallback ??
         process.env.NODE_ENV !== "production",
     };
+    if (
+      this.options.sandboxMode === "off" &&
+      (process.env.NODE_ENV === "production" ||
+        basename(process.execPath) !== "bun")
+    )
+      throw new Error(
+        "AI_SANDBOX_MODE=off is allowed only with the local Bun development runtime.",
+      );
   }
 
   runStructured<T>(
@@ -426,6 +503,8 @@ export class SandboxRunner {
         ? []
         : ["--json-schema", JSON.stringify(responseSchema)]),
     ];
+    if (this.options.sandboxMode === "off")
+      return { command: claudeArgs, sandboxed: false };
     if (!(await sandboxRuntimeAvailable(this.options.sandboxCommand))) {
       if (
         !this.options.allowUnsafeLocalFallback ||
@@ -440,6 +519,29 @@ export class SandboxRunner {
     const home = process.env.HOME ? resolve(process.env.HOME) : null;
     const claudeConfig =
       process.env.CLAUDE_CONFIG_DIR ?? (home ? join(home, ".claude") : null);
+    const claudeStateFile = home ? join(home, ".claude.json") : null;
+    const claudeKeychains =
+      process.platform === "darwin" && home
+        ? join(home, "Library", "Keychains")
+        : null;
+    const claudeCommand =
+      Bun.which(this.options.claudeCommand) ??
+      resolve(this.options.claudeCommand);
+    const claudeExecutable = await realpath(claudeCommand).catch(
+      () => claudeCommand,
+    );
+    const localAllowRead = [
+      operationDir,
+      claudeConfig,
+      claudeStateFile,
+      claudeKeychains,
+      claudeCommand,
+      claudeExecutable,
+    ].filter((path): path is string => Boolean(path));
+    const localDenyRead =
+      process.platform === "darwin" && home
+        ? await denyHomeEntriesExcept(home, localAllowRead)
+        : [home, "/root"].filter((path): path is string => Boolean(path));
     const settings = this.options.sandboxSettingsTemplate
       ? validateSandboxSettings(
           JSON.parse(
@@ -454,9 +556,11 @@ export class SandboxRunner {
             allowUnixSockets: [],
           },
           filesystem: {
-            denyRead: [home, "/root"].filter(Boolean),
-            allowRead: [operationDir, claudeConfig].filter(Boolean),
-            allowWrite: [operationDir],
+            denyRead: [...localDenyRead, "/root"],
+            allowRead: localAllowRead,
+            allowWrite: [operationDir, claudeConfig, claudeStateFile].filter(
+              (path): path is string => Boolean(path),
+            ),
             denyWrite: [],
           },
           enableWeakerNestedSandbox: false,

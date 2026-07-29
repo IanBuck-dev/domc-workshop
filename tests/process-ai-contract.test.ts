@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  realpath,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createHash } from "node:crypto";
@@ -21,6 +28,7 @@ import {
   processConfig,
   synthesisUnderstanding,
   understanding,
+  validationInputSnapshot,
   workCharacteristicAnswers,
 } from "./process-fixtures.ts";
 
@@ -85,7 +93,7 @@ describe("process AI contract", () => {
       transport: async (request) => {
         captured = request;
         return {
-          stdout: envelope({ followUps: [] }),
+          stdout: envelope({ previousQuestionReviews: [], followUps: [] }),
           stderr: "",
           exitCode: 0,
           sandboxed: false,
@@ -115,6 +123,7 @@ describe("process AI contract", () => {
       mainAnswers: answers(),
       workCharacteristicDefinitions: config.workCharacteristics,
       workCharacteristicAnswers: workCharacteristicAnswers(),
+      validationHistory: [],
     });
     expect(result.value.followUps).toEqual([]);
     expect(captured?.command).toContain("--no-session-persistence");
@@ -135,12 +144,12 @@ describe("process AI contract", () => {
     const systemPrompt = captured?.command.slice(
       captured.command.indexOf("--system-prompt") + 1,
     )[0];
-    expect(systemPrompt).toContain("# Prozessverständnis-Rückfragen v1");
+    expect(systemPrompt).toContain("# Iterative Prozessvalidierung v2");
     expect(systemPrompt).toContain(
       "# Globale Rolle – Geschäftsprozessaufnahme v1",
     );
     expect(systemPrompt?.indexOf("# Globale Rolle")).toBeLessThan(
-      systemPrompt?.indexOf("# Prozessverständnis-Rückfragen") ?? -1,
+      systemPrompt?.indexOf("# Iterative Prozessvalidierung") ?? -1,
     );
     expect(systemPrompt).toContain(
       `## Konfigurierbare Anweisung\n${config.instructions.followUps}`,
@@ -155,6 +164,69 @@ describe("process AI contract", () => {
     expect(systemPrompt).toContain("Fehlende Bilder, Platzhalter");
   });
 
+  test("allows the explicit local presentation mode without a sandbox", async () => {
+    const temporary = await root();
+    const uploadRoot = join(temporary, "source");
+    await mkdir(uploadRoot, { recursive: true });
+    const source = join(uploadRoot, "process.txt");
+    const bytes = new TextEncoder().encode("Fiktive Prozessbeschreibung");
+    await writeFile(source, bytes);
+    let captured: SandboxTransportRequest | undefined;
+    const runner = new SandboxRunner({
+      tempRoot: join(temporary, "ops"),
+      uploadRoot,
+      sandboxMode: "off",
+      transport: async (request) => {
+        captured = request;
+        return {
+          stdout: envelope({ previousQuestionReviews: [], followUps: [] }),
+          stderr: "",
+          exitCode: 0,
+          sandboxed: false,
+        };
+      },
+    });
+    const config = await processConfig();
+    const result = await new ProcessFollowUpAdapter(runner).run({
+      processId: "PROC-0001",
+      configHash: "a".repeat(64),
+      model: {
+        model: "claude-opus-4-8",
+        effort: "medium",
+        timeoutMs: 90_000,
+        maxOutputTokens: 6_000,
+        maxInputCharacters: 200_000,
+        maxBudgetUsd: 1,
+      },
+      instructions: config.instructions.followUps,
+      selectedUploads: [
+        {
+          id: "00000000-0000-4000-8000-000000000001",
+          name: "process.txt",
+          path: source,
+          size: bytes.byteLength,
+          sha256: createHash("sha256").update(bytes).digest("hex"),
+        },
+      ],
+      cover,
+      topics: config.topics,
+      mainAnswers: answers(),
+      workCharacteristicDefinitions: config.workCharacteristics,
+      workCharacteristicAnswers: workCharacteristicAnswers(),
+      validationHistory: [],
+    });
+    expect(result.trace.sandboxed).toBe(false);
+    expect(captured?.command).not.toContain("--settings");
+    expect(captured?.command).toContain("--no-session-persistence");
+    expect(captured?.command).not.toContain("--resume");
+    expect(
+      captured?.command.slice(captured.command.indexOf("--tools") + 1)[0],
+    ).toBe("Read,Glob,Bash");
+    expect(captured?.stdin).toContain(
+      "uploads/00000000-0000-4000-8000-000000000001-process.txt",
+    );
+  });
+
   test("rejects duplicate topic followups", async () => {
     const temporary = await root();
     const runner = new SandboxRunner({
@@ -163,6 +235,7 @@ describe("process AI contract", () => {
       allowUnsafeLocalFallback: true,
       transport: async () => ({
         stdout: envelope({
+          previousQuestionReviews: [],
           followUps: [
             {
               id: "a",
@@ -203,10 +276,12 @@ describe("process AI contract", () => {
         mainAnswers: answers(),
         workCharacteristicDefinitions: config.workCharacteristics,
         workCharacteristicAnswers: workCharacteristicAnswers(),
+        validationHistory: [],
       }),
     ).rejects.toThrow("Only one follow-up per topic");
     expect(() =>
       processFollowUpResultSchema.parse({
+        previousQuestionReviews: [],
         followUps: [
           {
             id: "duplicate",
@@ -225,6 +300,104 @@ describe("process AI contract", () => {
     ).toThrow("Follow-up IDs must be unique");
   });
 
+  test("sends only the immediately preceding input plus earlier question texts", async () => {
+    const temporary = await root();
+    let captured: SandboxTransportRequest | undefined;
+    const runner = new SandboxRunner({
+      tempRoot: temporary,
+      sandboxCommand: "missing",
+      allowUnsafeLocalFallback: true,
+      transport: async (request) => {
+        captured = request;
+        return {
+          stdout: envelope({
+            previousQuestionReviews: [
+              {
+                questionId: "question-previous",
+                topicId: "flow-roles",
+                outcome: "addressed",
+                rationale: "Die Rollen sind jetzt eindeutig beschrieben.",
+              },
+            ],
+            followUps: [],
+          }),
+          stderr: "",
+          exitCode: 0,
+          sandboxed: false,
+        };
+      },
+    });
+    const config = await processConfig();
+    const oldSnapshot = validationInputSnapshot();
+    oldSnapshot.mainAnswers[0]!.text = "OLDER_FULL_INPUT_MUST_NOT_BE_SENT";
+    const previousSnapshot = validationInputSnapshot();
+    previousSnapshot.mainAnswers[0]!.text = "IMMEDIATE_PREVIOUS_INPUT";
+    const currentAnswers = answers();
+    currentAnswers[0]!.text = "CURRENT_INPUT";
+    await new ProcessFollowUpAdapter(runner).run({
+      processId: "PROC-0001",
+      configHash: "a".repeat(64),
+      model: {
+        model: "claude-opus-4-8",
+        effort: "medium",
+        timeoutMs: 90_000,
+        maxOutputTokens: 6_000,
+        maxInputCharacters: 200_000,
+        maxBudgetUsd: 1,
+      },
+      instructions: config.instructions.followUps,
+      selectedUploads: [],
+      cover,
+      topics: config.topics,
+      mainAnswers: currentAnswers,
+      workCharacteristicDefinitions: config.workCharacteristics,
+      workCharacteristicAnswers: workCharacteristicAnswers(),
+      validationHistory: [
+        {
+          runNumber: 1,
+          completedAt: new Date().toISOString(),
+          inputSnapshot: oldSnapshot,
+          questions: [
+            {
+              id: "question-old",
+              topicId: "purpose-scope",
+              question: "Welches Ergebnis entsteht?",
+              rationale: "Das Ergebnis fehlt.",
+            },
+          ],
+          previousQuestionReviews: [],
+          trace: null,
+        },
+        {
+          runNumber: 2,
+          completedAt: new Date().toISOString(),
+          inputSnapshot: previousSnapshot,
+          questions: [
+            {
+              id: "question-previous",
+              topicId: "flow-roles",
+              question: "Wer übernimmt die Übergabe?",
+              rationale: "Die Rolle fehlt.",
+            },
+          ],
+          previousQuestionReviews: [
+            {
+              questionId: "question-old",
+              topicId: "purpose-scope",
+              outcome: "addressed",
+              rationale: "Das Ergebnis ist ergänzt.",
+            },
+          ],
+          trace: null,
+        },
+      ],
+    });
+    expect(captured?.stdin).toContain("CURRENT_INPUT");
+    expect(captured?.stdin).toContain("IMMEDIATE_PREVIOUS_INPUT");
+    expect(captured?.stdin).toContain("Welches Ergebnis entsteht?");
+    expect(captured?.stdin).not.toContain("OLDER_FULL_INPUT_MUST_NOT_BE_SENT");
+  });
+
   test("stages only selected uploads for synthesis workspace tools", async () => {
     const temporary = await root();
     const uploadRoot = join(temporary, "source");
@@ -233,15 +406,24 @@ describe("process AI contract", () => {
     const bytes = new TextEncoder().encode("Fiktive Prozessbeschreibung");
     await writeFile(source, bytes);
     let captured: SandboxTransportRequest | undefined;
+    let sandboxSettings:
+      | {
+          filesystem?: { allowRead?: string[]; denyRead?: string[] };
+        }
+      | undefined;
     const runner = new SandboxRunner({
       tempRoot: join(temporary, "ops"),
       uploadRoot,
       sandboxCommand: "sh",
       transport: async (request) => {
         captured = request;
+        const settingsIndex = request.command.indexOf("--settings") + 1;
+        sandboxSettings = JSON.parse(
+          await readFile(request.command[settingsIndex]!, "utf8"),
+        );
         return {
           stdout: JSON.stringify({
-            result: JSON.stringify({
+            result: `Die Auswertung ist abgeschlossen.\n\n${JSON.stringify({
               ...synthesisUnderstanding(),
               documentCoverage: [
                 {
@@ -261,7 +443,7 @@ describe("process AI contract", () => {
                   excerpt: "Fiktive Prozessbeschreibung",
                 },
               ],
-            }),
+            })}`,
             usage: { input_tokens: 3, output_tokens: 7 },
           }),
           stderr: "",
@@ -297,6 +479,7 @@ describe("process AI contract", () => {
       mainAnswers: answers(),
       workCharacteristicDefinitions: config.workCharacteristics,
       workCharacteristicAnswers: workCharacteristicAnswers(),
+      validationHistory: [],
       followUps: [],
       followUpAnswers: [],
     });
@@ -321,6 +504,20 @@ describe("process AI contract", () => {
       "gebündelten lokalen Arbeitsschritt",
     );
     expect(captured?.command.join(" ")).toContain("python3");
+    const claudeCommand = Bun.which("claude");
+    expect(claudeCommand).toBeTruthy();
+    expect(sandboxSettings?.filesystem?.allowRead).toContain(claudeCommand!);
+    expect(sandboxSettings?.filesystem?.allowRead).toContain(
+      await realpath(claudeCommand!),
+    );
+    if (process.platform === "darwin") {
+      expect(sandboxSettings?.filesystem?.denyRead).not.toContain(
+        process.env.HOME,
+      );
+      expect(sandboxSettings?.filesystem?.allowRead).toContain(
+        join(process.env.HOME!, "Library", "Keychains"),
+      );
+    }
   });
 
   test("requires the v2 synthesis fields and keeps nested IDs server-owned", async () => {
@@ -445,6 +642,7 @@ describe("process AI contract", () => {
       mainAnswers: answers(),
       workCharacteristicDefinitions: config.workCharacteristics,
       workCharacteristicAnswers: workCharacteristicAnswers(),
+      validationHistory: [],
       followUps: [],
       followUpAnswers: [],
     };
@@ -542,6 +740,7 @@ describe("process AI contract", () => {
         mainAnswers: answers(),
         workCharacteristicDefinitions: config.workCharacteristics,
         workCharacteristicAnswers: workCharacteristicAnswers(),
+        validationHistory: [],
       }),
     ).rejects.toThrow();
   });

@@ -22,10 +22,11 @@ export class ProcessFollowUpAdapter {
       loadProcessPrompt("process-follow-ups"),
     ]);
     const jsonSchema = await loadProcessSchema("process-follow-ups");
-    return this.runner.runStructured({
+    const previousRun = request.validationHistory.at(-1);
+    const result = await this.runner.runStructured({
       processId: request.processId,
       operationName: "process-follow-ups",
-      prompt: `## Prozessangaben\n${boundedProcessJson({ cover: request.cover, topics: request.topics, mainAnswers: request.mainAnswers, workCharacteristics: request.workCharacteristicDefinitions.map((definition) => ({ id: definition.id, topicId: definition.topicId, question: definition.question, selectedAnswers: request.workCharacteristicAnswers.find((answer) => answer.characteristicId === definition.id)?.selectedOptionIds.map((optionId) => definition.options.find((option) => option.id === optionId)?.label ?? optionId) ?? [] })) }, request.model.maxInputCharacters)}`,
+      prompt: `## Prozessangaben\n${boundedProcessJson({ cover: request.cover, topics: request.topics, currentInput: { mainAnswers: request.mainAnswers, workCharacteristics: request.workCharacteristicDefinitions.map((definition) => ({ id: definition.id, topicId: definition.topicId, question: definition.question, selectedAnswers: request.workCharacteristicAnswers.find((answer) => answer.characteristicId === definition.id)?.selectedOptionIds.map((optionId) => definition.options.find((option) => option.id === optionId)?.label ?? optionId) ?? [] })), selectedUploadIds: request.selectedUploads.map((upload) => upload.id) }, previousValidation: previousRun ? { inputSnapshot: previousRun.inputSnapshot, questions: previousRun.questions } : null, earlierQuestions: request.validationHistory.slice(0, -1).flatMap((run) => run.questions.map(({ id, topicId, question }) => ({ id, topicId, question }))) }, request.model.maxInputCharacters)}`,
       systemPrompt: composeProcessSystemPrompt(
         basePrompt,
         prompt,
@@ -38,5 +39,24 @@ export class ProcessFollowUpAdapter {
       selectedUploads: request.selectedUploads,
       signal: request.signal,
     });
+    const expected = new Map(
+      (previousRun?.questions ?? []).map((question) => [
+        question.id,
+        question.topicId,
+      ]),
+    );
+    const reviews = result.value.previousQuestionReviews;
+    if (
+      new Set(reviews.map((review) => review.questionId)).size !==
+        reviews.length ||
+      reviews.length !== expected.size ||
+      reviews.some(
+        (review) => expected.get(review.questionId) !== review.topicId,
+      )
+    )
+      throw new Error(
+        "Every question from the previous validation must be reviewed exactly once.",
+      );
+    return result;
   }
 }

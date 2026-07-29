@@ -291,6 +291,48 @@ export const followUpAnswerSchema = z.object({
   text: textSchema,
   answeredAt: z.string().datetime(),
 });
+export const validationInputSnapshotSchema = z
+  .object({
+    mainAnswers: z.array(topicAnswerSchema).length(5),
+    workCharacteristicAnswers: z.array(workCharacteristicAnswerSchema).max(4),
+    selectedUploadIds: z.array(z.string().uuid()).max(5),
+  })
+  .superRefine((snapshot, ctx) => {
+    const mainIds = snapshot.mainAnswers.map((answer) => answer.topicId);
+    const characteristicIds = snapshot.workCharacteristicAnswers.map(
+      (answer) => answer.characteristicId,
+    );
+    if (
+      new Set(mainIds).size !== topicIds.length ||
+      topicIds.some((id) => !mainIds.includes(id))
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["mainAnswers"],
+        message: "A validation snapshot requires each topic exactly once.",
+      });
+    if (new Set(characteristicIds).size !== characteristicIds.length)
+      ctx.addIssue({
+        code: "custom",
+        path: ["workCharacteristicAnswers"],
+        message: "Validation work characteristics must be unique.",
+      });
+    if (
+      new Set(snapshot.selectedUploadIds).size !==
+      snapshot.selectedUploadIds.length
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["selectedUploadIds"],
+        message: "Validation upload IDs must be unique.",
+      });
+  });
+export const previousQuestionReviewSchema = z.object({
+  questionId: identifierSchema,
+  topicId: topicIdSchema,
+  outcome: z.enum(["addressed", "not_addressed"]),
+  rationale: z.string().trim().min(1).max(2_000),
+});
 export const evidenceReferenceSchema = z
   .object({
     id: identifierSchema,
@@ -788,6 +830,15 @@ export const aiTraceSchema = z.object({
   sandboxed: z.boolean().optional(),
 });
 
+export const validationRunSchema = z.object({
+  runNumber: z.number().int().positive(),
+  completedAt: z.string().datetime(),
+  inputSnapshot: validationInputSnapshotSchema,
+  questions: z.array(followUpQuestionSchema).max(5),
+  previousQuestionReviews: z.array(previousQuestionReviewSchema).max(5),
+  trace: aiTraceSchema.nullable(),
+});
+
 export const processCaptureRecordSchema = z
   .object({
     schemaVersion: z.literal(1),
@@ -804,6 +855,7 @@ export const processCaptureRecordSchema = z
     workCharacteristicAnswers: z.array(workCharacteristicAnswerSchema).max(4),
     followUps: z.array(followUpQuestionSchema).max(5),
     followUpAnswers: z.array(followUpAnswerSchema).max(5),
+    validationRuns: z.array(validationRunSchema),
     selectedUploadIds: z.array(z.string().uuid()).max(5),
     understanding: processUnderstandingSchema.nullable(),
     uploads: z.array(uploadRecordSchema).max(5),
@@ -839,10 +891,84 @@ export const processCaptureRecordSchema = z
         path: ["followUps"],
         message: "Follow-up IDs must be unique.",
       });
+    record.validationRuns.forEach((run, index) => {
+      if (run.runNumber !== index + 1)
+        ctx.addIssue({
+          code: "custom",
+          path: ["validationRuns", index, "runNumber"],
+          message: "Validation run numbers must be contiguous.",
+        });
+      if (index > 0 && run.trace === null)
+        ctx.addIssue({
+          code: "custom",
+          path: ["validationRuns", index, "trace"],
+          message: "Only a migrated legacy baseline may omit its AI trace.",
+        });
+      const snapshotCharacteristicsValid =
+        record.profile.version === 1
+          ? run.inputSnapshot.workCharacteristicAnswers.length === 0
+          : workCharacteristicAnswersSchema.safeParse(
+              run.inputSnapshot.workCharacteristicAnswers,
+            ).success;
+      if (!snapshotCharacteristicsValid)
+        ctx.addIssue({
+          code: "custom",
+          path: ["validationRuns", index, "inputSnapshot"],
+          message:
+            "Validation snapshots must match the capture profile's work characteristics.",
+        });
+      const topicIdsInRun = run.questions.map((question) => question.topicId);
+      const questionIdsInRun = run.questions.map((question) => question.id);
+      if (new Set(topicIdsInRun).size !== topicIdsInRun.length)
+        ctx.addIssue({
+          code: "custom",
+          path: ["validationRuns", index, "questions"],
+          message: "Only one validation question per topic is allowed.",
+        });
+      if (new Set(questionIdsInRun).size !== questionIdsInRun.length)
+        ctx.addIssue({
+          code: "custom",
+          path: ["validationRuns", index, "questions"],
+          message: "Validation question IDs must be unique per run.",
+        });
+      const previousQuestions =
+        record.validationRuns[index - 1]?.questions ?? [];
+      const reviews = new Map(
+        run.previousQuestionReviews.map((review) => [
+          review.questionId,
+          review,
+        ]),
+      );
+      if (
+        reviews.size !== run.previousQuestionReviews.length ||
+        reviews.size !== previousQuestions.length ||
+        previousQuestions.some(
+          (question) => reviews.get(question.id)?.topicId !== question.topicId,
+        )
+      )
+        ctx.addIssue({
+          code: "custom",
+          path: ["validationRuns", index, "previousQuestionReviews"],
+          message:
+            "Every immediately preceding question must be reviewed exactly once.",
+        });
+    });
+    const latestValidation = record.validationRuns.at(-1);
+    if (
+      latestValidation &&
+      JSON.stringify(record.followUps) !==
+        JSON.stringify(latestValidation.questions)
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["followUps"],
+        message: "Current follow-ups must match the latest validation run.",
+      });
     const expected = new Map(
       record.followUps.map((question) => [question.id, question.topicId]),
     );
     if (
+      !record.validationRuns.length &&
       record.followUpAnswers.some(
         (answer) => expected.get(answer.questionId) !== answer.topicId,
       )
@@ -879,8 +1005,12 @@ export const processCaptureRecordSchema = z
         path: ["workCharacteristicAnswers"],
         message: "This process state requires all four work characteristics.",
       });
-    const hasAllFollowUpAnswers =
-      record.followUpAnswers.length === record.followUps.length;
+    if (record.state === "capture_in_progress" && record.validationRuns.length)
+      ctx.addIssue({
+        code: "custom",
+        path: ["state"],
+        message: "Capture-in-progress cannot contain a completed validation.",
+      });
     if (record.state !== "capture_in_progress" && !hasAllMainAnswers)
       ctx.addIssue({
         code: "custom",
@@ -889,23 +1019,14 @@ export const processCaptureRecordSchema = z
       });
     if (
       record.state === "follow_up_required" &&
-      (record.followUps.length === 0 || record.followUpAnswers.length !== 0)
+      (record.followUps.length === 0 ||
+        (latestValidation !== undefined &&
+          latestValidation.questions.length === 0))
     )
       ctx.addIssue({
         code: "custom",
         path: ["state"],
         message: "Follow-up-required state requires unanswered questions.",
-      });
-    if (
-      ["synthesis_ready", "review_required", "confirmed"].includes(
-        record.state,
-      ) &&
-      !hasAllFollowUpAnswers
-    )
-      ctx.addIssue({
-        code: "custom",
-        path: ["state"],
-        message: "This process state requires all follow-ups to be answered.",
       });
     if (
       ["capture_in_progress", "follow_up_required", "synthesis_ready"].includes(
@@ -957,6 +1078,13 @@ export type WorkCharacteristicAnswer = z.infer<
 >;
 export type FollowUpQuestion = z.infer<typeof followUpQuestionSchema>;
 export type FollowUpAnswer = z.infer<typeof followUpAnswerSchema>;
+export type ValidationInputSnapshot = z.infer<
+  typeof validationInputSnapshotSchema
+>;
+export type PreviousQuestionReview = z.infer<
+  typeof previousQuestionReviewSchema
+>;
+export type ValidationRun = z.infer<typeof validationRunSchema>;
 export type ProcessUnderstanding = z.infer<typeof processUnderstandingSchema>;
 export type ProcessCaptureRecord = z.infer<typeof processCaptureRecordSchema>;
 export type UploadRecord = z.infer<typeof uploadRecordSchema>;

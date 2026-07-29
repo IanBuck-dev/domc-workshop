@@ -1,11 +1,15 @@
 import { z } from "zod";
 import {
   followUpQuestionSchema,
+  previousQuestionReviewSchema,
   processSynthesisAiResultSchema,
 } from "../../domain/src/process-understanding.ts";
 
 export const processFollowUpResultSchema = z
-  .object({ followUps: z.array(followUpQuestionSchema).max(5) })
+  .object({
+    previousQuestionReviews: z.array(previousQuestionReviewSchema).max(5),
+    followUps: z.array(followUpQuestionSchema).max(5),
+  })
   .superRefine((value, ctx) => {
     const topics = value.followUps.map((followUp) => followUp.topicId);
     if (new Set(topics).size !== topics.length)

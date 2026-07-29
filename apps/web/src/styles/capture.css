@@ -79,8 +79,7 @@
 .capture-progress li.completed + li:before {
   background: var(--green-border);
 }
-.capture-form,
-.follow-up-stage {
+.capture-form {
   display: grid;
   gap: var(--space-4);
 }
@@ -94,9 +93,23 @@
   color: var(--muted);
   margin-bottom: 0;
 }
-.topic-list,
-.follow-up-list {
+.topic-list {
   display: grid;
+  gap: var(--space-3);
+}
+.validation-inputs {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.validation-inputs:disabled {
+  opacity: 0.72;
+}
+.validation-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(250px, 1fr);
+  align-items: stretch;
   gap: var(--space-3);
 }
 .topic-card {
@@ -197,20 +210,53 @@
   font-weight: 650;
   margin-top: var(--space-3);
 }
-.follow-up-card {
+.validation-comment {
   padding: var(--space-4);
-  border: 1px solid var(--warning-border);
+  border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  background: var(--surface-warning);
   display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-content: start;
   gap: var(--space-3);
 }
-.follow-up-card > small {
+.validation-comment > svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+.validation-comment > div {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+}
+.validation-comment.is-open {
+  border-color: var(--warning-border);
+  background: var(--surface-warning);
+}
+.validation-comment.is-open > svg,
+.validation-comment small {
   color: var(--warning-fg);
+}
+.validation-comment small {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   font-weight: 800;
 }
-.follow-up-card > b {
+.validation-comment b {
   line-height: 1.5;
+}
+.validation-comment p {
+  margin: 0;
+  color: var(--muted);
+}
+.validation-comment strong {
+  color: var(--warning-fg);
+  font-size: var(--text-sm);
+}
+.validation-comment.is-clear {
+  background: var(--surface-sunken);
+}
+.validation-comment.is-clear > svg {
+  color: var(--green);
 }
 .upload-panel {
   padding: var(--space-4);
@@ -271,6 +317,12 @@
 .submit-bar span {
   color: var(--muted);
   font-size: var(--text-sm);
+}
+.validation-actions {
+  display: flex !important;
+  grid-auto-flow: column;
+  justify-content: end;
+  gap: var(--space-2) !important;
 }
 .center-stage {
   padding: var(--space-7) var(--space-6);

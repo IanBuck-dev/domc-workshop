@@ -47,16 +47,16 @@ const captureStates: Record<
     blockedReason: null,
   },
   follow_up_required: {
-    status: "Rückfragen offen",
+    status: "Angaben ergänzen",
     tone: "warning",
-    actionLabel: "Antworten",
+    actionLabel: "Ergänzen",
     action: "capture",
     blockedReason: null,
   },
   synthesis_ready: {
-    status: "Bereit",
+    status: "Angaben geprüft",
     tone: "info",
-    actionLabel: "Erstellen",
+    actionLabel: "Fortfahren",
     action: "capture",
     blockedReason: null,
   },
@@ -117,7 +117,7 @@ function listState(
   if (state === "capture_in_progress" || state === "synthesis_ready")
     return { status: "In Erfassung", tone: "neutral" } as const;
   if (state === "follow_up_required")
-    return { status: "Rückfragen", tone: "warning" } as const;
+    return { status: "Angaben ergänzen", tone: "warning" } as const;
   if (state === "review_required")
     return { status: "Zur Prüfung", tone: "warning" } as const;
   return { status: "Bestätigt", tone: "success" } as const;

@@ -19,6 +19,7 @@ import {
   legacyUnderstanding,
   processConfig,
   understanding,
+  validationInputSnapshot,
   workCharacteristicAnswers,
 } from "./process-fixtures.ts";
 
@@ -100,6 +101,7 @@ describe("compact-v1 process domain", () => {
       workCharacteristicAnswers: [],
       followUps: [],
       followUpAnswers: [],
+      validationRuns: [],
       selectedUploadIds: [],
       understanding: null,
       uploads: [],
@@ -388,6 +390,7 @@ describe("compact-v1 process domain", () => {
       workCharacteristicAnswers: [],
       followUps: [],
       followUpAnswers: [],
+      validationRuns: [],
       selectedUploadIds: [],
       understanding: null,
       uploads: [],
@@ -416,5 +419,70 @@ describe("compact-v1 process domain", () => {
         understanding: understanding(),
       }),
     ).toThrow("Confirmation timestamp");
+  });
+
+  test("requires contiguous validation runs and exact previous-question reviews", async () => {
+    const config = await processConfig();
+    const now = new Date().toISOString();
+    const question = {
+      id: "question-1",
+      topicId: "purpose-scope" as const,
+      question: "Welches Ergebnis entsteht?",
+      rationale: "Das Ergebnis fehlt.",
+    };
+    const firstRun = {
+      runNumber: 1,
+      completedAt: now,
+      inputSnapshot: validationInputSnapshot(),
+      questions: [question],
+      previousQuestionReviews: [],
+      trace: null,
+    };
+    const base = {
+      schemaVersion: 1 as const,
+      id: "PROC-0001",
+      state: "follow_up_required" as const,
+      profile: config.profile,
+      configHash: "a".repeat(64),
+      cover: {
+        department: "Vertrieb",
+        participantName: "Test Person",
+        participantEmail: "test@example.invalid",
+        processName: "Testprozess",
+      },
+      configSnapshot: config,
+      mainAnswers: answers(),
+      workCharacteristicAnswers: workCharacteristicAnswers(),
+      followUps: [question],
+      followUpAnswers: [],
+      validationRuns: [firstRun],
+      selectedUploadIds: [],
+      understanding: null,
+      uploads: [],
+      confirmedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    expect(processCaptureRecordSchema.parse(base).validationRuns).toHaveLength(
+      1,
+    );
+    expect(() =>
+      processCaptureRecordSchema.parse({
+        ...base,
+        state: "capture_in_progress",
+      }),
+    ).toThrow("cannot contain a completed validation");
+    expect(() =>
+      processCaptureRecordSchema.parse({
+        ...base,
+        validationRuns: [firstRun, { ...firstRun, runNumber: 2 }],
+      }),
+    ).toThrow("must be reviewed exactly once");
+    expect(() =>
+      processCaptureRecordSchema.parse({
+        ...base,
+        validationRuns: [{ ...firstRun, runNumber: 2 }],
+      }),
+    ).toThrow("must be contiguous");
   });
 });

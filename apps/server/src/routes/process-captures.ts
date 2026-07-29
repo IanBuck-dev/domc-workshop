@@ -1,11 +1,11 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import {
-  followUpAnswerSchema,
   processCaptureConfigSchema,
   processUnderstandingSchema,
   topicAnswerSchema,
   understandingSectionSchema,
+  validationInputSnapshotSchema,
   workCharacteristicAnswerSchema,
   workCharacteristicAnswersSchema,
   type ProcessCaptureRecord,
@@ -40,9 +40,6 @@ const answersSchema = z.object({
     .max(4)
     .default([]),
   selectedUploadIds: z.array(z.string().uuid()).max(5).default([]),
-});
-const followUpsSchema = z.object({
-  answers: z.array(followUpAnswerSchema).max(5),
 });
 const correctionSchema = z.object({
   understanding: processUnderstandingSchema,
@@ -150,6 +147,11 @@ export function processCaptureRoutes(
   );
   app.put("/:id/answers", async (c) => {
     const body = answersSchema.parse(await c.req.json());
+    if (hasActiveProcessOperation(c.req.param("id")))
+      return c.json(
+        { error: "Für diesen Prozess läuft bereits eine KI-Aktion." },
+        409,
+      );
     try {
       return c.json(
         await repo.saveMainAnswers(
@@ -226,7 +228,11 @@ export function processCaptureRoutes(
   app.post("/:id/analyze", async (c) => {
     const record = await repo.required(c.req.param("id"));
     if (
-      record.state !== "capture_in_progress" ||
+      ![
+        "capture_in_progress",
+        "follow_up_required",
+        "synthesis_ready",
+      ].includes(record.state) ||
       record.mainAnswers.length !== 5 ||
       (record.profile.version === 2 &&
         !workCharacteristicAnswersSchema.safeParse(
@@ -262,10 +268,17 @@ export function processCaptureRoutes(
             workCharacteristicDefinitions:
               workCharacteristicDefinitions(record),
             workCharacteristicAnswers: record.workCharacteristicAnswers,
+            validationHistory: record.validationRuns,
             signal,
           });
-          await repo.saveFollowUps(
+          await repo.saveValidationRun(
             record.id,
+            validationInputSnapshotSchema.parse({
+              mainAnswers: record.mainAnswers,
+              workCharacteristicAnswers: record.workCharacteristicAnswers,
+              selectedUploadIds: record.selectedUploadIds,
+            }),
+            result.value.previousQuestionReviews,
             result.value.followUps,
             result.trace,
           );
@@ -285,19 +298,9 @@ export function processCaptureRoutes(
     );
     return c.json(queued, 202);
   });
-  app.put("/:id/follow-ups", async (c) => {
-    const body = followUpsSchema.parse(await c.req.json());
-    try {
-      return c.json(
-        await repo.saveFollowUpAnswers(c.req.param("id"), body.answers),
-      );
-    } catch (error) {
-      return repositoryError(c, error);
-    }
-  });
   app.post("/:id/synthesize", async (c) => {
-    const record = await repo.required(c.req.param("id"));
-    if (record.state !== "synthesis_ready")
+    let record = await repo.required(c.req.param("id"));
+    if (!["follow_up_required", "synthesis_ready"].includes(record.state))
       return c.json(
         { error: "Das Prozessbild ist noch nicht bereit zur Erstellung." },
         409,
@@ -307,6 +310,8 @@ export function processCaptureRoutes(
         { error: "Für diesen Prozess läuft bereits eine KI-Aktion." },
         409,
       );
+    if (record.state === "follow_up_required")
+      record = await repo.acceptOpenQuestionsForSynthesis(record.id);
     const queued = enqueueProcessOperation(
       record.id,
       "process-synthesis",
@@ -324,6 +329,7 @@ export function processCaptureRoutes(
             workCharacteristicDefinitions:
               workCharacteristicDefinitions(record),
             workCharacteristicAnswers: record.workCharacteristicAnswers,
+            validationHistory: record.validationRuns,
             followUps: record.followUps,
             followUpAnswers: record.followUpAnswers,
             signal,

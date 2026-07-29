@@ -6,6 +6,9 @@ export type {
   WorkCharacteristicAnswer,
   WorkCharacteristicDefinition,
   FollowUpAnswer,
+  PreviousQuestionReview,
+  ValidationInputSnapshot,
+  ValidationRun,
   UploadRecord,
   UnderstandingSection,
 } from "../../../../packages/domain/src/process-understanding";

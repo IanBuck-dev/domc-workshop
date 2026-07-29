@@ -7,6 +7,7 @@ import {
   type ProcessCaptureConfig,
   type ProcessUnderstanding,
   type TopicAnswer,
+  type ValidationInputSnapshot,
   type WorkCharacteristicAnswer,
 } from "../packages/domain/src/process-understanding.ts";
 
@@ -66,6 +67,18 @@ export function workCharacteristicAnswers(): WorkCharacteristicAnswer[] {
       answeredAt,
     },
   ];
+}
+
+export function validationInputSnapshot(
+  mainAnswers = answers(),
+  characteristics = workCharacteristicAnswers(),
+  selectedUploadIds: string[] = [],
+): ValidationInputSnapshot {
+  return {
+    mainAnswers,
+    workCharacteristicAnswers: characteristics,
+    selectedUploadIds,
+  };
 }
 
 const stringFact = (value: string | null, evidenceIds = ["purpose-scope"]) => ({

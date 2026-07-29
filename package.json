@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "dev": "bun run scripts/dev.ts",
+    "dev:local-no-sandbox": "bun run scripts/dev.ts --without-ai-sandbox",
     "build": "bun run scripts/build-release.ts web",
     "build:release": "bun run scripts/build-release.ts release",
     "typecheck": "tsc --noEmit",

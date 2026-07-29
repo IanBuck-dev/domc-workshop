@@ -15,6 +15,7 @@ import {
   cover,
   processConfig,
   understanding,
+  validationInputSnapshot,
   workCharacteristicAnswers,
 } from "./process-fixtures.ts";
 
@@ -38,7 +39,16 @@ export async function confirmedProcess(
     workCharacteristicAnswers(),
     [],
   );
-  record = await repository.saveFollowUps(record.id, [], aiTrace());
+  record = await repository.saveValidationRun(
+    record.id,
+    validationInputSnapshot(
+      record.mainAnswers,
+      record.workCharacteristicAnswers,
+    ),
+    [],
+    [],
+    aiTrace(),
+  );
   record = await repository.saveUnderstanding(
     record.id,
     understanding(),

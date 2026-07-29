@@ -43,6 +43,9 @@
   .work-characteristic-options {
     grid-template-columns: 1fr;
   }
+  .validation-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 1099px) {
@@ -169,6 +172,14 @@
   }
   .confirmation-dialog > footer .button,
   .confirmation-dialog > footer .danger-button {
+    width: 100%;
+  }
+  .validation-actions {
+    display: grid !important;
+    grid-auto-flow: row;
+    justify-content: stretch;
+  }
+  .validation-actions .button {
     width: 100%;
   }
   .edit-actions {

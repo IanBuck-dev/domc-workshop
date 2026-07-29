@@ -12,6 +12,7 @@ import {
   coverSchema,
   followUpAnswerSchema,
   followUpQuestionSchema,
+  previousQuestionReviewSchema,
   processCaptureConfigSchema,
   processCaptureRecordSchema,
   processStateSchema,
@@ -19,13 +20,17 @@ import {
   processUnderstandingSchema,
   topicAnswerSchema,
   uploadRecordSchema,
+  validationInputSnapshotSchema,
+  validationRunSchema,
   workCharacteristicAnswerSchema,
   type AiTrace,
   type FollowUpQuestion,
+  type PreviousQuestionReview,
   type ProcessCaptureConfig,
   type ProcessCaptureRecord,
   type ProcessUnderstanding,
   type UploadRecord,
+  type ValidationInputSnapshot,
   type WorkCharacteristicAnswer,
 } from "../../domain/src/process-understanding.ts";
 import { atomicWrite } from "./atomic-write.ts";
@@ -55,6 +60,7 @@ const answersFileSchema = z.object({
 const followUpsFileSchema = z.object({
   questions: z.array(followUpQuestionSchema).max(5),
   answers: z.array(followUpAnswerSchema).max(5),
+  validationRuns: z.array(validationRunSchema).default([]),
 });
 const auditEntrySchema = z.object({
   at: z.string().datetime(),
@@ -325,6 +331,7 @@ export class ProcessCaptureRepository {
         workCharacteristicAnswers: answers.workCharacteristicAnswers ?? [],
         followUps: followUps.questions,
         followUpAnswers: followUps.answers,
+        validationRuns: followUps.validationRuns,
         understanding,
         uploads,
       });
@@ -376,6 +383,7 @@ export class ProcessCaptureRepository {
       workCharacteristicAnswers: [],
       followUps: [],
       followUpAnswers: [],
+      validationRuns: [],
       selectedUploadIds: [],
       understanding: null,
       uploads: [],
@@ -400,7 +408,13 @@ export class ProcessCaptureRepository {
     selectedUploadIds: string[],
   ) {
     const record = await this.required(id);
-    if (record.state !== "capture_in_progress")
+    if (
+      ![
+        "capture_in_progress",
+        "follow_up_required",
+        "synthesis_ready",
+      ].includes(record.state)
+    )
       throw new Error(
         "Die Hauptantworten können in diesem Status nicht geändert werden.",
       );
@@ -410,6 +424,31 @@ export class ProcessCaptureRepository {
       workCharacteristicInput,
     );
     this.assertSelectedUploads(record, selectedUploadIds);
+    let validationRuns = record.validationRuns;
+    if (!validationRuns.length && record.followUps.length) {
+      const baseline = validationRunSchema.parse({
+        runNumber: 1,
+        completedAt: record.updatedAt,
+        inputSnapshot: this.validationInputSnapshot(record),
+        questions: record.followUps,
+        previousQuestionReviews: [],
+        trace: null,
+      });
+      validationRuns = [baseline];
+      await this.writeJson(id, "follow-ups.json", {
+        questions: record.followUps,
+        answers: record.followUpAnswers,
+        validationRuns,
+      });
+    }
+    const previousSnapshot = validationRuns.length
+      ? this.validationInputSnapshot(record)
+      : null;
+    const nextSnapshot = validationInputSnapshotSchema.parse({
+      mainAnswers: answers,
+      workCharacteristicAnswers,
+      selectedUploadIds,
+    });
     await this.writeJson(id, "answers.json", {
       mainAnswers: answers,
       workCharacteristicAnswers,
@@ -421,17 +460,33 @@ export class ProcessCaptureRepository {
       workCharacteristicAnswers,
       selectedUploadIds,
     });
+    if (
+      validationRuns.length &&
+      previousSnapshot &&
+      canonical(previousSnapshot) !== canonical(nextSnapshot)
+    )
+      await audit(
+        join(this.dir(id), "history.jsonl"),
+        "validation-input-updated",
+        { previous: previousSnapshot, next: nextSnapshot },
+      );
     return this.required(id);
   }
 
-  async saveFollowUps(
+  async saveValidationRun(
     id: string,
+    inputSnapshotInput: ValidationInputSnapshot,
+    previousQuestionReviewsInput: PreviousQuestionReview[],
     questionsInput: FollowUpQuestion[],
     trace: AiTrace,
   ) {
     const record = await this.required(id);
     if (
-      record.state !== "capture_in_progress" ||
+      ![
+        "capture_in_progress",
+        "follow_up_required",
+        "synthesis_ready",
+      ].includes(record.state) ||
       record.mainAnswers.length !== 5
     )
       throw new Error(
@@ -448,46 +503,63 @@ export class ProcessCaptureRepository {
       throw new Error(
         "Pro Themenbereich ist höchstens eine Rückfrage zulässig.",
       );
-    await this.writeJson(id, "follow-ups.json", { questions, answers: [] });
+    const inputSnapshot =
+      validationInputSnapshotSchema.parse(inputSnapshotInput);
+    const previousQuestionReviews = z
+      .array(previousQuestionReviewSchema)
+      .max(5)
+      .parse(previousQuestionReviewsInput);
+    const previousQuestions = record.validationRuns.at(-1)?.questions ?? [];
+    const reviews = new Map(
+      previousQuestionReviews.map((review) => [review.questionId, review]),
+    );
+    if (
+      reviews.size !== previousQuestionReviews.length ||
+      reviews.size !== previousQuestions.length ||
+      previousQuestions.some(
+        (question) => reviews.get(question.id)?.topicId !== question.topicId,
+      )
+    )
+      throw new Error(
+        "Jede Rückfrage der vorigen Prüfung muss genau einmal bewertet werden.",
+      );
+    const completedAt = new Date().toISOString();
+    const validationRun = validationRunSchema.parse({
+      runNumber: record.validationRuns.length + 1,
+      completedAt,
+      inputSnapshot,
+      questions,
+      previousQuestionReviews,
+      trace,
+    });
+    await this.writeJson(id, "follow-ups.json", {
+      questions,
+      answers: record.followUpAnswers,
+      validationRuns: [...record.validationRuns, validationRun],
+    });
     await this.touch(
       record,
       questions.length ? "follow_up_required" : "synthesis_ready",
     );
     await this.recordAiOperation(id, "process-follow-ups", "completed", trace);
-    await audit(join(this.dir(id), "history.jsonl"), "follow-ups-generated", {
-      questions,
-      trace,
-    });
+    await audit(
+      join(this.dir(id), "history.jsonl"),
+      "validation-run-completed",
+      validationRun,
+    );
     return this.required(id);
   }
 
-  async saveFollowUpAnswers(id: string, input: unknown) {
+  async acceptOpenQuestionsForSynthesis(id: string) {
     const record = await this.required(id);
-    if (record.state !== "follow_up_required")
-      throw new Error("Es sind keine Rückfragen zu beantworten.");
-    const answers = z
-      .array(followUpAnswerSchema)
-      .length(record.followUps.length)
-      .parse(input);
-    const expected = new Map(
-      record.followUps.map((question) => [question.id, question.topicId]),
+    if (record.state !== "follow_up_required" || !record.followUps.length)
+      throw new Error("Es sind keine offenen Rückfragen zu übernehmen.");
+    await audit(
+      join(this.dir(id), "history.jsonl"),
+      "open-validation-questions-accepted",
+      { questions: record.followUps },
     );
-    if (
-      answers.some(
-        (answer) => expected.get(answer.questionId) !== answer.topicId,
-      ) ||
-      new Set(answers.map((answer) => answer.questionId)).size !==
-        answers.length
-    )
-      throw new Error("Bitte beantworten Sie jede Rückfrage genau einmal.");
-    await this.writeJson(id, "follow-ups.json", {
-      questions: record.followUps,
-      answers,
-    });
     await this.touch(record, "synthesis_ready");
-    await audit(join(this.dir(id), "history.jsonl"), "follow-ups-answered", {
-      answers,
-    });
     return this.required(id);
   }
 
@@ -501,9 +573,26 @@ export class ProcessCaptureRepository {
       throw new Error(
         "Das Prozessbild kann in diesem Status nicht gespeichert werden.",
       );
+    const parsed = processUnderstandingSchema.parse(input);
+    const answeredQuestionIds = new Set(
+      record.validationRuns.length
+        ? []
+        : record.followUpAnswers.map((answer) => answer.questionId),
+    );
+    const unresolvedQuestions = record.followUps
+      .filter((question) => !answeredQuestionIds.has(question.id))
+      .map((question) => question.question);
     const understanding = assertUnderstandingReferences(
       record,
-      processUnderstandingSchema.parse(input),
+      processUnderstandingSchema.parse({
+        ...parsed,
+        knowledgeGaps: [
+          ...parsed.knowledgeGaps,
+          ...unresolvedQuestions.filter(
+            (question) => !parsed.knowledgeGaps.includes(question),
+          ),
+        ],
+      }),
     );
     await this.writeJson(id, "process-understanding.json", understanding);
     await this.touch(record, "review_required");
@@ -631,7 +720,13 @@ export class ProcessCaptureRepository {
 
   async saveUpload(id: string, file: File) {
     const record = await this.required(id);
-    if (record.state !== "capture_in_progress")
+    if (
+      ![
+        "capture_in_progress",
+        "follow_up_required",
+        "synthesis_ready",
+      ].includes(record.state)
+    )
       throw new Error("Dateien können nur vor der Analyse hochgeladen werden.");
     if (record.uploads.length >= record.configSnapshot.uploads.maxFiles)
       throw new Error("Es können höchstens fünf Dateien hochgeladen werden.");
@@ -693,7 +788,13 @@ export class ProcessCaptureRepository {
 
   async removeUpload(id: string, uploadId: string) {
     const record = await this.required(id);
-    if (record.state !== "capture_in_progress")
+    if (
+      ![
+        "capture_in_progress",
+        "follow_up_required",
+        "synthesis_ready",
+      ].includes(record.state)
+    )
       throw new Error("Dateien können nach der Analyse nicht entfernt werden.");
     const upload = record.uploads.find((item) => item.id === uploadId);
     if (!upload) throw new Error("Datei nicht gefunden.");
@@ -709,6 +810,24 @@ export class ProcessCaptureRepository {
           (selectedId) => selectedId !== uploadId,
         ),
       });
+    if (
+      record.validationRuns.length &&
+      record.selectedUploadIds.includes(uploadId)
+    )
+      await audit(
+        join(this.dir(id), "history.jsonl"),
+        "validation-input-updated",
+        {
+          previous: this.validationInputSnapshot(record),
+          next: validationInputSnapshotSchema.parse({
+            mainAnswers: record.mainAnswers,
+            workCharacteristicAnswers: record.workCharacteristicAnswers,
+            selectedUploadIds: record.selectedUploadIds.filter(
+              (selectedId) => selectedId !== uploadId,
+            ),
+          }),
+        },
+      );
     await this.touch(record);
     await audit(join(this.dir(id), "history.jsonl"), "file-removed", upload);
   }
@@ -785,6 +904,7 @@ export class ProcessCaptureRepository {
       this.writeJson(record.id, "follow-ups.json", {
         questions: record.followUps,
         answers: record.followUpAnswers,
+        validationRuns: record.validationRuns,
       }),
       this.writeJson(
         record.id,
@@ -792,6 +912,18 @@ export class ProcessCaptureRepository {
         record.understanding,
       ),
     ]);
+  }
+  private validationInputSnapshot(
+    record: Pick<
+      ProcessCaptureRecord,
+      "mainAnswers" | "workCharacteristicAnswers" | "selectedUploadIds"
+    >,
+  ) {
+    return validationInputSnapshotSchema.parse({
+      mainAnswers: record.mainAnswers,
+      workCharacteristicAnswers: record.workCharacteristicAnswers,
+      selectedUploadIds: record.selectedUploadIds,
+    });
   }
   private async writeMetadata(
     record: Pick<

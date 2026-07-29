@@ -39,13 +39,13 @@ describe("process navigation model", () => {
     });
     expect(processNavigationModel(process("follow_up_required"))).toMatchObject(
       {
-        listStatus: "Rückfragen",
-        capture: { status: "Rückfragen offen", actionLabel: "Antworten" },
+        listStatus: "Angaben ergänzen",
+        capture: { status: "Angaben ergänzen", actionLabel: "Ergänzen" },
       },
     );
     expect(processNavigationModel(process("synthesis_ready"))).toMatchObject({
       listStatus: "In Erfassung",
-      capture: { status: "Bereit", actionLabel: "Erstellen" },
+      capture: { status: "Angaben geprüft", actionLabel: "Fortfahren" },
     });
     expect(processNavigationModel(process("review_required"))).toMatchObject({
       listStatus: "Zur Prüfung",
