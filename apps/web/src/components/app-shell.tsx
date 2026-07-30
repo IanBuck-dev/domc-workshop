@@ -5,7 +5,6 @@ import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
 import { DemoDataWarning } from "./demo-data-warning";
 import { AiOperationQueue } from "./ai-operation-queue";
-import { PublicFooter } from "./public-footer";
 const nav = [
   ["/", "Prozesse", ListTree],
   ["/processes/new", "Prozess erfassen", PlusCircle],
@@ -27,9 +26,6 @@ export function AppShell({
             to="/"
           >
             <BrandLockup />
-            <span className="hidden text-sm text-muted-foreground sm:inline">
-              Prozessaufnahme
-            </span>
           </NavLink>
           <nav aria-label="Hauptnavigation" className="flex items-center gap-1">
             {nav.map(([to, label, Icon]) => (
@@ -62,10 +58,7 @@ export function AppShell({
       </header>
       <DemoDataWarning />
       <AiOperationQueue />
-      <div>
-        <main>{children}</main>
-        <PublicFooter />
-      </div>
+      <main>{children}</main>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import type {
   WorkCharacteristicDefinition,
 } from "../lib/process-types";
 import { Card } from "./ui/card";
+import { Textarea } from "./ui/textarea";
 export function ProcessTopicCard({
   topic,
   value,
@@ -27,40 +28,47 @@ export function ProcessTopicCard({
   validationCommentId?: string;
 }) {
   return (
-    <Card as="article" elevation="flat" className="topic-card">
-      <span className="topic-number">{topic.displayOrder}</span>
-      <span className="topic-copy">
-        <b>{topic.name}</b>
-        <span>{topic.question}</span>
-        <small>{topic.helpText}</small>
-        <label className="topic-answer-label">
-          <span className="sr-only">Antwort zu {topic.name}</span>
-          <textarea
-            name={`topic-${topic.id}`}
-            rows={4}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder="Antworten Sie gern in Stichpunkten …"
-            required
-            disabled={disabled}
-            aria-describedby={validationCommentId}
-          />
-        </label>
-        {characteristics.map((characteristic) => (
-          <WorkCharacteristicFieldset
-            key={characteristic.id}
-            definition={characteristic}
-            selected={selections[characteristic.id] ?? []}
-            showValidationError={invalidCharacteristicIds.has(
-              characteristic.id,
-            )}
-            onChange={(optionIds) =>
-              onSelectionChange(characteristic.id, optionIds)
-            }
-            disabled={disabled}
-          />
-        ))}
-      </span>
+    <Card as="article" className="gap-0 p-5 sm:p-6">
+      <div className="grid grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-4">
+        <span className="grid size-9 place-items-center rounded-full bg-secondary text-sm font-bold text-primary">
+          {topic.displayOrder}
+        </span>
+        <div className="min-w-0 space-y-3">
+          <h3 className="text-lg font-semibold">{topic.name}</h3>
+          <p className="font-medium leading-6">{topic.question}</p>
+          <p className="text-sm leading-5 text-muted-foreground">
+            {topic.helpText}
+          </p>
+          <label className="block">
+            <span className="sr-only">Antwort zu {topic.name}</span>
+            <Textarea
+              name={`topic-${topic.id}`}
+              rows={4}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder="Antworten Sie gern in Stichpunkten …"
+              required
+              disabled={disabled}
+              aria-describedby={validationCommentId}
+              className="min-h-28 resize-y"
+            />
+          </label>
+          {characteristics.map((characteristic) => (
+            <WorkCharacteristicFieldset
+              key={characteristic.id}
+              definition={characteristic}
+              selected={selections[characteristic.id] ?? []}
+              showValidationError={invalidCharacteristicIds.has(
+                characteristic.id,
+              )}
+              onChange={(optionIds) =>
+                onSelectionChange(characteristic.id, optionIds)
+              }
+              disabled={disabled}
+            />
+          ))}
+        </div>
+      </div>
     </Card>
   );
 }
@@ -94,7 +102,7 @@ function WorkCharacteristicFieldset({
   }
   return (
     <fieldset
-      className={`work-characteristic${showValidationError ? " is-invalid" : ""}`}
+      className={`mt-5 rounded-lg border bg-muted/30 p-4 ${showValidationError ? "border-destructive" : "border-border"}`}
       aria-describedby={
         showValidationError
           ? `work-characteristic-error-${definition.id}`
@@ -105,11 +113,18 @@ function WorkCharacteristicFieldset({
       data-work-characteristic-id={definition.id}
       tabIndex={-1}
     >
-      <legend>{definition.question}</legend>
-      <small>{definition.helpText}</small>
-      <div className="work-characteristic-options">
+      <legend className="max-w-3xl px-1 font-semibold leading-6">
+        {definition.question}
+      </legend>
+      <p className="mb-3 text-sm text-muted-foreground">
+        {definition.helpText}
+      </p>
+      <div className="grid gap-2 sm:grid-cols-2">
         {definition.options.map((option) => (
-          <label key={option.id}>
+          <label
+            key={option.id}
+            className="flex cursor-pointer items-start gap-3 rounded-md border border-border bg-card p-3 text-sm font-medium leading-5 transition-colors has-[:checked]:border-primary has-[:checked]:bg-secondary"
+          >
             <input
               type={definition.selection === "single" ? "radio" : "checkbox"}
               name={`work-characteristic-${definition.id}`}
@@ -120,6 +135,7 @@ function WorkCharacteristicFieldset({
                 definition.selection === "single" && selected.length === 0
               }
               disabled={disabled}
+              className="mt-0.5 size-4 shrink-0 accent-primary"
             />
             <span>{option.label}</span>
           </label>
@@ -127,7 +143,7 @@ function WorkCharacteristicFieldset({
       </div>
       {showValidationError && (
         <span
-          className="field-error"
+          className="mt-3 block text-sm font-semibold text-destructive"
           id={`work-characteristic-error-${definition.id}`}
           role="alert"
         >

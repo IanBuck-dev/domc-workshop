@@ -8,7 +8,12 @@ import type {
   ProcessCaptureRecord,
 } from "../lib/process-types";
 import { Button } from "../components/ui/button";
-import { Card, CardContent } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import {
@@ -89,10 +94,13 @@ export function ProcessStartPage() {
           Schritt 1 von 2
         </p>
         <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-          Grunddaten zum Prozess
+          Prozesserfassung
         </h1>
       </div>
       <Card className="border-border shadow-sm">
+        <CardHeader className="border-b px-6 pb-5 sm:px-10">
+          <CardTitle className="text-xl">Grunddaten</CardTitle>
+        </CardHeader>
         <CardContent className="p-6 sm:p-10">
           <form noValidate onSubmit={submit} className="space-y-8">
             <div className="grid gap-x-7 gap-y-5 sm:grid-cols-2">

@@ -21,8 +21,6 @@ export interface ModuleNavigationState {
 }
 
 export interface ProcessNavigationModel {
-  listStatus: string;
-  listTone: NavigationTone;
   capture: ModuleNavigationState;
   opportunity: ModuleNavigationState;
 }
@@ -82,45 +80,10 @@ export function processNavigationModel(
 ): ProcessNavigationModel {
   const capture = captureStates[process.state];
   const opportunityState = opportunityModuleState(process, opportunity);
-  const list = listState(process.state, opportunity);
   return {
-    listStatus: list.status,
-    listTone: list.tone,
     capture,
     opportunity: opportunityState,
   };
-}
-
-function listState(
-  state: ProcessCaptureRecord["state"],
-  opportunity?: OpportunityDiscoverySummary,
-) {
-  if (opportunity?.isStale)
-    return { status: "Veraltet", tone: "warning" } as const;
-  if (opportunity) {
-    if (
-      opportunity.state === "hypotheses_queued" ||
-      opportunity.state === "hypotheses_running" ||
-      opportunity.state === "scenarios_running"
-    )
-      return { status: "Analyse läuft", tone: "info" } as const;
-    if (opportunity.state.endsWith("failed"))
-      return { status: "Analyse prüfen", tone: "danger" } as const;
-    if (opportunity.state === "no_supported_hypotheses")
-      return { status: "Analysiert", tone: "success" } as const;
-    if (opportunity.state === "completed")
-      return {
-        status: `${opportunity.scenarioCount} Szenarien`,
-        tone: "success",
-      } as const;
-  }
-  if (state === "capture_in_progress" || state === "synthesis_ready")
-    return { status: "In Erfassung", tone: "neutral" } as const;
-  if (state === "follow_up_required")
-    return { status: "Angaben ergänzen", tone: "warning" } as const;
-  if (state === "review_required")
-    return { status: "Zur Prüfung", tone: "warning" } as const;
-  return { status: "Bestätigt", tone: "success" } as const;
 }
 
 function opportunityModuleState(

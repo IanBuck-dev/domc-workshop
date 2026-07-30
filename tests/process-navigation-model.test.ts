@@ -30,29 +30,24 @@ function opportunity(
 }
 
 describe("process navigation model", () => {
-  test("maps every capture state to a compact list and module action", () => {
+  test("maps every capture state to a module action", () => {
     expect(
       processNavigationModel(process("capture_in_progress")),
     ).toMatchObject({
-      listStatus: "In Erfassung",
       capture: { status: "In Bearbeitung", actionLabel: "Fortsetzen" },
     });
     expect(processNavigationModel(process("follow_up_required"))).toMatchObject(
       {
-        listStatus: "Angaben ergänzen",
         capture: { status: "Angaben ergänzen", actionLabel: "Ergänzen" },
       },
     );
     expect(processNavigationModel(process("synthesis_ready"))).toMatchObject({
-      listStatus: "In Erfassung",
       capture: { status: "Angaben geprüft", actionLabel: "Fortfahren" },
     });
     expect(processNavigationModel(process("review_required"))).toMatchObject({
-      listStatus: "Zur Prüfung",
       capture: { status: "Prüfung offen", actionLabel: "Prüfen" },
     });
     expect(processNavigationModel(process("confirmed"))).toMatchObject({
-      listStatus: "Bestätigt",
       capture: { status: "Fachlich bestätigt", actionLabel: "Ansehen" },
       opportunity: { status: "Nicht gestartet", actionLabel: "Starten" },
     });
@@ -65,7 +60,6 @@ describe("process navigation model", () => {
         opportunity("hypotheses_running"),
       ),
     ).toMatchObject({
-      listStatus: "Analyse läuft",
       opportunity: { actionLabel: "Fortschritt" },
     });
     expect(
@@ -74,7 +68,6 @@ describe("process navigation model", () => {
         opportunity("scenarios_failed"),
       ),
     ).toMatchObject({
-      listStatus: "Analyse prüfen",
       opportunity: { status: "Unterbrochen" },
     });
     expect(
@@ -83,13 +76,11 @@ describe("process navigation model", () => {
         opportunity("no_supported_hypotheses"),
       ),
     ).toMatchObject({
-      listStatus: "Analysiert",
       opportunity: { actionLabel: "Ergebnis" },
     });
     expect(
       processNavigationModel(process("confirmed"), opportunity("completed")),
     ).toMatchObject({
-      listStatus: "3 Szenarien",
       opportunity: { actionLabel: "Szenarien" },
     });
     expect(
@@ -98,7 +89,6 @@ describe("process navigation model", () => {
         opportunity("completed", { isStale: true }),
       ),
     ).toMatchObject({
-      listStatus: "Veraltet",
       opportunity: { status: "Veraltet", actionLabel: "Ansehen" },
     });
   });

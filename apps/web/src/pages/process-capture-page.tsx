@@ -190,32 +190,40 @@ export function ProcessCapturePage() {
 
   if (!record)
     return (
-      <section className="narrow-page">
+      <section className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
         <p>{error || "Prozess wird geladen …"}</p>
       </section>
     );
 
   return (
-    <section className="capture-page">
-      <Link className="back-link" to={`/processes/${id}`}>
-        <ArrowLeft /> Zum Prozess
+    <section className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+      <Link
+        className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+        to={`/processes/${id}`}
+      >
+        <ArrowLeft className="size-4" /> Zum Prozess
       </Link>
-      <div className="capture-heading">
+      <div className="space-y-3">
         <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
           Seite 2 von 2 · {record.id}
         </p>
-        <div className="capture-title-row">
-          <h1>{record.cover.processName}</h1>
+        <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+          <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
+            {record.cover.processName}
+          </h1>
           <CaptureProgress current={progress} />
         </div>
-        <p>
+        <p className="text-muted-foreground">
           {record.cover.department} · eingereicht von{" "}
           {record.cover.participantName}
         </p>
       </div>
 
       {error && (
-        <p className="notice error" role="alert">
+        <p
+          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+          role="alert"
+        >
           {error}
         </p>
       )}
@@ -228,25 +236,28 @@ export function ProcessCapturePage() {
         "follow_up_required",
         "synthesis_ready",
       ].includes(record.state) && (
-        <form onSubmit={submitMainAnswers} className="capture-form">
-          <Card className="intro-panel">
+        <form onSubmit={submitMainAnswers} className="space-y-5">
+          <Card className="gap-3 p-5 sm:p-6">
             <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
               Angaben erfassen und prüfen
             </p>
-            <h2>
+            <h2 className="text-xl font-semibold">
               {hasCompletedValidation
                 ? "Prüfen und ergänzen Sie Ihre Angaben direkt im Formular."
                 : "Teilen Sie Ihr Fachwissen in fünf Themenblöcken."}
             </h2>
-            <p>
+            <p className="leading-6 text-muted-foreground">
               {hasCompletedValidation
                 ? "Die Rückmeldungen rechts sind Hinweise. Ändern Sie bei Bedarf den zugehörigen Text links und starten Sie die Prüfung ausdrücklich erneut – oder fahren Sie mit dem aktuellen Stand fort."
                 : "Antworten Sie in Ihren eigenen Worten und gern in Stichpunkten. Auf Basis Ihrer Angaben werden höchstens fünf gezielte Rückfragen gestellt."}
             </p>
           </Card>
-          <fieldset className="validation-inputs" disabled={locked}>
+          <fieldset
+            className="min-w-0 border-0 p-0 disabled:opacity-70"
+            disabled={locked}
+          >
             <legend className="sr-only">Fachliche Prozessangaben</legend>
-            <div className="topic-list">
+            <div className="grid gap-4">
               {[...record.configSnapshot.topics]
                 .sort((a, b) => a.displayOrder - b.displayOrder)
                 .map((topic) => {
@@ -254,7 +265,10 @@ export function ProcessCapturePage() {
                     (item) => item.topicId === topic.id,
                   );
                   return (
-                    <div className="validation-row" key={topic.id}>
+                    <div
+                      className="grid gap-3 lg:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]"
+                      key={topic.id}
+                    >
                       <ProcessTopicCard
                         topic={topic}
                         value={answers[topic.id] ?? ""}
@@ -306,8 +320,8 @@ export function ProcessCapturePage() {
             onSelectionChange={setSelectedUploadIds}
             onError={setError}
           />
-          <div className="submit-bar">
-            <div>
+          <Card className="gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+            <div className="space-y-1">
               <b>
                 {hasCompletedValidation
                   ? record.followUps.length
@@ -315,13 +329,13 @@ export function ProcessCapturePage() {
                     : "Alle Angaben geprüft"
                   : "Nächster Schritt"}
               </b>
-              <span>
+              <span className="block text-sm leading-5 text-muted-foreground">
                 {hasCompletedValidation
                   ? "Sie entscheiden, ob Sie erneut prüfen oder mit dem aktuellen Stand fortfahren."
                   : "Nur materielle Verständnislücken führen zu einer Rückfrage."}
               </span>
             </div>
-            <div className="validation-actions">
+            <div className="flex flex-wrap gap-3">
               <Button
                 type="submit"
                 variant={hasCompletedValidation ? "secondary" : "primary"}
@@ -356,7 +370,7 @@ export function ProcessCapturePage() {
                 </Button>
               )}
             </div>
-          </div>
+          </Card>
         </form>
       )}
 
@@ -403,7 +417,7 @@ function CaptureProgress({ current }: { current: number }) {
   const labels = ["Beschreiben", "Ergänzen", "Prüfen", "Bestätigt"];
   return (
     <ol
-      className="capture-progress"
+      className="flex min-w-[22rem] list-none justify-between p-0 xl:w-[28rem]"
       aria-label={`Fortschritt: Schritt ${current} von 4`}
     >
       {labels.map((label, index) => {
@@ -412,12 +426,18 @@ function CaptureProgress({ current }: { current: number }) {
           step === current ? "current" : step < current ? "completed" : "";
         return (
           <li
-            className={state}
+            className={`relative flex flex-1 flex-col items-center gap-1 text-sm text-muted-foreground before:absolute before:right-1/2 before:top-4 before:-z-0 before:h-px before:w-full before:bg-border first:before:hidden ${state ? "text-primary" : ""}`}
             key={label}
             aria-current={step === current ? "step" : undefined}
           >
-            <span>{index + 1}</span>
-            <small>{label}</small>
+            <span
+              className={`z-10 grid size-8 place-items-center rounded-full border-2 border-border bg-background text-xs font-bold ${state === "current" ? "border-primary bg-primary text-primary-foreground" : state === "completed" ? "border-primary text-primary" : ""}`}
+            >
+              {index + 1}
+            </span>
+            <small className="z-10 bg-background px-1 text-center">
+              {label}
+            </small>
           </li>
         );
       })}
@@ -436,11 +456,15 @@ function OperationPanel({
 }) {
   if (operation.state === "failed")
     return (
-      <Card as="section" className="operation-panel failed" role="alert">
-        <AlertTriangle />
-        <div>
+      <Card
+        as="section"
+        className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 border-destructive/30 bg-destructive/5 p-4"
+        role="alert"
+      >
+        <AlertTriangle className="size-5 text-destructive" />
+        <div className="space-y-1">
           <b>Die Verarbeitung konnte nicht abgeschlossen werden.</b>
-          <p>{operation.error}</p>
+          <p className="text-sm text-muted-foreground">{operation.error}</p>
         </div>
         <Button
           variant="primary"
@@ -456,11 +480,15 @@ function OperationPanel({
       ? "Ihre Angaben werden auf Verständnislücken geprüft."
       : "Ihr Prozessbild wird erstellt.";
   return (
-    <Card as="section" className="operation-panel" aria-live="polite">
-      <LoaderCircle className="spin" />
-      <div>
+    <Card
+      as="section"
+      className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-4 p-4"
+      aria-live="polite"
+    >
+      <LoaderCircle className="size-5 animate-spin text-primary" />
+      <div className="space-y-1">
         <b>{label}</b>
-        <p>
+        <p className="text-sm leading-5 text-muted-foreground">
           {operation.state === "queued"
             ? `Die Aktion wartet${operation.position > 0 ? ` an Position ${operation.position}` : ""}. Sie können die Seite verlassen und später zurückkehren.`
             : "Die Verarbeitung läuft. Ihre Angaben bleiben auch bei einem Seitenwechsel gespeichert."}

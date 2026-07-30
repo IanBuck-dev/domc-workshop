@@ -2,8 +2,9 @@ import { FileText, Paperclip, Trash2, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { api } from "../lib/api-client";
 import type { ProcessCaptureRecord, UploadRecord } from "../lib/process-types";
-import { Button, IconButton } from "./ui/button";
-import { Card } from "./ui/card";
+import { Button } from "./ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Checkbox } from "./ui/checkbox";
 
 export function ProcessUploadPicker({
   processId,
@@ -56,83 +57,88 @@ export function ProcessUploadPicker({
   }
 
   return (
-    <Card as="section" className="upload-panel" aria-labelledby="upload-title">
-      <div className="section-head compact">
-        <div>
+    <Card as="section" className="gap-0" aria-labelledby="upload-title">
+      <CardHeader className="flex-row items-start justify-between px-5 pb-4 sm:px-6">
+        <div className="space-y-1">
           <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
             Freiwillig
           </p>
-          <h2 id="upload-title">Vorhandene Unterlagen</h2>
+          <CardTitle id="upload-title">Vorhandene Unterlagen</CardTitle>
         </div>
-        <span>
+        <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-secondary-foreground">
           {uploads.length} von {configLimit}
         </span>
-      </div>
-      <p>
-        Gute, aktuelle Unterlagen helfen beim Einordnen. Wählen Sie aus, welche
-        Dateien für diese Prozessaufnahme berücksichtigt werden sollen.
-      </p>
-      {uploads.length > 0 && (
-        <ul className="upload-list">
-          {uploads.map((upload) => (
-            <li key={upload.id}>
-              <label>
-                <input
-                  name={`upload-${upload.id}-selected`}
-                  type="checkbox"
-                  checked={selectedIds.includes(upload.id)}
+      </CardHeader>
+      <CardContent className="space-y-4 px-5 sm:px-6">
+        <p className="text-sm leading-6 text-muted-foreground">
+          Gute, aktuelle Unterlagen helfen beim Einordnen. Wählen Sie aus,
+          welche Dateien für diese Prozessaufnahme berücksichtigt werden sollen.
+        </p>
+        {uploads.length > 0 && (
+          <ul className="divide-y rounded-lg border border-border">
+            {uploads.map((upload) => (
+              <li key={upload.id} className="flex items-center gap-3 p-3">
+                <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
+                  <Checkbox
+                    name={`upload-${upload.id}-selected`}
+                    checked={selectedIds.includes(upload.id)}
+                    disabled={disabled || busy}
+                    onCheckedChange={(checked) =>
+                      onSelectionChange(
+                        checked === true
+                          ? [...selectedIds, upload.id]
+                          : selectedIds.filter((id) => id !== upload.id),
+                      )
+                    }
+                  />
+                  <FileText className="size-5 shrink-0 text-primary" />
+                  <span className="min-w-0">
+                    <b className="block truncate text-sm">{upload.name}</b>
+                    <small className="block text-xs text-muted-foreground">
+                      {formatBytes(upload.size)}
+                    </small>
+                  </span>
+                </label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={`Datei ${upload.name} entfernen`}
                   disabled={disabled || busy}
-                  onChange={(event) =>
-                    onSelectionChange(
-                      event.target.checked
-                        ? [...selectedIds, upload.id]
-                        : selectedIds.filter((id) => id !== upload.id),
-                    )
-                  }
-                />
-                <FileText />
-                <span>
-                  <b>{upload.name}</b>
-                  <small>{formatBytes(upload.size)}</small>
-                </span>
-              </label>
-              <IconButton
-                label={`Datei ${upload.name} entfernen`}
-                tone="danger"
-                disabled={disabled || busy}
-                onClick={() => void remove(upload)}
-              >
-                <Trash2 />
-              </IconButton>
-            </li>
-          ))}
-        </ul>
-      )}
-      <input
-        ref={input}
-        name="process-upload"
-        hidden
-        type="file"
-        accept=".pdf,.xlsx,.csv,.docx,.pptx,.txt,.md,.png,.jpg,.jpeg"
-        disabled={disabled || busy || uploads.length >= configLimit}
-        onChange={(event) => {
-          const file = event.target.files?.[0];
-          if (file) void add(file);
-        }}
-      />
-      <Button
-        type="button"
-        variant="secondary"
-        disabled={disabled || busy || uploads.length >= configLimit}
-        onClick={() => input.current?.click()}
-      >
-        {busy ? <Paperclip className="spin" /> : <Upload />}
-        {busy ? "Datei wird verarbeitet …" : "Unterlage hinzufügen"}
-      </Button>
-      <small>
-        PDF, Word, PowerPoint, Excel, CSV, Text oder Bild · höchstens 20 MB je
-        Datei
-      </small>
+                  onClick={() => void remove(upload)}
+                >
+                  <Trash2 className="size-4 text-destructive" />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <input
+          ref={input}
+          name="process-upload"
+          hidden
+          type="file"
+          accept=".pdf,.xlsx,.csv,.docx,.pptx,.txt,.md,.png,.jpg,.jpeg"
+          disabled={disabled || busy || uploads.length >= configLimit}
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) void add(file);
+          }}
+        />
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={disabled || busy || uploads.length >= configLimit}
+          onClick={() => input.current?.click()}
+        >
+          {busy ? <Paperclip className="animate-spin" /> : <Upload />}
+          {busy ? "Datei wird verarbeitet …" : "Unterlage hinzufügen"}
+        </Button>
+        <small className="block text-xs text-muted-foreground">
+          PDF, Word, PowerPoint, Excel, CSV, Text oder Bild · höchstens 20 MB je
+          Datei
+        </small>
+      </CardContent>
     </Card>
   );
 }
