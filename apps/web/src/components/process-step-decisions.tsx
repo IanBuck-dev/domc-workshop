@@ -2,6 +2,8 @@ import { Plus, Trash2 } from "lucide-react";
 import type { ProcessUnderstanding } from "../lib/process-types";
 import { Badge } from "./ui/badge";
 import { Button, IconButton } from "./ui/button";
+import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
 import { cn } from "../lib/utils";
 
 type Step = ProcessUnderstanding["steps"][number];
@@ -38,24 +40,33 @@ export function ProcessStepDecisions({
     );
   const stepById = new Map(steps.map((step) => [step.id, step]));
   return (
-    <section className="step-detail-section">
-      <h3>Varianten und Entscheidungen</h3>
+    <section className="grid gap-3">
+      <h3 className="text-base font-semibold">Varianten und Entscheidungen</h3>
       {decisions.length ? (
-        <div className="decision-list">
+        <div className="grid gap-3">
           {decisions.map((decision) => (
-            <article className="decision-card" key={decision.id}>
-              <header>
-                <h4>{decision.question}</h4>
+            <article
+              className="rounded-lg border bg-muted/20 p-4"
+              key={decision.id}
+            >
+              <header className="flex flex-wrap items-start justify-between gap-3">
+                <h4 className="font-semibold">{decision.question}</h4>
                 <Badge>{decisionModeCopy[decision.mode]}</Badge>
               </header>
               {decision.options.length ? (
-                <div className="step-table-wrap">
-                  <table className="decision-option-table">
+                <div className="overflow-x-auto rounded-lg border bg-card">
+                  <table className="w-full min-w-[38rem] text-sm">
                     <thead>
-                      <tr>
-                        <th scope="col">Option</th>
-                        <th scope="col">Feststellung</th>
-                        <th scope="col">Folge</th>
+                      <tr className="border-b bg-muted/40 text-left">
+                        <th className="px-4 py-3 font-semibold" scope="col">
+                          Option
+                        </th>
+                        <th className="px-4 py-3 font-semibold" scope="col">
+                          Feststellung
+                        </th>
+                        <th className="px-4 py-3 font-semibold" scope="col">
+                          Folge
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -64,18 +75,23 @@ export function ProcessStepDecisions({
                           ? stepById.get(option.nextStepId)
                           : undefined;
                         return (
-                          <tr key={option.id}>
-                            <td data-label="Option">{option.label}</td>
-                            <td data-label="Feststellung">
+                          <tr
+                            className="border-b last:border-b-0"
+                            key={option.id}
+                          >
+                            <td className="px-4 py-3" data-label="Option">
+                              {option.label}
+                            </td>
+                            <td className="px-4 py-3" data-label="Feststellung">
                               {option.determination ??
                                 "Feststellung noch unbekannt"}
                             </td>
-                            <td data-label="Folge">
+                            <td className="px-4 py-3" data-label="Folge">
                               <span>
                                 {option.consequence ?? "Folge noch unbekannt"}
                               </span>
                               {nextStep && (
-                                <small>
+                                <small className="mt-1 block text-muted-foreground">
                                   Weiter mit Schritt {nextStep.order}:{" "}
                                   {nextStep.name}
                                 </small>
@@ -88,7 +104,7 @@ export function ProcessStepDecisions({
                   </table>
                 </div>
               ) : (
-                <p className="empty-value">
+                <p className="text-sm text-muted-foreground">
                   Entscheidungsoptionen noch unbekannt
                 </p>
               )}
@@ -96,7 +112,7 @@ export function ProcessStepDecisions({
           ))}
         </div>
       ) : (
-        <p className="empty-value">
+        <p className="text-sm text-muted-foreground">
           Keine Entscheidung erforderlich oder benannt
         </p>
       )}
@@ -135,12 +151,14 @@ export function ProcessStepDecisionsEditor({
     });
   }
   return (
-    <section className="step-editor-section">
-      <div className="step-editor-section-heading">
-        <h3>Varianten und Entscheidungen</h3>
+    <section className="grid gap-3 rounded-lg border bg-muted/20 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="text-base font-semibold">
+          Varianten und Entscheidungen
+        </h3>
         <Button
           variant="secondary"
-          className="compact-button"
+          className="h-8 px-3 text-xs"
           onClick={() =>
             onChange([
               ...decisions,
@@ -157,14 +175,17 @@ export function ProcessStepDecisionsEditor({
         </Button>
       </div>
       {decisions.length ? (
-        <div className="decision-editor-list">
+        <div className="grid gap-4">
           {decisions.map((decision, decisionIndex) => (
-            <fieldset className="decision-editor-card" key={decision.id}>
+            <fieldset
+              className="grid gap-4 rounded-lg border bg-card p-4"
+              key={decision.id}
+            >
               <legend>Entscheidung {decisionIndex + 1}</legend>
-              <div className="decision-editor-head">
-                <label>
-                  Entscheidungsfrage
-                  <textarea
+              <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_12rem_auto]">
+                <label className="grid gap-2 text-sm font-semibold">
+                  <span>Entscheidungsfrage</span>
+                  <Textarea
                     name={`${stepId}-decision-${decision.id}-question`}
                     rows={2}
                     required
@@ -176,9 +197,10 @@ export function ProcessStepDecisionsEditor({
                     }
                   />
                 </label>
-                <label>
-                  Modus
+                <label className="grid gap-2 text-sm font-semibold">
+                  <span>Modus</span>
                   <select
+                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                     name={`${stepId}-decision-${decision.id}-mode`}
                     value={decision.mode}
                     onChange={(event) =>
@@ -208,11 +230,11 @@ export function ProcessStepDecisionsEditor({
                   <Trash2 />
                 </IconButton>
               </div>
-              <div className="decision-options-heading">
-                <h4>Optionen</h4>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h4 className="font-semibold">Optionen</h4>
                 <Button
                   variant="secondary"
-                  className="compact-button"
+                  className="h-8 px-3 text-xs"
                   onClick={() =>
                     updateDecision(decisionIndex, {
                       options: [
@@ -232,16 +254,16 @@ export function ProcessStepDecisionsEditor({
                 </Button>
               </div>
               {decision.options.length ? (
-                <div className="nested-editor-list">
+                <div className="grid gap-3">
                   {decision.options.map((option, optionIndex) => (
                     <fieldset
-                      className="decision-option-editor"
+                      className="relative grid gap-3 rounded-md border bg-muted/20 p-4 sm:grid-cols-2 lg:grid-cols-4"
                       key={option.id}
                     >
                       <legend>Option {optionIndex + 1}</legend>
-                      <label>
-                        Bezeichnung
-                        <input
+                      <label className="grid gap-2 text-sm font-semibold">
+                        <span>Bezeichnung</span>
+                        <Input
                           name={`${stepId}-decision-${decision.id}-option-${option.id}-label`}
                           required
                           value={option.label}
@@ -254,11 +276,13 @@ export function ProcessStepDecisionsEditor({
                       </label>
                       <label
                         className={cn(
-                          option.determination === null && "missing-field",
+                          "grid gap-2 text-sm font-semibold",
+                          option.determination === null &&
+                            "rounded-md bg-destructive/10 p-2",
                         )}
                       >
                         Feststellung
-                        <textarea
+                        <Textarea
                           name={`${stepId}-decision-${decision.id}-option-${option.id}-determination`}
                           rows={2}
                           value={option.determination ?? ""}
@@ -270,18 +294,20 @@ export function ProcessStepDecisionsEditor({
                           }
                         />
                         {option.determination === null && (
-                          <span className="missing-field-label">
+                          <span className="text-xs text-destructive">
                             Angabe fehlt
                           </span>
                         )}
                       </label>
                       <label
                         className={cn(
-                          option.consequence === null && "missing-field",
+                          "grid gap-2 text-sm font-semibold",
+                          option.consequence === null &&
+                            "rounded-md bg-destructive/10 p-2",
                         )}
                       >
                         Folge
-                        <textarea
+                        <Textarea
                           name={`${stepId}-decision-${decision.id}-option-${option.id}-consequence`}
                           rows={2}
                           value={option.consequence ?? ""}
@@ -293,14 +319,15 @@ export function ProcessStepDecisionsEditor({
                           }
                         />
                         {option.consequence === null && (
-                          <span className="missing-field-label">
+                          <span className="text-xs text-destructive">
                             Angabe fehlt
                           </span>
                         )}
                       </label>
-                      <label>
-                        Optionaler Folgeschritt
+                      <label className="grid gap-2 text-sm font-semibold">
+                        <span>Optionaler Folgeschritt</span>
                         <select
+                          className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                           name={`${stepId}-decision-${decision.id}-option-${option.id}-next-step`}
                           value={option.nextStepId ?? ""}
                           onChange={(event) =>
@@ -320,7 +347,7 @@ export function ProcessStepDecisionsEditor({
                       <IconButton
                         label={`Option ${optionIndex + 1} entfernen`}
                         tone="danger"
-                        className="nested-remove-button"
+                        className="absolute right-3 top-3"
                         onClick={() =>
                           updateDecision(decisionIndex, {
                             options: decision.options.filter(
@@ -335,7 +362,7 @@ export function ProcessStepDecisionsEditor({
                   ))}
                 </div>
               ) : (
-                <p className="empty-value">
+                <p className="text-sm text-muted-foreground">
                   Entscheidungsoptionen noch unbekannt
                 </p>
               )}
@@ -343,7 +370,7 @@ export function ProcessStepDecisionsEditor({
           ))}
         </div>
       ) : (
-        <p className="empty-value">
+        <p className="text-sm text-muted-foreground">
           Keine Entscheidung erforderlich oder benannt
         </p>
       )}

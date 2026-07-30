@@ -16,6 +16,7 @@ import { ProcessUnknowns } from "./process-unknowns";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
+import { Input } from "./ui/input";
 import { cn } from "../lib/utils";
 
 export function ProcessBrief({
@@ -160,21 +161,23 @@ export function ProcessBrief({
   }
 
   return (
-    <div className={cn("review-layout", isEditMode && "edit-mode")}>
-      <Card as="section" className="process-brief process-brief-heading-card">
-        <div className="brief-heading">
+    <div className={cn("space-y-6", isEditMode && "pb-8")}>
+      <Card as="section" className="gap-0 p-6 sm:p-8">
+        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
               Ergebnis
             </p>
-            <h1>Prozesssteckbrief</h1>
-            <p>
+            <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">
+              Prozesssteckbrief
+            </h1>
+            <p className="mt-2 max-w-2xl text-muted-foreground">
               Prüfen Sie das Diagramm und die Details der einzelnen
               Hauptschritte. Fehlende Angaben bleiben sichtbar.
             </p>
           </div>
           {isEditMode ? (
-            <div className="brief-edit-mode-actions">
+            <div className="flex flex-wrap items-center justify-end gap-3">
               <Badge tone="warning">Bearbeitungsmodus</Badge>
               <Button
                 variant="secondary"
@@ -212,9 +215,9 @@ export function ProcessBrief({
         onRequestDeleteStep={setDeleteStepId}
       />
 
-      <Card as="section" className="process-main-flow">
-        <h2>Schritte</h2>
-        <ol className="step-list">
+      <Card as="section" className="gap-5 p-6 sm:p-8">
+        <h2 className="text-2xl font-bold tracking-tight">Schritte</h2>
+        <ol className="space-y-3">
           {orderedSteps.map((step) => (
             <ProcessStepCard
               key={step.id}
@@ -238,10 +241,10 @@ export function ProcessBrief({
       <ProcessUnknowns knowledgeGaps={visibleUnderstanding.knowledgeGaps} />
 
       {isEditMode && (
-        <Card as="section" className="edit-actions">
-          <label>
-            Kurz begründen, was geändert wurde
-            <input
+        <Card as="section" className="gap-5 p-6 sm:p-8">
+          <label className="grid gap-2 text-sm font-semibold">
+            <span>Kurz begründen, was geändert wurde</span>
+            <Input
               name="correction-note"
               value={correctionNote}
               required
@@ -255,16 +258,19 @@ export function ProcessBrief({
             />
           </label>
           {confirmed && (
-            <p className="notice warning">
+            <p className="rounded-lg border border-amber-700/30 bg-amber-50 px-4 py-3 text-sm text-amber-950">
               Durch das Speichern wird die fachliche Bestätigung aufgehoben.
             </p>
           )}
           {validationError && (
-            <p className="notice error edit-validation-error" role="alert">
+            <p
+              className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+              role="alert"
+            >
               {validationError}
             </p>
           )}
-          <div>
+          <div className="flex flex-wrap justify-end gap-3">
             <Button
               variant="secondary"
               disabled={saving}
@@ -284,12 +290,15 @@ export function ProcessBrief({
       )}
 
       {!confirmed && !isEditMode && (
-        <Card as="section" className="confirmation-panel">
-          <div>
-            <Check />
-            <span>
+        <Card
+          as="section"
+          className="flex-row items-center justify-between gap-5 p-6 sm:p-8"
+        >
+          <div className="flex items-start gap-3">
+            <Check className="mt-0.5 size-5 shrink-0 text-primary" />
+            <span className="grid gap-1">
               <b>Fachlich abschließen</b>
-              <small>
+              <small className="text-sm text-muted-foreground">
                 Mit der Bestätigung wird dieses Prozessbild als Grundlage für
                 die spätere Ableitung möglicher KI-Use-Cases festgehalten.
               </small>
@@ -305,8 +314,12 @@ export function ProcessBrief({
         </Card>
       )}
       {confirmed && !isEditMode && (
-        <p className="success-banner" role="status">
-          <Check /> Dieses Prozessbild wurde fachlich bestätigt
+        <p
+          className="flex items-center gap-2 rounded-lg border border-primary/20 bg-secondary px-4 py-3 text-sm font-semibold text-primary"
+          role="status"
+        >
+          <Check className="size-4" /> Dieses Prozessbild wurde fachlich
+          bestätigt
         </p>
       )}
 

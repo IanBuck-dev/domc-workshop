@@ -3,6 +3,8 @@ import type { ProcessUnderstanding } from "../lib/process-types";
 import { ProcessStepDecisions } from "./process-step-decisions";
 import { ProcessStepInformation } from "./process-step-information";
 import { Button, IconButton } from "./ui/button";
+import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
 import { cn } from "../lib/utils";
 
 type Step = ProcessUnderstanding["steps"][number];
@@ -29,33 +31,46 @@ export function ProcessStepCard({
   }
 
   return (
-    <li className="process-step-card" id={`process-step-${step.id}`}>
+    <li
+      className="overflow-hidden rounded-xl border bg-card shadow-sm"
+      id={`process-step-${step.id}`}
+    >
       <details
+        className="group"
         open={open}
         onToggle={(event) => {
           if (event.currentTarget.open !== open)
             onOpenChange(event.currentTarget.open);
         }}
       >
-        <summary>
-          <span className="step-number">{step.order}</span>
-          <span className="step-summary-copy">
+        <summary className="flex cursor-pointer list-none items-center gap-4 px-5 py-4 marker:hidden hover:bg-muted/40 [&::-webkit-details-marker]:hidden">
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+            {step.order}
+          </span>
+          <span className="grid min-w-0 flex-1 gap-1">
             <strong>{step.name || "Schritt noch nicht benannt"}</strong>
-            <small>{step.activity || "Aktivität noch nicht beschrieben"}</small>
+            <small className="line-clamp-2 text-sm font-normal text-muted-foreground">
+              {step.activity || "Aktivität noch nicht beschrieben"}
+            </small>
           </span>
           <ChevronDown
-            className="step-chevron"
+            className="size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
             aria-hidden="true"
             data-open={open ? "true" : "false"}
           />
         </summary>
-        <div className="step-details">
+        <div className="grid gap-6 border-t px-5 py-6 sm:px-6">
           {isEditMode && (
-            <fieldset className="step-basics-editor">
+            <fieldset className="grid gap-4 rounded-lg border bg-muted/20 p-4">
               <legend>Schrittbeschreibung</legend>
-              <label className={!step.name.trim() ? "missing-field" : ""}>
-                Bezeichnung
-                <input
+              <label
+                className={cn(
+                  "grid gap-2 text-sm font-semibold",
+                  !step.name.trim() && "rounded-md bg-destructive/10 p-2",
+                )}
+              >
+                <span>Bezeichnung</span>
+                <Input
                   name={`${step.id}-name`}
                   value={step.name}
                   required
@@ -64,12 +79,17 @@ export function ProcessStepCard({
                   onChange={(event) => update({ name: event.target.value })}
                 />
                 {!step.name.trim() && (
-                  <span className="missing-field-label">Angabe fehlt</span>
+                  <span className="text-xs text-destructive">Angabe fehlt</span>
                 )}
               </label>
-              <label className={!step.activity.trim() ? "missing-field" : ""}>
-                Aktivität
-                <textarea
+              <label
+                className={cn(
+                  "grid gap-2 text-sm font-semibold",
+                  !step.activity.trim() && "rounded-md bg-destructive/10 p-2",
+                )}
+              >
+                <span>Aktivität</span>
+                <Textarea
                   name={`${step.id}-activity`}
                   rows={2}
                   value={step.activity}
@@ -79,7 +99,7 @@ export function ProcessStepCard({
                   onChange={(event) => update({ activity: event.target.value })}
                 />
                 {!step.activity.trim() && (
-                  <span className="missing-field-label">Angabe fehlt</span>
+                  <span className="text-xs text-destructive">Angabe fehlt</span>
                 )}
               </label>
             </fieldset>
@@ -112,12 +132,12 @@ export function ProcessStepCard({
             isEditMode={isEditMode}
             onChange={(decisions) => update({ decisions })}
           />
-          <section className="step-detail-section">
-            <h3>Sonstiges</h3>
+          <section className="grid gap-2">
+            <h3 className="text-base font-semibold">Sonstiges</h3>
             {isEditMode ? (
               <label>
                 <span className="sr-only">Weitere Angaben</span>
-                <textarea
+                <Textarea
                   name={`${step.id}-miscellaneous`}
                   rows={3}
                   value={step.miscellaneous ?? ""}
@@ -128,7 +148,9 @@ export function ProcessStepCard({
                 />
               </label>
             ) : (
-              <p>{step.miscellaneous ?? "Keine weiteren Angaben"}</p>
+              <p className="text-muted-foreground">
+                {step.miscellaneous ?? "Keine weiteren Angaben"}
+              </p>
             )}
           </section>
         </div>
@@ -152,16 +174,16 @@ function StepValueList({
 }) {
   if (!isEditMode)
     return (
-      <section className="step-detail-section">
-        <h3>{title}</h3>
+      <section className="grid gap-2">
+        <h3 className="text-base font-semibold">{title}</h3>
         {values.length ? (
-          <ul>
+          <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
             {values.map((value) => (
               <li key={value}>{value}</li>
             ))}
           </ul>
         ) : (
-          <p className="empty-value">Noch nicht bekannt</p>
+          <p className="text-sm text-muted-foreground">Noch nicht bekannt</p>
         )}
       </section>
     );
@@ -170,37 +192,38 @@ function StepValueList({
   return (
     <section
       className={cn(
-        "step-detail-section",
-        "step-list-editor",
-        values.length === 0 && "missing-field",
+        "grid gap-3 rounded-lg border bg-muted/20 p-4",
+        values.length === 0 && "border-destructive bg-destructive/5",
       )}
     >
-      <div className="step-editor-section-heading">
-        <h3>{title}</h3>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="text-base font-semibold">{title}</h3>
         <Button
           variant="secondary"
-          className="compact-button"
+          className="h-8 px-3 text-xs"
           onClick={() => onChange([...values, ""])}
         >
           <Plus /> Eintrag hinzufügen
         </Button>
       </div>
       {values.length === 0 && (
-        <span className="missing-field-label">Angabe fehlt</span>
+        <span className="text-xs font-semibold text-destructive">
+          Angabe fehlt
+        </span>
       )}
       {values.map((value, index) => (
         <div
           className={cn(
-            "step-list-editor-row",
-            !value.trim() && "missing-field",
+            "flex items-start gap-2",
+            !value.trim() && "rounded-md bg-destructive/10 p-2",
           )}
           key={`${valueKey}-${index}`}
         >
-          <label>
+          <label className="flex-1">
             <span className="sr-only">
               {title} {index + 1}
             </span>
-            <input
+            <Input
               name={`${stepId}-${valueKey}-${index}`}
               value={value}
               required
@@ -216,7 +239,9 @@ function StepValueList({
             />
           </label>
           {!value.trim() && (
-            <span className="missing-field-label">Angabe fehlt</span>
+            <span className="mt-1 block text-xs text-destructive">
+              Angabe fehlt
+            </span>
           )}
           <IconButton
             label={`${title} ${index + 1} entfernen`}

@@ -2,6 +2,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ProcessUnderstanding } from "../lib/process-types";
 import { Button, IconButton } from "./ui/button";
+import { Input } from "./ui/input";
 import { cn } from "../lib/utils";
 
 type Step = ProcessUnderstanding["steps"][number];
@@ -53,26 +54,34 @@ export function ProcessStepInformation({
 
   if (!isEditMode)
     return (
-      <section className="step-detail-section">
-        <h3>Informationen</h3>
+      <section className="grid gap-2">
+        <h3 className="text-base font-semibold">Informationen</h3>
         {items.length ? (
-          <div className="step-table-wrap">
-            <table className="step-information-table">
+          <div className="overflow-x-auto rounded-lg border">
+            <table className="w-full min-w-[34rem] text-sm">
               <thead>
-                <tr>
-                  <th scope="col">Information</th>
-                  <th scope="col">Quelle</th>
-                  <th scope="col">Art</th>
+                <tr className="border-b bg-muted/40 text-left">
+                  <th className="px-4 py-3 font-semibold" scope="col">
+                    Information
+                  </th>
+                  <th className="px-4 py-3 font-semibold" scope="col">
+                    Quelle
+                  </th>
+                  <th className="px-4 py-3 font-semibold" scope="col">
+                    Art
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((item) => (
-                  <tr key={item.id}>
-                    <td data-label="Information">{item.name}</td>
-                    <td data-label="Quelle">
+                  <tr className="border-b last:border-b-0" key={item.id}>
+                    <td className="px-4 py-3" data-label="Information">
+                      {item.name}
+                    </td>
+                    <td className="px-4 py-3" data-label="Quelle">
                       {item.source ?? "Quelle noch unbekannt"}
                     </td>
-                    <td data-label="Art">
+                    <td className="px-4 py-3" data-label="Art">
                       {item.type === "other" && item.typeDetail
                         ? item.typeDetail
                         : informationTypeCopy[item.type]}
@@ -83,7 +92,9 @@ export function ProcessStepInformation({
             </table>
           </div>
         ) : (
-          <p className="empty-value">Keine Informationen benannt</p>
+          <p className="text-sm text-muted-foreground">
+            Keine Informationen benannt
+          </p>
         )}
       </section>
     );
@@ -92,15 +103,15 @@ export function ProcessStepInformation({
   return (
     <section
       className={cn(
-        "step-editor-section",
-        items.length === 0 && "missing-field",
+        "grid gap-3 rounded-lg border bg-muted/20 p-4",
+        items.length === 0 && "border-destructive bg-destructive/5",
       )}
     >
-      <div className="step-editor-section-heading">
-        <h3>Informationen</h3>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="text-base font-semibold">Informationen</h3>
         <Button
           variant="secondary"
-          className="compact-button"
+          className="h-8 px-3 text-xs"
           onClick={() =>
             onChange([
               ...items,
@@ -118,10 +129,12 @@ export function ProcessStepInformation({
         </Button>
       </div>
       {items.length === 0 && (
-        <span className="missing-field-label">Angabe fehlt</span>
+        <span className="text-xs font-semibold text-destructive">
+          Angabe fehlt
+        </span>
       )}
       {items.length ? (
-        <div className="nested-editor-list">
+        <div className="grid gap-3">
           {items.map((item, index) => {
             const sourceIsCustom =
               customSourceIds.has(item.id) ||
@@ -132,12 +145,20 @@ export function ProcessStepInformation({
               ? customSource
               : (item.source ?? unknownSource);
             return (
-              <div className="information-editor-card" key={item.id}>
-                <fieldset className="information-editor-row">
+              <div
+                className="relative rounded-lg border bg-card p-4"
+                key={item.id}
+              >
+                <fieldset className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   <legend>Information {index + 1}</legend>
-                  <label className={!item.name.trim() ? "missing-field" : ""}>
-                    Information
-                    <input
+                  <label
+                    className={cn(
+                      "grid gap-2 text-sm font-semibold",
+                      !item.name.trim() && "rounded-md bg-destructive/10 p-2",
+                    )}
+                  >
+                    <span>Information</span>
+                    <Input
                       name={`${idPrefix}-information-${item.id}-name`}
                       value={item.name}
                       required
@@ -147,14 +168,21 @@ export function ProcessStepInformation({
                       }
                     />
                     {!item.name.trim() && (
-                      <span className="missing-field-label">Angabe fehlt</span>
+                      <span className="text-xs text-destructive">
+                        Angabe fehlt
+                      </span>
                     )}
                   </label>
                   <label
-                    className={item.source === null ? "missing-field" : ""}
+                    className={cn(
+                      "grid gap-2 text-sm font-semibold",
+                      item.source === null &&
+                        "rounded-md bg-destructive/10 p-2",
+                    )}
                   >
-                    Quelle
+                    <span>Quelle</span>
                     <select
+                      className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                       name={`${idPrefix}-information-${item.id}-source-select`}
                       value={sourceValue}
                       aria-describedby={
@@ -195,7 +223,7 @@ export function ProcessStepInformation({
                     </select>
                     {item.source === null && (
                       <span
-                        className="missing-field-label"
+                        className="text-xs text-destructive"
                         id={`${idPrefix}-${item.id}-source-missing`}
                       >
                         Angabe fehlt
@@ -204,10 +232,14 @@ export function ProcessStepInformation({
                   </label>
                   {sourceIsCustom && (
                     <label
-                      className={!item.source?.trim() ? "missing-field" : ""}
+                      className={cn(
+                        "grid gap-2 text-sm font-semibold",
+                        !item.source?.trim() &&
+                          "rounded-md bg-destructive/10 p-2",
+                      )}
                     >
                       Andere Quelle
-                      <input
+                      <Input
                         name={`${idPrefix}-information-${item.id}-source`}
                         value={item.source ?? ""}
                         required
@@ -218,17 +250,22 @@ export function ProcessStepInformation({
                         }
                       />
                       {!item.source?.trim() && (
-                        <span className="missing-field-label">
+                        <span className="text-xs text-destructive">
                           Angabe fehlt
                         </span>
                       )}
                     </label>
                   )}
                   <label
-                    className={item.type === "unknown" ? "missing-field" : ""}
+                    className={cn(
+                      "grid gap-2 text-sm font-semibold",
+                      item.type === "unknown" &&
+                        "rounded-md bg-destructive/10 p-2",
+                    )}
                   >
-                    Art
+                    <span>Art</span>
                     <select
+                      className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                       name={`${idPrefix}-information-${item.id}-type`}
                       value={item.type}
                       aria-describedby={
@@ -255,7 +292,7 @@ export function ProcessStepInformation({
                     </select>
                     {item.type === "unknown" && (
                       <span
-                        className="missing-field-label"
+                        className="text-xs text-destructive"
                         id={`${idPrefix}-${item.id}-type-missing`}
                       >
                         Angabe fehlt
@@ -264,12 +301,14 @@ export function ProcessStepInformation({
                   </label>
                   {item.type === "other" && (
                     <label
-                      className={
-                        !item.typeDetail?.trim() ? "missing-field" : ""
-                      }
+                      className={cn(
+                        "grid gap-2 text-sm font-semibold",
+                        !item.typeDetail?.trim() &&
+                          "rounded-md bg-destructive/10 p-2",
+                      )}
                     >
-                      Andere Art
-                      <input
+                      <span>Andere Art</span>
+                      <Input
                         name={`${idPrefix}-information-${item.id}-type-detail`}
                         value={item.typeDetail ?? ""}
                         required
@@ -281,7 +320,7 @@ export function ProcessStepInformation({
                         }
                       />
                       {!item.typeDetail?.trim() && (
-                        <span className="missing-field-label">
+                        <span className="text-xs text-destructive">
                           Angabe fehlt
                         </span>
                       )}
@@ -291,7 +330,7 @@ export function ProcessStepInformation({
                 <IconButton
                   label={`Information ${index + 1} entfernen`}
                   tone="danger"
-                  className="nested-remove-button"
+                  className="absolute right-3 top-3"
                   onClick={() =>
                     onChange(
                       items.filter((_, itemIndex) => itemIndex !== index),

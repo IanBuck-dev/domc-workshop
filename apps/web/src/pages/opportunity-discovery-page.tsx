@@ -60,12 +60,19 @@ export function OpportunityDiscoveryPage({
 
   if (error && (!detail || !process))
     return (
-      <p className="notice error" role="alert">
+      <p
+        className="mx-auto mt-8 w-full max-w-7xl rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        role="alert"
+      >
         {error}
       </p>
     );
   if (!detail || !process)
-    return <main className="app-loading">Potenzialanalyse wird geladen …</main>;
+    return (
+      <main className="grid min-h-48 place-items-center text-muted-foreground">
+        Potenzialanalyse wird geladen …
+      </main>
+    );
 
   const record = detail.record;
   const scenariosAvailable = [
@@ -85,17 +92,22 @@ export function OpportunityDiscoveryPage({
     (hypothesis) => hypothesis.confidenceLevel === "medium",
   ).length;
   return (
-    <section className="opportunity-page">
-      <Link className="back-link" to={`/processes/${id}`}>
+    <section className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+      <Link
+        className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+        to={`/processes/${id}`}
+      >
         <ArrowLeft /> Zum Prozess
       </Link>
-      <div className="opportunity-heading">
+      <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
             KI-Potenziale entdecken
           </p>
-          <h1>{process.cover.processName}</h1>
-          <p>
+          <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">
+            {process.cover.processName}
+          </h1>
+          <p className="mt-2 text-muted-foreground">
             {process.cover.department} · {process.id}
           </p>
         </div>
@@ -103,27 +115,40 @@ export function OpportunityDiscoveryPage({
       </div>
 
       {detail.isStale && (
-        <p className="notice warning" role="status">
+        <p
+          className="flex gap-2 rounded-lg border border-amber-700/30 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+          role="status"
+        >
           <AlertTriangle /> Das Prozessbild wurde nach dieser Analyse geändert.
           Die Ergebnisse beziehen sich auf den ursprünglichen bestätigten Stand.
         </p>
       )}
       {error && (
-        <p className="notice error" role="alert">
+        <p
+          className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+          role="alert"
+        >
           {error}
         </p>
       )}
       {phase === "scenarios" && record.scenarioBasis === "medium_fallback" && (
-        <p className="notice warning" role="status">
+        <p
+          className="flex gap-2 rounded-lg border border-amber-700/30 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+          role="status"
+        >
           <AlertTriangle /> Diese Szenarien basieren auf mehreren plausiblen,
           aber noch nicht hoch-konfidenten Potenzialen. Klären Sie die offenen
           Fachfragen vor einer weiteren Bewertung mit dem Fachbereich.
         </p>
       )}
       {failed && record.lastError && (
-        <Card as="section" className="operation-panel failed" role="alert">
-          <AlertTriangle />
-          <div>
+        <Card
+          as="section"
+          className="flex-row items-start gap-4 border-destructive/30 p-6"
+          role="alert"
+        >
+          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-destructive" />
+          <div className="min-w-0 flex-1">
             <b>Diese Phase konnte nicht abgeschlossen werden.</b>
             <p>{record.lastError.message}</p>
           </div>
@@ -151,13 +176,19 @@ export function OpportunityDiscoveryPage({
       )}
 
       {phase === "hypotheses" && !record.hypotheses && (
-        <Card as="section" className="center-stage" aria-live="polite">
-          <LoaderCircle className="spin" />
+        <Card
+          as="section"
+          className="items-center gap-3 p-10 text-center"
+          aria-live="polite"
+        >
+          <LoaderCircle className="size-7 animate-spin text-primary" />
           <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
             Phase 1 von 2
           </p>
-          <h2>Die Prozessschritte werden untersucht.</h2>
-          <p>
+          <h2 className="text-2xl font-bold">
+            Die Prozessschritte werden untersucht.
+          </h2>
+          <p className="max-w-xl text-muted-foreground">
             Potenziale, Begründungen und ihre Evidenz werden gemeinsam geprüft.
           </p>
         </Card>
@@ -165,9 +196,12 @@ export function OpportunityDiscoveryPage({
       {phase === "hypotheses" && record.hypotheses && (
         <>
           {record.state === "no_supported_hypotheses" && (
-            <Card as="section" className="no-supported">
-              <Sparkles />
-              <h2>Analyse abgeschlossen</h2>
+            <Card
+              as="section"
+              className="gap-3 border-primary/20 bg-secondary/40 p-6"
+            >
+              <Sparkles className="size-6 text-primary" />
+              <h2 className="text-2xl font-bold">Analyse abgeschlossen</h2>
               {highConfidenceCount > 0 || mediumConfidenceCount >= 2 ? (
                 <p>
                   Diese bestehende Analyse wurde noch mit der früheren,
@@ -194,21 +228,25 @@ export function OpportunityDiscoveryPage({
         </>
       )}
       {phase === "scenarios" && !record.scenarios && (
-        <Card as="section" className="center-stage" aria-live="polite">
+        <Card
+          as="section"
+          className="items-center gap-3 p-10 text-center"
+          aria-live="polite"
+        >
           {record.state === "scenarios_failed" ? (
-            <AlertTriangle />
+            <AlertTriangle className="size-7 text-amber-700" />
           ) : (
-            <LoaderCircle className="spin" />
+            <LoaderCircle className="size-7 animate-spin text-primary" />
           )}
           <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
             Phase 2 von 2
           </p>
-          <h2>
+          <h2 className="text-2xl font-bold">
             {record.state === "scenarios_failed"
               ? "Die Szenarien sind noch nicht verfügbar."
               : "Drei Szenarien werden erstellt."}
           </h2>
-          <p>
+          <p className="text-muted-foreground">
             Sie können währenddessen zu den Potenzialhypothesen zurückkehren.
           </p>
         </Card>

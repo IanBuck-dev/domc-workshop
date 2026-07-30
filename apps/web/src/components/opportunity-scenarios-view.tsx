@@ -1,23 +1,19 @@
-import { ChevronDown, X } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useId, useState } from "react";
 import type {
   OpportunityHypothesis,
   OpportunityScenario,
 } from "../lib/opportunity-types";
 import type { ProcessUnderstanding } from "../lib/process-types";
+import { cn } from "../lib/utils";
 import { Badge, type BadgeTone } from "./ui/badge";
-import { IconButton } from "./ui/button";
 import { Card } from "./ui/card";
 import { Progress } from "./ui/progress";
 
 type ProcessStep = ProcessUnderstanding["steps"][number];
 
 const copy = {
-  assistive: {
-    rank: 1,
-    title: "Assistiert",
-    humanRole: "Mensch führt aus",
-  },
+  assistive: { rank: 1, title: "Assistiert", humanRole: "Mensch führt aus" },
   delegated: {
     rank: 2,
     title: "Teilautonom",
@@ -29,10 +25,10 @@ const copy = {
     humanRole: "Mensch überwacht und übernimmt kritische Fälle",
   },
 } as const;
-const confidence = {
-  high: { label: "Hoch", filled: 3 },
-  medium: { label: "Mittel", filled: 2 },
-  low: { label: "Niedrig", filled: 1 },
+const scoreFromConfidence = {
+  high: 85,
+  medium: 65,
+  low: 40,
 } as const;
 const capabilities = {
   interpretation: "Interpretation",
@@ -47,7 +43,6 @@ const execution = {
   approval_required: "Menschliche Freigabe erforderlich",
   human_only: "Bleibt vollständig beim Menschen",
 } as const;
-/* Je weniger die KI allein entscheidet, desto zurückhaltender das Etikett. */
 const executionTone: Record<keyof typeof execution, BadgeTone> = {
   autonomous: "success",
   approval_required: "warning",
@@ -85,30 +80,29 @@ export function OpportunityScenariosView({
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const headingId = useId();
-  const panelId = useId();
   const hypothesis = new Map(hypotheses.map((item) => [item.id, item]));
   const stepById = new Map(steps.map((step) => [step.id, step]));
   const openScenario =
     scenarios.find((scenario) => scenario.id === openId) ?? null;
 
   return (
-    <section className="scenario-compare" aria-labelledby={headingId}>
-      <header className="scenario-compare-head">
-        <h2 id={headingId}>Drei Szenarien im Vergleich</h2>
-        <p>
-          Die Szenarien schließen einander aus. Sie unterscheiden sich darin,
-          wie viel die KI eigenständig übernimmt und an welcher Stelle der
-          Mensch entscheidet.
+    <section aria-labelledby={headingId} className="space-y-4">
+      <header className="max-w-3xl">
+        <h2 id={headingId} className="text-2xl font-bold tracking-tight">
+          Drei Szenarien im Vergleich
+        </h2>
+        <p className="mt-2 text-muted-foreground">
+          Die Szenarien unterscheiden sich darin, wie viel die KI eigenständig
+          übernimmt und an welcher Stelle der Mensch entscheidet.
         </p>
       </header>
-      <ol className="scenario-compare-grid">
+      <ol className="grid gap-4 lg:grid-cols-3">
         {scenarios.map((scenario) => (
           <ScenarioColumn
             key={scenario.id}
             scenario={scenario}
             totalProcessSteps={steps.length}
             open={openId === scenario.id}
-            panelId={panelId}
             onToggle={() =>
               setOpenId((current) =>
                 current === scenario.id ? null : scenario.id,
@@ -118,13 +112,36 @@ export function OpportunityScenariosView({
         ))}
       </ol>
       {openScenario && (
-        <ScenarioDetail
-          id={panelId}
-          scenario={openScenario}
-          hypothesis={hypothesis}
-          stepById={stepById}
-          onClose={() => setOpenId(null)}
-        />
+        <Card
+          as="article"
+          className={cn(
+            "gap-0 overflow-hidden border-t-4 p-0",
+            openScenario.level === "assistive" && "border-t-primary",
+            openScenario.level === "delegated" && "border-t-sky-800",
+            openScenario.level === "agentic" && "border-t-violet-800",
+          )}
+        >
+          <div className="flex items-center justify-between gap-4 border-b bg-muted/20 px-5 py-4 sm:px-6">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.12em] text-primary">
+                {copy[openScenario.level].title}
+              </p>
+              <h3 className="mt-1 text-xl font-bold">{openScenario.title}</h3>
+            </div>
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+              onClick={() => setOpenId(null)}
+            >
+              Details schließen <ChevronDown className="size-4 rotate-180" />
+            </button>
+          </div>
+          <ScenarioDetail
+            scenario={openScenario}
+            hypothesis={hypothesis}
+            stepById={stepById}
+          />
+        </Card>
       )}
     </section>
   );
@@ -134,106 +151,165 @@ function ScenarioColumn({
   scenario,
   totalProcessSteps,
   open,
-  panelId,
   onToggle,
 }: {
   scenario: OpportunityScenario;
   totalProcessSteps: number;
   open: boolean;
-  panelId: string;
   onToggle: () => void;
 }) {
   const label = copy[scenario.level];
-  const score = confidence[scenario.confidenceLevel];
+  const score = scoreFromConfidence[scenario.confidenceLevel];
   const affected = scenario.affectedProcessStepIds.length;
   const included = scenario.includedHypothesisIds.length;
 
   return (
     <Card
       as="li"
-      className={`scenario-column scenario-${scenario.level}${
-        open ? " is-open" : ""
-      }`}
+      className={cn(
+        "gap-0 overflow-hidden p-0",
+        open && "ring-2 ring-primary/25",
+      )}
     >
-      <header className="scenario-column-head">
-        <span className="scenario-rank" aria-hidden>
+      <header
+        className={cn(
+          "flex items-center gap-2 border-b px-5 py-4",
+          scenario.level === "assistive" && "bg-secondary text-primary",
+          scenario.level === "delegated" && "bg-sky-50 text-sky-800",
+          scenario.level === "agentic" && "bg-violet-100 text-violet-900",
+        )}
+      >
+        <span
+          className={cn(
+            "grid size-7 place-items-center rounded-full text-sm font-bold text-white",
+            scenario.level === "assistive" && "bg-primary",
+            scenario.level === "delegated" && "bg-sky-800",
+            scenario.level === "agentic" && "bg-violet-900",
+          )}
+        >
           {label.rank}
         </span>
-        <span className="scenario-level">{label.title}</span>
+        <span className="text-sm font-bold uppercase tracking-[0.1em]">
+          {label.title}
+        </span>
         <Progress
-          className="w-16"
+          className="ml-auto w-20 [&_[data-slot=progress-indicator]]:bg-current"
           value={(label.rank / 3) * 100}
           aria-label={`KI-Autonomie: Stufe ${label.rank} von 3`}
         />
       </header>
-      <h3 className="scenario-title">{scenario.title}</h3>
-      <p className="scenario-pitch">{scenario.summary}</p>
-      <div className="scenario-metric">
-        <small>Konfidenz</small>
-        <Progress
-          className="w-24"
-          value={(score.filled / 3) * 100}
-          aria-label={`Konfidenz: ${score.label}`}
+      <div className="flex flex-1 flex-col lg:grid lg:grid-rows-[5.5rem_11rem_auto_auto_auto_auto_1fr_auto]">
+        <div className="px-5 pt-5">
+          <h3 className="line-clamp-3 text-lg font-bold leading-snug">
+            {scenario.title}
+          </h3>
+        </div>
+        <div className="px-5 pb-5 pt-4">
+          <p className="line-clamp-5 text-sm leading-6 text-muted-foreground">
+            {scenario.summary}
+          </p>
+        </div>
+        <ColumnMetric
+          label="Score"
+          value={`${score} von 100`}
+          progress={score}
+          progressClass={
+            scenario.level === "assistive"
+              ? "bg-primary/20 [&_[data-slot=progress-indicator]]:bg-primary"
+              : scenario.level === "delegated"
+                ? "bg-sky-800/20 [&_[data-slot=progress-indicator]]:bg-sky-800"
+                : "bg-violet-800/20 [&_[data-slot=progress-indicator]]:bg-violet-800"
+          }
         />
-        <strong>{score.label}</strong>
-      </div>
-      <div className="scenario-metric">
-        <small>Betroffene Prozessschritte</small>
-        <Progress
-          className="w-24"
-          value={totalProcessSteps ? (affected / totalProcessSteps) * 100 : 0}
-          aria-label={`${affected} von ${totalProcessSteps} Prozessschritten betroffen`}
+        <ColumnMetric
+          label="Betroffene Prozessschritte"
+          value={`${affected} von ${totalProcessSteps}`}
+          progress={
+            totalProcessSteps ? (affected / totalProcessSteps) * 100 : 0
+          }
+          progressClass={
+            scenario.level === "assistive"
+              ? "bg-primary/20 [&_[data-slot=progress-indicator]]:bg-primary"
+              : scenario.level === "delegated"
+                ? "bg-sky-800/20 [&_[data-slot=progress-indicator]]:bg-sky-800"
+                : "bg-violet-800/20 [&_[data-slot=progress-indicator]]:bg-violet-800"
+          }
         />
-        <strong>
-          {affected} von {totalProcessSteps}
-        </strong>
+        <ColumnMetric
+          label="Enthaltene Potenziale"
+          value={`${included} ${included === 1 ? "Potenzial" : "Potenziale"}`}
+        />
+        <ColumnMetric label="Rolle des Menschen" value={label.humanRole} />
+        <div className="border-t px-5 py-4">
+          <small className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            KI-Fähigkeiten
+          </small>
+          <ul className="mt-2 flex min-h-12 flex-wrap content-start gap-2">
+            {scenario.aiCapabilities.map((item) => (
+              <Badge as="li" key={item} tone="accent">
+                {capabilities[item]}
+              </Badge>
+            ))}
+          </ul>
+        </div>
+        <button
+          type="button"
+          className={cn(
+            "mt-auto flex items-center justify-between gap-2 border-t px-5 py-4 text-left text-sm font-semibold hover:bg-muted/40",
+            scenario.level === "assistive" && "text-primary",
+            scenario.level === "delegated" && "text-sky-800",
+            scenario.level === "agentic" && "text-violet-900",
+          )}
+          aria-expanded={open}
+          onClick={onToggle}
+        >
+          {open ? "Details schließen" : "Details ansehen"}
+          <ChevronDown
+            className={cn("size-4 transition-transform", open && "rotate-180")}
+            aria-hidden="true"
+          />
+        </button>
       </div>
-      <div className="scenario-metric">
-        <small>Enthaltene Potenziale</small>
-        <strong>
-          {included} {included === 1 ? "Potenzial" : "Potenziale"}
-        </strong>
-      </div>
-      <div className="scenario-metric">
-        <small>Rolle des Menschen</small>
-        <span className="scenario-human-role">{label.humanRole}</span>
-      </div>
-      <div className="scenario-metric">
-        <small>KI-Fähigkeiten</small>
-        <ul className="capability-list">
-          {scenario.aiCapabilities.map((item) => (
-            <Badge as="li" key={item} tone="accent">
-              {capabilities[item]}
-            </Badge>
-          ))}
-        </ul>
-      </div>
-      <button
-        type="button"
-        className="scenario-toggle"
-        aria-expanded={open}
-        aria-controls={panelId}
-        onClick={onToggle}
-      >
-        {open ? "Details schließen" : "Details ansehen"}
-        <ChevronDown aria-hidden />
-      </button>
     </Card>
   );
 }
 
+function ColumnMetric({
+  label,
+  value,
+  progress,
+  progressClass,
+}: {
+  label: string;
+  value: string;
+  progress?: number;
+  progressClass?: string;
+}) {
+  return (
+    <div className="grid gap-1 border-t px-5 py-4 text-sm">
+      <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {label}
+      </span>
+      {progress !== undefined && (
+        <Progress
+          className={progressClass}
+          value={progress}
+          aria-label={`${label}: ${value}`}
+        />
+      )}
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
 function ScenarioDetail({
-  id,
   scenario,
   hypothesis,
   stepById,
-  onClose,
 }: {
-  id: string;
   scenario: OpportunityScenario;
   hypothesis: Map<string, OpportunityHypothesis>;
   stepById: Map<string, ProcessStep>;
-  onClose: () => void;
 }) {
   const label = copy[scenario.level];
   const affectedSteps = scenario.affectedProcessStepIds
@@ -242,166 +318,164 @@ function ScenarioDetail({
     .sort((a, b) => a.order - b.order);
 
   return (
-    <Card
-      as="article"
-      id={id}
-      className={`scenario-detail scenario-${scenario.level}`}
-    >
-      <header className="scenario-detail-head">
-        <div>
-          <span className="scenario-level">{label.title}</span>
-          <h3>{scenario.title}</h3>
-        </div>
-        <IconButton label="Details schließen" onClick={onClose}>
-          <X aria-hidden />
-        </IconButton>
-      </header>
-      <div className="scenario-detail-body">
-        <section className="scenario-target-state">
-          <h4>Zielbild</h4>
-          <p>{scenario.targetState}</p>
+    <div className="space-y-6 border-t bg-muted/15 px-5 py-6 sm:px-6">
+      <section className="max-w-4xl">
+        <h3 className="font-semibold">Zielbild</h3>
+        <p className="mt-1 text-muted-foreground">{scenario.targetState}</p>
+      </section>
+      {!!affectedSteps.length && (
+        <section>
+          <h3 className="font-semibold">Betroffene Prozessschritte</h3>
+          <ol className="mt-3 flex flex-wrap gap-2">
+            {affectedSteps.map((step) => (
+              <li
+                className="rounded-full border bg-card px-3 py-1 text-sm"
+                key={step.id}
+              >
+                <b className="mr-1 text-primary">{step.order}</b> {step.name}
+              </li>
+            ))}
+          </ol>
         </section>
-        {!!affectedSteps.length && (
-          <section>
-            <h4>Betroffene Prozessschritte</h4>
-            <ol className="scenario-step-chips">
-              {affectedSteps.map((step) => (
-                <li key={step.id}>
-                  <b>{step.order}</b> {step.name}
+      )}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ScenarioList
+          title="Enthaltene Potenziale"
+          items={scenario.includedHypothesisIds.map(
+            (id) => hypothesis.get(id)?.title ?? id,
+          )}
+        />
+        {!!scenario.excludedHypotheses.length && (
+          <section className="rounded-lg border bg-card p-4">
+            <h3 className="font-semibold">Nicht enthaltene Potenziale</h3>
+            <ul className="mt-2 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
+              {scenario.excludedHypotheses.map((item) => (
+                <li key={item.hypothesisId}>
+                  <b className="text-foreground">
+                    {hypothesis.get(item.hypothesisId)?.title ??
+                      item.hypothesisId}
+                    :
+                  </b>{" "}
+                  {item.rationale}
                 </li>
               ))}
-            </ol>
+            </ul>
           </section>
         )}
-        <div className="scenario-potential-grid">
-          <ScenarioList
-            title="Enthaltene Potenziale"
-            items={scenario.includedHypothesisIds.map(
-              (hypothesisId) =>
-                hypothesis.get(hypothesisId)?.title ?? hypothesisId,
-            )}
-          />
-          {!!scenario.excludedHypotheses.length && (
-            <section>
-              <h4>Nicht enthaltene Potenziale</h4>
-              <ul>
-                {scenario.excludedHypotheses.map((item) => (
-                  <li key={item.hypothesisId}>
-                    <b>
-                      {hypothesis.get(item.hypothesisId)?.title ??
-                        item.hypothesisId}
-                      :
-                    </b>{" "}
-                    {item.rationale}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-        </div>
-        <div className="scenario-responsibility-grid">
-          <ScenarioList
-            title="Was ändert sich?"
-            items={scenario.changesFromToday}
-          />
-          <ScenarioList
-            title="Aufgaben der KI"
-            items={scenario.aiResponsibilities}
-          />
-          <ScenarioList
-            title="Aufgaben des Menschen"
-            items={scenario.humanResponsibilities}
-          />
-        </div>
-        <section className="scenario-actions-section">
-          <h4>Aktionen und Kontrolle</h4>
-          <div className="scenario-actions">
-            {scenario.actions.map((action, index) => (
-              <article key={`${index}-${action.name}-${action.executionMode}`}>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <ScenarioList
+          title="Was ändert sich?"
+          items={scenario.changesFromToday}
+        />
+        <ScenarioList
+          title="Aufgaben der KI"
+          items={scenario.aiResponsibilities}
+        />
+        <ScenarioList
+          title={`Aufgaben des Menschen · ${label.humanRole}`}
+          items={scenario.humanResponsibilities}
+        />
+      </div>
+      <section>
+        <h3 className="font-semibold">Aktionen und Kontrolle</h3>
+        <div className="mt-3 grid gap-3 lg:grid-cols-2">
+          {scenario.actions.map((action, index) => (
+            <article
+              className="rounded-lg border bg-card p-4"
+              key={`${index}-${action.name}-${action.executionMode}`}
+            >
+              <div className="flex flex-wrap items-start justify-between gap-2">
                 <b>{action.name}</b>
                 <Badge tone={executionTone[action.executionMode]}>
                   {execution[action.executionMode]}
                 </Badge>
-                <p>{action.description}</p>
-                {!!action.controls.length && (
-                  <small>Kontrollen: {action.controls.join(" · ")}</small>
-                )}
-                {!!action.escalationTriggers.length && (
-                  <small>
-                    Eskalation: {action.escalationTriggers.join(" · ")}
-                  </small>
-                )}
-              </article>
-            ))}
-          </div>
-        </section>
-        <details className="scenario-technical-details">
-          <summary>Voraussetzungen und technische Zugriffe</summary>
-          <div className="scenario-details">
-            <ScenarioList
-              title="Feste Automation"
-              items={scenario.deterministicAutomation}
-            />
-            <ScenarioList
-              title="Orchestrierung"
-              items={scenario.orchestration}
-            />
-            <ScenarioList
-              title="Menschliche Überwachung"
-              items={scenario.humanOversight}
-            />
-            <ScenarioList
-              title="Benötigte Informationen und Unterlagen"
-              items={scenario.informationAndDocuments}
-            />
-            {scenario.systemAccess.map((access, index) => (
-              <section key={`${index}-${access.target}`}>
-                <h4>{access.target}</h4>
-                <p>
-                  Zugriff:{" "}
-                  {access.accessModes
-                    .map((item) => accessModes[item])
-                    .join(", ")}{" "}
-                  · {accessTimings[access.timing]} ·{" "}
-                  {access.possibleMechanisms
-                    .map((item) => mechanisms[item])
-                    .join(" oder ")}
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {action.description}
+              </p>
+              {!!action.controls.length && (
+                <small className="mt-3 block text-muted-foreground">
+                  Kontrollen: {action.controls.join(" · ")}
+                </small>
+              )}
+              {!!action.escalationTriggers.length && (
+                <small className="mt-1 block text-muted-foreground">
+                  Eskalation: {action.escalationTriggers.join(" · ")}
+                </small>
+              )}
+            </article>
+          ))}
+        </div>
+      </section>
+      <details className="rounded-lg border bg-card p-4">
+        <summary className="cursor-pointer font-semibold text-primary">
+          Voraussetzungen und technische Zugriffe
+        </summary>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <ScenarioList
+            title="Feste Automation"
+            items={scenario.deterministicAutomation}
+          />
+          <ScenarioList title="Orchestrierung" items={scenario.orchestration} />
+          <ScenarioList
+            title="Menschliche Überwachung"
+            items={scenario.humanOversight}
+          />
+          <ScenarioList
+            title="Benötigte Informationen und Unterlagen"
+            items={scenario.informationAndDocuments}
+          />
+          {scenario.systemAccess.map((access, index) => (
+            <section
+              className="rounded-md bg-muted/30 p-4"
+              key={`${index}-${access.target}`}
+            >
+              <h4 className="font-semibold">{access.target}</h4>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Zugriff:{" "}
+                {access.accessModes.map((item) => accessModes[item]).join(", ")}{" "}
+                · {accessTimings[access.timing]} ·{" "}
+                {access.possibleMechanisms
+                  .map((item) => mechanisms[item])
+                  .join(" oder ")}
+              </p>
+              {!!access.assumptions.length && (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Annahme: {access.assumptions.join(" · ")}
                 </p>
-                {!!access.assumptions.length && (
-                  <p>Annahme: {access.assumptions.join(" · ")}</p>
-                )}
-              </section>
-            ))}
-            <ScenarioList
-              title="Voraussetzungen"
-              items={scenario.prerequisites}
-            />
-            <ScenarioList
-              title="Risiken und Fehlerbilder"
-              items={scenario.risksAndFailureModes}
-            />
-            <ScenarioList title="Annahmen" items={scenario.assumptions} />
-            <ScenarioList
-              title="Offene Fragen"
-              items={scenario.openQuestions}
-            />
-          </div>
-        </details>
-        <footer>
-          <b>Konfidenz: {confidence[scenario.confidenceLevel].label}</b>
-          <p>{scenario.confidenceRationale}</p>
-        </footer>
-      </div>
-    </Card>
+              )}
+            </section>
+          ))}
+          <ScenarioList
+            title="Voraussetzungen"
+            items={scenario.prerequisites}
+          />
+          <ScenarioList
+            title="Risiken und Fehlerbilder"
+            items={scenario.risksAndFailureModes}
+          />
+          <ScenarioList title="Annahmen" items={scenario.assumptions} />
+          <ScenarioList title="Offene Fragen" items={scenario.openQuestions} />
+        </div>
+      </details>
+      <footer className="border-t pt-4">
+        <b>Score: {scoreFromConfidence[scenario.confidenceLevel]} von 100</b>
+        <p className="mt-1 text-sm text-muted-foreground">
+          <span className="font-semibold text-foreground">Herleitung: </span>
+          {scenario.confidenceRationale}
+        </p>
+      </footer>
+    </div>
   );
 }
 
 function ScenarioList({ title, items }: { title: string; items: string[] }) {
   if (!items.length) return null;
   return (
-    <section>
-      <h4>{title}</h4>
-      <ul>
+    <section className="rounded-lg border bg-card p-4">
+      <h3 className="font-semibold">{title}</h3>
+      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         {items.map((item, index) => (
           <li key={`${index}-${item}`}>{item}</li>
         ))}

@@ -2,6 +2,7 @@ import { ArrowLeft, ArrowRight, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { ProcessUnderstanding } from "../lib/process-types";
 import { IconButton } from "./ui/button";
+import { Input } from "./ui/input";
 import { cn } from "../lib/utils";
 
 export interface ProcessMapProps {
@@ -39,18 +40,22 @@ export function ProcessMap({
   }
 
   return (
-    <section
-      className={cn("process-map-section", isEditMode && "edit-mode")}
-      aria-labelledby="process-map-title"
-    >
-      <div className="process-map-heading">
+    <section aria-labelledby="process-map-title" className="space-y-4">
+      <div className="flex items-center justify-between gap-4">
         <h2 id="process-map-title">Diagramm</h2>
-        {isEditMode && <small>{steps.length} von höchstens 8 Schritten</small>}
+        {isEditMode && (
+          <small className="text-sm text-muted-foreground">
+            {steps.length} von höchstens 8 Schritten
+          </small>
+        )}
       </div>
-      <ol className="process-map">
+      <ol className="flex gap-5 overflow-x-auto px-1 pb-3 pt-1">
         {steps.map((step, index) => (
           <li
-            className={cn("map-node", selectedStepId === step.id && "selected")}
+            className={cn(
+              "relative flex w-60 shrink-0 cursor-pointer flex-col gap-2 rounded-xl border border-border border-t-4 border-t-primary bg-card p-5 shadow-sm transition hover:border-primary/50 focus-within:ring-2 focus-within:ring-ring/40",
+              selectedStepId === step.id && "ring-2 ring-primary/30",
+            )}
             key={step.id}
             draggable={isEditMode}
             onDragStart={() => setDraggedStepId(step.id)}
@@ -64,19 +69,22 @@ export function ProcessMap({
             }}
             onClick={() => onSelectStep(step.id)}
           >
-            <small>Schritt {step.order}</small>
+            <small className="font-semibold text-muted-foreground">
+              Schritt {step.order}
+            </small>
             {isEditMode ? (
               <label
                 className={cn(
-                  "map-node-name",
-                  !step.name.trim() && "missing-field",
+                  "grid gap-1",
+                  !step.name.trim() && "rounded-md bg-destructive/10 p-2",
                 )}
                 onClick={(event) => event.stopPropagation()}
               >
                 <span className="sr-only">
                   Bezeichnung für Schritt {step.order}
                 </span>
-                <input
+                <Input
+                  className="h-9"
                   name={`map-${step.id}-name`}
                   value={step.name}
                   required
@@ -87,15 +95,17 @@ export function ProcessMap({
                   }
                 />
                 {!step.name.trim() && (
-                  <span className="missing-field-label">Angabe fehlt</span>
+                  <span className="text-xs font-semibold text-destructive">
+                    Angabe fehlt
+                  </span>
                 )}
               </label>
             ) : (
-              <strong>{step.name}</strong>
+              <strong className="leading-snug">{step.name}</strong>
             )}
             {isEditMode && (
               <div
-                className="process-map-edit-actions"
+                className="flex items-center gap-1"
                 onClick={(event) => event.stopPropagation()}
               >
                 <IconButton
@@ -127,7 +137,7 @@ export function ProcessMap({
             )}
             {isEditMode && (
               <IconButton
-                className="map-insert-action"
+                className="absolute -right-9 top-1/2 z-10 -translate-y-1/2 rounded-full border border-border bg-card text-primary shadow-sm hover:bg-accent"
                 label={`Schritt nach Schritt ${step.order} hinzufügen`}
                 disabled={steps.length >= 8}
                 onClick={(event) => {
@@ -142,7 +152,7 @@ export function ProcessMap({
         ))}
       </ol>
       {isEditMode && (
-        <div className="process-map-limits" aria-live="polite">
+        <div className="text-sm text-muted-foreground" aria-live="polite">
           {steps.length <= 1 && (
             <span className="sr-only" id="minimum-step-count">
               Der einzige verbleibende Schritt kann nicht gelöscht werden.

@@ -4,6 +4,7 @@ import type {
 } from "../lib/opportunity-types";
 import type { ProcessUnderstanding } from "../lib/process-types";
 import { Badge, type BadgeTone } from "./ui/badge";
+import { Card } from "./ui/card";
 
 const level = { high: "Hoch", medium: "Mittel", low: "Niedrig" } as const;
 /* Hoch, Mittel und Niedrig sind eine Einschätzung, keine Warnung. */
@@ -33,20 +34,28 @@ export function OpportunityHypothesesView({
     understanding.evidence.map((item) => [item.id, item]),
   );
   return (
-    <div className="hypothesis-groups">
+    <div className="space-y-5">
       {result.stepAnalyses.map((analysis) => {
         const step = steps.get(analysis.processStepId);
         return (
-          <section className="hypothesis-step" key={analysis.processStepId}>
-            <header>
-              <span>{step?.order ?? "–"}</span>
+          <Card
+            as="section"
+            className="gap-5 p-6 sm:p-8"
+            key={analysis.processStepId}
+          >
+            <header className="flex gap-4">
+              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                {step?.order ?? "–"}
+              </span>
               <div>
-                <h2>{step?.name ?? analysis.processStepId}</h2>
-                <p>{analysis.summary}</p>
+                <h2 className="text-xl font-bold">
+                  {step?.name ?? analysis.processStepId}
+                </h2>
+                <p className="mt-1 text-muted-foreground">{analysis.summary}</p>
               </div>
             </header>
             {analysis.hypotheses.length ? (
-              <div className="hypothesis-list">
+              <div className="space-y-3">
                 {analysis.hypotheses.map((item) => (
                   <HypothesisCard
                     key={item.id}
@@ -56,9 +65,11 @@ export function OpportunityHypothesesView({
                 ))}
               </div>
             ) : (
-              <p className="notice neutral">{analysis.noPotentialRationale}</p>
+              <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+                {analysis.noPotentialRationale}
+              </p>
             )}
-          </section>
+          </Card>
         );
       })}
     </div>
@@ -73,13 +84,15 @@ function HypothesisCard({
   evidence: Map<string, ProcessUnderstanding["evidence"][number]>;
 }) {
   return (
-    <article className="hypothesis-card">
-      <div className="hypothesis-card-head">
+    <article className="space-y-4 rounded-lg border bg-muted/20 p-5">
+      <div className="flex flex-col justify-between gap-3 sm:flex-row">
         <div>
-          <small>{item.id}</small>
-          <h3>{item.title}</h3>
+          <small className="font-semibold text-muted-foreground">
+            {item.id}
+          </small>
+          <h3 className="mt-1 text-lg font-bold">{item.title}</h3>
         </div>
-        <div className="hypothesis-levels">
+        <div className="flex flex-wrap gap-2">
           <Badge tone={levelTone[item.potentialLevel]}>
             Potenzial: {level[item.potentialLevel]}
           </Badge>
@@ -88,40 +101,52 @@ function HypothesisCard({
           </Badge>
         </div>
       </div>
-      <p>{item.aiContribution}</p>
-      <div className="capability-list" aria-label="KI-Fähigkeiten">
+      <p className="text-muted-foreground">{item.aiContribution}</p>
+      <div className="flex flex-wrap gap-2" aria-label="KI-Fähigkeiten">
         {item.aiCapabilities.map((item) => (
           <Badge key={item} tone="accent">
             {capability[item]}
           </Badge>
         ))}
       </div>
-      <dl className="hypothesis-rationales">
-        <div>
-          <dt>Warum dieses Potenzial?</dt>
-          <dd>{item.potentialRationale}</dd>
+      <dl className="grid gap-3 md:grid-cols-2">
+        <div className="rounded-md bg-card p-4">
+          <dt className="font-semibold">Warum dieses Potenzial?</dt>
+          <dd className="mt-1 text-sm text-muted-foreground">
+            {item.potentialRationale}
+          </dd>
         </div>
-        <div>
-          <dt>Wie sicher ist die Ableitung?</dt>
-          <dd>{item.confidenceRationale}</dd>
+        <div className="rounded-md bg-card p-4">
+          <dt className="font-semibold">Wie sicher ist die Ableitung?</dt>
+          <dd className="mt-1 text-sm text-muted-foreground">
+            {item.confidenceRationale}
+          </dd>
         </div>
       </dl>
       {item.confidenceLevel !== "high" && (
-        <p className="not-used-note">
+        <p className="border-l-4 border-amber-700 pl-3 text-sm text-amber-950">
           Vor einer Umsetzung sind die offenen Fachinformationen mit dem
           Fachbereich zu klären.
         </p>
       )}
-      <details>
-        <summary>Grundlage und weitere Details</summary>
-        <div className="hypothesis-details">
+      <details className="border-t pt-4">
+        <summary className="cursor-pointer font-semibold text-primary">
+          Grundlage und weitere Details
+        </summary>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
           <section>
-            <h4>Heutige Ausgangslage</h4>
-            <p>{item.currentSituation}</p>
-            <h4>Erwartete Veränderung</h4>
-            <p>{item.expectedChange}</p>
-            <h4>Rolle des Menschen</h4>
-            <p>{item.expectedHumanRole}</p>
+            <h4 className="font-semibold">Heutige Ausgangslage</h4>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {item.currentSituation}
+            </p>
+            <h4 className="mt-4 font-semibold">Erwartete Veränderung</h4>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {item.expectedChange}
+            </p>
+            <h4 className="mt-4 font-semibold">Rolle des Menschen</h4>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {item.expectedHumanRole}
+            </p>
           </section>
           <List
             title="Unterstützende feste Abläufe"
@@ -154,9 +179,9 @@ function HypothesisCard({
 function List({ title, items }: { title: string; items: string[] }) {
   if (!items.length) return null;
   return (
-    <section>
-      <h4>{title}</h4>
-      <ul>
+    <section className="rounded-md bg-card p-4">
+      <h4 className="font-semibold">{title}</h4>
+      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         {items.map((item) => (
           <li key={item}>{item}</li>
         ))}
