@@ -1,19 +1,15 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { FileText, Paperclip, Send, Square, X } from "lucide-react";
-import {
-  FormEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import ReactMarkdown from "react-markdown";
-import { Link, useParams } from "react-router-dom";
+import { ArrowDown, ChevronsRight, FileText, Paperclip, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
 import { ChatCaptureTutorial } from "../components/chat-capture-tutorial";
 import { DocumentPreviewDialog } from "../components/document-preview-dialog";
+import { ProcessChatComposer } from "../components/process-chat-composer";
+import { ProcessChatTranscript } from "../components/process-chat-transcript";
+import { ProcessConfirmationActions } from "../components/process-confirmation-actions";
 import { ProcessFlowDiagram } from "../components/process-flow-diagram";
+import { ProcessTracker } from "../components/process-tracker";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,25 +22,33 @@ import {
 } from "../components/ui/alert-dialog";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { Card } from "../components/ui/card";
 import { Checkbox } from "../components/ui/checkbox";
+import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+} from "../components/ui/message-scroller";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
-import { Textarea } from "../components/ui/textarea";
 import { api, ApiError } from "../lib/api-client";
 import {
   chatTutorialCompleted,
   completeChatTutorial,
 } from "../lib/chat-tutorial-preference";
-import type {
-  ChatMention,
-  ChatTranscriptEvent,
-  ProcessUnderstanding,
-  UploadRecord,
+import {
+  chatActivityEventSchema,
+  chatUnderstandingEventSchema,
+  type ChatActivityKind,
+  type ChatMention,
+  type ChatTranscriptEvent,
+  type ChatUnderstandingEvent,
+  type ProcessUnderstanding,
+  type UploadRecord,
 } from "../lib/process-types";
 
 type View = {
@@ -54,6 +58,7 @@ type View = {
     documentGate: "pending" | "documents_selected" | "skipped";
     selectedUploadIds: string[];
     lastTurnOutcome: "completed" | "failed" | "aborted" | null;
+    lastValidRevision?: string | null;
   };
   transcript: ChatTranscriptEvent[];
   uploads: UploadRecord[];
@@ -62,42 +67,44 @@ type View = {
   confirmationAllowed: boolean;
   confirmationQuality: "complete" | "with_gaps" | null;
 };
+type ProcessChatUIMessage = UIMessage<
+  never,
+  {
+    "chat-activity": ReturnType<typeof chatActivityEventSchema.parse>;
+    "understanding-state": ReturnType<
+      typeof chatUnderstandingEventSchema.parse
+    >;
+  }
+>;
+const desktopQuery = "(min-width: 1280px)";
 
-const desktopLayoutQuery = "(min-width: 1024px)";
-
-function useDesktopLayout() {
+function useDesktop() {
   const [desktop, setDesktop] = useState(
-    () => window.matchMedia(desktopLayoutQuery).matches,
+    () => window.matchMedia(desktopQuery).matches,
   );
-
   useEffect(() => {
-    const media = window.matchMedia(desktopLayoutQuery);
+    const media = window.matchMedia(desktopQuery);
     const update = () => setDesktop(media.matches);
     update();
     media.addEventListener("change", update);
     return () => media.removeEventListener("change", update);
   }, []);
-
   return desktop;
 }
-
-function transcriptMessages(transcript: ChatTranscriptEvent[]): UIMessage[] {
+function transcriptMessages(
+  transcript: ChatTranscriptEvent[],
+): ProcessChatUIMessage[] {
   return transcript.map((event) => {
-    const mentionPrefix = event.mentions
+    const prefix = event.mentions
       .map((mention) => `@${mention.label}`)
       .join(" ");
     const text =
-      mentionPrefix && !event.text.startsWith(`${mentionPrefix}\n`)
-        ? `${mentionPrefix}\n${event.text}`
+      prefix && !event.text.startsWith(`${prefix}\n`)
+        ? `${prefix}\n${event.text}`
         : event.text;
-    return {
-      id: event.id,
-      role: event.role,
-      parts: [{ type: "text" as const, text }],
-    };
+    return { id: event.id, role: event.role, parts: [{ type: "text", text }] };
   });
 }
-
 function messageText(message: UIMessage) {
   return message.parts
     .filter(
@@ -107,9 +114,15 @@ function messageText(message: UIMessage) {
     .map((part) => part.text)
     .join("");
 }
+function mentionKey(mention: ChatMention) {
+  return mention.kind === "step"
+    ? `step:${mention.stepId}`
+    : `transition:${mention.fromStepId}:${mention.toStepId}`;
+}
 
 export function ProcessChatPage() {
   const { id = "" } = useParams();
+  const desktop = useDesktop();
   const [view, setView] = useState<View | null>(null);
   const [text, setText] = useState("");
   const [mentions, setMentions] = useState<ChatMention[]>([]);
@@ -118,20 +131,26 @@ export function ProcessChatPage() {
   const [error, setError] = useState("");
   const [tutorial, setTutorial] = useState(!chatTutorialCompleted());
   const [tab, setTab] = useState<"chat" | "diagram">("chat");
+  const [expanded, setExpanded] = useState(false);
   const [diagramUnread, setDiagramUnread] = useState(false);
+  const [activity, setActivity] = useState<ChatActivityKind | null>(null);
   const [overrideData, setOverrideData] = useState<{
     knowledgeGaps: string[];
     conflicts: string[];
   } | null>(null);
   const [preview, setPreview] = useState<UploadRecord | null>(null);
   const [uploading, setUploading] = useState(false);
-  const desktopLayout = useDesktopLayout();
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
+  const composerSurfaceRef = useRef<HTMLDivElement | null>(null);
+  const workspaceRef = useRef<HTMLElement | null>(null);
+  const tabRef = useRef(tab);
+  const setMessagesRef = useRef<(messages: ProcessChatUIMessage[]) => void>(
+    () => {},
+  );
   const lastRevision = useRef<string | null>(null);
-
   const transport = useMemo(
     () =>
-      new DefaultChatTransport<UIMessage>({
+      new DefaultChatTransport<ProcessChatUIMessage>({
         api: `/api/processes/${encodeURIComponent(id)}/chat`,
         prepareSendMessagesRequest({ messages, body }) {
           const latest = messages.at(-1);
@@ -148,67 +167,122 @@ export function ProcessChatPage() {
       }),
     [id],
   );
-  const chat = useChat({
+  const reloadView = useCallback(
+    async ({ syncMessages }: { syncMessages: boolean }) => {
+      try {
+        const data = (await api.chat(id)) as View;
+        setView((current) => {
+          const revision = data.state.lastValidRevision ?? null;
+          if (
+            current &&
+            revision &&
+            revision !== lastRevision.current &&
+            tabRef.current !== "diagram"
+          )
+            setDiagramUnread(true);
+          lastRevision.current = revision;
+          return data;
+        });
+        setSelected((current) =>
+          data.state.documentGate === "documents_selected"
+            ? data.state.selectedUploadIds
+            : current.filter((uploadId) =>
+                data.uploads.some((upload) => upload.id === uploadId),
+              ),
+        );
+        if (syncMessages)
+          setMessagesRef.current(transcriptMessages(data.transcript));
+      } catch (reason) {
+        setError((reason as Error).message);
+      }
+    },
+    [id],
+  );
+  const syncTranscript = useCallback(
+    () => void reloadView({ syncMessages: true }),
+    [reloadView],
+  );
+  const chat = useChat<ProcessChatUIMessage>({
     id: `capture-${id}`,
     transport,
     resume: false,
     onError(reason) {
+      setActivity(null);
       setError(reason.message);
+      syncTranscript();
+    },
+    onData(part) {
+      if (part.type === "data-chat-activity") {
+        const parsed = chatActivityEventSchema.safeParse(part.data);
+        if (parsed.success)
+          setActivity(parsed.data.state === "active" ? parsed.data.kind : null);
+        return;
+      }
+      if (part.type === "data-understanding-state") {
+        const parsed = chatUnderstandingEventSchema.safeParse(part.data);
+        if (!parsed.success) return;
+        const event: ChatUnderstandingEvent = parsed.data;
+        if (
+          event.status === "valid" &&
+          event.revision &&
+          event.revision !== lastRevision.current
+        ) {
+          lastRevision.current = event.revision;
+          if (tab !== "diagram") setDiagramUnread(true);
+          void reloadView({ syncMessages: false });
+        }
+      }
+    },
+    onFinish() {
+      setActivity(null);
+      syncTranscript();
     },
   });
-  const setChatMessages = chat.setMessages;
+  setMessagesRef.current = chat.setMessages;
   const busy = chat.status === "submitted" || chat.status === "streaming";
-
-  const reload = useCallback(async () => {
-    try {
-      const data = await api.chat(id);
-      setView((current) => {
-        const revision = data.state.lastValidRevision;
-        if (
-          current &&
-          revision &&
-          revision !== lastRevision.current &&
-          tab !== "diagram"
-        )
-          setDiagramUnread(true);
-        lastRevision.current = revision;
-        return data as View;
-      });
-      setSelected((current) =>
-        data.state.documentGate === "documents_selected"
-          ? data.state.selectedUploadIds
-          : current.filter((uploadId) =>
-              data.uploads.some((upload) => upload.id === uploadId),
-            ),
-      );
-      setChatMessages(transcriptMessages(data.transcript));
-    } catch (reason) {
-      setError((reason as Error).message);
+  useEffect(() => {
+    tabRef.current = tab;
+  }, [tab]);
+  useEffect(() => {
+    void syncTranscript();
+  }, [syncTranscript]);
+  useEffect(() => {
+    if (chat.status === "ready" || chat.status === "error") setActivity(null);
+  }, [chat.status]);
+  useEffect(() => {
+    if (!desktop) setExpanded(false);
+  }, [desktop]);
+  useEffect(() => {
+    const workspace = workspaceRef.current;
+    const surface = composerSurfaceRef.current;
+    if (!workspace) return;
+    if (!surface) {
+      workspace.style.removeProperty("--chat-composer-height");
+      return;
     }
-  }, [id, tab, setChatMessages]);
-
-  useEffect(() => {
-    void reload();
-  }, [reload]);
-  useEffect(() => {
-    if (chat.status === "ready") void reload();
-  }, [chat.status, reload]);
-
+    const update = () =>
+      workspace.style.setProperty(
+        "--chat-composer-height",
+        `${surface.offsetHeight}px`,
+      );
+    const observer = new ResizeObserver(update);
+    observer.observe(surface);
+    update();
+    return () => {
+      observer.disconnect();
+      workspace.style.removeProperty("--chat-composer-height");
+    };
+  }, [desktop, tab, view?.state.documentGate, view?.processState]);
   const addMention = useCallback((mention: ChatMention) => {
-    setMentions((current) => {
-      const key = mentionKey(mention);
-      return current.some((item) => mentionKey(item) === key) ||
-        current.length >= 5
+    setMentions((current) =>
+      current.some((item) => mentionKey(item) === mentionKey(mention)) ||
+      current.length >= 5
         ? current
-        : [...current, mention];
-    });
+        : [...current, mention],
+    );
     setTab("chat");
     requestAnimationFrame(() => composerRef.current?.focus());
   }, []);
-
-  if (!view)
-    return <main className="app-loading">Gespräch wird geladen …</main>;
-
   async function send(
     action: "message" | "analyze_documents" | "skip_documents",
   ) {
@@ -221,7 +295,6 @@ export function ProcessChatPage() {
           ? "Bitte werten Sie die ausgewählten Unterlagen aus."
           : text.trim();
     if (!content) return;
-    const visible = content;
     setText("");
     const sentMentions = mentions;
     setMentions([]);
@@ -230,7 +303,7 @@ export function ProcessChatPage() {
         {
           id: crypto.randomUUID(),
           role: "user",
-          parts: [{ type: "text", text: visible }],
+          parts: [{ type: "text", text: content }],
         },
         {
           body: {
@@ -254,12 +327,11 @@ export function ProcessChatPage() {
       );
     }
   }
-
   async function confirm(override = false) {
     try {
       await api.confirmChat(id, override);
       setOverrideData(null);
-      await reload();
+      await reloadView({ syncMessages: true });
     } catch (reason) {
       if (
         reason instanceof ApiError &&
@@ -276,10 +348,53 @@ export function ProcessChatPage() {
       } else setError((reason as Error).message);
     }
   }
-
+  if (!view)
+    return <main className="app-loading">Gespräch wird geladen …</main>;
   const confirmed = view.processState === "confirmed";
+  const activityLabel = !busy
+    ? null
+    : activity === "reading_documents"
+      ? "Unterlagen werden ausgewertet …"
+      : activity === "updating_diagram"
+        ? "Prozessbild wird aktualisiert …"
+        : activity === "checking_open_points"
+          ? "Offene Punkte werden geprüft …"
+          : "Denkt nach …";
+  const chatClass =
+    desktop && expanded
+      ? "col-start-1 col-span-4 px-4 sm:px-6"
+      : desktop
+        ? "col-span-12 mx-auto w-5/12 max-w-3xl px-4 sm:px-6"
+        : "col-span-12 px-4 sm:px-6";
+  const transcript = (
+    <ProcessChatTranscript
+      messages={chat.messages}
+      busy={busy}
+      activity={activityLabel}
+      chatClassName={chatClass}
+    >
+      {view.state.documentGate === "pending" ? (
+        <DocumentGate
+          processId={id}
+          uploads={view.uploads}
+          selected={selected}
+          onSelected={setSelected}
+          busy={busy || uploading}
+          onUploading={setUploading}
+          onChanged={() => void reloadView({ syncMessages: false })}
+          onPreview={setPreview}
+          onAnalyze={() => void send("analyze_documents")}
+          onSkip={() => void send("skip_documents")}
+        />
+      ) : null}
+    </ProcessChatTranscript>
+  );
   return (
-    <section className="flex min-h-[calc(100vh-4rem)] flex-col bg-muted/20 px-4 py-4 sm:px-6">
+    <section
+      ref={workspaceRef}
+      data-chat-workspace
+      className="relative flex h-full min-h-0 flex-col bg-muted/20"
+    >
       <ChatCaptureTutorial
         open={tutorial && !confirmed}
         onDone={() => {
@@ -321,297 +436,218 @@ export function ProcessChatPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <header className="mx-auto mb-4 flex w-full max-w-[1600px] items-end justify-between gap-4">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">
-            Prozesserfassung · Chat
-          </p>
-          <h1 className="mt-1 text-2xl font-bold">{view.cover.processName}</h1>
-          <p className="text-sm text-muted-foreground">
-            {view.cover.department} · {id}
-          </p>
-        </div>
-        {view.confirmationQuality === "with_gaps" && (
-          <Badge variant="outline">Mit offenen Punkten bestätigt</Badge>
-        )}
-      </header>
-
-      <Tabs
-        value={tab}
-        activationMode="manual"
-        onValueChange={(value) => {
-          if (value !== "chat" && value !== "diagram") return;
-          setTab(value);
-          if (value === "diagram") setDiagramUnread(false);
-        }}
-        className="mx-auto min-h-0 w-full max-w-[1600px] flex-1"
+      <MessageScrollerProvider
+        autoScroll
+        defaultScrollPosition="last-anchor"
+        scrollPreviousItemPeek={64}
       >
-        <TabsList className="mb-3 grid h-10 w-full grid-cols-2 lg:hidden">
-          <TabsTrigger value="chat">Gespräch</TabsTrigger>
-          <TabsTrigger value="diagram">
-            Prozessbild
-            <span aria-hidden="true" className="w-2 text-center">
-              {diagramUnread ? "•" : ""}
-            </span>
-          </TabsTrigger>
-        </TabsList>
-
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[42fr_58fr]">
-          <TabsContent
-            value="chat"
-            forceMount={desktopLayout || undefined}
-            className="min-h-0 data-[state=inactive]:hidden lg:data-[state=inactive]:block"
+        <MessageScroller className="flex-1">
+          <MessageScrollerViewport
+            className="relative"
+            style={{
+              scrollPaddingBottom:
+                "calc(var(--chat-composer-height, 0px) + 1.5rem)",
+            }}
           >
-            <Card className="h-full min-h-[650px] flex-col overflow-hidden">
-              <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-card px-5 py-4">
+            <div className="grid grid-cols-12 pt-4">
+              <header
+                className={`${chatClass} mb-4 flex items-end justify-between gap-4`}
+              >
                 <div>
-                  <h2 className="font-semibold">Gespräch</h2>
-                  <p className="text-xs text-muted-foreground">
-                    {busy
-                      ? "KI arbeitet …"
-                      : confirmed
-                        ? "Abgeschlossen"
-                        : "Bereit für Ihre Ergänzung"}
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">
+                    Prozesserfassung · Chat
+                  </p>
+                  <h1 className="mt-1 text-2xl font-bold">
+                    {view.cover.processName}
+                  </h1>
+                  <p className="text-sm text-muted-foreground">
+                    {view.cover.department} · {id}
                   </p>
                 </div>
-              </div>
-              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
-                <div className="space-y-3" aria-live="polite">
-                  {chat.messages.map((message) => (
-                    <article
-                      key={message.id}
-                      className={
-                        message.role === "user"
-                          ? "ml-8 rounded-xl bg-primary px-4 py-3 text-primary-foreground"
-                          : "mr-8 rounded-xl bg-muted px-4 py-3"
-                      }
-                    >
-                      <ReactMarkdown
-                        allowedElements={[
-                          "p",
-                          "strong",
-                          "em",
-                          "ul",
-                          "ol",
-                          "li",
-                          "br",
-                          "code",
-                        ]}
-                      >
-                        {messageText(message)}
-                      </ReactMarkdown>
-                    </article>
-                  ))}
-                  {view.state.documentGate === "pending" && (
-                    <DocumentGate
-                      processId={id}
-                      uploads={view.uploads}
-                      selected={selected}
-                      onSelected={setSelected}
-                      busy={busy || uploading}
-                      onUploading={setUploading}
-                      onChanged={() => void reload()}
-                      onPreview={setPreview}
-                      onAnalyze={() => void send("analyze_documents")}
-                      onSkip={() => void send("skip_documents")}
-                    />
-                  )}
-                  {view.state.documentGate === "pending" && error && (
-                    <p className="text-sm text-destructive">{error}</p>
-                  )}
-                </div>
-              </div>
-              {view.state.documentGate !== "pending" && !confirmed && (
-                <form
-                  className="border-t bg-card p-4"
-                  onSubmit={(event: FormEvent) => {
-                    event.preventDefault();
-                    void send("message");
-                  }}
-                >
-                  {mentions.length > 0 && (
-                    <div className="mb-2 flex flex-wrap gap-1">
-                      {mentions.map((mention) => (
-                        <button
-                          type="button"
-                          key={mentionKey(mention)}
-                          className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-xs"
-                          onClick={() =>
-                            setMentions((current) =>
-                              current.filter(
-                                (item) =>
-                                  mentionKey(item) !== mentionKey(mention),
-                              ),
-                            )
-                          }
-                        >
-                          @{mention.label} <X className="size-3" />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {turnUploadIds.length > 0 && (
-                    <div className="mb-2 flex flex-wrap gap-1">
-                      {turnUploadIds.map((uploadId) => {
-                        const upload = view.uploads.find(
-                          (item) => item.id === uploadId,
-                        );
-                        return (
-                          <button
-                            type="button"
-                            key={uploadId}
-                            className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-xs"
-                            onClick={() =>
-                              setTurnUploadIds((current) =>
-                                current.filter((item) => item !== uploadId),
-                              )
-                            }
-                          >
-                            {upload?.name ?? "Unterlage"}{" "}
-                            <X className="size-3" />
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                  <div className="flex items-end gap-2">
-                    <label
-                      className="inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-md border hover:bg-muted"
-                      title="Unterlage anhängen"
-                    >
-                      <Paperclip className="size-4" />
-                      <input
-                        className="sr-only"
-                        type="file"
-                        name="chatAttachment"
-                        disabled={busy || view.uploads.length >= 5}
-                        onChange={async (event) => {
-                          const file = event.target.files?.[0];
-                          if (!file) return;
-                          try {
-                            const upload = await api.upload(id, file);
-                            setView((current) =>
-                              current
-                                ? {
-                                    ...current,
-                                    uploads: [...current.uploads, upload],
-                                  }
-                                : current,
-                            );
-                            setTurnUploadIds((current) => [
-                              ...current,
-                              upload.id,
-                            ]);
-                          } catch (reason) {
-                            setError((reason as Error).message);
-                          } finally {
-                            event.target.value = "";
-                          }
-                        }}
-                      />
-                    </label>
-                    <Textarea
-                      ref={composerRef}
-                      id="chat-composer"
-                      name="message"
-                      value={text}
-                      placeholder="Antwort oder Korrektur beschreiben …"
-                      rows={3}
-                      disabled={busy}
-                      onChange={(event) => setText(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" && !event.shiftKey) {
-                          event.preventDefault();
-                          if (text.trim()) void send("message");
-                        }
-                      }}
-                    />
-                    {busy ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => void chat.stop()}
-                      >
-                        <Square className="size-4" /> Stoppen
-                      </Button>
-                    ) : (
-                      <Button type="submit" disabled={!text.trim()}>
-                        <Send className="size-4" /> Senden
-                      </Button>
-                    )}
-                  </div>
-                  {error && (
-                    <p className="mt-2 text-sm text-destructive">{error}</p>
-                  )}
-                </form>
-              )}
-            </Card>
-          </TabsContent>
-
-          <TabsContent
-            value="diagram"
-            forceMount={desktopLayout || undefined}
-            className="min-h-0 data-[state=inactive]:hidden lg:data-[state=inactive]:block"
-          >
-            <Card className="h-full min-h-[650px] flex-col overflow-hidden">
-              <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-card px-5 py-4">
-                <div>
-                  <h2 className="font-semibold">Prozessbild</h2>
-                  <p className="text-xs text-muted-foreground">
-                    {confirmed
-                      ? "Fachlich bestätigt"
+                <Badge variant="outline">
+                  {view.confirmationQuality === "with_gaps"
+                    ? "Mit offenen Punkten bestätigt"
+                    : confirmed
+                      ? "Abgeschlossen"
                       : busy
-                        ? "Wird aktualisiert …"
-                        : view.understandingStatus === "valid"
-                          ? "Aktueller Stand"
-                          : "Noch kein gültiger Stand"}
-                  </p>
-                </div>
-              </div>
-              <div className="min-h-0 flex-1">
-                <ProcessFlowDiagram
-                  understanding={view.understanding}
-                  status={view.understandingStatus}
-                  updating={busy && Boolean(view.understanding)}
-                  onMention={confirmed ? undefined : addMention}
-                />
-              </div>
-              <div className="border-t bg-card p-4">
-                {confirmed ? (
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-sm">
-                      Der Prozess wurde fachlich bestätigt.
-                    </p>
-                    <div className="flex gap-2">
-                      <Button asChild variant="outline">
-                        <Link to={`/processes/${id}`}>Zum Prozess</Link>
+                        ? "KI arbeitet …"
+                        : "Bereit für Ergänzung"}
+                </Badge>
+              </header>
+            </div>
+            {desktop ? (
+              transcript
+            ) : (
+              <Tabs
+                value={tab}
+                activationMode="manual"
+                onValueChange={(value) => {
+                  if (value === "chat" || value === "diagram") {
+                    setTab(value);
+                    if (value === "diagram") setDiagramUnread(false);
+                  }
+                }}
+                className="min-h-0"
+              >
+                <TabsList className="mx-4 mb-3 grid h-10 grid-cols-2">
+                  <TabsTrigger value="chat">Gespräch</TabsTrigger>
+                  <TabsTrigger value="diagram">
+                    Prozessbild
+                    <span aria-hidden="true" className="w-2 text-center">
+                      {diagramUnread ? "•" : ""}
+                    </span>
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="chat" className="m-0">
+                  {transcript}
+                </TabsContent>
+                <TabsContent
+                  value="diagram"
+                  className="m-0 h-[calc(100dvh-13rem)]"
+                >
+                  <ProcessFlowDiagram
+                    understanding={view.understanding}
+                    status={view.understandingStatus}
+                    updating={busy && Boolean(view.understanding)}
+                    onMention={confirmed ? undefined : addMention}
+                  />
+                  <div className="border-t bg-background p-4">
+                    <ProcessConfirmationActions
+                      processId={id}
+                      confirmed={confirmed}
+                      confirmationAllowed={view.confirmationAllowed}
+                      busy={busy}
+                      label="Prozessbild bestätigen"
+                      onConfirm={() => void confirm(false)}
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
+            )}
+          </MessageScrollerViewport>
+          <MessageScrollerButton
+            aria-label="Zur neuesten Nachricht"
+            className={
+              desktop && expanded ? "!inset-s-[16.666667%]" : undefined
+            }
+          >
+            <ArrowDown />
+            <span className="sr-only">Zur neuesten Nachricht</span>
+          </MessageScrollerButton>
+          {desktop && (
+            <div
+              className={`pointer-events-none absolute inset-y-0 right-0 grid w-full grid-cols-12`}
+            >
+              <div
+                className={`pointer-events-auto min-h-0 ${expanded ? "col-start-5 col-span-8" : "col-start-10 col-span-3"}`}
+              >
+                {expanded ? (
+                  <div className="flex h-full min-h-0 flex-col border-l bg-background">
+                    <header className="flex items-center justify-between border-b px-4 py-3">
+                      <div>
+                        <h2 className="font-semibold">Prozessbild</h2>
+                        <p className="text-xs text-muted-foreground">
+                          {busy ? "Wird aktualisiert …" : "Aktueller Stand"}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => setExpanded(false)}
+                        aria-label="Prozessbild verkleinern"
+                      >
+                        <ChevronsRight className="size-4" />
                       </Button>
-                      <Button asChild>
-                        <Link to={`/processes/${id}/opportunities`}>
-                          KI-Potenziale ansehen
-                        </Link>
-                      </Button>
+                    </header>
+                    <div className="min-h-0 flex-1">
+                      <ProcessFlowDiagram
+                        understanding={view.understanding}
+                        status={view.understandingStatus}
+                        updating={busy && Boolean(view.understanding)}
+                        onMention={confirmed ? undefined : addMention}
+                      />
                     </div>
+                    <footer className="border-t p-4">
+                      <ProcessConfirmationActions
+                        processId={id}
+                        confirmed={confirmed}
+                        confirmationAllowed={view.confirmationAllowed}
+                        busy={busy}
+                        label="Prozessbild bestätigen"
+                        onConfirm={() => void confirm(false)}
+                      />
+                    </footer>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between gap-4">
-                    <p className="text-xs text-muted-foreground">
-                      Bestätigen Sie erst, wenn der Hauptablauf stimmt.
-                    </p>
-                    <Button
-                      disabled={!view.confirmationAllowed || busy}
-                      onClick={() => void confirm(false)}
-                    >
-                      Prozessbild bestätigen
-                    </Button>
-                  </div>
+                  <ProcessTracker
+                    understanding={view.understanding}
+                    status={view.understandingStatus}
+                    updating={busy}
+                    onMention={confirmed ? undefined : addMention}
+                    onExpand={() => setExpanded(true)}
+                    processId={id}
+                    confirmed={confirmed}
+                    confirmationAllowed={view.confirmationAllowed}
+                    busy={busy}
+                    onConfirm={() => void confirm(false)}
+                  />
                 )}
               </div>
-            </Card>
-          </TabsContent>
-        </div>
-      </Tabs>
+            </div>
+          )}
+          {(desktop || tab === "chat") &&
+            view.state.documentGate !== "pending" &&
+            !confirmed && (
+              <div
+                ref={composerSurfaceRef}
+                className={`absolute bottom-0 z-20 grid w-full grid-cols-12 pointer-events-none`}
+              >
+                <div className={`pointer-events-auto ${chatClass}`}>
+                  <ProcessChatComposer
+                    text={text}
+                    onText={setText}
+                    mentions={mentions}
+                    onRemoveMention={(mention) =>
+                      setMentions((current) =>
+                        current.filter(
+                          (item) => mentionKey(item) !== mentionKey(mention),
+                        ),
+                      )
+                    }
+                    uploadIds={turnUploadIds}
+                    uploads={view.uploads}
+                    onRemoveUpload={(uploadId) =>
+                      setTurnUploadIds((current) =>
+                        current.filter((item) => item !== uploadId),
+                      )
+                    }
+                    busy={busy}
+                    error={error}
+                    composerRef={composerRef}
+                    onSend={() => void send("message")}
+                    onStop={() => void chat.stop()}
+                    onUpload={async (file) => {
+                      try {
+                        const upload = await api.upload(id, file);
+                        setView((current) =>
+                          current
+                            ? {
+                                ...current,
+                                uploads: [...current.uploads, upload],
+                              }
+                            : current,
+                        );
+                        setTurnUploadIds((current) => [...current, upload.id]);
+                      } catch (reason) {
+                        setError((reason as Error).message);
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+        </MessageScroller>
+      </MessageScrollerProvider>
     </section>
   );
 }
@@ -658,7 +694,6 @@ function DocumentGate({
         <input
           className="sr-only"
           type="file"
-          name="initialDocuments"
           multiple
           disabled={busy || uploads.length >= 5}
           onChange={async (event) => {
@@ -731,10 +766,4 @@ function DocumentGate({
       </div>
     </div>
   );
-}
-
-function mentionKey(mention: ChatMention) {
-  return mention.kind === "step"
-    ? `step:${mention.stepId}`
-    : `transition:${mention.fromStepId}:${mention.toStepId}`;
 }

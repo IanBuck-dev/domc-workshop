@@ -14,6 +14,52 @@ export const chatUnderstandingStatusSchema = z.enum([
   "invalid",
   "valid",
 ]);
+export const chatActivityKindSchema = z.enum([
+  "reading_documents",
+  "updating_diagram",
+  "checking_open_points",
+]);
+export const chatActivityEventSchema = z.discriminatedUnion("state", [
+  z
+    .object({
+      schemaVersion: z.literal(1),
+      state: z.literal("active"),
+      kind: chatActivityKindSchema,
+      timestamp: z.string().datetime(),
+    })
+    .strict(),
+  z
+    .object({
+      schemaVersion: z.literal(1),
+      state: z.literal("idle"),
+      timestamp: z.string().datetime(),
+    })
+    .strict(),
+]);
+export const chatUnderstandingEventSchema = z
+  .object({
+    status: chatUnderstandingStatusSchema,
+    revision: z
+      .string()
+      .regex(/^[a-f0-9]{64}$/)
+      .optional(),
+    timestamp: z.string().datetime(),
+  })
+  .strict()
+  .superRefine((value, ctx) => {
+    if (value.status === "valid" && !value.revision)
+      ctx.addIssue({
+        code: "custom",
+        path: ["revision"],
+        message: "Valid understanding events require a revision.",
+      });
+    if (value.status !== "valid" && value.revision)
+      ctx.addIssue({
+        code: "custom",
+        path: ["revision"],
+        message: "Only valid understanding events may have a revision.",
+      });
+  });
 export const chatCaptureStateSchema = z
   .object({
     schemaVersion: z.literal(1),
@@ -126,4 +172,9 @@ export type ChatTranscriptEvent = z.infer<typeof chatTranscriptEventSchema>;
 export type ChatSessionRecord = z.infer<typeof chatSessionRecordSchema>;
 export type ChatUnderstandingStatus = z.infer<
   typeof chatUnderstandingStatusSchema
+>;
+export type ChatActivityKind = z.infer<typeof chatActivityKindSchema>;
+export type ChatActivityEvent = z.infer<typeof chatActivityEventSchema>;
+export type ChatUnderstandingEvent = z.infer<
+  typeof chatUnderstandingEventSchema
 >;

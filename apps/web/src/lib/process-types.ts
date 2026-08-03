@@ -12,8 +12,15 @@ export type {
   UploadRecord,
   UnderstandingSection,
 } from "../../../../packages/domain/src/process-understanding";
+export {
+  chatActivityEventSchema,
+  chatUnderstandingEventSchema,
+} from "../../../../packages/domain/src/chat-capture";
 export type {
   ChatCaptureState,
+  ChatActivityEvent,
+  ChatActivityKind,
+  ChatUnderstandingEvent,
   ChatMention,
   ChatTranscriptEvent,
 } from "../../../../packages/domain/src/chat-capture";

@@ -11,11 +11,7 @@ import type { ChatCaptureClaudeAdapter } from "../../../packages/claude/src/chat
 import { ChatCaptureRepository } from "../../../packages/storage/src/chat-capture-repository.ts";
 import { ProcessCaptureRepository } from "../../../packages/storage/src/process-capture-repository.ts";
 
-export type ChatUnderstandingEvent = {
-  status: "missing" | "invalid" | "valid";
-  revision?: string;
-  timestamp: string;
-};
+export type { ChatUnderstandingEvent } from "../../../packages/domain/src/chat-capture.ts";
 
 export type ActiveChatTurn = {
   duplicate: false;

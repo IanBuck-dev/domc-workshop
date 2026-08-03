@@ -33,7 +33,7 @@ describe("chat capture UI contract", () => {
     expect(page).toContain("DefaultChatTransport");
   });
 
-  test("uses controlled manual-activation tabs for the responsive chat views", async () => {
+  test("uses the message scroller and controlled manual-activation responsive tabs", async () => {
     const tabs = await readFile(
       join(process.cwd(), "apps/web/src/components/ui/tabs.tsx"),
       "utf8",
@@ -49,17 +49,19 @@ describe("chat capture UI contract", () => {
     expect(tabs).toContain("TabsPrimitive.Content");
     expect(page).toContain("value={tab}");
     expect(page).toContain('activationMode="manual"');
+    expect(page).toContain("MessageScrollerProvider");
+    expect(page).toContain('defaultScrollPosition="last-anchor"');
+    expect(page).toContain("scrollPreviousItemPeek={64}");
+    expect(page).toContain('aria-label="Zur neuesten Nachricht"');
+    expect(page).toContain('const desktopQuery = "(min-width: 1280px)"');
     expect(page).toContain(
-      '<TabsList className="mb-3 grid h-10 w-full grid-cols-2 lg:hidden">',
+      '<TabsList className="mx-4 mb-3 grid h-10 grid-cols-2">',
     );
     expect(page).toContain('<TabsTrigger value="chat">Gespräch</TabsTrigger>');
     expect(page).toContain('<TabsTrigger value="diagram">');
     expect(page).toContain('aria-hidden="true" className="w-2 text-center"');
     expect(page).toContain('if (value === "diagram") setDiagramUnread(false);');
-    expect(page).toContain("forceMount={desktopLayout || undefined}");
-    expect(page).toContain("data-[state=inactive]:hidden");
-    expect(page).toContain("lg:data-[state=inactive]:block");
-    expect(page).toContain("window.matchMedia(desktopLayoutQuery)");
+    expect(page).toContain("window.matchMedia(desktopQuery)");
   });
 
   test("renders a read-only vertical React Flow with directional transitions and mentions", async () => {

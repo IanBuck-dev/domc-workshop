@@ -1,5 +1,5 @@
 import { ListTree, LogOut, PlusCircle, Settings } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { BrandLockup } from "./ui/brand-mark";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
@@ -17,8 +17,15 @@ export function AppShell({
   children: React.ReactNode;
   onLogout: () => void;
 }) {
+  const { pathname } = useLocation();
+  const chatRoute = /^\/processes\/[^/]+\/chat$/.test(pathname);
   return (
-    <div className="min-h-screen bg-background">
+    <div
+      className={cn(
+        "bg-background",
+        chatRoute ? "flex h-dvh flex-col overflow-hidden" : "min-h-screen",
+      )}
+    >
       <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
           <NavLink
@@ -58,7 +65,9 @@ export function AppShell({
       </header>
       <DemoDataWarning />
       <AiOperationQueue />
-      <main>{children}</main>
+      <main className={chatRoute ? "min-h-0 flex-1" : undefined}>
+        {children}
+      </main>
     </div>
   );
 }

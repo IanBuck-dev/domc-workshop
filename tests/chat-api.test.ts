@@ -25,6 +25,7 @@ class FakeChatAdapter implements ChatCaptureClaudeAdapter {
   failDeletion = false;
   finishReason = "stop";
   completeUnderstanding = false;
+  streamError = false;
   async startTurn(request: ChatCaptureTurnRequest) {
     this.calls.push(request);
     const lines = (
@@ -47,44 +48,38 @@ class FakeChatAdapter implements ChatCaptureClaudeAdapter {
       join(request.cwd, "process-understanding.json"),
       JSON.stringify(value),
     );
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue({ type: "text-start", id: "text-1" });
-        controller.enqueue({
-          type: "text-delta",
-          id: "text-1",
-          text: "Ich habe einen ersten Stand erstellt.",
-        });
-        controller.enqueue({ type: "text-end", id: "text-1" });
-        controller.enqueue({
-          type: "finish",
-          finishReason: "stop",
-          rawFinishReason: "end_turn",
-          totalUsage: {
-            inputTokens: 1,
-            outputTokens: 1,
-            totalTokens: 2,
-            reasoningTokens: 0,
-            cachedInputTokens: 0,
-          },
-        });
-        controller.close();
-      },
+    let complete!: () => void;
+    const completed = new Promise<void>((resolve) => {
+      complete = resolve;
     });
+    const fullStream = (async function* (adapter: FakeChatAdapter) {
+      yield { type: "reasoning-delta", id: "reasoning-1", text: "intern" };
+      yield {
+        type: "tool-call",
+        toolCallId: "read-1",
+        toolName: "Read",
+        input: { file_path: "uploads/example.txt" },
+      };
+      yield {
+        type: "tool-call",
+        toolCallId: "write-1",
+        toolName: "Write",
+        input: { file_path: "process-understanding.json" },
+      };
+      if (adapter.streamError) throw new Error("provider failed");
+      complete();
+    })(this);
     return {
       requestedSessionId: request.sessionId,
       result: {
-        stream,
-        text: Promise.resolve("Ich habe einen ersten Stand erstellt."),
-        finalStep: Promise.resolve({
+        fullStream,
+        text: completed.then(() => "Ich habe einen ersten Stand erstellt."),
+        finalStep: completed.then(() => ({
           providerMetadata: {
             "claude-code": { sessionId: request.sessionId },
           },
-        }),
-        finishReason: Promise.resolve(this.finishReason),
-        consumeStream: async () => {
-          await stream.pipeTo(new WritableStream());
-        },
+        })),
+        finishReason: completed.then(() => this.finishReason),
       } as any,
     };
   }
@@ -188,6 +183,81 @@ describe("chat capture API", () => {
     expect(ai.calls[1]?.resume).toBe(true);
     const transcript = await service.chats.transcript(record.id);
     expect(transcript.filter((item) => item.id === nextId)).toHaveLength(1);
+  });
+
+  test("publishes only safe transient activity and understanding events", async () => {
+    const { app, record } = await fixture();
+    const response = await app.request(`/api/processes/${record.id}/chat`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        text: "Ohne Unterlagen fortfahren.",
+        action: "skip_documents",
+        selectedUploadIds: [],
+        mentions: [],
+      }),
+    });
+    const body = await response.text();
+    expect(body).toContain('"type":"data-chat-activity"');
+    expect(body).toContain('"kind":"updating_diagram"');
+    expect(body).toContain('"kind":"checking_open_points"');
+    expect(body).toContain('"transient":true');
+    expect(body).toContain('"type":"data-understanding-state"');
+    expect(body).not.toContain("reasoning-1");
+    expect(body).not.toContain("intern");
+    expect(body).not.toContain("uploads/example.txt");
+    expect(body).not.toContain("process-understanding.json");
+  });
+
+  test("returns duplicate turns with safe state and idle cleanup only", async () => {
+    const { app, record, ai } = await fixture();
+    const request = {
+      id: crypto.randomUUID(),
+      text: "Ohne Unterlagen fortfahren.",
+      action: "skip_documents",
+      selectedUploadIds: [],
+      mentions: [],
+    };
+    await (
+      await app.request(`/api/processes/${record.id}/chat`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(request),
+      })
+    ).text();
+    const duplicate = await app.request(`/api/processes/${record.id}/chat`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(request),
+    });
+    const body = await duplicate.text();
+    expect(ai.calls).toHaveLength(1);
+    expect(body).toContain('"type":"data-understanding-state"');
+    expect(body).toContain('"state":"idle"');
+    expect(body).toContain('"transient":true');
+  });
+
+  test("cleans up activity and persists a failed provider stream once", async () => {
+    const { app, record, ai, service } = await fixture();
+    ai.streamError = true;
+    const response = await app.request(`/api/processes/${record.id}/chat`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        text: "Ohne Unterlagen fortfahren.",
+        action: "skip_documents",
+        selectedUploadIds: [],
+        mentions: [],
+      }),
+    });
+    const body = await response.text();
+    expect(body).toContain('"state":"idle"');
+    expect(body).toContain("Die Antwort konnte nicht abgeschlossen werden");
+    expect((await service.chats.state(record.id)).lastTurnOutcome).toBe(
+      "failed",
+    );
   });
 
   test("requires explicit override, confirms durably, and starts opportunities", async () => {

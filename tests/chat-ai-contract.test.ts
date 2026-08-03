@@ -13,6 +13,7 @@ describe("chat AI runtime contract", () => {
       "4.0.1",
     );
     expect(packageJson.dependencies["@xyflow/react"]).toBe("12.11.2");
+    expect(packageJson.dependencies["@shadcn/react"]).toBe("0.2.1");
   });
 
   test("uses current stream APIs and medium Opus session settings", async () => {
@@ -31,8 +32,12 @@ describe("chat AI runtime contract", () => {
     expect(adapter).toContain("settingSources: []");
     expect(adapter).toContain("maxTurns: 12");
     expect(route).toContain("createUIMessageStreamResponse");
-    expect(route).toContain("consumeStream");
-    expect(route).not.toContain("fullStream");
+    expect(route).toContain(
+      "for await (const part of active.result.fullStream)",
+    );
+    expect(route).not.toContain("consumeStream");
+    expect(route).toContain("data-chat-activity");
+    expect(route).not.toContain("writer.write({ type: part.type");
   });
 
   test("keeps the published JSON schema aligned with nested runtime IDs", async () => {

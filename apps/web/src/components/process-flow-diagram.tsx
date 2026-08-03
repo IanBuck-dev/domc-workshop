@@ -153,11 +153,13 @@ export function ProcessFlowDiagram({
   status,
   updating,
   onMention,
+  className,
 }: {
   understanding: ProcessUnderstanding | null;
   status: "missing" | "invalid" | "valid";
   updating: boolean;
   onMention?: (mention: ChatMention) => void;
+  className?: string;
 }) {
   const graph = useMemo(() => {
     const steps = understanding?.steps ?? [];
@@ -229,7 +231,7 @@ export function ProcessFlowDiagram({
     );
 
   return (
-    <div className="relative h-full min-h-80">
+    <div className={`relative h-full min-h-80 ${className ?? ""}`}>
       {updating && (
         <div className="absolute left-3 top-3 z-10 rounded-full bg-card px-3 py-1 text-xs text-muted-foreground shadow-sm">
           Prozessbild wird aktualisiert …

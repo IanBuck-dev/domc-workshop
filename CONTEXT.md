@@ -16,6 +16,10 @@ _Avoid_: Assessment mode, input type
 The primary Interaction Mode in which a person supplies documents and corrections while an assistant builds and refines the Process Understanding.
 _Avoid_: Chat assessment, interview
 
+**Chat Activity**:
+A short, transient, user-facing progress state shown while a Chat Capture turn is running. It describes the current kind of work without exposing model reasoning, prompts, tool arguments, file paths, terminal output, or other runtime internals.
+_Avoid_: Chain of thought, reasoning log, tool log
+
 **Form Capture**:
 The alternative Interaction Mode in which a person supplies process information through structured fields before reviewing the Process Understanding.
 _Avoid_: Classic mode, manual mode
@@ -27,6 +31,10 @@ _Avoid_: AI result, assessment result
 **Process Diagram**:
 The visual representation of the ordered process steps contained in the Process Understanding. In the initial version it represents a linear flow only.
 _Avoid_: Workflow automation, solution architecture
+
+**Process Tracker**:
+The compact, sticky overview of the Process Diagram shown beside a Chat Capture in its default desktop layout. It provides orientation and expands into the full Process Diagram workspace; it is not a separate process artifact.
+_Avoid_: Sidebar, mini diagram, second Process Diagram
 
 **Process Step**:
 One ordered activity in the current process. A Process Step is the primary visible element of the initial Process Diagram.

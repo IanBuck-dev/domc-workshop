@@ -1,6 +1,12 @@
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import { Hono } from "hono";
 import { z } from "zod";
+import { resolve } from "node:path";
+import {
+  chatActivityEventSchema,
+  chatUnderstandingEventSchema,
+  type ChatActivityKind,
+} from "../../../../packages/domain/src/chat-capture.ts";
 import type { ProcessCaptureRepository } from "../../../../packages/storage/src/process-capture-repository.ts";
 import type { ChatCaptureService } from "../chat-capture-service.ts";
 import type { OpportunityDiscoveryService } from "../opportunity-discovery-service.ts";
@@ -53,13 +59,23 @@ export function chatCaptureRoutes(
           const reconciliation = await service.chats.reconcile(record);
           writer.write({
             type: "data-understanding-state",
-            data: {
+            data: chatUnderstandingEventSchema.parse({
               status: reconciliation.status,
               ...(reconciliation.status === "valid"
                 ? { revision: reconciliation.revision }
                 : {}),
               timestamp: new Date().toISOString(),
-            },
+            }),
+            transient: true,
+          });
+          writer.write({
+            type: "data-chat-activity",
+            data: chatActivityEventSchema.parse({
+              schemaVersion: 1,
+              state: "idle",
+              timestamp: new Date().toISOString(),
+            }),
+            transient: true,
           });
         },
       });
@@ -69,6 +85,36 @@ export function chatCaptureRoutes(
       execute: async ({ writer }) => {
         let lastKey = "";
         let scanning = false;
+        let lastActivity: ChatActivityKind | null = null;
+        const activity = (kind: ChatActivityKind) => {
+          if (lastActivity === kind) return;
+          lastActivity = kind;
+          writer.write({
+            type: "data-chat-activity",
+            data: chatActivityEventSchema.parse({
+              schemaVersion: 1,
+              state: "active",
+              kind,
+              timestamp: new Date().toISOString(),
+            }),
+            transient: true,
+          });
+        };
+        const understandingState = (
+          value: Awaited<ReturnType<ChatCaptureService["chats"]["reconcile"]>>,
+        ) => {
+          writer.write({
+            type: "data-understanding-state",
+            data: chatUnderstandingEventSchema.parse({
+              status: value.status,
+              ...(value.status === "valid" ? { revision: value.revision } : {}),
+              timestamp: new Date().toISOString(),
+            }),
+            transient: true,
+          });
+        };
+        if (active.action === "analyze_documents")
+          activity("reading_documents");
         const scan = async () => {
           if (scanning) return;
           scanning = true;
@@ -77,30 +123,60 @@ export function chatCaptureRoutes(
               await processes.required(active.record.id),
             );
             const key = `${value.status}:${value.status === "valid" ? value.revision : ""}`;
+            if (!lastKey) {
+              lastKey = key;
+              understandingState(value);
+              return;
+            }
             if (key === lastKey) return;
             lastKey = key;
-            writer.write({
-              type: "data-understanding-state",
-              data: {
-                status: value.status,
-                ...(value.status === "valid"
-                  ? { revision: value.revision }
-                  : {}),
-                timestamp: new Date().toISOString(),
-              },
-            });
+            activity("updating_diagram");
+            understandingState(value);
           } finally {
             scanning = false;
           }
         };
         const watcher = setInterval(() => void scan(), 350);
         try {
-          // Claude may emit internal pre-tool narration before it updates the
-          // working file. Consume that provider stream for completion and
-          // cancellation, but expose only the successfully persisted assistant
-          // reply. Validated understanding revisions still reach the UI live
-          // through the watcher above.
-          void active.result.consumeStream({ onError: () => {} });
+          for await (const part of active.result.fullStream) {
+            if (part.type === "error") throw part.error;
+            if (part.type === "abort")
+              throw new Error("Chat turn aborted by provider.");
+            if (
+              part.type === "tool-input-start" &&
+              active.action === "analyze_documents" &&
+              (part.toolName === "Read" || part.toolName === "Glob")
+            ) {
+              activity("reading_documents");
+              continue;
+            }
+            if (part.type !== "tool-call") continue;
+            const toolName = part.toolName;
+            if (
+              active.action === "analyze_documents" &&
+              (toolName === "Read" || toolName === "Glob")
+            ) {
+              activity("reading_documents");
+              continue;
+            }
+            if (toolName !== "Write") continue;
+            const input = part.input;
+            const target =
+              input && typeof input === "object"
+                ? ((input as Record<string, unknown>).file_path ??
+                  (input as Record<string, unknown>).path)
+                : undefined;
+            if (
+              typeof target === "string" &&
+              resolve(processes.dir(active.record.id), target) ===
+                resolve(
+                  processes.dir(active.record.id),
+                  "process-understanding.json",
+                )
+            )
+              activity("updating_diagram");
+          }
+          activity("checking_open_points");
           const completed = await service.finishTurn(active);
           const textId = crypto.randomUUID();
           writer.write({ type: "text-start", id: textId });
@@ -110,22 +186,22 @@ export function chatCaptureRoutes(
             delta: completed.assistant.text,
           });
           writer.write({ type: "text-end", id: textId });
-          writer.write({
-            type: "data-understanding-state",
-            data: {
-              status: completed.understanding.status,
-              ...(completed.understanding.status === "valid"
-                ? { revision: completed.understanding.revision }
-                : {}),
-              timestamp: new Date().toISOString(),
-            },
-          });
+          understandingState(completed.understanding);
           publishProcessChanged(active.record.id);
         } catch (error) {
           await service.failTurn(active, c.req.raw.signal.aborted);
           throw error;
         } finally {
           clearInterval(watcher);
+          writer.write({
+            type: "data-chat-activity",
+            data: chatActivityEventSchema.parse({
+              schemaVersion: 1,
+              state: "idle",
+              timestamp: new Date().toISOString(),
+            }),
+            transient: true,
+          });
         }
       },
       onError: () =>

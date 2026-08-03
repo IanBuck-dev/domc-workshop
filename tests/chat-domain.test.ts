@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import {
   chatCaptureStateSchema,
+  chatActivityEventSchema,
+  chatUnderstandingEventSchema,
   chatMentionSchema,
   chatMessageRequestSchema,
 } from "../packages/domain/src/chat-capture.ts";
@@ -92,4 +94,49 @@ describe("chat capture domain", () => {
       }),
     ).toThrow();
   });
+});
+
+test("validates safe activity and understanding stream events", () => {
+  const now = new Date().toISOString();
+  expect(
+    chatActivityEventSchema.parse({
+      schemaVersion: 1,
+      state: "active",
+      kind: "reading_documents",
+      timestamp: now,
+    }),
+  ).toMatchObject({ kind: "reading_documents" });
+  expect(
+    chatActivityEventSchema.parse({
+      schemaVersion: 1,
+      state: "idle",
+      timestamp: now,
+    }).state,
+  ).toBe("idle");
+  expect(() =>
+    chatActivityEventSchema.parse({
+      schemaVersion: 1,
+      state: "active",
+      kind: "Bash",
+      timestamp: now,
+    }),
+  ).toThrow();
+  expect(() =>
+    chatActivityEventSchema.parse({
+      schemaVersion: 1,
+      state: "idle",
+      timestamp: "yesterday",
+      extra: true,
+    }),
+  ).toThrow();
+  expect(
+    chatUnderstandingEventSchema.parse({
+      status: "valid",
+      revision: "a".repeat(64),
+      timestamp: now,
+    }).status,
+  ).toBe("valid");
+  expect(() =>
+    chatUnderstandingEventSchema.parse({ status: "valid", timestamp: now }),
+  ).toThrow();
 });
