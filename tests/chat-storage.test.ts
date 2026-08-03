@@ -38,9 +38,12 @@ describe("chat capture storage", () => {
     ]);
     expect((await chats.transcript(record.id))[0]?.action).toBe("initial");
     const contracts = join(processes.dir(record.id), "chat", "contracts");
-    expect(
-      (await readFile(join(contracts, "process-chat.md"), "utf8")).length,
-    ).toBeGreaterThan(100);
+    const frozenPrompt = await readFile(
+      join(contracts, "process-chat.md"),
+      "utf8",
+    );
+    expect(frozenPrompt.length).toBeGreaterThan(100);
+    expect(frozenPrompt).toContain("Beim Aufteilen");
     expect(
       JSON.parse(
         await readFile(
@@ -192,6 +195,26 @@ describe("chat capture storage", () => {
         ),
       ).steps,
     ).toHaveLength(5);
+    const identityChanged = structuredClone(nextValue);
+    identityChanged.steps[0]!.id = "new-first-step";
+    await writeFile(working, JSON.stringify(identityChanged));
+    const identityRevision = await chats.reconcile(
+      await processes.required(record.id),
+    );
+    expect(identityRevision.status).toBe("valid");
+    const identityAudit = (
+      await readFile(join(processes.dir(record.id), "history.jsonl"), "utf8")
+    )
+      .split("\n")
+      .filter((line) =>
+        line.includes("chat-understanding-step-identities-changed"),
+      );
+    expect(identityAudit).toHaveLength(1);
+    expect(JSON.parse(identityAudit[0]!).detail).toMatchObject({
+      retainedStepIds: expect.any(Array),
+      addedStepIds: ["new-first-step"],
+      removedStepIds: [value.steps[0]!.id],
+    });
   });
 
   test("requires override for gaps and finalizes the canonical file", async () => {

@@ -82,6 +82,12 @@ export const chatMentionSchema = z.discriminatedUnion("kind", [
       kind: z.literal("step"),
       stepId: idSchema,
       label: z.string().trim().min(1).max(500),
+      nameSnapshot: z.string().trim().min(1).max(240).nullable().default(null),
+      understandingRevision: z
+        .string()
+        .regex(/^[a-f0-9]{64}$/)
+        .nullable()
+        .default(null),
     })
     .strict(),
   z
@@ -90,6 +96,12 @@ export const chatMentionSchema = z.discriminatedUnion("kind", [
       fromStepId: idSchema,
       toStepId: idSchema,
       label: z.string().trim().min(1).max(500),
+      nameSnapshot: z.string().trim().min(1).max(240).nullable().default(null),
+      understandingRevision: z
+        .string()
+        .regex(/^[a-f0-9]{64}$/)
+        .nullable()
+        .default(null),
     })
     .strict(),
 ]);

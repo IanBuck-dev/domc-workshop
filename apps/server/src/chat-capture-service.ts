@@ -120,8 +120,8 @@ export class ChatCaptureService {
       ? `\n\nBezüge aus dem Prozessbild:\n${request.mentions
           .map((mention) =>
             mention.kind === "step"
-              ? `- ${mention.label} (stabile ID ${mention.stepId})`
-              : `- ${mention.label} (${mention.fromStepId} -> ${mention.toStepId})`,
+              ? `- ${mention.label} (stabile ID ${mention.stepId}, historischer Name: ${mention.nameSnapshot ?? "nicht verfügbar"}, Stand: ${mention.understandingRevision ?? "nicht verfügbar"})`
+              : `- ${mention.label} (${mention.fromStepId} -> ${mention.toStepId}, historischer Name: ${mention.nameSnapshot ?? "nicht verfügbar"}, Stand: ${mention.understandingRevision ?? "nicht verfügbar"})`,
           )
           .join("\n")}`
       : "";

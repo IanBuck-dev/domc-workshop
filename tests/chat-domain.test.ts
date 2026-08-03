@@ -5,6 +5,7 @@ import {
   chatUnderstandingEventSchema,
   chatMentionSchema,
   chatMessageRequestSchema,
+  chatTranscriptEventSchema,
 } from "../packages/domain/src/chat-capture.ts";
 import { processCaptureRecordSchema } from "../packages/domain/src/process-understanding.ts";
 import { cover, processConfig } from "./process-fixtures.ts";
@@ -17,7 +18,13 @@ describe("chat capture domain", () => {
         stepId: "step-1",
         label: "Schritt-1",
       }),
-    ).toEqual({ kind: "step", stepId: "step-1", label: "Schritt-1" });
+    ).toEqual({
+      kind: "step",
+      stepId: "step-1",
+      label: "Schritt-1",
+      nameSnapshot: null,
+      understandingRevision: null,
+    });
     expect(
       chatMentionSchema.parse({
         kind: "transition",
@@ -25,7 +32,11 @@ describe("chat capture domain", () => {
         toStepId: "step-2",
         label: "Übergang-1-2",
       }),
-    ).toMatchObject({ kind: "transition" });
+    ).toMatchObject({
+      kind: "transition",
+      nameSnapshot: null,
+      understandingRevision: null,
+    });
     expect(() =>
       chatMessageRequestSchema.parse({
         id: crypto.randomUUID(),
@@ -37,6 +48,33 @@ describe("chat capture domain", () => {
         ],
       }),
     ).toThrow("Mentions must be unique");
+  });
+
+  test("defaults legacy mention snapshots and bounds new snapshots", () => {
+    const legacy = chatTranscriptEventSchema.parse({
+      schemaVersion: 1,
+      id: crypto.randomUUID(),
+      turnId: null,
+      at: new Date().toISOString(),
+      role: "user",
+      status: "complete",
+      text: "Bitte prüfen.",
+      mentions: [{ kind: "step", stepId: "step-1", label: "Schritt-1" }],
+      action: "message",
+    });
+    expect(legacy.mentions[0]).toMatchObject({
+      nameSnapshot: null,
+      understandingRevision: null,
+    });
+    expect(() =>
+      chatMentionSchema.parse({
+        kind: "step",
+        stepId: "step-1",
+        label: "Schritt-1",
+        nameSnapshot: "x".repeat(241),
+        understandingRevision: "a".repeat(64),
+      }),
+    ).toThrow();
   });
 
   test("keeps confirmation quality mode-aware", async () => {

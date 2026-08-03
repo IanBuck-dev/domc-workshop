@@ -1,5 +1,20 @@
 import ReactMarkdown from "react-markdown";
 import type { UIMessage } from "ai";
+import type {
+  ChatMention,
+  ProcessUnderstanding,
+  UploadRecord,
+} from "../lib/process-types";
+import {
+  ChatMentionToken,
+  resolveChatMention,
+  type ChatMentionTarget,
+} from "./chat-mention";
+import { ChatDocumentGate } from "./chat-document-gate";
+import {
+  CompletionProcessChatMilestoneCard,
+  InitialProcessChatMilestoneCard,
+} from "./process-chat-milestone-card";
 import { Message, MessageContent } from "./ui/message";
 import { Marker, MarkerContent, MarkerIcon } from "./ui/marker";
 import { Spinner } from "./ui/spinner";
@@ -7,6 +22,27 @@ import {
   MessageScrollerContent,
   MessageScrollerItem,
 } from "./ui/message-scroller";
+
+export type ProcessChatMessageMetadata = {
+  action:
+    | "initial"
+    | "message"
+    | "analyze_documents"
+    | "skip_documents"
+    | "confirmation";
+  status: "complete" | "aborted";
+  mentions: ChatMention[];
+};
+export type ProcessChatDisplayMessage = UIMessage<ProcessChatMessageMetadata>;
+
+export function classifyChatMilestone(message: ProcessChatDisplayMessage) {
+  const metadata = message.metadata;
+  if (message.role !== "assistant" || metadata?.status !== "complete")
+    return null;
+  return metadata.action === "initial" || metadata.action === "confirmation"
+    ? metadata.action
+    : null;
+}
 
 function messageText(message: UIMessage) {
   return message.parts
@@ -18,59 +54,151 @@ function messageText(message: UIMessage) {
     .join("");
 }
 
+export function withoutLegacyMentionPrefix(
+  text: string,
+  mentions: ChatMention[],
+) {
+  let remainder = text;
+  for (const mention of mentions) {
+    const prefix = `@${mention.label}`;
+    if (
+      remainder.startsWith(prefix) &&
+      (remainder.length === prefix.length ||
+        /^\s/u.test(remainder[prefix.length]!))
+    )
+      remainder = remainder.slice(prefix.length).replace(/^\s+/u, "");
+  }
+  return remainder;
+}
+
 export function ProcessChatTranscript({
   messages,
   busy,
   activity,
-  children,
+  processingDocuments,
   chatClassName,
+  processId,
+  understanding,
+  selectedUploads,
+  missingSelectedCount,
+  documentGate,
+  onPreview,
+  onActivateMention,
 }: {
-  messages: UIMessage[];
+  messages: ProcessChatDisplayMessage[];
   busy: boolean;
   activity: string | null;
-  children?: React.ReactNode;
+  processingDocuments: boolean;
   chatClassName: string;
+  processId: string;
+  understanding: ProcessUnderstanding | null;
+  selectedUploads: UploadRecord[];
+  missingSelectedCount: number;
+  documentGate?: React.ComponentProps<typeof ChatDocumentGate>;
+  onPreview: (upload: UploadRecord) => void;
+  onActivateMention: (target: ChatMentionTarget) => void;
 }) {
+  const visibleMessages = messages.filter(
+    (message) =>
+      !(
+        message.role === "user" &&
+        (message.metadata?.action === "analyze_documents" ||
+          message.metadata?.action === "skip_documents")
+      ),
+  );
+  const coverageByUploadId = Object.fromEntries(
+    (understanding?.documentCoverage ?? []).map((coverage) => [
+      coverage.uploadId,
+      coverage,
+    ]),
+  );
   return (
     <MessageScrollerContent
       role="log"
       aria-busy={busy}
       className="gap-6 pb-[calc(var(--chat-composer-height,0px)+1.5rem)] pt-2"
     >
-      {messages.map((message) => (
-        <MessageScrollerItem
-          key={message.id}
-          scrollAnchor={message.role === "user"}
-          className="grid grid-cols-12"
-        >
-          <div className={chatClassName}>
-            <Message align={message.role === "user" ? "end" : "start"}>
-              <MessageContent
-                className={
-                  message.role === "user"
-                    ? "max-w-[85%] rounded-xl bg-muted px-3 py-2 text-foreground"
-                    : "max-w-full text-base leading-7"
-                }
-              >
-                <ReactMarkdown
-                  allowedElements={[
-                    "p",
-                    "strong",
-                    "em",
-                    "ul",
-                    "ol",
-                    "li",
-                    "br",
-                    "code",
-                  ]}
-                >
-                  {messageText(message)}
-                </ReactMarkdown>
-              </MessageContent>
-            </Message>
-          </div>
-        </MessageScrollerItem>
-      ))}
+      {visibleMessages.map((message) => {
+        const milestone = classifyChatMilestone(message);
+        const mentions = message.metadata?.mentions ?? [];
+        const text = withoutLegacyMentionPrefix(messageText(message), mentions);
+        const initialGate =
+          milestone === "initial" && documentGate ? (
+            <ChatDocumentGate {...documentGate} />
+          ) : undefined;
+        return (
+          <MessageScrollerItem
+            key={message.id}
+            scrollAnchor={
+              message.role === "user" || milestone === "confirmation"
+            }
+            className="grid grid-cols-12"
+          >
+            <div className={chatClassName}>
+              {milestone === "initial" ? (
+                <InitialProcessChatMilestoneCard
+                  text={text}
+                  selectedUploads={selectedUploads}
+                  missingSelectedCount={missingSelectedCount}
+                  onPreview={onPreview}
+                  documentGate={initialGate}
+                  coverageByUploadId={coverageByUploadId}
+                  processing={processingDocuments}
+                />
+              ) : milestone === "confirmation" ? (
+                <CompletionProcessChatMilestoneCard
+                  text={text}
+                  processId={processId}
+                />
+              ) : (
+                <Message align={message.role === "user" ? "end" : "start"}>
+                  <MessageContent
+                    className={
+                      message.role === "user"
+                        ? "max-w-[85%] rounded-xl bg-muted px-3 py-2 text-foreground"
+                        : "max-w-full text-base leading-7"
+                    }
+                  >
+                    {mentions.length > 0 && (
+                      <div className="mb-2 flex flex-wrap gap-1">
+                        {mentions.map((mention) => (
+                          <ChatMentionToken
+                            key={
+                              mention.kind === "step"
+                                ? mention.stepId
+                                : `${mention.fromStepId}:${mention.toStepId}`
+                            }
+                            mention={mention}
+                            resolved={resolveChatMention(
+                              mention,
+                              understanding,
+                            )}
+                            onActivate={onActivateMention}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    <ReactMarkdown
+                      allowedElements={[
+                        "p",
+                        "strong",
+                        "em",
+                        "ul",
+                        "ol",
+                        "li",
+                        "br",
+                        "code",
+                      ]}
+                    >
+                      {text}
+                    </ReactMarkdown>
+                  </MessageContent>
+                </Message>
+              )}
+            </div>
+          </MessageScrollerItem>
+        );
+      })}
       {activity && (
         <MessageScrollerItem className="grid grid-cols-12">
           <div className={chatClassName}>
@@ -81,11 +209,6 @@ export function ProcessChatTranscript({
               <MarkerContent>{activity}</MarkerContent>
             </Marker>
           </div>
-        </MessageScrollerItem>
-      )}
-      {children && (
-        <MessageScrollerItem className="grid grid-cols-12">
-          <div className={chatClassName}>{children}</div>
         </MessageScrollerItem>
       )}
     </MessageScrollerContent>

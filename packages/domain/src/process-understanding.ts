@@ -507,7 +507,29 @@ export const documentCoverageSchema = z
     processedCharacters: z.number().int().nonnegative().nullable(),
     limitation: z.string().trim().min(1).max(2_000).nullable(),
   })
-  .strict();
+  .strict()
+  .superRefine((coverage, ctx) => {
+    if (
+      (coverage.status === "partial" || coverage.status === "failed") &&
+      !coverage.limitation
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["limitation"],
+        message: "Partial or failed document coverage requires a limitation.",
+      });
+
+    if (
+      coverage.status === "failed" &&
+      coverage.processedCharacters !== null &&
+      coverage.processedCharacters > 0
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["processedCharacters"],
+        message: "Failed document coverage cannot report processed characters.",
+      });
+  });
 const processUnderstandingFields = {
   purpose: stringFactSchema,
   trigger: stringFactSchema,

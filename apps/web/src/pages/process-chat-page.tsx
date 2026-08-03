@@ -1,12 +1,17 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { ArrowDown, ChevronsRight, FileText, Paperclip, X } from "lucide-react";
+import { ArrowDown, ChevronsRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ChatCaptureTutorial } from "../components/chat-capture-tutorial";
 import { DocumentPreviewDialog } from "../components/document-preview-dialog";
 import { ProcessChatComposer } from "../components/process-chat-composer";
 import { ProcessChatTranscript } from "../components/process-chat-transcript";
+import type { ProcessChatMessageMetadata } from "../components/process-chat-transcript";
+import {
+  isChatMentionTargetAvailable,
+  type ChatMentionTarget,
+} from "../components/chat-mention";
 import { ProcessConfirmationActions } from "../components/process-confirmation-actions";
 import { ProcessFlowDiagram } from "../components/process-flow-diagram";
 import { ProcessTracker } from "../components/process-tracker";
@@ -22,7 +27,6 @@ import {
 } from "../components/ui/alert-dialog";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { Checkbox } from "../components/ui/checkbox";
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -68,7 +72,7 @@ type View = {
   confirmationQuality: "complete" | "with_gaps" | null;
 };
 type ProcessChatUIMessage = UIMessage<
-  never,
+  ProcessChatMessageMetadata,
   {
     "chat-activity": ReturnType<typeof chatActivityEventSchema.parse>;
     "understanding-state": ReturnType<
@@ -94,16 +98,16 @@ function useDesktop() {
 function transcriptMessages(
   transcript: ChatTranscriptEvent[],
 ): ProcessChatUIMessage[] {
-  return transcript.map((event) => {
-    const prefix = event.mentions
-      .map((mention) => `@${mention.label}`)
-      .join(" ");
-    const text =
-      prefix && !event.text.startsWith(`${prefix}\n`)
-        ? `${prefix}\n${event.text}`
-        : event.text;
-    return { id: event.id, role: event.role, parts: [{ type: "text", text }] };
-  });
+  return transcript.map((event) => ({
+    id: event.id,
+    role: event.role,
+    parts: [{ type: "text", text: event.text }],
+    metadata: {
+      action: event.action,
+      status: event.status,
+      mentions: event.mentions,
+    },
+  }));
 }
 function messageText(message: UIMessage) {
   return message.parts
@@ -118,6 +122,29 @@ function mentionKey(mention: ChatMention) {
   return mention.kind === "step"
     ? `step:${mention.stepId}`
     : `transition:${mention.fromStepId}:${mention.toStepId}`;
+}
+function snapshotMention(
+  mention: ChatMention,
+  understanding: ProcessUnderstanding | null,
+  revision: string | null | undefined,
+): ChatMention {
+  const steps = understanding?.steps ?? [];
+  if (mention.kind === "step") {
+    const step = steps.find((item) => item.id === mention.stepId);
+    return {
+      ...mention,
+      nameSnapshot: step?.name.slice(0, 240) ?? null,
+      understandingRevision: revision ?? null,
+    };
+  }
+  const from = steps.find((item) => item.id === mention.fromStepId);
+  const to = steps.find((item) => item.id === mention.toStepId);
+  return {
+    ...mention,
+    nameSnapshot:
+      from && to ? `Von ${from.name} zu ${to.name}`.slice(0, 240) : null,
+    understandingRevision: revision ?? null,
+  };
 }
 
 export function ProcessChatPage() {
@@ -139,7 +166,9 @@ export function ProcessChatPage() {
     conflicts: string[];
   } | null>(null);
   const [preview, setPreview] = useState<UploadRecord | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [focusedTarget, setFocusedTarget] = useState<ChatMentionTarget | null>(
+    null,
+  );
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const composerSurfaceRef = useRef<HTMLDivElement | null>(null);
   const workspaceRef = useRef<HTMLElement | null>(null);
@@ -253,6 +282,13 @@ export function ProcessChatPage() {
     if (!desktop) setExpanded(false);
   }, [desktop]);
   useEffect(() => {
+    if (
+      focusedTarget &&
+      !isChatMentionTargetAvailable(focusedTarget, view?.understanding ?? null)
+    )
+      setFocusedTarget(null);
+  }, [focusedTarget, view?.understanding]);
+  useEffect(() => {
     const workspace = workspaceRef.current;
     const surface = composerSurfaceRef.current;
     if (!workspace) return;
@@ -273,16 +309,24 @@ export function ProcessChatPage() {
       workspace.style.removeProperty("--chat-composer-height");
     };
   }, [desktop, tab, view?.state.documentGate, view?.processState]);
-  const addMention = useCallback((mention: ChatMention) => {
-    setMentions((current) =>
-      current.some((item) => mentionKey(item) === mentionKey(mention)) ||
-      current.length >= 5
-        ? current
-        : [...current, mention],
-    );
-    setTab("chat");
-    requestAnimationFrame(() => composerRef.current?.focus());
-  }, []);
+  const addMention = useCallback(
+    (mention: ChatMention) => {
+      const snapshot = snapshotMention(
+        mention,
+        view?.understanding ?? null,
+        view?.state.lastValidRevision,
+      );
+      setMentions((current) =>
+        current.some((item) => mentionKey(item) === mentionKey(snapshot)) ||
+        current.length >= 5
+          ? current
+          : [...current, snapshot],
+      );
+      setTab("chat");
+      requestAnimationFrame(() => composerRef.current?.focus());
+    },
+    [view?.state.lastValidRevision, view?.understanding],
+  );
   async function send(
     action: "message" | "analyze_documents" | "skip_documents",
   ) {
@@ -304,6 +348,11 @@ export function ProcessChatPage() {
           id: crypto.randomUUID(),
           role: "user",
           parts: [{ type: "text", text: content }],
+          metadata: {
+            action,
+            status: "complete",
+            mentions: sentMentions,
+          },
         },
         {
           body: {
@@ -325,6 +374,7 @@ export function ProcessChatPage() {
           ? reason.message
           : "Die Nachricht konnte nicht gesendet werden.",
       );
+      throw reason;
     }
   }
   async function confirm(override = false) {
@@ -371,23 +421,42 @@ export function ProcessChatPage() {
       messages={chat.messages}
       busy={busy}
       activity={activityLabel}
+      processingDocuments={busy && activity === "reading_documents"}
       chatClassName={chatClass}
-    >
-      {view.state.documentGate === "pending" ? (
-        <DocumentGate
-          processId={id}
-          uploads={view.uploads}
-          selected={selected}
-          onSelected={setSelected}
-          busy={busy || uploading}
-          onUploading={setUploading}
-          onChanged={() => void reloadView({ syncMessages: false })}
-          onPreview={setPreview}
-          onAnalyze={() => void send("analyze_documents")}
-          onSkip={() => void send("skip_documents")}
-        />
-      ) : null}
-    </ProcessChatTranscript>
+      processId={id}
+      understanding={view.understanding}
+      selectedUploads={view.uploads.filter((upload) =>
+        view.state.selectedUploadIds.includes(upload.id),
+      )}
+      missingSelectedCount={
+        view.state.selectedUploadIds.filter(
+          (uploadId) => !view.uploads.some((upload) => upload.id === uploadId),
+        ).length
+      }
+      onPreview={setPreview}
+      onActivateMention={(target) => {
+        setFocusedTarget(target);
+        if (!desktop) {
+          setTab("diagram");
+          setDiagramUnread(false);
+        }
+      }}
+      documentGate={
+        view.state.documentGate === "pending"
+          ? {
+              processId: id,
+              uploads: view.uploads,
+              selected,
+              onSelected: setSelected,
+              busy,
+              onChanged: () => reloadView({ syncMessages: false }),
+              onPreview: setPreview,
+              onAnalyze: () => send("analyze_documents"),
+              onSkip: () => send("skip_documents"),
+            }
+          : undefined
+      }
+    />
   );
   return (
     <section
@@ -510,17 +579,18 @@ export function ProcessChatPage() {
                     status={view.understandingStatus}
                     updating={busy && Boolean(view.understanding)}
                     onMention={confirmed ? undefined : addMention}
+                    focusedTarget={focusedTarget}
                   />
-                  <div className="border-t bg-background p-4">
-                    <ProcessConfirmationActions
-                      processId={id}
-                      confirmed={confirmed}
-                      confirmationAllowed={view.confirmationAllowed}
-                      busy={busy}
-                      label="Prozessbild bestätigen"
-                      onConfirm={() => void confirm(false)}
-                    />
-                  </div>
+                  {!confirmed && (
+                    <div className="border-t bg-background p-4">
+                      <ProcessConfirmationActions
+                        confirmationAllowed={view.confirmationAllowed}
+                        busy={busy}
+                        label="Prozessbild bestätigen"
+                        onConfirm={() => void confirm(false)}
+                      />
+                    </div>
+                  )}
                 </TabsContent>
               </Tabs>
             )}
@@ -565,18 +635,19 @@ export function ProcessChatPage() {
                         status={view.understandingStatus}
                         updating={busy && Boolean(view.understanding)}
                         onMention={confirmed ? undefined : addMention}
+                        focusedTarget={focusedTarget}
                       />
                     </div>
-                    <footer className="border-t p-4">
-                      <ProcessConfirmationActions
-                        processId={id}
-                        confirmed={confirmed}
-                        confirmationAllowed={view.confirmationAllowed}
-                        busy={busy}
-                        label="Prozessbild bestätigen"
-                        onConfirm={() => void confirm(false)}
-                      />
-                    </footer>
+                    {!confirmed && (
+                      <footer className="border-t p-4">
+                        <ProcessConfirmationActions
+                          confirmationAllowed={view.confirmationAllowed}
+                          busy={busy}
+                          label="Prozessbild bestätigen"
+                          onConfirm={() => void confirm(false)}
+                        />
+                      </footer>
+                    )}
                   </div>
                 ) : (
                   <ProcessTracker
@@ -585,11 +656,14 @@ export function ProcessChatPage() {
                     updating={busy}
                     onMention={confirmed ? undefined : addMention}
                     onExpand={() => setExpanded(true)}
-                    processId={id}
-                    confirmed={confirmed}
-                    confirmationAllowed={view.confirmationAllowed}
-                    busy={busy}
-                    onConfirm={() => void confirm(false)}
+                    focusedTarget={focusedTarget}
+                    {...(!confirmed
+                      ? {
+                          confirmationAllowed: view.confirmationAllowed,
+                          busy,
+                          onConfirm: () => void confirm(false),
+                        }
+                      : {})}
                   />
                 )}
               </div>
@@ -624,7 +698,7 @@ export function ProcessChatPage() {
                     busy={busy}
                     error={error}
                     composerRef={composerRef}
-                    onSend={() => void send("message")}
+                    onSend={() => void send("message").catch(() => {})}
                     onStop={() => void chat.stop()}
                     onUpload={async (file) => {
                       try {
@@ -649,121 +723,5 @@ export function ProcessChatPage() {
         </MessageScroller>
       </MessageScrollerProvider>
     </section>
-  );
-}
-
-function DocumentGate({
-  processId,
-  uploads,
-  selected,
-  onSelected,
-  busy,
-  onUploading,
-  onChanged,
-  onPreview,
-  onAnalyze,
-  onSkip,
-}: {
-  processId: string;
-  uploads: UploadRecord[];
-  selected: string[];
-  onSelected: (ids: string[]) => void;
-  busy: boolean;
-  onUploading: (value: boolean) => void;
-  onChanged: () => void;
-  onPreview: (upload: UploadRecord) => void;
-  onAnalyze: () => void;
-  onSkip: () => void;
-}) {
-  return (
-    <div className="rounded-xl border bg-background p-4 shadow-sm">
-      <div className="flex items-start gap-3">
-        <span className="rounded-lg bg-secondary p-2 text-primary">
-          <FileText className="size-5" />
-        </span>
-        <div>
-          <p className="font-semibold">Unterlagen bereitstellen</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Bis zu fünf Arbeitsanweisungen, Präsentationen oder
-            Beispieldokumente gemeinsam auswählen.
-          </p>
-        </div>
-      </div>
-      <label className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium hover:bg-muted">
-        <Paperclip className="size-4" /> Dateien auswählen
-        <input
-          className="sr-only"
-          type="file"
-          multiple
-          disabled={busy || uploads.length >= 5}
-          onChange={async (event) => {
-            const files = [...(event.target.files ?? [])].slice(
-              0,
-              5 - uploads.length,
-            );
-            if (!files.length) return;
-            onUploading(true);
-            try {
-              for (const file of files) await api.upload(processId, file);
-              onChanged();
-            } finally {
-              onUploading(false);
-              event.target.value = "";
-            }
-          }}
-        />
-      </label>
-      {uploads.length > 0 && (
-        <div className="mt-3 space-y-2">
-          {uploads.map((upload) => (
-            <div
-              key={upload.id}
-              className="flex items-center gap-2 rounded-lg border p-2"
-            >
-              <Checkbox
-                checked={selected.includes(upload.id)}
-                onCheckedChange={() =>
-                  onSelected(
-                    selected.includes(upload.id)
-                      ? selected.filter((item) => item !== upload.id)
-                      : [...selected, upload.id],
-                  )
-                }
-                aria-label={`${upload.name} auswählen`}
-              />
-              <button
-                type="button"
-                className="min-w-0 flex-1 truncate text-left text-sm hover:text-primary hover:underline"
-                onClick={() => onPreview(upload)}
-              >
-                {upload.name}
-              </button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                disabled={busy}
-                aria-label={`${upload.name} entfernen`}
-                onClick={async () => {
-                  await api.removeUpload(processId, upload.id);
-                  onSelected(selected.filter((item) => item !== upload.id));
-                  onChanged();
-                }}
-              >
-                <X className="size-4" />
-              </Button>
-            </div>
-          ))}
-        </div>
-      )}
-      <div className="mt-4 flex flex-wrap gap-2">
-        <Button disabled={busy || !selected.length} onClick={onAnalyze}>
-          Unterlagen auswerten
-        </Button>
-        <Button variant="outline" disabled={busy} onClick={onSkip}>
-          Ohne Unterlagen fortfahren
-        </Button>
-      </div>
-    </div>
   );
 }

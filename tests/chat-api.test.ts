@@ -176,13 +176,28 @@ describe("chat capture API", () => {
         text: "Bitte Schritt 1 präzisieren.",
         action: "message",
         selectedUploadIds: [],
-        mentions: [{ kind: "step", stepId: "step-1", label: "Schritt-1" }],
+        mentions: [
+          {
+            kind: "step",
+            stepId: "step-1",
+            label: "Schritt-1",
+            nameSnapshot: "Eingang prüfen",
+            understandingRevision: "a".repeat(64),
+          },
+        ],
       }),
     });
     await next.text();
     expect(ai.calls[1]?.resume).toBe(true);
+    expect(ai.calls[1]?.prompt).toContain("historischer Name: Eingang prüfen");
     const transcript = await service.chats.transcript(record.id);
     expect(transcript.filter((item) => item.id === nextId)).toHaveLength(1);
+    expect(
+      transcript.find((item) => item.id === nextId)?.mentions[0],
+    ).toMatchObject({
+      nameSnapshot: "Eingang prüfen",
+      understandingRevision: "a".repeat(64),
+    });
   });
 
   test("publishes only safe transient activity and understanding events", async () => {

@@ -11,9 +11,11 @@ import {
   getBezierPath,
   type EdgeProps,
   type NodeProps,
+  type ReactFlowInstance,
 } from "@xyflow/react";
 import { MessageCircle } from "lucide-react";
 import type { ChatMention, ProcessUnderstanding } from "../lib/process-types";
+import type { ChatMentionTarget } from "./chat-mention";
 
 type StepNodeData = {
   order: number;
@@ -21,12 +23,15 @@ type StepNodeData = {
   activity: string;
   mention: ChatMention;
   onMention?: (mention: ChatMention) => void;
+  focused?: boolean;
 };
 
 const StepNode = memo(function StepNode({ data }: NodeProps) {
   const value = data as unknown as StepNodeData;
   return (
-    <div className="group h-48 w-64 overflow-hidden rounded-xl border border-border bg-card p-4 shadow-sm">
+    <div
+      className={`group h-48 w-64 overflow-hidden rounded-xl border border-border bg-card p-4 shadow-sm ${value.focused ? "ring-2 ring-primary ring-offset-2" : ""}`}
+    >
       <Handle type="target" position={Position.Top} className="opacity-0" />
       <div className="flex items-start gap-3">
         <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
@@ -154,13 +159,16 @@ export function ProcessFlowDiagram({
   updating,
   onMention,
   className,
+  focusedTarget,
 }: {
   understanding: ProcessUnderstanding | null;
   status: "missing" | "invalid" | "valid";
   updating: boolean;
   onMention?: (mention: ChatMention) => void;
   className?: string;
+  focusedTarget?: ChatMentionTarget | null;
 }) {
+  const flowRef = useRef<ReactFlowInstance<any, any> | null>(null);
   const graph = useMemo(() => {
     const steps = understanding?.steps ?? [];
     const nodes = steps.map((step, index) => ({
@@ -175,8 +183,12 @@ export function ProcessFlowDiagram({
           kind: "step" as const,
           stepId: step.id,
           label: `Schritt-${step.order}`,
+          nameSnapshot: null,
+          understandingRevision: null,
         },
         onMention,
+        focused:
+          focusedTarget?.kind === "step" && focusedTarget.stepId === step.id,
       },
     }));
     const edges = steps.slice(0, -1).map((step, index) => {
@@ -186,7 +198,6 @@ export function ProcessFlowDiagram({
         source: step.id,
         target: next.id,
         type: "mention",
-        style: { stroke: "var(--muted-foreground)" },
         markerEnd: {
           type: MarkerType.ArrowClosed,
           color: "var(--muted-foreground)",
@@ -197,13 +208,41 @@ export function ProcessFlowDiagram({
             fromStepId: step.id,
             toStepId: next.id,
             label: `Übergang-${step.order}-${next.order}`,
+            nameSnapshot: null,
+            understandingRevision: null,
           },
           onMention,
+        },
+        style: {
+          stroke:
+            focusedTarget?.kind === "transition" &&
+            focusedTarget.fromStepId === step.id &&
+            focusedTarget.toStepId === next.id
+              ? "var(--primary)"
+              : "var(--muted-foreground)",
+          strokeWidth:
+            focusedTarget?.kind === "transition" &&
+            focusedTarget.fromStepId === step.id &&
+            focusedTarget.toStepId === next.id
+              ? 3
+              : 1,
         },
       };
     });
     return { nodes, edges };
-  }, [understanding, onMention]);
+  }, [understanding, onMention, focusedTarget]);
+  useEffect(() => {
+    if (!flowRef.current || !focusedTarget) return;
+    const ids =
+      focusedTarget.kind === "step"
+        ? [focusedTarget.stepId]
+        : [focusedTarget.fromStepId, focusedTarget.toStepId];
+    flowRef.current.fitView({
+      nodes: ids.map((id) => ({ id })),
+      padding: 0.35,
+      duration: 250,
+    });
+  }, [focusedTarget, understanding]);
 
   if (!graph.nodes.length)
     return (
@@ -250,6 +289,19 @@ export function ProcessFlowDiagram({
         fitViewOptions={{ padding: 0.2 }}
         minZoom={0.45}
         maxZoom={1.4}
+        onInit={(instance) => {
+          flowRef.current = instance;
+          if (focusedTarget) {
+            const ids =
+              focusedTarget.kind === "step"
+                ? [focusedTarget.stepId]
+                : [focusedTarget.fromStepId, focusedTarget.toStepId];
+            instance.fitView({
+              nodes: ids.map((id) => ({ id })),
+              padding: 0.35,
+            });
+          }
+        }}
       >
         <Background gap={24} size={1} />
         <Controls

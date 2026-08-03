@@ -218,6 +218,12 @@ export class ChatCaptureRepository {
       .digest("hex");
     const state = await this.state(record.id);
     if (state.lastValidRevision !== revision) {
+      const prior = await this.lastValid(record.id).catch(() => null);
+      const priorIds = new Set(prior?.steps.map((step) => step.id) ?? []);
+      const currentIds = new Set(understanding.steps.map((step) => step.id));
+      const retained = [...currentIds].filter((stepId) => priorIds.has(stepId));
+      const added = [...currentIds].filter((stepId) => !priorIds.has(stepId));
+      const removed = [...priorIds].filter((stepId) => !currentIds.has(stepId));
       await atomicWrite(
         this.path(record.id, "last-valid-process-understanding.json"),
         JSON.stringify(understanding, null, 2) + "\n",
@@ -236,6 +242,18 @@ export class ChatCaptureRepository {
           conflictCount: understanding.conflicts.length,
         },
       );
+      if (prior && (added.length || removed.length))
+        await audit(
+          join(this.processDir(record.id), "history.jsonl"),
+          "chat-understanding-step-identities-changed",
+          {
+            priorRevision: state.lastValidRevision,
+            currentRevision: revision,
+            retainedStepIds: retained.slice(0, 8),
+            addedStepIds: added.slice(0, 8),
+            removedStepIds: removed.slice(0, 8),
+          },
+        );
     }
     return { status: "valid" as const, revision, understanding };
   }

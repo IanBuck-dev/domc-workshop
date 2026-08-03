@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
   assertExactlyFiveAnswers,
+  documentCoverageSchema,
   processCaptureConfigSchema,
   processCaptureRecordSchema,
   processUnderstandingStorageSchema,
@@ -368,6 +369,43 @@ describe("compact-v1 process domain", () => {
     expect(() => processUnderstandingSchema.parse(duplicateCoverage)).toThrow(
       "Document coverage upload IDs must be unique",
     );
+  });
+
+  test("requires an explicit limitation for partial or failed document coverage", () => {
+    const complete = {
+      uploadId: "00000000-0000-4000-8000-000000000001",
+      name: "prozess.pdf",
+      status: "complete" as const,
+      processedCharacters: null,
+      limitation: null,
+    };
+    expect(documentCoverageSchema.parse(complete)).toEqual(complete);
+
+    const partial = {
+      ...complete,
+      status: "partial" as const,
+      processedCharacters: 120,
+      limitation:
+        "Kopfzeile und Beispielzeilen geprüft; weitere Zeilen nicht gelesen.",
+    };
+    expect(documentCoverageSchema.parse(partial)).toEqual(partial);
+    expect(() =>
+      documentCoverageSchema.parse({ ...partial, limitation: null }),
+    ).toThrow("requires a limitation");
+
+    const failed = {
+      ...complete,
+      status: "failed" as const,
+      processedCharacters: null,
+      limitation: "Die Datei konnte nicht gelesen werden.",
+    };
+    expect(documentCoverageSchema.parse(failed)).toEqual(failed);
+    expect(() =>
+      documentCoverageSchema.parse({ ...failed, limitation: null }),
+    ).toThrow("requires a limitation");
+    expect(() =>
+      documentCoverageSchema.parse({ ...failed, processedCharacters: 1 }),
+    ).toThrow("cannot report processed characters");
   });
 
   test("rejects canonical records whose state and content disagree", async () => {

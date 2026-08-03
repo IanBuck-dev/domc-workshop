@@ -19,6 +19,10 @@ describe("chat capture UI contract", () => {
       join(process.cwd(), "apps/web/src/components/chat-capture-tutorial.tsx"),
       "utf8",
     );
+    const gate = await readFile(
+      join(process.cwd(), "apps/web/src/components/chat-document-gate.tsx"),
+      "utf8",
+    );
     const page = await readFile(
       join(process.cwd(), "apps/web/src/pages/process-chat-page.tsx"),
       "utf8",
@@ -26,8 +30,9 @@ describe("chat capture UI contract", () => {
     expect(tutorial).toContain("Unterlagen bereitstellen");
     expect(tutorial).toContain("In Alltagssprache ergänzen");
     expect(tutorial).toContain("Prozessbild prüfen");
-    expect(page).toContain("Unterlagen auswerten");
-    expect(page).toContain("Ohne Unterlagen fortfahren");
+    expect(gate).toContain("Unterlagen auswerten");
+    expect(gate).toContain("Ohne Unterlagen fortfahren");
+    expect(gate).toContain('role="alert"');
     expect(page).toContain("Trotz offener Punkte bestätigen?");
     expect(page).toContain("useChat");
     expect(page).toContain("DefaultChatTransport");
@@ -90,5 +95,61 @@ describe("chat capture UI contract", () => {
     expect(source).toContain("Übergang-");
     expect(source).toContain("Schritt-");
     expect(source).toContain("onMention");
+  });
+
+  test("wires milestone cards, structured mentions, shared attachments, and confirmed sidebars", async () => {
+    const [page, transcript, gate, attachments, cards, tracker, actions] =
+      await Promise.all(
+        [
+          "apps/web/src/pages/process-chat-page.tsx",
+          "apps/web/src/components/process-chat-transcript.tsx",
+          "apps/web/src/components/chat-document-gate.tsx",
+          "apps/web/src/components/document-attachment-list.tsx",
+          "apps/web/src/components/process-chat-milestone-card.tsx",
+          "apps/web/src/components/process-tracker.tsx",
+          "apps/web/src/components/process-confirmation-actions.tsx",
+        ].map((file) => readFile(join(process.cwd(), file), "utf8")),
+      );
+    expect(transcript).toContain("classifyChatMilestone");
+    expect(transcript).toContain("ChatMentionToken");
+    expect(transcript).toContain("scrollAnchor={");
+    expect(transcript).toContain('milestone === "confirmation"');
+    expect(transcript).toContain(
+      'message.metadata?.action === "analyze_documents"',
+    );
+    expect(gate).toContain("DocumentAttachmentList");
+    expect(attachments).toContain('mode: "selectable"');
+    expect(attachments).toContain('mode: "readonly"');
+    expect(attachments).toContain("Collapsible");
+    expect(attachments).toContain("1 weitere Unterlage anzeigen");
+    expect(attachments).toContain(
+      "`${additionalUploads.length} weitere Unterlagen anzeigen`",
+    );
+    expect(attachments).toContain("visibleUploadCount = 3");
+    expect(attachments).toContain("Ausgewertet");
+    expect(attachments).toContain("Teilweise ausgewertet");
+    expect(attachments).toContain("Nicht auswertbar");
+    expect(attachments).toContain("Noch nicht ausgewertet");
+    expect(attachments).toContain("Wird ausgewertet …");
+    expect(attachments).toContain("getAttachmentCoveragePresentation");
+    expect(attachments).toContain('className="flex items-center gap-2 p-3"');
+    expect(attachments).toContain('"size-9 shrink-0 text-primary"');
+    expect(attachments).not.toContain("coveragePresentation.limitation &&");
+    expect(attachments).toContain("title={upload.name}");
+    expect(attachments).toContain("max-w-full truncate text-left");
+    expect(attachments).toContain("Vorschau öffnen");
+    expect(cards).toContain("coverageByUploadId");
+    expect(transcript).toContain("documentCoverage");
+    expect(transcript).toContain("processingDocuments");
+    expect(cards).toContain("Prozesserfassung");
+    expect(cards).toContain("Verwendete Unterlagen");
+    expect(cards).toContain("Prozess bestätigt");
+    expect(cards).toContain("KI-Potenziale ansehen");
+    expect(page).toContain("focusedTarget={focusedTarget}");
+    expect(page).toContain("!confirmed && (");
+    expect(page).toContain('<footer className="border-t p-4"');
+    expect(tracker).toContain("onConfirm && (");
+    expect(actions).not.toContain("processId");
+    expect(actions).not.toContain("confirmed");
   });
 });
