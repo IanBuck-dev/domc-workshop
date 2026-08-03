@@ -102,7 +102,7 @@ function WorkCharacteristicFieldset({
   }
   return (
     <fieldset
-      className={`mt-5 rounded-lg border bg-muted/30 p-4 ${showValidationError ? "border-destructive" : "border-border"}`}
+      className={`mt-5 rounded-lg border bg-muted p-4 ${showValidationError ? "border-destructive" : "border-border"}`}
       aria-describedby={
         showValidationError
           ? `work-characteristic-error-${definition.id}`

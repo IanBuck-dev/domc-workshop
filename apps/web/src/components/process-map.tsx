@@ -53,7 +53,7 @@ export function ProcessMap({
         {steps.map((step, index) => (
           <li
             className={cn(
-              "relative flex w-60 shrink-0 cursor-pointer flex-col gap-2 rounded-xl border border-border border-t-4 border-t-primary bg-card p-5 shadow-sm transition hover:border-primary/50 focus-within:ring-2 focus-within:ring-ring/40",
+              "relative flex w-60 shrink-0 cursor-pointer flex-col gap-2 rounded-xl border border-border border-t-4 border-t-primary bg-card p-5 transition hover:border-primary/50 focus-within:ring-2 focus-within:ring-ring/40",
               selectedStepId === step.id && "ring-2 ring-primary/30",
             )}
             key={step.id}
@@ -137,7 +137,7 @@ export function ProcessMap({
             )}
             {isEditMode && (
               <IconButton
-                className="absolute -right-9 top-1/2 z-10 -translate-y-1/2 rounded-full border border-border bg-card text-primary shadow-sm hover:bg-accent"
+                className="absolute -right-9 top-1/2 z-10 -translate-y-1/2 rounded-full border border-border bg-card text-primary hover:bg-accent"
                 label={`Schritt nach Schritt ${step.order} hinzufügen`}
                 disabled={steps.length >= 8}
                 onClick={(event) => {

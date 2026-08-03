@@ -90,9 +90,12 @@ export function PrivacyPage() {
               Benutzernamen und läuft nach acht Stunden ab. In den
               Browser-Einstellungen können zusätzlich lokale
               Konfigurationsüberschreibungen für neue Prozessaufnahmen
-              gespeichert werden. Beides dient ausschließlich der ausdrücklich
-              angeforderten Nutzung der Anwendung. Es werden keine nicht
-              notwendigen Cookies eingesetzt.
+              gespeichert werden. Wenn Sie den Hinweis zur Verwendung von
+              Demo-Daten dauerhaft ausblenden, speichert die Anwendung diese
+              Einstellung ebenfalls lokal in Ihrem Browser. Sie können sie durch
+              das Löschen der Website-Daten dieser Anwendung entfernen. Dies
+              dient ausschließlich der ausdrücklich angeforderten Nutzung der
+              Anwendung. Es werden keine nicht notwendigen Cookies eingesetzt.
             </p>
           </PrivacySection>
           <PrivacySection title="7. KI-Unterstützung durch Anthropic">

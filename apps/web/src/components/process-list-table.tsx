@@ -131,7 +131,7 @@ function FilterPopover({
                         "grid size-4 place-items-center rounded-sm border",
                         checked
                           ? "border-primary bg-primary text-primary-foreground"
-                          : "border-input bg-background",
+                          : "border-input bg-transparent",
                       )}
                       aria-hidden="true"
                     >
@@ -465,7 +465,7 @@ export function ProcessListTable({
               <TableRow
                 key={row.id}
                 tabIndex={0}
-                className="cursor-pointer focus-visible:bg-muted/60 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="cursor-pointer focus-visible:bg-muted focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                 onClick={() => navigate(`/processes/${row.original.record.id}`)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") {

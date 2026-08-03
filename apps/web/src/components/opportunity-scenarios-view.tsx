@@ -121,7 +121,7 @@ export function OpportunityScenariosView({
             openScenario.level === "agentic" && "border-t-violet-800",
           )}
         >
-          <div className="flex items-center justify-between gap-4 border-b bg-muted/20 px-5 py-4 sm:px-6">
+          <div className="flex items-center justify-between gap-4 border-b bg-muted px-5 py-4 sm:px-6">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.12em] text-primary">
                 {copy[openScenario.level].title}
@@ -255,7 +255,7 @@ function ScenarioColumn({
         <button
           type="button"
           className={cn(
-            "mt-auto flex items-center justify-between gap-2 border-t px-5 py-4 text-left text-sm font-semibold hover:bg-muted/40",
+            "mt-auto flex items-center justify-between gap-2 border-t px-5 py-4 text-left text-sm font-semibold hover:bg-muted",
             scenario.level === "assistive" && "text-primary",
             scenario.level === "delegated" && "text-sky-800",
             scenario.level === "agentic" && "text-violet-900",
@@ -318,7 +318,7 @@ function ScenarioDetail({
     .sort((a, b) => a.order - b.order);
 
   return (
-    <div className="space-y-6 border-t bg-muted/15 px-5 py-6 sm:px-6">
+    <div className="space-y-6 border-t bg-muted px-5 py-6 sm:px-6">
       <section className="max-w-4xl">
         <h3 className="font-semibold">Zielbild</h3>
         <p className="mt-1 text-muted-foreground">{scenario.targetState}</p>
@@ -428,7 +428,7 @@ function ScenarioDetail({
           />
           {scenario.systemAccess.map((access, index) => (
             <section
-              className="rounded-md bg-muted/30 p-4"
+              className="rounded-md bg-muted p-4"
               key={`${index}-${access.target}`}
             >
               <h4 className="font-semibold">{access.target}</h4>

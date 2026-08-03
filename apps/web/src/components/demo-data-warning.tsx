@@ -1,20 +1,16 @@
 import { ShieldAlert, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import {
+  dismissDemoDataWarning,
+  isDemoDataWarningDismissed,
+} from "../lib/demo-data-warning-preference";
 import { Button } from "./ui/button";
+
 export function DemoDataWarning() {
-  const [dismissed, setDismissed] = useState(false);
-  const [instance, setInstance] = useState("");
-  useEffect(() => {
-    fetch("/api/health")
-      .then((r) => r.json())
-      .then((x) => {
-        setInstance(x.instanceId);
-        setDismissed(
-          sessionStorage.getItem(`warning-dismissed-${x.instanceId}`) === "1",
-        );
-      });
-  }, []);
+  const [dismissed, setDismissed] = useState(isDemoDataWarningDismissed);
+
   if (dismissed) return null;
+
   return (
     <aside
       className="border-b border-amber-700/20 bg-amber-50 text-amber-950"
@@ -36,9 +32,9 @@ export function DemoDataWarning() {
           variant="ghost"
           size="icon-xs"
           className="-mr-1 -mt-1 text-amber-900 hover:bg-amber-100"
-          aria-label="Hinweis für diese Sitzung ausblenden"
+          aria-label="Hinweis dauerhaft in diesem Browser ausblenden"
           onClick={() => {
-            sessionStorage.setItem(`warning-dismissed-${instance}`, "1");
+            dismissDemoDataWarning();
             setDismissed(true);
           }}
         >

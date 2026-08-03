@@ -30,7 +30,7 @@ const StepNode = memo(function StepNode({ data }: NodeProps) {
   const value = data as unknown as StepNodeData;
   return (
     <div
-      className={`group h-48 w-64 overflow-hidden rounded-xl border border-border bg-card p-4 shadow-sm ${value.focused ? "ring-2 ring-primary ring-offset-2" : ""}`}
+      className={`group h-48 w-64 overflow-hidden rounded-xl border border-border bg-card p-4 ${value.focused ? "ring-2 ring-primary ring-offset-2" : ""}`}
     >
       <Handle type="target" position={Position.Top} className="opacity-0" />
       <div className="flex items-start gap-3">
@@ -128,7 +128,7 @@ function MentionEdge({
         <EdgeLabelRenderer>
           <button
             type="button"
-            className={`nodrag nopan absolute flex size-8 items-center justify-center rounded-full border bg-card text-muted-foreground shadow-sm transition hover:text-primary focus:opacity-100 ${hovered ? "opacity-100" : "opacity-0"}`}
+            className={`nodrag nopan absolute flex size-8 items-center justify-center rounded-full border bg-card text-muted-foreground transition hover:text-primary focus:opacity-100 ${hovered ? "opacity-100" : "opacity-0"}`}
             style={{
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
               pointerEvents: "all",
@@ -272,7 +272,7 @@ export function ProcessFlowDiagram({
   return (
     <div className={`relative h-full min-h-80 ${className ?? ""}`}>
       {updating && (
-        <div className="absolute left-3 top-3 z-10 rounded-full bg-card px-3 py-1 text-xs text-muted-foreground shadow-sm">
+        <div className="absolute left-3 top-3 z-10 rounded-full bg-card px-3 py-1 text-xs text-muted-foreground">
           Prozessbild wird aktualisiert …
         </div>
       )}

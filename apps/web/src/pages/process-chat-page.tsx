@@ -462,7 +462,7 @@ export function ProcessChatPage() {
     <section
       ref={workspaceRef}
       data-chat-workspace
-      className="relative flex h-full min-h-0 flex-col bg-muted/20"
+      className="relative flex h-full min-h-0 flex-col bg-background"
     >
       <ChatCaptureTutorial
         open={tutorial && !confirmed}
@@ -612,7 +612,7 @@ export function ProcessChatPage() {
                 className={`pointer-events-auto min-h-0 ${expanded ? "col-start-5 col-span-8" : "col-start-10 col-span-3"}`}
               >
                 {expanded ? (
-                  <div className="flex h-full min-h-0 flex-col border-l bg-background">
+                  <div className="flex h-full min-h-0 flex-col border-l bg-muted">
                     <header className="flex items-center justify-between border-b px-4 py-3">
                       <div>
                         <h2 className="font-semibold">Prozessbild</h2>

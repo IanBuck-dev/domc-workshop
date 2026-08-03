@@ -70,7 +70,7 @@ export function DocumentCoverage({
       ) : (
         <p className="text-muted-foreground">Keine Unterlagen ausgewählt</p>
       )}
-      <div className="grid gap-2 rounded-lg border bg-muted/20 p-4">
+      <div className="grid gap-2 rounded-lg border bg-muted p-4">
         <h3 className="font-semibold">Erkannte Widersprüche</h3>
         {understanding.conflicts.length ? (
           <ul className="list-disc space-y-1 pl-5 text-muted-foreground">

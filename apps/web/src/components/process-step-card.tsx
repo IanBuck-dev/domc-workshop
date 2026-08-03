@@ -32,7 +32,7 @@ export function ProcessStepCard({
 
   return (
     <li
-      className="overflow-hidden rounded-xl border bg-card shadow-sm"
+      className="overflow-hidden rounded-xl border bg-card"
       id={`process-step-${step.id}`}
     >
       <details
@@ -43,7 +43,7 @@ export function ProcessStepCard({
             onOpenChange(event.currentTarget.open);
         }}
       >
-        <summary className="flex cursor-pointer list-none items-center gap-4 px-5 py-4 marker:hidden hover:bg-muted/40 [&::-webkit-details-marker]:hidden">
+        <summary className="flex cursor-pointer list-none items-center gap-4 px-5 py-4 marker:hidden hover:bg-muted [&::-webkit-details-marker]:hidden">
           <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
             {step.order}
           </span>
@@ -61,7 +61,7 @@ export function ProcessStepCard({
         </summary>
         <div className="grid gap-6 border-t px-5 py-6 sm:px-6">
           {isEditMode && (
-            <fieldset className="grid gap-4 rounded-lg border bg-muted/20 p-4">
+            <fieldset className="grid gap-4 rounded-lg border bg-muted p-4">
               <legend>Schrittbeschreibung</legend>
               <label
                 className={cn(
@@ -192,7 +192,7 @@ function StepValueList({
   return (
     <section
       className={cn(
-        "grid gap-3 rounded-lg border bg-muted/20 p-4",
+        "grid gap-3 rounded-lg border bg-muted p-4",
         values.length === 0 && "border-destructive bg-destructive/5",
       )}
     >

@@ -39,7 +39,7 @@ export function ProcessTracker({
         ?.scrollIntoView({ block: "center", behavior: "smooth" });
   }, [focusedTarget]);
   return (
-    <aside className="flex h-full min-h-0 flex-col border-l bg-background/90 shadow-sm backdrop-blur">
+    <aside className="flex h-full min-h-0 flex-col border-l bg-muted">
       <header className="flex items-center justify-between border-b px-3 py-3">
         <div>
           <h2 className="font-semibold">Prozessbild</h2>

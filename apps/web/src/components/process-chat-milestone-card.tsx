@@ -36,7 +36,7 @@ export function InitialProcessChatMilestoneCard({
   const hasAttachments = selectedUploads.length > 0 || missingSelectedCount > 0;
   return (
     <section
-      className="rounded-xl border bg-card p-5 shadow-sm"
+      className="rounded-xl border bg-card p-5"
       aria-labelledby="capture-milestone-title"
     >
       <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">
@@ -76,7 +76,7 @@ export function CompletionProcessChatMilestoneCard({
 }) {
   return (
     <section
-      className="rounded-xl border border-primary/25 bg-card p-5 shadow-sm"
+      className="rounded-xl border border-primary/25 bg-card p-5"
       aria-labelledby="confirmation-milestone-title"
     >
       <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">

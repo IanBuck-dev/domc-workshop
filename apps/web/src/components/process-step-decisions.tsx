@@ -3,6 +3,7 @@ import type { ProcessUnderstanding } from "../lib/process-types";
 import { Badge } from "./ui/badge";
 import { Button, IconButton } from "./ui/button";
 import { Input } from "./ui/input";
+import { NativeSelect } from "./ui/native-select";
 import { Textarea } from "./ui/textarea";
 import { cn } from "../lib/utils";
 
@@ -46,7 +47,7 @@ export function ProcessStepDecisions({
         <div className="grid gap-3">
           {decisions.map((decision) => (
             <article
-              className="rounded-lg border bg-muted/20 p-4"
+              className="rounded-lg border bg-muted p-4"
               key={decision.id}
             >
               <header className="flex flex-wrap items-start justify-between gap-3">
@@ -57,7 +58,7 @@ export function ProcessStepDecisions({
                 <div className="overflow-x-auto rounded-lg border bg-card">
                   <table className="w-full min-w-[38rem] text-sm">
                     <thead>
-                      <tr className="border-b bg-muted/40 text-left">
+                      <tr className="border-b bg-muted text-left">
                         <th className="px-4 py-3 font-semibold" scope="col">
                           Option
                         </th>
@@ -151,7 +152,7 @@ export function ProcessStepDecisionsEditor({
     });
   }
   return (
-    <section className="grid gap-3 rounded-lg border bg-muted/20 p-4">
+    <section className="grid gap-3 rounded-lg border bg-muted p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-base font-semibold">
           Varianten und Entscheidungen
@@ -199,8 +200,7 @@ export function ProcessStepDecisionsEditor({
                 </label>
                 <label className="grid gap-2 text-sm font-semibold">
                   <span>Modus</span>
-                  <select
-                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  <NativeSelect
                     name={`${stepId}-decision-${decision.id}-mode`}
                     value={decision.mode}
                     onChange={(event) =>
@@ -214,7 +214,7 @@ export function ProcessStepDecisionsEditor({
                         {label}
                       </option>
                     ))}
-                  </select>
+                  </NativeSelect>
                 </label>
                 <IconButton
                   label={`Entscheidung ${decisionIndex + 1} entfernen`}
@@ -257,7 +257,7 @@ export function ProcessStepDecisionsEditor({
                 <div className="grid gap-3">
                   {decision.options.map((option, optionIndex) => (
                     <fieldset
-                      className="relative grid gap-3 rounded-md border bg-muted/20 p-4 sm:grid-cols-2 lg:grid-cols-4"
+                      className="relative grid gap-3 rounded-md border bg-muted p-4 sm:grid-cols-2 lg:grid-cols-4"
                       key={option.id}
                     >
                       <legend>Option {optionIndex + 1}</legend>
@@ -326,8 +326,7 @@ export function ProcessStepDecisionsEditor({
                       </label>
                       <label className="grid gap-2 text-sm font-semibold">
                         <span>Optionaler Folgeschritt</span>
-                        <select
-                          className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                        <NativeSelect
                           name={`${stepId}-decision-${decision.id}-option-${option.id}-next-step`}
                           value={option.nextStepId ?? ""}
                           onChange={(event) =>
@@ -342,7 +341,7 @@ export function ProcessStepDecisionsEditor({
                               Schritt {step.order}: {step.name}
                             </option>
                           ))}
-                        </select>
+                        </NativeSelect>
                       </label>
                       <IconButton
                         label={`Option ${optionIndex + 1} entfernen`}

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type { ProcessUnderstanding } from "../lib/process-types";
 import { Button, IconButton } from "./ui/button";
 import { Input } from "./ui/input";
+import { NativeSelect } from "./ui/native-select";
 import { cn } from "../lib/utils";
 
 type Step = ProcessUnderstanding["steps"][number];
@@ -60,7 +61,7 @@ export function ProcessStepInformation({
           <div className="overflow-x-auto rounded-lg border">
             <table className="w-full min-w-[34rem] text-sm">
               <thead>
-                <tr className="border-b bg-muted/40 text-left">
+                <tr className="border-b bg-muted text-left">
                   <th className="px-4 py-3 font-semibold" scope="col">
                     Information
                   </th>
@@ -103,7 +104,7 @@ export function ProcessStepInformation({
   return (
     <section
       className={cn(
-        "grid gap-3 rounded-lg border bg-muted/20 p-4",
+        "grid gap-3 rounded-lg border bg-muted p-4",
         items.length === 0 && "border-destructive bg-destructive/5",
       )}
     >
@@ -181,8 +182,7 @@ export function ProcessStepInformation({
                     )}
                   >
                     <span>Quelle</span>
-                    <select
-                      className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                    <NativeSelect
                       name={`${idPrefix}-information-${item.id}-source-select`}
                       value={sourceValue}
                       aria-describedby={
@@ -220,7 +220,7 @@ export function ProcessStepInformation({
                       <option value={customSource}>
                         Andere Quelle eingeben …
                       </option>
-                    </select>
+                    </NativeSelect>
                     {item.source === null && (
                       <span
                         className="text-xs text-destructive"
@@ -264,8 +264,7 @@ export function ProcessStepInformation({
                     )}
                   >
                     <span>Art</span>
-                    <select
-                      className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                    <NativeSelect
                       name={`${idPrefix}-information-${item.id}-type`}
                       value={item.type}
                       aria-describedby={
@@ -289,7 +288,7 @@ export function ProcessStepInformation({
                           </option>
                         ),
                       )}
-                    </select>
+                    </NativeSelect>
                     {item.type === "unknown" && (
                       <span
                         className="text-xs text-destructive"

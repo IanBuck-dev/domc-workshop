@@ -12,6 +12,10 @@ Build a local prototype that captures and confirms how a department process work
 - Treat the locally authenticated `claude` CLI as the only AI provider in the first prototype.
 - Keep all submitted content and generated artifacts in repository-local files. Never commit real insurance or personal data.
 
+## Local credentials
+
+The prototype's login is gated. Credentials live in the user's 1Password in the item named **claims demo account** — never in the repository, environment files, or commit messages. Agents must not read, request, or type the password: ask the user to sign in themselves in the browser, then continue from the authenticated session.
+
 ## Implementation rules
 
 - Use TypeScript with strict type checking.
@@ -36,6 +40,7 @@ Build a local prototype that captures and confirms how a department process work
 - Write German interface copy for an insurance manager, not a developer.
 - Show the current state, the next required action, and why a recommendation was made.
 - Use a restrained, accessible desktop-first UI that remains usable on tablets.
+- No darkmode. The app is light mode only. Do not add `dark:` variants, a `.dark` token block, a `@custom-variant dark`, `prefers-color-scheme` rules, or a theme toggle. The shadcn CLI emits `dark:` classes when adding a component — strip them before committing.
 - Do not expose raw JSON, terminal commands, prompt text, stack traces, or model terminology in the normal UI.
 
 ## Verification

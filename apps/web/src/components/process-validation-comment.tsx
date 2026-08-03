@@ -14,7 +14,7 @@ export function ProcessValidationComment({
     return (
       <aside
         id={id}
-        className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg border border-border bg-muted/50 p-4 text-sm"
+        className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg border border-border bg-muted p-4 text-sm"
         aria-live="polite"
       >
         <CheckCircle2

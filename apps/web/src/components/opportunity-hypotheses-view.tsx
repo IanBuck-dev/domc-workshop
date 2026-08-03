@@ -65,7 +65,7 @@ export function OpportunityHypothesesView({
                 ))}
               </div>
             ) : (
-              <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+              <p className="rounded-lg border bg-muted px-4 py-3 text-sm text-muted-foreground">
                 {analysis.noPotentialRationale}
               </p>
             )}
@@ -84,7 +84,7 @@ function HypothesisCard({
   evidence: Map<string, ProcessUnderstanding["evidence"][number]>;
 }) {
   return (
-    <article className="space-y-4 rounded-lg border bg-muted/20 p-5">
+    <article className="space-y-4 rounded-lg border bg-muted p-5">
       <div className="flex flex-col justify-between gap-3 sm:flex-row">
         <div>
           <small className="font-semibold text-muted-foreground">

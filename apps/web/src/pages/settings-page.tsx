@@ -223,7 +223,7 @@ export function SettingsPage() {
               .map((topic) => (
                 <fieldset
                   key={topic.id}
-                  className="space-y-4 rounded-lg border border-border bg-muted/30 p-4 sm:p-5"
+                  className="space-y-4 rounded-lg border border-border bg-muted p-4 sm:p-5"
                 >
                   <legend className="px-1 text-base font-semibold">
                     {topic.displayOrder}. {topic.name}
@@ -439,7 +439,7 @@ function SettingsSection({
         <CollapsibleTrigger asChild>
           <button
             type="button"
-            className="flex w-full items-center justify-between gap-4 p-5 text-left hover:bg-muted/50 sm:px-6"
+            className="flex w-full items-center justify-between gap-4 p-5 text-left hover:bg-muted sm:px-6"
           >
             <h2 className="text-xl font-semibold">{title}</h2>
             <ChevronDown className="size-5 text-muted-foreground transition-transform [[data-state=open]_&]:rotate-180" />

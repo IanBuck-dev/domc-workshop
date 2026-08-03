@@ -1,11 +1,20 @@
-@import "@fontsource-variable/open-sans";
+@import "@fontsource-variable/geist";
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme inline {
-  --font-sans: "Open Sans Variable", system-ui, sans-serif;
+  /* Geist (OFL-1.1, Vercel). Chosen over Open Sans because it is ~5% narrower
+     per character, which matters for German compounds — "Sonderkennzeichen",
+     "Prozessdokumentation" — and because its neo-grotesque forms hold up better
+     than Open Sans' humanist ones at UI sizes. Attribution lives on the
+     Impressum page; keep the two in sync if this font ever changes. */
+  --font-sans: "Geist Variable", system-ui, sans-serif;
+  /* Body text stays at a true 400. Geist is a variable font (wght 100-900,
+     continuous) so an intermediate weight is available, but it is the wrong
+     lever: text read as thin because --foreground was too light, not because
+     the weight was too low. Fixing the colour removed the need. Reach for the
+     colour before the weight. */
+  --font-weight-normal: 400;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -32,24 +41,54 @@
 }
 
 :root {
-  --background: #f3f6f4;
-  --foreground: #16302a;
+  /* Light mode only — no dark theme (see AGENTS.md).
+
+     Surface contract, apply it consistently:
+       --background  page canvas only, never an object
+       --card        object surfaces; always paired with a border, never a shadow
+       --muted       recessed panel nested inside an object, and row hover
+       --secondary   selected / active interactive state
+       --accent      hover on an interactive element
+     Use these solid. Do not reintroduce ad-hoc /15 /20 /30 opacity steps —
+     on a white canvas they compute to near-white and read as nothing.
+
+     Elevation is carried by borders. Shadows are reserved for true overlays
+     (dialog, dropdown, popover, select, the floating operation queue). The one
+     deliberate exception is the login card: it is the only object on an empty
+     canvas, so it keeps shadow-lg to anchor the eye. Do not copy that elsewhere.
+
+     Chroma stays low so the brand green lives in --primary and --ring only. */
+  /* Text is near-black, not dark green. The previous #1a2b26 sat at OKLCH
+     L=0.27 C=0.025 — both noticeably green and ~25% lighter than normal body
+     text, which is what made running copy hard to read. C is kept at ~0.010 so
+     the text still relates to the brand green instead of reading as pure grey,
+     but the hue is now below the threshold where it tints the page. */
+  --background: #ffffff;
+  --foreground: #141a18;
   --card: #ffffff;
-  --card-foreground: #16302a;
+  --card-foreground: #141a18;
   --popover: #ffffff;
-  --popover-foreground: #16302a;
+  --popover-foreground: #141a18;
   --primary: #14563c;
   --primary-foreground: #ffffff;
-  --secondary: #e8f1ec;
+  --secondary: #eaf0ed;
   --secondary-foreground: #14563c;
-  --muted: #e8f1ec;
-  --muted-foreground: #61736e;
-  --accent: #dbeae1;
+  --muted: #f1f5f3;
+  /* Secondary text. Must stay legible on every surface it lands on, not just
+     white: at #5f6a67 it hit 4.55:1 on --accent, clearing the 4.5:1 AA floor by
+     0.05. This value is AAA on white (7.4:1) and ~6:1 on the tinted surfaces.
+     Keep the green here — unlike --foreground, this sits light enough (L≈0.45)
+     for the chroma to actually be perceptible, so it carries the brand. */
+  --muted-foreground: #4d5855;
+  --accent: #dfeae4;
   --accent-foreground: #14563c;
   --destructive: #b42318;
   --destructive-foreground: #ffffff;
-  --border: #d8e2dd;
-  --input: #7a998e;
+  --border: #e0e8e4;
+  /* Control outlines (input, select, textarea, checkbox). Darker than --border
+     on purpose: WCAG 1.4.11 wants 3:1 for interactive boundaries. Neutral, not
+     brand green — the green belongs to --primary and --ring. */
+  --input: #8f9b96;
   --ring: #2f9070;
   --radius: 0.625rem;
 }
@@ -67,11 +106,16 @@
   body {
     min-width: 320px;
     min-height: 100vh;
-    @apply bg-background font-sans text-foreground antialiased;
+    /* Deliberately NOT `antialiased`. That utility forces grayscale
+       anti-aliasing, which thins every stroke on macOS — worst exactly in our
+       case, dark text on a white canvas. Leaving the platform default lets
+       subpixel rendering carry the weight back. Do not re-add it; shadcn ships
+       it by default, so strip it if a generated file brings it in. */
+    @apply bg-background font-sans font-normal text-foreground;
     background-image: radial-gradient(
       circle at 80% 0,
-      #e8f1ec 0,
-      transparent 32rem
+      #edf4f0 0,
+      transparent 28rem
     );
   }
 

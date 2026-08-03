@@ -26,7 +26,7 @@ export function AppShell({
         chatRoute ? "flex h-dvh flex-col overflow-hidden" : "min-h-screen",
       )}
     >
-      <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-border bg-background">
         <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
           <NavLink
             className="flex items-center gap-3 font-semibold text-foreground"

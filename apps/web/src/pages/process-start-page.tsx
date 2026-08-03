@@ -103,7 +103,7 @@ export function ProcessStartPage() {
           Prozesserfassung
         </h1>
       </div>
-      <Card className="border-border shadow-sm">
+      <Card className="border-border">
         <CardHeader className="border-b px-6 pb-5 sm:px-10">
           <CardTitle className="text-xl">Grunddaten</CardTitle>
         </CardHeader>

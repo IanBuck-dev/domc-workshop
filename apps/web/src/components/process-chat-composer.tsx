@@ -39,7 +39,7 @@ export function ProcessChatComposer({
       : `transition:${mention.fromStepId}:${mention.toStepId}`;
   return (
     <form
-      className="border-t bg-background/95 p-4 backdrop-blur"
+      className="border-t bg-background p-4"
       onSubmit={(event: FormEvent) => {
         event.preventDefault();
         onSend();
