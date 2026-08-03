@@ -42,7 +42,7 @@ export function ProcessStepDecisions({
   const stepById = new Map(steps.map((step) => [step.id, step]));
   return (
     <section className="grid gap-3">
-      <h3 className="text-base font-semibold">Varianten und Entscheidungen</h3>
+      <h3 className="text-subheading">Varianten und Entscheidungen</h3>
       {decisions.length ? (
         <div className="grid gap-3">
           {decisions.map((decision) => (
@@ -56,7 +56,7 @@ export function ProcessStepDecisions({
               </header>
               {decision.options.length ? (
                 <div className="overflow-x-auto rounded-lg border bg-card">
-                  <table className="w-full min-w-[38rem] text-sm">
+                  <table className="w-full min-w-[38rem] text-ui">
                     <thead>
                       <tr className="border-b bg-muted text-left">
                         <th className="px-4 py-3 font-semibold" scope="col">
@@ -105,7 +105,7 @@ export function ProcessStepDecisions({
                   </table>
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-ui text-muted-foreground">
                   Entscheidungsoptionen noch unbekannt
                 </p>
               )}
@@ -113,7 +113,7 @@ export function ProcessStepDecisions({
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-ui text-muted-foreground">
           Keine Entscheidung erforderlich oder benannt
         </p>
       )}
@@ -154,12 +154,10 @@ export function ProcessStepDecisionsEditor({
   return (
     <section className="grid gap-3 rounded-lg border bg-muted p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-base font-semibold">
-          Varianten und Entscheidungen
-        </h3>
+        <h3 className="text-subheading">Varianten und Entscheidungen</h3>
         <Button
           variant="secondary"
-          className="h-8 px-3 text-xs"
+          className="h-8 px-3 text-caption"
           onClick={() =>
             onChange([
               ...decisions,
@@ -184,7 +182,7 @@ export function ProcessStepDecisionsEditor({
             >
               <legend>Entscheidung {decisionIndex + 1}</legend>
               <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_12rem_auto]">
-                <label className="grid gap-2 text-sm font-semibold">
+                <label className="grid gap-2 text-label">
                   <span>Entscheidungsfrage</span>
                   <Textarea
                     name={`${stepId}-decision-${decision.id}-question`}
@@ -198,7 +196,7 @@ export function ProcessStepDecisionsEditor({
                     }
                   />
                 </label>
-                <label className="grid gap-2 text-sm font-semibold">
+                <label className="grid gap-2 text-label">
                   <span>Modus</span>
                   <NativeSelect
                     name={`${stepId}-decision-${decision.id}-mode`}
@@ -234,7 +232,7 @@ export function ProcessStepDecisionsEditor({
                 <h4 className="font-semibold">Optionen</h4>
                 <Button
                   variant="secondary"
-                  className="h-8 px-3 text-xs"
+                  className="h-8 px-3 text-caption"
                   onClick={() =>
                     updateDecision(decisionIndex, {
                       options: [
@@ -261,7 +259,7 @@ export function ProcessStepDecisionsEditor({
                       key={option.id}
                     >
                       <legend>Option {optionIndex + 1}</legend>
-                      <label className="grid gap-2 text-sm font-semibold">
+                      <label className="grid gap-2 text-label">
                         <span>Bezeichnung</span>
                         <Input
                           name={`${stepId}-decision-${decision.id}-option-${option.id}-label`}
@@ -276,7 +274,7 @@ export function ProcessStepDecisionsEditor({
                       </label>
                       <label
                         className={cn(
-                          "grid gap-2 text-sm font-semibold",
+                          "grid gap-2 text-label",
                           option.determination === null &&
                             "rounded-md bg-destructive/10 p-2",
                         )}
@@ -294,14 +292,14 @@ export function ProcessStepDecisionsEditor({
                           }
                         />
                         {option.determination === null && (
-                          <span className="text-xs text-destructive">
+                          <span className="text-caption text-destructive">
                             Angabe fehlt
                           </span>
                         )}
                       </label>
                       <label
                         className={cn(
-                          "grid gap-2 text-sm font-semibold",
+                          "grid gap-2 text-label",
                           option.consequence === null &&
                             "rounded-md bg-destructive/10 p-2",
                         )}
@@ -319,12 +317,12 @@ export function ProcessStepDecisionsEditor({
                           }
                         />
                         {option.consequence === null && (
-                          <span className="text-xs text-destructive">
+                          <span className="text-caption text-destructive">
                             Angabe fehlt
                           </span>
                         )}
                       </label>
-                      <label className="grid gap-2 text-sm font-semibold">
+                      <label className="grid gap-2 text-label">
                         <span>Optionaler Folgeschritt</span>
                         <NativeSelect
                           name={`${stepId}-decision-${decision.id}-option-${option.id}-next-step`}
@@ -361,7 +359,7 @@ export function ProcessStepDecisionsEditor({
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-ui text-muted-foreground">
                   Entscheidungsoptionen noch unbekannt
                 </p>
               )}
@@ -369,7 +367,7 @@ export function ProcessStepDecisionsEditor({
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-ui text-muted-foreground">
           Keine Entscheidung erforderlich oder benannt
         </p>
       )}

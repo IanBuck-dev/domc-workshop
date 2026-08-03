@@ -6,17 +6,13 @@ export function UsageNoticePage() {
       {(information) => (
         <article className="space-y-8 leading-7">
           <header className="space-y-3">
-            <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
+            <p className="text-eyebrow uppercase text-primary">
               Workshop-Prototyp
             </p>
-            <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
-              Nutzungshinweise
-            </h1>
+            <h1 className="text-title sm:text-display">Nutzungshinweise</h1>
           </header>
           <section className="space-y-3">
-            <h2 className="text-xl font-semibold">
-              Ausschließlich Testbetrieb
-            </h2>
+            <h2 className="text-heading">Ausschließlich Testbetrieb</h2>
             <p>
               Diese Anwendung ist ein Workshop-Prototyp zur Erfassung von
               Geschäftsprozessen und zur Exploration möglicher KI-Potenziale.
@@ -25,7 +21,7 @@ export function UsageNoticePage() {
             </p>
           </section>
           <section className="space-y-3">
-            <h2 className="text-xl font-semibold">Nur zulässige Testdaten</h2>
+            <h2 className="text-heading">Nur zulässige Testdaten</h2>
             <p>
               Verwenden Sie ausschließlich fiktive, wirksam anonymisierte oder
               ausdrücklich freigegebene Testdaten. Geben Sie insbesondere keine
@@ -35,7 +31,7 @@ export function UsageNoticePage() {
             </p>
           </section>
           <section className="space-y-3">
-            <h2 className="text-xl font-semibold">KI-Ausgaben prüfen</h2>
+            <h2 className="text-heading">KI-Ausgaben prüfen</h2>
             <p>
               Die KI-Unterstützung liefert unverbindliche Vorschläge und
               Strukturierungen. Alle Inhalte, Schlussfolgerungen und
@@ -46,7 +42,7 @@ export function UsageNoticePage() {
             </p>
           </section>
           <section className="space-y-3">
-            <h2 className="text-xl font-semibold">Zugang und Löschung</h2>
+            <h2 className="text-heading">Zugang und Löschung</h2>
             <p>
               Der gemeinsame Testzugang ist keine personenbezogene
               Berechtigungsverwaltung. Melden Sie sich nach der Nutzung ab.{" "}
@@ -63,7 +59,7 @@ export function UsageNoticePage() {
               .
             </p>
           </section>
-          <p className="border-t pt-5 text-sm text-muted-foreground">
+          <p className="border-t pt-5 text-ui text-muted-foreground">
             Stand: {formatDate(information.lastUpdated)}
           </p>
         </article>

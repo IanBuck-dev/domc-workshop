@@ -88,7 +88,7 @@ export function OpportunityScenariosView({
   return (
     <section aria-labelledby={headingId} className="space-y-4">
       <header className="max-w-3xl">
-        <h2 id={headingId} className="text-2xl font-bold tracking-tight">
+        <h2 id={headingId} className="text-title">
           Drei Szenarien im Vergleich
         </h2>
         <p className="mt-2 text-muted-foreground">
@@ -123,14 +123,14 @@ export function OpportunityScenariosView({
         >
           <div className="flex items-center justify-between gap-4 border-b bg-muted px-5 py-4 sm:px-6">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.12em] text-primary">
+              <p className="text-eyebrow uppercase text-primary">
                 {copy[openScenario.level].title}
               </p>
-              <h3 className="mt-1 text-xl font-bold">{openScenario.title}</h3>
+              <h3 className="mt-1 text-heading">{openScenario.title}</h3>
             </div>
             <button
               type="button"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+              className="inline-flex items-center gap-2 text-label text-primary hover:underline"
               onClick={() => setOpenId(null)}
             >
               Details schließen <ChevronDown className="size-4 rotate-180" />
@@ -181,7 +181,7 @@ function ScenarioColumn({
       >
         <span
           className={cn(
-            "grid size-7 place-items-center rounded-full text-sm font-bold text-white",
+            "grid size-7 place-items-center rounded-full text-label text-white",
             scenario.level === "assistive" && "bg-primary",
             scenario.level === "delegated" && "bg-sky-800",
             scenario.level === "agentic" && "bg-violet-900",
@@ -189,9 +189,7 @@ function ScenarioColumn({
         >
           {label.rank}
         </span>
-        <span className="text-sm font-bold uppercase tracking-[0.1em]">
-          {label.title}
-        </span>
+        <span className="text-eyebrow uppercase">{label.title}</span>
         <Progress
           className="ml-auto w-20 [&_[data-slot=progress-indicator]]:bg-current"
           value={(label.rank / 3) * 100}
@@ -200,12 +198,12 @@ function ScenarioColumn({
       </header>
       <div className="flex flex-1 flex-col lg:grid lg:grid-rows-[5.5rem_11rem_auto_auto_auto_auto_1fr_auto]">
         <div className="px-5 pt-5">
-          <h3 className="line-clamp-3 text-lg font-bold leading-snug">
+          <h3 className="line-clamp-3 text-heading leading-snug">
             {scenario.title}
           </h3>
         </div>
         <div className="px-5 pb-5 pt-4">
-          <p className="line-clamp-5 text-sm leading-6 text-muted-foreground">
+          <p className="line-clamp-5 text-ui text-muted-foreground">
             {scenario.summary}
           </p>
         </div>
@@ -241,7 +239,7 @@ function ScenarioColumn({
         />
         <ColumnMetric label="Rolle des Menschen" value={label.humanRole} />
         <div className="border-t px-5 py-4">
-          <small className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <small className="text-overline uppercase text-muted-foreground">
             KI-Fähigkeiten
           </small>
           <ul className="mt-2 flex min-h-12 flex-wrap content-start gap-2">
@@ -255,7 +253,7 @@ function ScenarioColumn({
         <button
           type="button"
           className={cn(
-            "mt-auto flex items-center justify-between gap-2 border-t px-5 py-4 text-left text-sm font-semibold hover:bg-muted",
+            "mt-auto flex items-center justify-between gap-2 border-t px-5 py-4 text-left text-label hover:bg-muted",
             scenario.level === "assistive" && "text-primary",
             scenario.level === "delegated" && "text-sky-800",
             scenario.level === "agentic" && "text-violet-900",
@@ -286,8 +284,8 @@ function ColumnMetric({
   progressClass?: string;
 }) {
   return (
-    <div className="grid gap-1 border-t px-5 py-4 text-sm">
-      <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+    <div className="grid gap-1 border-t px-5 py-4 text-ui">
+      <span className="text-overline uppercase text-muted-foreground">
         {label}
       </span>
       {progress !== undefined && (
@@ -329,7 +327,7 @@ function ScenarioDetail({
           <ol className="mt-3 flex flex-wrap gap-2">
             {affectedSteps.map((step) => (
               <li
-                className="rounded-full border bg-card px-3 py-1 text-sm"
+                className="rounded-full border bg-card px-3 py-1 text-ui"
                 key={step.id}
               >
                 <b className="mr-1 text-primary">{step.order}</b> {step.name}
@@ -348,7 +346,7 @@ function ScenarioDetail({
         {!!scenario.excludedHypotheses.length && (
           <section className="rounded-lg border bg-card p-4">
             <h3 className="font-semibold">Nicht enthaltene Potenziale</h3>
-            <ul className="mt-2 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
+            <ul className="mt-2 list-disc space-y-2 pl-5 text-ui text-muted-foreground">
               {scenario.excludedHypotheses.map((item) => (
                 <li key={item.hypothesisId}>
                   <b className="text-foreground">
@@ -391,7 +389,7 @@ function ScenarioDetail({
                   {execution[action.executionMode]}
                 </Badge>
               </div>
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="mt-2 text-ui text-muted-foreground">
                 {action.description}
               </p>
               {!!action.controls.length && (
@@ -432,7 +430,7 @@ function ScenarioDetail({
               key={`${index}-${access.target}`}
             >
               <h4 className="font-semibold">{access.target}</h4>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-ui text-muted-foreground">
                 Zugriff:{" "}
                 {access.accessModes.map((item) => accessModes[item]).join(", ")}{" "}
                 · {accessTimings[access.timing]} ·{" "}
@@ -441,7 +439,7 @@ function ScenarioDetail({
                   .join(" oder ")}
               </p>
               {!!access.assumptions.length && (
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="mt-2 text-ui text-muted-foreground">
                   Annahme: {access.assumptions.join(" · ")}
                 </p>
               )}
@@ -461,7 +459,7 @@ function ScenarioDetail({
       </details>
       <footer className="border-t pt-4">
         <b>Score: {scoreFromConfidence[scenario.confidenceLevel]} von 100</b>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-ui text-muted-foreground">
           <span className="font-semibold text-foreground">Herleitung: </span>
           {scenario.confidenceRationale}
         </p>
@@ -475,7 +473,7 @@ function ScenarioList({ title, items }: { title: string; items: string[] }) {
   return (
     <section className="rounded-lg border bg-card p-4">
       <h3 className="font-semibold">{title}</h3>
-      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+      <ul className="mt-2 list-disc space-y-1 pl-5 text-ui text-muted-foreground">
         {items.map((item, index) => (
           <li key={`${index}-${item}`}>{item}</li>
         ))}

@@ -16,7 +16,7 @@ export function DemoDataWarning() {
       className="border-b border-amber-700/20 bg-amber-50 text-amber-950"
       role="note"
     >
-      <div className="mx-auto flex max-w-7xl items-start gap-3 px-4 py-3 text-sm leading-5 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl items-start gap-3 px-4 py-3 text-ui sm:px-6 lg:px-8">
         <ShieldAlert
           className="mt-0.5 size-5 shrink-0 text-amber-700"
           aria-hidden="true"

@@ -11,11 +11,11 @@ export function AiOperationQueue() {
       className="fixed bottom-4 right-4 z-40 w-[min(26rem,calc(100vw-2rem))] space-y-2 rounded-lg border border-border bg-card p-3 shadow-lg"
       aria-live="polite"
     >
-      <b className="text-sm">KI-Aktionen</b>
+      <b className="text-ui">KI-Aktionen</b>
       {operations.map((operation) => (
         <div
           key={operation.operationId}
-          className="flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-sm"
+          className="flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-ui"
         >
           {operation.state === "failed" ? (
             <AlertTriangle className="size-4 shrink-0 text-destructive" />

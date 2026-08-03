@@ -1,6 +1,6 @@
 import { ListTree, LogOut, PlusCircle, Settings } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
-import { BrandLockup } from "./ui/brand-mark";
+import { BrandLockup } from "./brand-mark";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
 import { DemoDataWarning } from "./demo-data-warning";
@@ -42,7 +42,7 @@ export function AppShell({
                 end={to === "/"}
                 className={({ isActive }) =>
                   cn(
-                    "inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-secondary-foreground",
+                    "inline-flex h-9 items-center gap-2 rounded-md px-3 text-label text-muted-foreground transition-colors hover:bg-secondary hover:text-secondary-foreground",
                     isActive && "bg-secondary text-secondary-foreground",
                   )
                 }

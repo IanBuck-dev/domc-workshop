@@ -165,10 +165,8 @@ export function ProcessBrief({
       <Card as="section" className="gap-0 p-6 sm:p-8">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
-              Ergebnis
-            </p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">
+            <p className="text-eyebrow uppercase text-primary">Ergebnis</p>
+            <h1 className="mt-1 text-title sm:text-display">
               Prozesssteckbrief
             </h1>
             <p className="mt-2 max-w-2xl text-muted-foreground">
@@ -216,7 +214,7 @@ export function ProcessBrief({
       />
 
       <Card as="section" className="gap-5 p-6 sm:p-8">
-        <h2 className="text-2xl font-bold tracking-tight">Schritte</h2>
+        <h2 className="text-title">Schritte</h2>
         <ol className="space-y-3">
           {orderedSteps.map((step) => (
             <ProcessStepCard
@@ -242,7 +240,7 @@ export function ProcessBrief({
 
       {isEditMode && (
         <Card as="section" className="gap-5 p-6 sm:p-8">
-          <label className="grid gap-2 text-sm font-semibold">
+          <label className="grid gap-2 text-label">
             <span>Kurz begründen, was geändert wurde</span>
             <Input
               name="correction-note"
@@ -258,13 +256,13 @@ export function ProcessBrief({
             />
           </label>
           {confirmed && (
-            <p className="rounded-lg border border-amber-700/30 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+            <p className="rounded-lg border border-amber-700/30 bg-amber-50 px-4 py-3 text-ui text-amber-950">
               Durch das Speichern wird die fachliche Bestätigung aufgehoben.
             </p>
           )}
           {validationError && (
             <p
-              className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+              className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-ui text-destructive"
               role="alert"
             >
               {validationError}
@@ -298,7 +296,7 @@ export function ProcessBrief({
             <Check className="mt-0.5 size-5 shrink-0 text-primary" />
             <span className="grid gap-1">
               <b>Fachlich abschließen</b>
-              <small className="text-sm text-muted-foreground">
+              <small className="text-ui text-muted-foreground">
                 Mit der Bestätigung wird dieses Prozessbild als Grundlage für
                 die spätere Ableitung möglicher KI-Use-Cases festgehalten.
               </small>
@@ -315,7 +313,7 @@ export function ProcessBrief({
       )}
       {confirmed && !isEditMode && (
         <p
-          className="flex items-center gap-2 rounded-lg border border-primary/20 bg-secondary px-4 py-3 text-sm font-semibold text-primary"
+          className="flex items-center gap-2 rounded-lg border border-primary/20 bg-secondary px-4 py-3 text-label text-primary"
           role="status"
         >
           <Check className="size-4" /> Dieses Prozessbild wurde fachlich

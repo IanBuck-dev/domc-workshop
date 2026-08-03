@@ -51,7 +51,7 @@ export function ProcessChatComposer({
             <button
               type="button"
               key={key(mention)}
-              className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-xs"
+              className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-caption"
               onClick={() => onRemoveMention(mention)}
             >
               @{mention.label}
@@ -66,7 +66,7 @@ export function ProcessChatComposer({
             <button
               type="button"
               key={id}
-              className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-xs"
+              className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-caption"
               onClick={() => onRemoveUpload(id)}
             >
               {uploads.find((upload) => upload.id === id)?.name ?? "Unterlage"}
@@ -119,7 +119,7 @@ export function ProcessChatComposer({
           </Button>
         )}
       </div>
-      {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+      {error && <p className="mt-2 text-ui text-destructive">{error}</p>}
     </form>
   );
 }

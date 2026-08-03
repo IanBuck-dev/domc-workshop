@@ -39,18 +39,16 @@ export function InitialProcessChatMilestoneCard({
       className="rounded-xl border bg-card p-5"
       aria-labelledby="capture-milestone-title"
     >
-      <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">
-        Prozesserfassung
-      </p>
-      <div id="capture-milestone-title" className="mt-3 text-base leading-7">
+      <p className="text-overline uppercase text-primary">Prozesserfassung</p>
+      <div id="capture-milestone-title" className="mt-3 text-body">
         <Body text={text} />
       </div>
       {documentGate ??
         (hasAttachments && (
           <div className="mt-5 border-t pt-4">
-            <p className="text-sm font-semibold">Verwendete Unterlagen</p>
+            <p className="text-label">Verwendete Unterlagen</p>
             {missingSelectedCount > 0 && (
-              <p role="alert" className="mt-2 text-sm text-destructive">
+              <p role="alert" className="mt-2 text-ui text-destructive">
                 Eine zuvor verwendete Unterlage ist nicht mehr verfügbar.
               </p>
             )}
@@ -79,13 +77,8 @@ export function CompletionProcessChatMilestoneCard({
       className="rounded-xl border border-primary/25 bg-card p-5"
       aria-labelledby="confirmation-milestone-title"
     >
-      <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">
-        Prozess bestätigt
-      </p>
-      <div
-        id="confirmation-milestone-title"
-        className="mt-3 text-base leading-7"
-      >
+      <p className="text-overline uppercase text-primary">Prozess bestätigt</p>
+      <div id="confirmation-milestone-title" className="mt-3 text-body">
         <Body text={text} />
       </div>
       <div className="mt-5 flex flex-wrap gap-2">

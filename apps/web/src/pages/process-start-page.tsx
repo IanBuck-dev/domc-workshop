@@ -96,16 +96,14 @@ export function ProcessStartPage() {
   return (
     <section className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:py-16">
       <div className="mb-8 space-y-2">
-        <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
-          Schritt 1 von 2
-        </p>
-        <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+        <p className="text-eyebrow uppercase text-primary">Schritt 1 von 2</p>
+        <h1 className="text-title text-foreground sm:text-display">
           Prozesserfassung
         </h1>
       </div>
       <Card className="border-border">
         <CardHeader className="border-b px-6 pb-5 sm:px-10">
-          <CardTitle className="text-xl">Grunddaten</CardTitle>
+          <CardTitle className="text-heading">Grunddaten</CardTitle>
         </CardHeader>
         <CardContent className="p-6 sm:p-10">
           <form noValidate onSubmit={submit} className="space-y-8">
@@ -144,7 +142,7 @@ export function ProcessStartPage() {
                 </Select>
                 <p
                   id="department-message"
-                  className="min-h-5 text-sm font-medium text-destructive"
+                  className="min-h-5 text-label text-destructive"
                 >
                   {touched.department ? fieldErrors.department : ""}
                 </p>
@@ -170,7 +168,7 @@ export function ProcessStartPage() {
                 />
                 <p
                   id="process-name-message"
-                  className="min-h-5 text-sm font-medium text-destructive"
+                  className="min-h-5 text-label text-destructive"
                 >
                   {touched.processName ? fieldErrors.processName : ""}
                 </p>
@@ -199,7 +197,7 @@ export function ProcessStartPage() {
                 />
                 <p
                   id="participant-name-message"
-                  className="min-h-5 text-sm font-medium text-destructive"
+                  className="min-h-5 text-label text-destructive"
                 >
                   {touched.participantName ? fieldErrors.participantName : ""}
                 </p>
@@ -229,16 +227,14 @@ export function ProcessStartPage() {
                 />
                 <p
                   id="participant-email-message"
-                  className="min-h-5 text-sm font-medium text-destructive"
+                  className="min-h-5 text-label text-destructive"
                 >
                   {touched.participantEmail ? fieldErrors.participantEmail : ""}
                 </p>
               </div>
             </div>
             <fieldset className="space-y-3">
-              <legend className="text-sm font-semibold">
-                Art der Erfassung
-              </legend>
+              <legend className="text-label">Art der Erfassung</legend>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label
                   className={`cursor-pointer rounded-lg border p-4 ${interactionMode === "chat" ? "border-primary bg-primary/5" : "border-border"}`}
@@ -250,11 +246,11 @@ export function ProcessStartPage() {
                     checked={interactionMode === "chat"}
                     onChange={() => setInteractionMode("chat")}
                   />
-                  <span className="mb-2 inline-flex rounded bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">
+                  <span className="mb-2 inline-flex rounded bg-primary px-2 py-0.5 text-label text-primary-foreground">
                     Empfohlen
                   </span>
                   <span className="block font-semibold">Chat</span>
-                  <span className="mt-1 block text-sm text-muted-foreground">
+                  <span className="mt-1 block text-ui text-muted-foreground">
                     Unterlagen hochladen, Rückfragen beantworten und das
                     Prozessbild gemeinsam prüfen.
                   </span>
@@ -270,7 +266,7 @@ export function ProcessStartPage() {
                     onChange={() => setInteractionMode("form")}
                   />
                   <span className="block font-semibold">Formular</span>
-                  <span className="mt-1 block text-sm text-muted-foreground">
+                  <span className="mt-1 block text-ui text-muted-foreground">
                     Den Prozess in festen Themenblöcken beschreiben und
                     anschließend prüfen.
                   </span>
@@ -278,7 +274,7 @@ export function ProcessStartPage() {
               </div>
             </fieldset>
             {error && (
-              <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
+              <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-label text-destructive">
                 {error}
               </p>
             )}

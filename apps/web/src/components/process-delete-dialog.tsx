@@ -48,7 +48,7 @@ export function ProcessDeleteDialog({
         </AlertDialogHeader>
         {error && (
           <p
-            className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+            className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-label text-destructive"
             role="alert"
           >
             {error}

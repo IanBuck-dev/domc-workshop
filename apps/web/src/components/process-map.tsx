@@ -44,7 +44,7 @@ export function ProcessMap({
       <div className="flex items-center justify-between gap-4">
         <h2 id="process-map-title">Diagramm</h2>
         {isEditMode && (
-          <small className="text-sm text-muted-foreground">
+          <small className="text-ui text-muted-foreground">
             {steps.length} von höchstens 8 Schritten
           </small>
         )}
@@ -95,7 +95,7 @@ export function ProcessMap({
                   }
                 />
                 {!step.name.trim() && (
-                  <span className="text-xs font-semibold text-destructive">
+                  <span className="text-label text-destructive">
                     Angabe fehlt
                   </span>
                 )}
@@ -152,7 +152,7 @@ export function ProcessMap({
         ))}
       </ol>
       {isEditMode && (
-        <div className="text-sm text-muted-foreground" aria-live="polite">
+        <div className="text-ui text-muted-foreground" aria-live="polite">
           {steps.length <= 1 && (
             <span className="sr-only" id="minimum-step-count">
               Der einzige verbleibende Schritt kann nicht gelöscht werden.

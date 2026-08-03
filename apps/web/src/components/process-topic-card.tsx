@@ -30,15 +30,13 @@ export function ProcessTopicCard({
   return (
     <Card as="article" className="gap-0 p-5 sm:p-6">
       <div className="grid grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-4">
-        <span className="grid size-9 place-items-center rounded-full bg-secondary text-sm font-bold text-primary">
+        <span className="grid size-9 place-items-center rounded-full bg-secondary text-label text-primary">
           {topic.displayOrder}
         </span>
         <div className="min-w-0 space-y-3">
-          <h3 className="text-lg font-semibold">{topic.name}</h3>
+          <h3 className="text-heading">{topic.name}</h3>
           <p className="font-medium leading-6">{topic.question}</p>
-          <p className="text-sm leading-5 text-muted-foreground">
-            {topic.helpText}
-          </p>
+          <p className="text-ui text-muted-foreground">{topic.helpText}</p>
           <label className="block">
             <span className="sr-only">Antwort zu {topic.name}</span>
             <Textarea
@@ -116,14 +114,14 @@ function WorkCharacteristicFieldset({
       <legend className="max-w-3xl px-1 font-semibold leading-6">
         {definition.question}
       </legend>
-      <p className="mb-3 text-sm text-muted-foreground">
+      <p className="mb-3 text-ui text-muted-foreground">
         {definition.helpText}
       </p>
       <div className="grid gap-2 sm:grid-cols-2">
         {definition.options.map((option) => (
           <label
             key={option.id}
-            className="flex cursor-pointer items-start gap-3 rounded-md border border-border bg-card p-3 text-sm font-medium leading-5 transition-colors has-[:checked]:border-primary has-[:checked]:bg-secondary"
+            className="flex cursor-pointer items-start gap-3 rounded-md border border-border bg-card p-3 text-label transition-colors has-[:checked]:border-primary has-[:checked]:bg-secondary"
           >
             <input
               type={definition.selection === "single" ? "radio" : "checkbox"}
@@ -143,7 +141,7 @@ function WorkCharacteristicFieldset({
       </div>
       {showValidationError && (
         <span
-          className="mt-3 block text-sm font-semibold text-destructive"
+          className="mt-3 block text-label text-destructive"
           id={`work-characteristic-error-${definition.id}`}
           role="alert"
         >

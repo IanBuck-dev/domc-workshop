@@ -14,7 +14,7 @@ export function ProcessValidationComment({
     return (
       <aside
         id={id}
-        className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg border border-border bg-muted p-4 text-sm"
+        className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg border border-border bg-muted p-4 text-ui"
         aria-live="polite"
       >
         <CheckCircle2
@@ -36,7 +36,7 @@ export function ProcessValidationComment({
   return (
     <aside
       id={id}
-      className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg border border-amber-700/30 bg-amber-50 p-4 text-sm"
+      className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg border border-amber-700/30 bg-amber-50 p-4 text-ui"
       aria-live="polite"
     >
       <MessageSquareText
@@ -44,7 +44,7 @@ export function ProcessValidationComment({
         aria-hidden="true"
       />
       <div className="space-y-2">
-        <small className="block font-bold uppercase tracking-[0.12em] text-amber-900">
+        <small className="block text-overline uppercase text-amber-900">
           Offene Rückfrage
         </small>
         <b className="block leading-5">{question.question}</b>

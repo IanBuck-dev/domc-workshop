@@ -198,17 +198,17 @@ export function ProcessCapturePage() {
   return (
     <section className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
       <Link
-        className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+        className="inline-flex items-center gap-2 text-label text-primary hover:underline"
         to={`/processes/${id}`}
       >
         <ArrowLeft className="size-4" /> Zum Prozess
       </Link>
       <div className="space-y-3">
-        <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
+        <p className="text-eyebrow uppercase text-primary">
           Seite 2 von 2 · {record.id}
         </p>
         <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="text-title sm:text-display">
             {record.cover.processName}
           </h1>
           <CaptureProgress current={progress} />
@@ -221,7 +221,7 @@ export function ProcessCapturePage() {
 
       {error && (
         <p
-          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-label text-destructive"
           role="alert"
         >
           {error}
@@ -238,10 +238,10 @@ export function ProcessCapturePage() {
       ].includes(record.state) && (
         <form onSubmit={submitMainAnswers} className="space-y-5">
           <Card className="gap-3 p-5 sm:p-6">
-            <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
+            <p className="text-eyebrow uppercase text-primary">
               Angaben erfassen und prüfen
             </p>
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-heading">
               {hasCompletedValidation
                 ? "Prüfen und ergänzen Sie Ihre Angaben direkt im Formular."
                 : "Teilen Sie Ihr Fachwissen in fünf Themenblöcken."}
@@ -329,7 +329,7 @@ export function ProcessCapturePage() {
                     : "Alle Angaben geprüft"
                   : "Nächster Schritt"}
               </b>
-              <span className="block text-sm leading-5 text-muted-foreground">
+              <span className="block text-ui text-muted-foreground">
                 {hasCompletedValidation
                   ? "Sie entscheiden, ob Sie erneut prüfen oder mit dem aktuellen Stand fortfahren."
                   : "Nur materielle Verständnislücken führen zu einer Rückfrage."}
@@ -426,12 +426,12 @@ function CaptureProgress({ current }: { current: number }) {
           step === current ? "current" : step < current ? "completed" : "";
         return (
           <li
-            className={`relative flex flex-1 flex-col items-center gap-1 text-sm text-muted-foreground before:absolute before:right-1/2 before:top-4 before:-z-0 before:h-px before:w-full before:bg-border first:before:hidden ${state ? "text-primary" : ""}`}
+            className={`relative flex flex-1 flex-col items-center gap-1 text-ui text-muted-foreground before:absolute before:right-1/2 before:top-4 before:-z-0 before:h-px before:w-full before:bg-border first:before:hidden ${state ? "text-primary" : ""}`}
             key={label}
             aria-current={step === current ? "step" : undefined}
           >
             <span
-              className={`z-10 grid size-8 place-items-center rounded-full border-2 border-border bg-background text-xs font-bold ${state === "current" ? "border-primary bg-primary text-primary-foreground" : state === "completed" ? "border-primary text-primary" : ""}`}
+              className={`z-10 grid size-8 place-items-center rounded-full border-2 border-border bg-background text-label ${state === "current" ? "border-primary bg-primary text-primary-foreground" : state === "completed" ? "border-primary text-primary" : ""}`}
             >
               {index + 1}
             </span>
@@ -464,7 +464,7 @@ function OperationPanel({
         <AlertTriangle className="size-5 text-destructive" />
         <div className="space-y-1">
           <b>Die Verarbeitung konnte nicht abgeschlossen werden.</b>
-          <p className="text-sm text-muted-foreground">{operation.error}</p>
+          <p className="text-ui text-muted-foreground">{operation.error}</p>
         </div>
         <Button
           variant="primary"
@@ -488,7 +488,7 @@ function OperationPanel({
       <LoaderCircle className="size-5 animate-spin text-primary" />
       <div className="space-y-1">
         <b>{label}</b>
-        <p className="text-sm leading-5 text-muted-foreground">
+        <p className="text-ui text-muted-foreground">
           {operation.state === "queued"
             ? `Die Aktion wartet${operation.position > 0 ? ` an Position ${operation.position}` : ""}. Sie können die Seite verlassen und später zurückkehren.`
             : "Die Verarbeitung läuft. Ihre Angaben bleiben auch bei einem Seitenwechsel gespeichert."}

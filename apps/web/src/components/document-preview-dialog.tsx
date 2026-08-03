@@ -73,9 +73,7 @@ export function DocumentPreviewDialog({
     >
       <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
-            Unterlage
-          </p>
+          <p className="text-eyebrow uppercase text-primary">Unterlage</p>
           <DialogTitle>{upload.name}</DialogTitle>
           <DialogDescription>
             {friendlyType(upload.mediaType)} · {formatBytes(upload.size)}
@@ -86,7 +84,7 @@ export function DocumentPreviewDialog({
             <div className="grid place-items-center gap-3 rounded-lg bg-muted p-8 text-center">
               <FileText className="size-8 text-primary" />
               <h3 className="font-semibold">Vorschau nicht verfügbar</h3>
-              <p className="max-w-lg text-sm text-muted-foreground">
+              <p className="max-w-lg text-ui text-muted-foreground">
                 Word-, PowerPoint- und Excel-Dateien können in diesem Prototyp
                 nicht direkt angezeigt werden. Laden Sie die Originaldatei zum
                 Öffnen herunter.
@@ -97,12 +95,12 @@ export function DocumentPreviewDialog({
             <p className="text-muted-foreground">Datei wird geladen …</p>
           )}
           {!office && error && (
-            <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+            <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-ui text-destructive">
               {error}
             </p>
           )}
           {!office && text !== null && (
-            <pre className="max-h-[55vh] overflow-auto rounded-md bg-muted p-4 text-left text-xs whitespace-pre-wrap">
+            <pre className="max-h-[55vh] overflow-auto rounded-md bg-muted p-4 text-left text-caption whitespace-pre-wrap">
               {text}
             </pre>
           )}

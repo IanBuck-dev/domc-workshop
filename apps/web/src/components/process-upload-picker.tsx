@@ -60,17 +60,15 @@ export function ProcessUploadPicker({
     <Card as="section" className="gap-0" aria-labelledby="upload-title">
       <CardHeader className="flex-row items-start justify-between px-5 pb-4 sm:px-6">
         <div className="space-y-1">
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
-            Freiwillig
-          </p>
+          <p className="text-eyebrow uppercase text-primary">Freiwillig</p>
           <CardTitle id="upload-title">Vorhandene Unterlagen</CardTitle>
         </div>
-        <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-secondary-foreground">
+        <span className="rounded-full bg-secondary px-2.5 py-1 text-label text-secondary-foreground">
           {uploads.length} von {configLimit}
         </span>
       </CardHeader>
       <CardContent className="space-y-4 px-5 sm:px-6">
-        <p className="text-sm leading-6 text-muted-foreground">
+        <p className="text-ui text-muted-foreground">
           Gute, aktuelle Unterlagen helfen beim Einordnen. Wählen Sie aus,
           welche Dateien für diese Prozessaufnahme berücksichtigt werden sollen.
         </p>
@@ -93,8 +91,8 @@ export function ProcessUploadPicker({
                   />
                   <FileText className="size-5 shrink-0 text-primary" />
                   <span className="min-w-0">
-                    <b className="block truncate text-sm">{upload.name}</b>
-                    <small className="block text-xs text-muted-foreground">
+                    <b className="block truncate text-ui">{upload.name}</b>
+                    <small className="block text-caption text-muted-foreground">
                       {formatBytes(upload.size)}
                     </small>
                   </span>
@@ -134,7 +132,7 @@ export function ProcessUploadPicker({
           {busy ? <Paperclip className="animate-spin" /> : <Upload />}
           {busy ? "Datei wird verarbeitet …" : "Unterlage hinzufügen"}
         </Button>
-        <small className="block text-xs text-muted-foreground">
+        <small className="block text-caption text-muted-foreground">
           PDF, Word, PowerPoint, Excel, CSV, Text oder Bild · höchstens 20 MB je
           Datei
         </small>

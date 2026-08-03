@@ -44,11 +44,11 @@ export function OpportunityHypothesesView({
             key={analysis.processStepId}
           >
             <header className="flex gap-4">
-              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-label text-primary-foreground">
                 {step?.order ?? "–"}
               </span>
               <div>
-                <h2 className="text-xl font-bold">
+                <h2 className="text-heading">
                   {step?.name ?? analysis.processStepId}
                 </h2>
                 <p className="mt-1 text-muted-foreground">{analysis.summary}</p>
@@ -65,7 +65,7 @@ export function OpportunityHypothesesView({
                 ))}
               </div>
             ) : (
-              <p className="rounded-lg border bg-muted px-4 py-3 text-sm text-muted-foreground">
+              <p className="rounded-lg border bg-muted px-4 py-3 text-ui text-muted-foreground">
                 {analysis.noPotentialRationale}
               </p>
             )}
@@ -90,7 +90,7 @@ function HypothesisCard({
           <small className="font-semibold text-muted-foreground">
             {item.id}
           </small>
-          <h3 className="mt-1 text-lg font-bold">{item.title}</h3>
+          <h3 className="mt-1 text-heading">{item.title}</h3>
         </div>
         <div className="flex flex-wrap gap-2">
           <Badge tone={levelTone[item.potentialLevel]}>
@@ -112,19 +112,19 @@ function HypothesisCard({
       <dl className="grid gap-3 md:grid-cols-2">
         <div className="rounded-md bg-card p-4">
           <dt className="font-semibold">Warum dieses Potenzial?</dt>
-          <dd className="mt-1 text-sm text-muted-foreground">
+          <dd className="mt-1 text-ui text-muted-foreground">
             {item.potentialRationale}
           </dd>
         </div>
         <div className="rounded-md bg-card p-4">
           <dt className="font-semibold">Wie sicher ist die Ableitung?</dt>
-          <dd className="mt-1 text-sm text-muted-foreground">
+          <dd className="mt-1 text-ui text-muted-foreground">
             {item.confidenceRationale}
           </dd>
         </div>
       </dl>
       {item.confidenceLevel !== "high" && (
-        <p className="border-l-4 border-amber-700 pl-3 text-sm text-amber-950">
+        <p className="border-l-4 border-amber-700 pl-3 text-ui text-amber-950">
           Vor einer Umsetzung sind die offenen Fachinformationen mit dem
           Fachbereich zu klären.
         </p>
@@ -136,15 +136,15 @@ function HypothesisCard({
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <section>
             <h4 className="font-semibold">Heutige Ausgangslage</h4>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-ui text-muted-foreground">
               {item.currentSituation}
             </p>
             <h4 className="mt-4 font-semibold">Erwartete Veränderung</h4>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-ui text-muted-foreground">
               {item.expectedChange}
             </p>
             <h4 className="mt-4 font-semibold">Rolle des Menschen</h4>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-ui text-muted-foreground">
               {item.expectedHumanRole}
             </p>
           </section>
@@ -181,7 +181,7 @@ function List({ title, items }: { title: string; items: string[] }) {
   return (
     <section className="rounded-md bg-card p-4">
       <h4 className="font-semibold">{title}</h4>
-      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+      <ul className="mt-2 list-disc space-y-1 pl-5 text-ui text-muted-foreground">
         {items.map((item) => (
           <li key={item}>{item}</li>
         ))}

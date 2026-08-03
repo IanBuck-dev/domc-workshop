@@ -496,7 +496,7 @@ export function ProcessListTable({
                 <p className="font-medium text-foreground">
                   Keine Prozesse gefunden
                 </p>
-                <p className="mt-1 text-sm">Passen Sie Suche oder Filter an.</p>
+                <p className="mt-1 text-ui">Passen Sie Suche oder Filter an.</p>
                 <Button
                   variant="link"
                   size="sm"

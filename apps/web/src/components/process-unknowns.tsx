@@ -8,7 +8,7 @@ export function ProcessUnknowns({
 }) {
   return (
     <Card as="section" className="gap-4 p-6 sm:p-8">
-      <h2 className="text-2xl font-bold tracking-tight">Noch unbekannt</h2>
+      <h2 className="text-title">Noch unbekannt</h2>
       {knowledgeGaps.length ? (
         <ul className="list-disc space-y-2 pl-5 text-muted-foreground">
           {knowledgeGaps.map((gap) => (

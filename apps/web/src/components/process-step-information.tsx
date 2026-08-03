@@ -56,10 +56,10 @@ export function ProcessStepInformation({
   if (!isEditMode)
     return (
       <section className="grid gap-2">
-        <h3 className="text-base font-semibold">Informationen</h3>
+        <h3 className="text-subheading">Informationen</h3>
         {items.length ? (
           <div className="overflow-x-auto rounded-lg border">
-            <table className="w-full min-w-[34rem] text-sm">
+            <table className="w-full min-w-[34rem] text-ui">
               <thead>
                 <tr className="border-b bg-muted text-left">
                   <th className="px-4 py-3 font-semibold" scope="col">
@@ -93,7 +93,7 @@ export function ProcessStepInformation({
             </table>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-ui text-muted-foreground">
             Keine Informationen benannt
           </p>
         )}
@@ -109,10 +109,10 @@ export function ProcessStepInformation({
       )}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-base font-semibold">Informationen</h3>
+        <h3 className="text-subheading">Informationen</h3>
         <Button
           variant="secondary"
-          className="h-8 px-3 text-xs"
+          className="h-8 px-3 text-caption"
           onClick={() =>
             onChange([
               ...items,
@@ -130,9 +130,7 @@ export function ProcessStepInformation({
         </Button>
       </div>
       {items.length === 0 && (
-        <span className="text-xs font-semibold text-destructive">
-          Angabe fehlt
-        </span>
+        <span className="text-label text-destructive">Angabe fehlt</span>
       )}
       {items.length ? (
         <div className="grid gap-3">
@@ -154,7 +152,7 @@ export function ProcessStepInformation({
                   <legend>Information {index + 1}</legend>
                   <label
                     className={cn(
-                      "grid gap-2 text-sm font-semibold",
+                      "grid gap-2 text-label",
                       !item.name.trim() && "rounded-md bg-destructive/10 p-2",
                     )}
                   >
@@ -169,14 +167,14 @@ export function ProcessStepInformation({
                       }
                     />
                     {!item.name.trim() && (
-                      <span className="text-xs text-destructive">
+                      <span className="text-caption text-destructive">
                         Angabe fehlt
                       </span>
                     )}
                   </label>
                   <label
                     className={cn(
-                      "grid gap-2 text-sm font-semibold",
+                      "grid gap-2 text-label",
                       item.source === null &&
                         "rounded-md bg-destructive/10 p-2",
                     )}
@@ -223,7 +221,7 @@ export function ProcessStepInformation({
                     </NativeSelect>
                     {item.source === null && (
                       <span
-                        className="text-xs text-destructive"
+                        className="text-caption text-destructive"
                         id={`${idPrefix}-${item.id}-source-missing`}
                       >
                         Angabe fehlt
@@ -233,7 +231,7 @@ export function ProcessStepInformation({
                   {sourceIsCustom && (
                     <label
                       className={cn(
-                        "grid gap-2 text-sm font-semibold",
+                        "grid gap-2 text-label",
                         !item.source?.trim() &&
                           "rounded-md bg-destructive/10 p-2",
                       )}
@@ -250,7 +248,7 @@ export function ProcessStepInformation({
                         }
                       />
                       {!item.source?.trim() && (
-                        <span className="text-xs text-destructive">
+                        <span className="text-caption text-destructive">
                           Angabe fehlt
                         </span>
                       )}
@@ -258,7 +256,7 @@ export function ProcessStepInformation({
                   )}
                   <label
                     className={cn(
-                      "grid gap-2 text-sm font-semibold",
+                      "grid gap-2 text-label",
                       item.type === "unknown" &&
                         "rounded-md bg-destructive/10 p-2",
                     )}
@@ -291,7 +289,7 @@ export function ProcessStepInformation({
                     </NativeSelect>
                     {item.type === "unknown" && (
                       <span
-                        className="text-xs text-destructive"
+                        className="text-caption text-destructive"
                         id={`${idPrefix}-${item.id}-type-missing`}
                       >
                         Angabe fehlt
@@ -301,7 +299,7 @@ export function ProcessStepInformation({
                   {item.type === "other" && (
                     <label
                       className={cn(
-                        "grid gap-2 text-sm font-semibold",
+                        "grid gap-2 text-label",
                         !item.typeDetail?.trim() &&
                           "rounded-md bg-destructive/10 p-2",
                       )}
@@ -319,7 +317,7 @@ export function ProcessStepInformation({
                         }
                       />
                       {!item.typeDetail?.trim() && (
-                        <span className="text-xs text-destructive">
+                        <span className="text-caption text-destructive">
                           Angabe fehlt
                         </span>
                       )}

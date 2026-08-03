@@ -86,7 +86,7 @@ export function ChatMentionToken({
   if (!resolved.target)
     return (
       <span
-        className="inline-flex max-w-full items-center whitespace-nowrap rounded-full border border-primary/25 bg-primary/10 px-2 py-1 text-xs font-semibold text-primary"
+        className="inline-flex max-w-full items-center whitespace-nowrap rounded-full border border-primary/25 bg-primary/10 px-2 py-1 text-label text-primary"
         aria-label={`${label}. ${resolved.historicalLabel}`}
         title={resolved.historicalLabel ?? undefined}
       >
@@ -98,14 +98,14 @@ export function ChatMentionToken({
     <span className="inline-flex max-w-full items-center gap-1">
       <button
         type="button"
-        className="inline-flex max-w-full items-center whitespace-nowrap rounded-full border border-primary/25 bg-primary/10 px-2 py-1 text-left text-xs font-semibold text-primary hover:bg-primary/15 focus:outline-none focus:ring-2 focus:ring-ring"
+        className="inline-flex max-w-full items-center whitespace-nowrap rounded-full border border-primary/25 bg-primary/10 px-2 py-1 text-left text-label text-primary hover:bg-primary/15 focus:outline-none focus:ring-2 focus:ring-ring"
         aria-label={`${label}. ${resolved.currentLabel}`}
         onClick={() => onActivate(resolved.target!)}
       >
         {label}
       </button>
       {resolved.showCurrentLabel && (
-        <span className="text-xs text-muted-foreground">
+        <span className="text-caption text-muted-foreground">
           {resolved.currentLabel}
         </span>
       )}

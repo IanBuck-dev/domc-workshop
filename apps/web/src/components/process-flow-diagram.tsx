@@ -34,7 +34,7 @@ const StepNode = memo(function StepNode({ data }: NodeProps) {
     >
       <Handle type="target" position={Position.Top} className="opacity-0" />
       <div className="flex items-start gap-3">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-label text-primary-foreground">
           {value.order}
         </span>
         <div className="min-w-0 flex-1">
@@ -45,7 +45,7 @@ const StepNode = memo(function StepNode({ data }: NodeProps) {
             {value.name}
           </p>
           <p
-            className="mt-1 line-clamp-3 text-sm text-muted-foreground"
+            className="mt-1 line-clamp-3 text-ui text-muted-foreground"
             title={value.activity}
           >
             {value.activity}
@@ -261,7 +261,7 @@ export function ProcessFlowDiagram({
               ? "Das Prozessbild wird noch aufgebaut …"
               : "Aus Ihren Angaben entsteht hier das erste Prozessbild."}
           </p>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-ui text-muted-foreground">
             Es erscheint automatisch, sobald ein gültiger Zwischenstand
             vorliegt.
           </p>
@@ -272,7 +272,7 @@ export function ProcessFlowDiagram({
   return (
     <div className={`relative h-full min-h-80 ${className ?? ""}`}>
       {updating && (
-        <div className="absolute left-3 top-3 z-10 rounded-full bg-card px-3 py-1 text-xs text-muted-foreground">
+        <div className="absolute left-3 top-3 z-10 rounded-full bg-card px-3 py-1 text-caption text-muted-foreground">
           Prozessbild wird aktualisiert …
         </div>
       )}

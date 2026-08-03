@@ -13,7 +13,7 @@ export function ProcessConfirmationActions({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <p className="text-xs text-muted-foreground">
+      <p className="text-caption text-muted-foreground">
         Bestätigen Sie erst, wenn der Hauptablauf stimmt.
       </p>
       <Button disabled={!confirmationAllowed || busy} onClick={onConfirm}>

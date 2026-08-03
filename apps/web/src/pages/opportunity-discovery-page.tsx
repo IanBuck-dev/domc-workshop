@@ -61,7 +61,7 @@ export function OpportunityDiscoveryPage({
   if (error && (!detail || !process))
     return (
       <p
-        className="mx-auto mt-8 w-full max-w-7xl rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        className="mx-auto mt-8 w-full max-w-7xl rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-ui text-destructive"
         role="alert"
       >
         {error}
@@ -94,17 +94,17 @@ export function OpportunityDiscoveryPage({
   return (
     <section className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
       <Link
-        className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+        className="inline-flex items-center gap-2 text-label text-primary hover:underline"
         to={`/processes/${id}`}
       >
         <ArrowLeft /> Zum Prozess
       </Link>
       <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
+          <p className="text-eyebrow uppercase text-primary">
             KI-Potenziale entdecken
           </p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">
+          <h1 className="mt-1 text-title sm:text-display">
             {process.cover.processName}
           </h1>
           <p className="mt-2 text-muted-foreground">
@@ -116,7 +116,7 @@ export function OpportunityDiscoveryPage({
 
       {detail.isStale && (
         <p
-          className="flex gap-2 rounded-lg border border-amber-700/30 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+          className="flex gap-2 rounded-lg border border-amber-700/30 bg-amber-50 px-4 py-3 text-ui text-amber-950"
           role="status"
         >
           <AlertTriangle /> Das Prozessbild wurde nach dieser Analyse geändert.
@@ -125,7 +125,7 @@ export function OpportunityDiscoveryPage({
       )}
       {error && (
         <p
-          className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+          className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-ui text-destructive"
           role="alert"
         >
           {error}
@@ -133,7 +133,7 @@ export function OpportunityDiscoveryPage({
       )}
       {phase === "scenarios" && record.scenarioBasis === "medium_fallback" && (
         <p
-          className="flex gap-2 rounded-lg border border-amber-700/30 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+          className="flex gap-2 rounded-lg border border-amber-700/30 bg-amber-50 px-4 py-3 text-ui text-amber-950"
           role="status"
         >
           <AlertTriangle /> Diese Szenarien basieren auf mehreren plausiblen,
@@ -182,12 +182,8 @@ export function OpportunityDiscoveryPage({
           aria-live="polite"
         >
           <LoaderCircle className="size-7 animate-spin text-primary" />
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
-            Phase 1 von 2
-          </p>
-          <h2 className="text-2xl font-bold">
-            Die Prozessschritte werden untersucht.
-          </h2>
+          <p className="text-eyebrow uppercase text-primary">Phase 1 von 2</p>
+          <h2 className="text-title">Die Prozessschritte werden untersucht.</h2>
           <p className="max-w-xl text-muted-foreground">
             Potenziale, Begründungen und ihre Evidenz werden gemeinsam geprüft.
           </p>
@@ -201,7 +197,7 @@ export function OpportunityDiscoveryPage({
               className="gap-3 border-primary/20 bg-secondary/40 p-6"
             >
               <Sparkles className="size-6 text-primary" />
-              <h2 className="text-2xl font-bold">Analyse abgeschlossen</h2>
+              <h2 className="text-title">Analyse abgeschlossen</h2>
               {highConfidenceCount > 0 || mediumConfidenceCount >= 2 ? (
                 <p>
                   Diese bestehende Analyse wurde noch mit der früheren,
@@ -238,10 +234,8 @@ export function OpportunityDiscoveryPage({
           ) : (
             <LoaderCircle className="size-7 animate-spin text-primary" />
           )}
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
-            Phase 2 von 2
-          </p>
-          <h2 className="text-2xl font-bold">
+          <p className="text-eyebrow uppercase text-primary">Phase 2 von 2</p>
+          <h2 className="text-title">
             {record.state === "scenarios_failed"
               ? "Die Szenarien sind noch nicht verfügbar."
               : "Drei Szenarien werden erstellt."}

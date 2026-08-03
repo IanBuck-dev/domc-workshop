@@ -25,7 +25,7 @@ export function OpportunityProgress({
           <Link
             to={`/processes/${processId}/opportunities/hypotheses`}
             aria-current={active === "hypotheses" ? "step" : undefined}
-            className="relative z-10 grid justify-items-center gap-2 text-sm font-semibold text-primary"
+            className="relative z-10 grid justify-items-center gap-2 text-label text-primary"
           >
             <span
               className={
@@ -44,7 +44,7 @@ export function OpportunityProgress({
             <Link
               to={`/processes/${processId}/opportunities/scenarios`}
               aria-current={active === "scenarios" ? "step" : undefined}
-              className="relative z-10 grid justify-items-center gap-2 text-sm font-semibold text-primary"
+              className="relative z-10 grid justify-items-center gap-2 text-label text-primary"
             >
               <span
                 className={
@@ -59,7 +59,7 @@ export function OpportunityProgress({
             </Link>
           ) : (
             <span
-              className="relative z-10 grid justify-items-center gap-2 text-sm font-semibold text-muted-foreground"
+              className="relative z-10 grid justify-items-center gap-2 text-label text-muted-foreground"
               aria-disabled="true"
             >
               <span className="grid size-8 place-items-center rounded-full border-2 border-border bg-card">

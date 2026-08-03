@@ -15,7 +15,8 @@
     "lint": "eslint .",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
-    "test": "bun test"
+    "test": "bun test",
+    "icons": "bun run scripts/generate-icons.ts"
   },
   "dependencies": {
     "@ai-sdk/react": "4.0.51",

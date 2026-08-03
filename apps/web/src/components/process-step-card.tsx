@@ -44,12 +44,12 @@ export function ProcessStepCard({
         }}
       >
         <summary className="flex cursor-pointer list-none items-center gap-4 px-5 py-4 marker:hidden hover:bg-muted [&::-webkit-details-marker]:hidden">
-          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-label text-primary-foreground">
             {step.order}
           </span>
           <span className="grid min-w-0 flex-1 gap-1">
             <strong>{step.name || "Schritt noch nicht benannt"}</strong>
-            <small className="line-clamp-2 text-sm font-normal text-muted-foreground">
+            <small className="line-clamp-2 text-ui text-muted-foreground">
               {step.activity || "Aktivität noch nicht beschrieben"}
             </small>
           </span>
@@ -65,7 +65,7 @@ export function ProcessStepCard({
               <legend>Schrittbeschreibung</legend>
               <label
                 className={cn(
-                  "grid gap-2 text-sm font-semibold",
+                  "grid gap-2 text-label",
                   !step.name.trim() && "rounded-md bg-destructive/10 p-2",
                 )}
               >
@@ -79,12 +79,14 @@ export function ProcessStepCard({
                   onChange={(event) => update({ name: event.target.value })}
                 />
                 {!step.name.trim() && (
-                  <span className="text-xs text-destructive">Angabe fehlt</span>
+                  <span className="text-caption text-destructive">
+                    Angabe fehlt
+                  </span>
                 )}
               </label>
               <label
                 className={cn(
-                  "grid gap-2 text-sm font-semibold",
+                  "grid gap-2 text-label",
                   !step.activity.trim() && "rounded-md bg-destructive/10 p-2",
                 )}
               >
@@ -99,7 +101,9 @@ export function ProcessStepCard({
                   onChange={(event) => update({ activity: event.target.value })}
                 />
                 {!step.activity.trim() && (
-                  <span className="text-xs text-destructive">Angabe fehlt</span>
+                  <span className="text-caption text-destructive">
+                    Angabe fehlt
+                  </span>
                 )}
               </label>
             </fieldset>
@@ -133,7 +137,7 @@ export function ProcessStepCard({
             onChange={(decisions) => update({ decisions })}
           />
           <section className="grid gap-2">
-            <h3 className="text-base font-semibold">Sonstiges</h3>
+            <h3 className="text-subheading">Sonstiges</h3>
             {isEditMode ? (
               <label>
                 <span className="sr-only">Weitere Angaben</span>
@@ -175,7 +179,7 @@ function StepValueList({
   if (!isEditMode)
     return (
       <section className="grid gap-2">
-        <h3 className="text-base font-semibold">{title}</h3>
+        <h3 className="text-subheading">{title}</h3>
         {values.length ? (
           <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
             {values.map((value) => (
@@ -183,7 +187,7 @@ function StepValueList({
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted-foreground">Noch nicht bekannt</p>
+          <p className="text-ui text-muted-foreground">Noch nicht bekannt</p>
         )}
       </section>
     );
@@ -197,19 +201,17 @@ function StepValueList({
       )}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-base font-semibold">{title}</h3>
+        <h3 className="text-subheading">{title}</h3>
         <Button
           variant="secondary"
-          className="h-8 px-3 text-xs"
+          className="h-8 px-3 text-caption"
           onClick={() => onChange([...values, ""])}
         >
           <Plus /> Eintrag hinzufügen
         </Button>
       </div>
       {values.length === 0 && (
-        <span className="text-xs font-semibold text-destructive">
-          Angabe fehlt
-        </span>
+        <span className="text-label text-destructive">Angabe fehlt</span>
       )}
       {values.map((value, index) => (
         <div
@@ -239,7 +241,7 @@ function StepValueList({
             />
           </label>
           {!value.trim() && (
-            <span className="mt-1 block text-xs text-destructive">
+            <span className="mt-1 block text-caption text-destructive">
               Angabe fehlt
             </span>
           )}

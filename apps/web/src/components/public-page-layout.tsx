@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api-client";
 import type { PublicSiteInformation } from "../lib/public-site-information";
-import { BrandLockup } from "./ui/brand-mark";
+import { BrandLockup } from "./brand-mark";
 import { PublicFooter } from "./public-footer";
 
 export function PublicPageLayout({
@@ -32,14 +32,14 @@ export function PublicPageLayout({
       </header>
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:px-6 lg:py-16">
         <Link
-          className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+          className="mb-8 inline-flex items-center gap-2 text-label text-primary hover:underline"
           to="/"
         >
           <ArrowLeft className="size-4" /> Zur Anmeldung
         </Link>
         {error && (
           <p
-            className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+            className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-label text-destructive"
             role="alert"
           >
             {error}

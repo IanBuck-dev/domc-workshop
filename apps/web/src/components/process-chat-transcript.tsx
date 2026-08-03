@@ -155,8 +155,8 @@ export function ProcessChatTranscript({
                   <MessageContent
                     className={
                       message.role === "user"
-                        ? "max-w-[85%] rounded-xl bg-muted px-4 py-3 text-base leading-7 text-foreground"
-                        : "max-w-full text-base leading-7"
+                        ? "max-w-[85%] rounded-xl bg-muted px-4 py-3 text-body text-foreground"
+                        : "max-w-full text-body"
                     }
                   >
                     {mentions.length > 0 && (

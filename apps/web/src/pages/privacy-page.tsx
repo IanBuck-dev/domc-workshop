@@ -6,12 +6,10 @@ export function PrivacyPage() {
       {(information) => (
         <article className="space-y-8 leading-7">
           <header className="space-y-3">
-            <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
+            <p className="text-eyebrow uppercase text-primary">
               Rechtliche Informationen
             </p>
-            <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
-              Datenschutzhinweise
-            </h1>
+            <h1 className="text-title sm:text-display">Datenschutzhinweise</h1>
             <p className="text-muted-foreground">
               Diese Hinweise erläutern die Datenverarbeitung in diesem
               Workshop-Prototyp.
@@ -168,7 +166,7 @@ export function PrivacyPage() {
               </a>
             </address>
           </PrivacySection>
-          <p className="border-t pt-5 text-sm text-muted-foreground">
+          <p className="border-t pt-5 text-ui text-muted-foreground">
             Stand: {formatDate(information.lastUpdated)}
           </p>
         </article>
@@ -186,7 +184,7 @@ function PrivacySection({
 }) {
   return (
     <section className="space-y-3">
-      <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+      <h2 className="text-heading">{title}</h2>
       {children}
     </section>
   );

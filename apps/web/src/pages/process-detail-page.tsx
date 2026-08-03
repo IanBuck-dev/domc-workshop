@@ -56,7 +56,7 @@ export function ProcessDetailPage() {
   if (error && !process)
     return (
       <p
-        className="m-6 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+        className="m-6 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-label text-destructive"
         role="alert"
       >
         {error}
@@ -69,17 +69,15 @@ export function ProcessDetailPage() {
   return (
     <section className="mx-auto w-full max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
       <Link
-        className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+        className="inline-flex items-center gap-2 text-label text-primary hover:underline"
         to="/"
       >
         <ArrowLeft className="size-4" /> Zur Prozessübersicht
       </Link>
       <div className="flex items-start justify-between gap-5">
         <div>
-          <p className="mb-2 text-sm font-bold uppercase tracking-[0.14em] text-primary">
-            Prozess
-          </p>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
+          <p className="mb-2 text-eyebrow uppercase text-primary">Prozess</p>
+          <h1 className="text-title sm:text-display">
             {process.cover.processName}
           </h1>
           <p className="mt-3 text-muted-foreground">
@@ -111,7 +109,7 @@ export function ProcessDetailPage() {
       </div>
       {error && (
         <p
-          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-label text-destructive"
           role="alert"
         >
           {error}
@@ -142,7 +140,7 @@ export function ProcessDetailPage() {
       </div>
       {process.interactionMode === "chat" &&
         process.confirmationQuality === "with_gaps" && (
-          <p className="rounded-md border border-amber-500/30 bg-amber-50 p-3 text-sm text-amber-950">
+          <p className="rounded-md border border-amber-500/30 bg-amber-50 p-3 text-ui text-amber-950">
             Der Prozess wurde mit offenen Punkten bestätigt.
           </p>
         )}
@@ -238,7 +236,7 @@ function ProcessModuleCard({
         </div>
         <div className="flex min-w-0 flex-col">
           <div className="flex items-start justify-between gap-3">
-            <h2 className="text-xl font-semibold">{title}</h2>
+            <h2 className="text-heading">{title}</h2>
             <Badge
               variant={
                 state.tone === "danger"
@@ -254,7 +252,7 @@ function ProcessModuleCard({
           <p className="mt-3 text-muted-foreground">{description}</p>
           <div className="mt-auto flex min-h-11 items-center justify-end pt-4">
             {action ?? (
-              <span className="mr-auto text-sm text-muted-foreground">
+              <span className="mr-auto text-ui text-muted-foreground">
                 {state.blockedReason}
               </span>
             )}

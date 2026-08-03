@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
 import { api } from "../lib/api-client";
-import { BrandLockup } from "../components/ui/brand-mark";
+import { BrandLockup } from "../components/brand-mark";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -32,8 +32,8 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
           <CardContent className="space-y-5 p-6 sm:p-7">
             <BrandLockup />
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold tracking-tight">Anmelden</h1>
-              <p className="text-sm leading-5 text-muted-foreground">
+              <h1 className="text-title">Anmelden</h1>
+              <p className="text-ui text-muted-foreground">
                 Geschützter Testbereich für die Prozessaufnahme.
               </p>
             </div>
@@ -63,7 +63,7 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
               </div>
               {error && (
                 <p
-                  className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+                  className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-label text-destructive"
                   role="alert"
                 >
                   {error}

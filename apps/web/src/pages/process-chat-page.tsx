@@ -487,7 +487,7 @@ export function ProcessChatPage() {
               möglicherweise unvollständig gekennzeichnet.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="max-h-56 space-y-3 overflow-auto text-sm">
+          <div className="max-h-56 space-y-3 overflow-auto text-ui">
             {overrideData?.knowledgeGaps.map((gap) => (
               <p key={gap}>• {gap}</p>
             ))}
@@ -523,13 +523,11 @@ export function ProcessChatPage() {
                 className={`${chatClass} mb-4 flex items-end justify-between gap-4`}
               >
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">
+                  <p className="text-overline uppercase text-primary">
                     Prozesserfassung · Chat
                   </p>
-                  <h1 className="mt-1 text-2xl font-bold">
-                    {view.cover.processName}
-                  </h1>
-                  <p className="text-sm text-muted-foreground">
+                  <h1 className="mt-1 text-title">{view.cover.processName}</h1>
+                  <p className="text-ui text-muted-foreground">
                     {view.cover.department} · {id}
                   </p>
                 </div>
@@ -616,7 +614,7 @@ export function ProcessChatPage() {
                     <header className="flex items-center justify-between border-b px-4 py-3">
                       <div>
                         <h2 className="font-semibold">Prozessbild</h2>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-caption text-muted-foreground">
                           {busy ? "Wird aktualisiert …" : "Aktueller Stand"}
                         </p>
                       </div>

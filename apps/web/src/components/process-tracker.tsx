@@ -43,7 +43,7 @@ export function ProcessTracker({
       <header className="flex items-center justify-between border-b px-3 py-3">
         <div>
           <h2 className="font-semibold">Prozessbild</h2>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-caption text-muted-foreground">
             {updating
               ? "Wird aktualisiert …"
               : status === "valid"
@@ -82,11 +82,11 @@ export function ProcessTracker({
                 className={`group relative rounded-md pb-5 ${stepFocused ? "bg-primary/10 ring-1 ring-primary/40" : ""}`}
               >
                 <div className="flex items-start gap-2">
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-label text-primary-foreground">
                     {step.order}
                   </span>
                   <p
-                    className="line-clamp-2 min-w-0 flex-1 text-sm font-medium"
+                    className="line-clamp-2 min-w-0 flex-1 text-label"
                     title={step.name}
                   >
                     {step.name}
@@ -141,7 +141,7 @@ export function ProcessTracker({
             );
           })
         ) : (
-          <li className="py-8 text-center text-sm text-muted-foreground">
+          <li className="py-8 text-center text-ui text-muted-foreground">
             {status === "invalid"
               ? "Das Prozessbild wird noch aufgebaut …"
               : "Hier entsteht Ihr Prozessbild."}

@@ -9,6 +9,11 @@
       type="image/svg+xml"
       href="/src/assets/zukunftswerkstatt-mark.svg"
     />
+    <!-- iOS ignoriert das SVG-Favicon beim Ablegen auf dem Home-Bildschirm und
+         braucht ein PNG. Beide Dateien erzeugt `bun run icons` aus derselben
+         SVG-Quelle; nicht von Hand bearbeiten. -->
+    <link rel="apple-touch-icon" href="/icon-180.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
     <title>Zukunftswerkstatt</title>
   </head>
   <body>

@@ -169,7 +169,7 @@ function CoverageStatus({
 
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1 text-xs font-medium ${toneClassName}`}
+      className={`inline-flex shrink-0 items-center gap-1 text-label ${toneClassName}`}
     >
       {icon}
       {presentation.label}
@@ -230,13 +230,13 @@ export function DocumentAttachmentList(props: SelectableProps | ReadonlyProps) {
         <div className="min-w-0 flex-1">
           <button
             type="button"
-            className="block max-w-full truncate text-left text-sm font-medium hover:text-primary hover:underline"
+            className="block max-w-full truncate text-left text-label hover:text-primary hover:underline"
             title={upload.name}
             onClick={() => props.onPreview(upload)}
           >
             {truncateMiddle(upload.name)}
           </button>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-caption text-muted-foreground">
             {formatUploadType(upload.mediaType, upload.name)} ·{" "}
             {formatUploadSize(upload.size)}
           </p>
@@ -282,7 +282,7 @@ export function DocumentAttachmentList(props: SelectableProps | ReadonlyProps) {
           <CollapsibleTrigger asChild>
             <button
               type="button"
-              className="flex w-full items-center justify-between border-t px-3 py-2 text-sm font-medium hover:bg-muted"
+              className="flex w-full items-center justify-between border-t px-3 py-2 text-label hover:bg-muted"
             >
               {open ? "Weniger anzeigen" : additionalUploadLabel}
               <ChevronDown className="size-4 text-muted-foreground transition-transform [[data-state=open]_&]:rotate-180" />

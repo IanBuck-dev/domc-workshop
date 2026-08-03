@@ -107,10 +107,10 @@ export function SettingsPage() {
     <section className="mx-auto w-full max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:py-12">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-3xl space-y-2">
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
+          <p className="text-eyebrow uppercase text-primary">
             Testkonfiguration
           </p>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="text-title sm:text-display">
             Prozessaufnahme einstellen
           </h1>
           <p className="leading-6 text-muted-foreground">
@@ -175,7 +175,7 @@ export function SettingsPage() {
       </Button>
       {message && (
         <p
-          className="rounded-md border border-primary/20 bg-secondary p-3 text-sm font-medium text-secondary-foreground"
+          className="rounded-md border border-primary/20 bg-secondary p-3 text-label text-secondary-foreground"
           role="status"
         >
           {message}
@@ -183,7 +183,7 @@ export function SettingsPage() {
       )}
       {error && (
         <p
-          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-label text-destructive"
           role="alert"
         >
           {error}
@@ -191,7 +191,7 @@ export function SettingsPage() {
       )}
       <div className="space-y-4">
         <SettingsSection title="Fachbereiche" defaultOpen>
-          <p className="text-sm leading-6 text-muted-foreground">
+          <p className="text-ui text-muted-foreground">
             Ein Eintrag pro Zeile. Leere Zeilen werden beim Speichern entfernt.
           </p>
           <FormField label="Auswahlliste" htmlFor="departments">
@@ -213,7 +213,7 @@ export function SettingsPage() {
           </FormField>
         </SettingsSection>
         <SettingsSection title="Fünf Themenbereiche" defaultOpen>
-          <p className="text-sm leading-6 text-muted-foreground">
+          <p className="text-ui text-muted-foreground">
             Die fachliche Struktur bleibt fest. Namen, offene Fragen und
             Hilfetexte können für neue Testläufe angepasst werden.
           </p>
@@ -225,7 +225,7 @@ export function SettingsPage() {
                   key={topic.id}
                   className="space-y-4 rounded-lg border border-border bg-muted p-4 sm:p-5"
                 >
-                  <legend className="px-1 text-base font-semibold">
+                  <legend className="px-1 text-subheading">
                     {topic.displayOrder}. {topic.name}
                   </legend>
                   <FormField
@@ -298,7 +298,7 @@ export function SettingsPage() {
                           className="space-y-4 rounded-md border border-border bg-card p-4"
                           key={characteristic.id}
                         >
-                          <legend className="px-1 text-sm font-semibold">
+                          <legend className="px-1 text-label">
                             Verpflichtendes Arbeitsmerkmal
                           </legend>
                           <FormField
@@ -337,7 +337,7 @@ export function SettingsPage() {
                               }
                             />
                           </FormField>
-                          <div className="rounded-md bg-secondary p-3 text-sm">
+                          <div className="rounded-md bg-secondary p-3 text-ui">
                             <b className="block text-secondary-foreground">
                               Feste Antwortmöglichkeiten
                             </b>
@@ -354,7 +354,7 @@ export function SettingsPage() {
           </div>
         </SettingsSection>
         <SettingsSection title="Hinweise für die KI-Unterstützung">
-          <p className="text-sm leading-6 text-muted-foreground">
+          <p className="text-ui text-muted-foreground">
             Diese Hinweise ergänzen die fest versionierten Sicherheits- und
             Ausgabevorgaben. Technische Laufzeit- und Sicherheitsgrenzen bleiben
             im Profil fest.
@@ -441,7 +441,7 @@ function SettingsSection({
             type="button"
             className="flex w-full items-center justify-between gap-4 p-5 text-left hover:bg-muted sm:px-6"
           >
-            <h2 className="text-xl font-semibold">{title}</h2>
+            <h2 className="text-heading">{title}</h2>
             <ChevronDown className="size-5 text-muted-foreground transition-transform [[data-state=open]_&]:rotate-180" />
           </button>
         </CollapsibleTrigger>

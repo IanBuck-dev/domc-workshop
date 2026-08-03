@@ -41,7 +41,7 @@ export function ChatDocumentGate({
           <p id="document-gate-title" className="font-semibold">
             Unterlagen bereitstellen
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-ui text-muted-foreground">
             Bis zu fünf Arbeitsanweisungen, Präsentationen oder
             Beispieldokumente gemeinsam auswählen.
           </p>
@@ -50,12 +50,12 @@ export function ChatDocumentGate({
       {error && (
         <p
           role="alert"
-          className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+          className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-ui text-destructive"
         >
           {error}
         </p>
       )}
-      <label className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium hover:bg-muted">
+      <label className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-label hover:bg-muted">
         <Paperclip className="size-4" /> Dateien auswählen
         <input
           className="sr-only"

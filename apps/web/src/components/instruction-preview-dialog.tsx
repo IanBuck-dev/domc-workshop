@@ -35,7 +35,7 @@ export function InstructionPreviewDialog({
     >
       <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
         <DialogHeader>
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary">
+          <p className="text-eyebrow uppercase text-primary">
             KI-Unterstützung
           </p>
           <DialogTitle>Vollständige Anweisungen</DialogTitle>
@@ -51,7 +51,7 @@ export function InstructionPreviewDialog({
           )}
           {error && (
             <p
-              className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+              className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-label text-destructive"
               role="alert"
             >
               {error}
@@ -92,7 +92,7 @@ function InstructionMarkdown({
       aria-label={title}
     >
       <h3 className="font-semibold">{title}</h3>
-      <div className="space-y-3 text-sm leading-6 text-muted-foreground [&_h4]:font-semibold [&_h4]:text-foreground [&_h5]:font-semibold [&_h5]:text-foreground [&_li]:ml-5 [&_li]:list-disc [&_p]:my-2">
+      <div className="space-y-3 text-ui text-muted-foreground [&_h4]:font-semibold [&_h4]:text-foreground [&_h5]:font-semibold [&_h5]:text-foreground [&_li]:ml-5 [&_li]:list-disc [&_p]:my-2">
         <ReactMarkdown
           skipHtml
           components={{

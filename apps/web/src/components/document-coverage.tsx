@@ -22,9 +22,7 @@ export function DocumentCoverage({
   const [preview, setPreview] = useState<UploadRecord | null>(null);
   return (
     <Card as="section" className="gap-5 p-6 sm:p-8">
-      <h2 className="text-2xl font-bold tracking-tight">
-        Unterlagen und offene Punkte
-      </h2>
+      <h2 className="text-title">Unterlagen und offene Punkte</h2>
       {understanding.documentCoverage.length ? (
         <ul className="divide-y rounded-lg border">
           {understanding.documentCoverage.map((file) => {
@@ -48,7 +46,7 @@ export function DocumentCoverage({
                     {copy[file.status]}
                   </Badge>
                   {file.limitation && (
-                    <small className="text-sm text-muted-foreground">
+                    <small className="text-ui text-muted-foreground">
                       {file.limitation}
                     </small>
                   )}
@@ -79,7 +77,7 @@ export function DocumentCoverage({
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-ui text-muted-foreground">
             Keine Widersprüche erkannt
           </p>
         )}

@@ -81,7 +81,7 @@ describe("chat capture UI contract", () => {
       'className="line-clamp-3 font-semibold leading-snug"',
     );
     expect(source).toContain(
-      'className="mt-1 line-clamp-3 text-sm text-muted-foreground"',
+      'className="mt-1 line-clamp-3 text-ui text-muted-foreground"',
     );
     expect(source).toContain("title={value.name}");
     expect(source).toContain("title={value.activity}");
