@@ -43,6 +43,7 @@ import {
 } from "./ui/command";
 import { Input } from "./ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Skeleton } from "./ui/skeleton";
 import {
   Table,
   TableBody,
@@ -163,6 +164,64 @@ function FilterPopover({
 function selectedValues(filters: ColumnFiltersState, id: string) {
   const value = filters.find((filter) => filter.id === id)?.value;
   return Array.isArray(value) ? value.map(String) : [];
+}
+
+export function ProcessListTableSkeleton({ header }: { header: ReactNode }) {
+  return (
+    <div
+      className="space-y-4"
+      aria-busy="true"
+      aria-label="Prozessliste wird geladen"
+      role="status"
+    >
+      <span className="sr-only">Prozessliste wird geladen</span>
+      <div className="flex flex-wrap items-end gap-4">
+        {header}
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+          <Skeleton className="h-9 w-full sm:w-80" />
+          <Skeleton className="h-9 w-32" />
+          <Skeleton className="h-9 w-24" />
+          <Skeleton className="h-9 w-40" />
+        </div>
+      </div>
+      <Table className="min-w-[700px]">
+        <TableHeader>
+          <TableRow>
+            <TableHead>
+              <Skeleton className="h-4 w-20" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-24" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-14" />
+            </TableHead>
+            <TableHead className="w-10">
+              <span className="sr-only">Öffnen</span>
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {Array.from({ length: 5 }, (_, index) => (
+            <TableRow key={index}>
+              <TableCell>
+                <Skeleton className="h-5 w-48" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-32" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-6 w-36" />
+              </TableCell>
+              <TableCell className="w-10 pr-4">
+                <Skeleton className="ml-auto size-4" />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
 }
 
 export function ProcessListTable({
