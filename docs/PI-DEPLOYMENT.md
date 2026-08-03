@@ -96,10 +96,21 @@ diff -u /tmp/claims-ai-workspace-before.sha256 /tmp/claims-ai-workspace-after.sh
 
 Der `diff` muss vor neuen Live-Tests leer sein. Die bewusst ausgeschlossene
 Datei `.instance.lock` enthält die Kennung der laufenden Serverinstanz und wird
-bei jedem Neustart ersetzt. Danach werden Anmeldung,
-Upload, Prozessaufnahme, Prozessbestätigung und Potenzialanalyse über
-`https://claims-ai.ian-buck.dev` geprüft. Browserkonsole und fehlgeschlagene
+bei jedem Neustart ersetzt. Danach werden Anmeldung, beide Erfassungsarten und
+die Potenzialanalyse über `https://claims-ai.ian-buck.dev` geprüft.
+
+Für den Chat-Smoke wird ein neuer Prozess mit dem Standardmodus `Chat` angelegt,
+eine anonymisierte Unterlage ausgewertet, mindestens eine Korrektur über eine
+Schritt- oder Übergangsreferenz gesendet und das Prozessbild bestätigt. Danach
+muss ohne manuellen Start eine Potenzialanalyse unter
+`/processes/<ID>/opportunities` erscheinen. Browserkonsole und fehlgeschlagene
 Netzwerkanfragen müssen leer bleiben.
+
+Vor dem Löschen eines Chat-Prozesses werden dessen aktive, ersetzte und noch
+nicht übernommene Claude-Sitzungen entfernt. Ein Fehler außer einer bereits
+fehlenden Sitzung bricht das Löschen ab und lässt den Prozess für einen Retry
+intakt. Nach einem Lösch-Smoke dürfen weder das Prozessverzeichnis noch eine der
+in `chat/session.json` zuvor protokollierten Sitzungen verbleiben.
 
 ## 6. Fehlerdiagnose und gezielter Retry
 

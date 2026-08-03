@@ -479,4 +479,24 @@ describe("opportunity discovery input and hypotheses", () => {
       await rm(root, { recursive: true, force: true });
     }
   });
+
+  test("accepts a complete analysis of a one-step Chat Capture", async () => {
+    const root = await mkdtemp(join(tmpdir(), "opportunity-domain-"));
+    try {
+      const process = await confirmedProcess(
+        new ProcessCaptureRepository(root),
+      );
+      const snapshot = createOpportunityProcessSnapshot(process);
+      snapshot.understanding.steps = snapshot.understanding.steps.slice(0, 1);
+      snapshot.understanding.steps[0]!.decisions = [];
+      const input = hypothesisAiResult();
+      input.stepAnalyses = input.stepAnalyses.slice(0, 1);
+
+      expect(
+        normalizeOpportunityHypotheses(input, snapshot).stepAnalyses,
+      ).toHaveLength(1);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
 });

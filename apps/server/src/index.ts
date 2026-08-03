@@ -9,6 +9,7 @@ import {
 } from "../../../packages/storage/src/process-capture-repository.ts";
 import { ClaudeProcessAiAdapter } from "../../../packages/claude/src/process-ai-adapter.ts";
 import { ClaudeOpportunityAiAdapter } from "../../../packages/claude/src/opportunity-ai-adapter.ts";
+import { ClaudeChatCaptureAdapter } from "../../../packages/claude/src/chat-capture-adapter.ts";
 import { OpportunityDiscoveryRepository } from "../../../packages/storage/src/opportunity-discovery-repository.ts";
 import { processCaptureRoutes } from "./routes/process-captures.ts";
 import { authRoutes } from "./routes/auth.ts";
@@ -17,6 +18,9 @@ import { aiOperationRoutes } from "./routes/ai-operations.ts";
 import { eventRoutes } from "./routes/events.ts";
 import { loadPublicSiteInformation } from "./public-site-information.ts";
 import { opportunityRoutes } from "./routes/opportunities.ts";
+import { chatCaptureRoutes } from "./routes/chat-captures.ts";
+import { ChatCaptureService } from "./chat-capture-service.ts";
+import { OpportunityDiscoveryService } from "./opportunity-discovery-service.ts";
 import { requireSession } from "./session.ts";
 import {
   workspacePath,
@@ -32,6 +36,16 @@ await acquireInstanceLock(root);
 const processRepo = new ProcessCaptureRepository(root),
   opportunityRepo = new OpportunityDiscoveryRepository(root),
   app = new Hono();
+const opportunityAi = new ClaudeOpportunityAiAdapter();
+const opportunityService = new OpportunityDiscoveryService(
+  processRepo,
+  opportunityRepo,
+  opportunityAi,
+);
+const chatService = new ChatCaptureService(
+  processRepo,
+  new ClaudeChatCaptureAdapter(),
+);
 await opportunityRepo.recoverInterrupted();
 app.onError((error, c) => {
   console.error(error);
@@ -71,14 +85,22 @@ app.use("/api/*", requireSession);
 app.route("/api/config", configRoutes());
 app.route(
   "/api/processes",
-  processCaptureRoutes(processRepo, new ClaudeProcessAiAdapter()),
+  processCaptureRoutes(processRepo, new ClaudeProcessAiAdapter(), (id) =>
+    chatService.deleteSessions(id),
+  ),
+);
+app.route(
+  "/api/processes",
+  chatCaptureRoutes(chatService, processRepo, opportunityService),
 );
 app.route(
   "/api/opportunities",
   opportunityRoutes(
     processRepo,
     opportunityRepo,
-    new ClaudeOpportunityAiAdapter(),
+    opportunityAi,
+    undefined,
+    opportunityService,
   ),
 );
 app.route("/api/ai-operations", aiOperationRoutes());

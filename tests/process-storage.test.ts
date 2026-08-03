@@ -72,6 +72,15 @@ describe("process capture repository", () => {
       "unchanged",
     );
     expect((await repo.list()).map((item) => item.id)).toEqual([record.id]);
+    const metadataPath = join(repo.dir(record.id), "metadata.yaml");
+    const legacyMetadata = (await readFile(metadataPath, "utf8"))
+      .replace(/^interactionMode:.*\n/m, "")
+      .replace(/^confirmationQuality:.*\n/m, "");
+    await writeFile(metadataPath, legacyMetadata);
+    expect(
+      (await new ProcessCaptureRepository(root).required(record.id))
+        .interactionMode,
+    ).toBe("form");
   });
 
   test("persists bounded followups, synthesis, correction, and confirmation", async () => {

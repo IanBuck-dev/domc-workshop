@@ -16,6 +16,25 @@ export async function loadProcessPrompt(
     throw new Error(`Invalid versioned AI prompt: ${name}.md`);
   return text;
 }
+export async function loadChatCaptureContracts(rootOverride?: string) {
+  const root =
+    rootOverride ??
+    process.env.CLAIMS_AI_DEFAULTS_DIR ??
+    resolve(process.cwd(), "defaults");
+  const [prompt, schema] = await Promise.all([
+    Bun.file(resolve(root, "prompts", "process-chat.md")).text(),
+    Bun.file(resolve(root, "ai-schemas", "process-understanding.json")).json(),
+  ]);
+  if (
+    !prompt.trim() ||
+    prompt.length > 50_000 ||
+    !schema ||
+    typeof schema !== "object" ||
+    Array.isArray(schema)
+  )
+    throw new Error("Invalid Chat Capture contracts.");
+  return { prompt, schema: schema as object };
+}
 export function composeProcessSystemPrompt(
   basePrompt: string,
   operationPrompt: string,

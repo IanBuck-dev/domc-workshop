@@ -41,7 +41,7 @@
     "improvementGoals": { "$ref": "#/$defs/listFact" },
     "steps": {
       "type": "array",
-      "minItems": 5,
+      "minItems": 1,
       "maxItems": 8,
       "items": { "$ref": "#/$defs/step" }
     },
@@ -157,8 +157,9 @@
     "informationItem": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "source", "type", "typeDetail"],
+      "required": ["id", "name", "source", "type", "typeDetail"],
       "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 120 },
         "name": { "type": "string", "minLength": 1, "maxLength": 1000 },
         "source": {
           "anyOf": [
@@ -186,13 +187,20 @@
             { "type": "null" }
           ]
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "other" } } },
+          "else": { "properties": { "typeDetail": { "type": "null" } } }
+        }
+      ]
     },
     "decisionOption": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["label", "determination", "consequence", "nextStepId"],
+      "required": ["id", "label", "determination", "consequence", "nextStepId"],
       "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 120 },
         "label": { "type": "string", "minLength": 1, "maxLength": 1000 },
         "determination": {
           "anyOf": [
@@ -217,8 +225,9 @@
     "decision": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["question", "mode", "options"],
+      "required": ["id", "question", "mode", "options"],
       "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 120 },
         "question": { "type": "string", "minLength": 1, "maxLength": 2000 },
         "mode": {
           "type": "string",
@@ -306,7 +315,13 @@
         "id": { "type": "string", "minLength": 1, "maxLength": 120 },
         "kind": {
           "type": "string",
-          "enum": ["main_answer", "follow_up_answer", "upload"]
+          "enum": [
+            "main_answer",
+            "follow_up_answer",
+            "upload",
+            "human_correction",
+            "chat_message"
+          ]
         },
         "sourceId": { "type": "string", "minLength": 1, "maxLength": 120 },
         "excerpt": { "type": "string", "minLength": 1, "maxLength": 2000 }

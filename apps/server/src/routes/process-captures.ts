@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import {
   processCaptureConfigSchema,
+  interactionModeSchema,
   processUnderstandingSchema,
   topicAnswerSchema,
   understandingSectionSchema,
@@ -32,6 +33,7 @@ const createSchema = z.object({
   cover: z.unknown(),
   config: processCaptureConfigSchema,
   demoDataConfirmed: z.literal(true),
+  interactionMode: interactionModeSchema,
 });
 const answersSchema = z.object({
   answers: z.array(topicAnswerSchema).length(5),
@@ -129,12 +131,16 @@ function contentDisposition(name: string, download: boolean) {
 export function processCaptureRoutes(
   repo: ProcessCaptureRepository,
   ai: ProcessAiAdapter,
+  beforeDelete?: (id: string) => Promise<void>,
 ) {
   const app = new Hono();
   app.get("/", async (c) => c.json(await repo.list()));
   app.post("/", async (c) => {
     const body = createSchema.parse(await c.req.json());
-    return c.json(await repo.create(body.cover, body.config), 201);
+    return c.json(
+      await repo.create(body.cover, body.config, body.interactionMode),
+      201,
+    );
   });
   app.get("/:id", async (c) => {
     const record = await repo.get(c.req.param("id"));
@@ -147,6 +153,8 @@ export function processCaptureRoutes(
   );
   app.put("/:id/answers", async (c) => {
     const body = answersSchema.parse(await c.req.json());
+    if ((await repo.required(c.req.param("id"))).interactionMode !== "form")
+      return c.json({ error: "Dieser Prozess wird im Chat erfasst." }, 409);
     if (hasActiveProcessOperation(c.req.param("id")))
       return c.json(
         { error: "Für diesen Prozess läuft bereits eine KI-Aktion." },
@@ -227,6 +235,8 @@ export function processCaptureRoutes(
   });
   app.post("/:id/analyze", async (c) => {
     const record = await repo.required(c.req.param("id"));
+    if (record.interactionMode !== "form")
+      return c.json({ error: "Dieser Prozess wird im Chat erfasst." }, 409);
     if (
       ![
         "capture_in_progress",
@@ -300,6 +310,8 @@ export function processCaptureRoutes(
   });
   app.post("/:id/synthesize", async (c) => {
     let record = await repo.required(c.req.param("id"));
+    if (record.interactionMode !== "form")
+      return c.json({ error: "Dieser Prozess wird im Chat erfasst." }, 409);
     if (!["follow_up_required", "synthesis_ready"].includes(record.state))
       return c.json(
         { error: "Das Prozessbild ist noch nicht bereit zur Erstellung." },
@@ -381,6 +393,8 @@ export function processCaptureRoutes(
     }
   });
   app.post("/:id/confirm", async (c) => {
+    if ((await repo.required(c.req.param("id"))).interactionMode !== "form")
+      return c.json({ error: "Dieser Prozess wird im Chat bestätigt." }, 409);
     try {
       return c.json(await repo.confirm(c.req.param("id")));
     } catch (error) {
@@ -390,6 +404,7 @@ export function processCaptureRoutes(
   app.delete("/:id", async (c) => {
     try {
       const id = c.req.param("id");
+      if (beforeDelete) await beforeDelete(id);
       const result = await repo.deleteCapture(
         id,
         hasActiveProcessOperation(id),

@@ -123,7 +123,7 @@ const workCharacteristicSnapshotSchema = z
       .array(
         z.object({ id: identifierSchema, label: shortTextSchema }).strict(),
       )
-      .min(1)
+      .min(0)
       .max(12),
   })
   .strict();
@@ -135,7 +135,8 @@ export const opportunityProcessSnapshotSchema = z
     processName: shortTextSchema,
     department: shortTextSchema,
     confirmedAt: z.string().datetime(),
-    workCharacteristics: z.array(workCharacteristicSnapshotSchema).length(4),
+    confirmationQuality: z.enum(["complete", "with_gaps"]).nullable(),
+    workCharacteristics: z.array(workCharacteristicSnapshotSchema).max(4),
     understanding: processUnderstandingSchema,
   })
   .strict()
@@ -152,6 +153,7 @@ export const opportunityProcessSnapshotSchema = z
 export const opportunityProcessSnapshotStorageSchema = z.preprocess((input) => {
   if (!input || typeof input !== "object") return input;
   const value = structuredClone(input) as Record<string, unknown>;
+  if (!("confirmationQuality" in value)) value.confirmationQuality = null;
   if ("understanding" in value)
     value.understanding = processUnderstandingStorageSchema.parse(
       value.understanding,
@@ -188,20 +190,22 @@ export function createOpportunityProcessSnapshot(input: unknown) {
     processName: record.cover.processName,
     department: record.cover.department,
     confirmedAt: record.confirmedAt,
-    workCharacteristics: record.configSnapshot.workCharacteristics.map(
-      (definition) => ({
-        id: definition.id,
-        question: definition.question,
-        selectedOptions: (
-          answers.get(definition.id)?.selectedOptionIds ?? []
-        ).map((optionId) => ({
-          id: optionId,
-          label:
-            definition.options.find((option) => option.id === optionId)
-              ?.label ?? optionId,
-        })),
-      }),
-    ),
+    confirmationQuality: record.confirmationQuality,
+    workCharacteristics:
+      record.interactionMode === "chat"
+        ? []
+        : record.configSnapshot.workCharacteristics.map((definition) => ({
+            id: definition.id,
+            question: definition.question,
+            selectedOptions: (
+              answers.get(definition.id)?.selectedOptionIds ?? []
+            ).map((optionId) => ({
+              id: optionId,
+              label:
+                definition.options.find((option) => option.id === optionId)
+                  ?.label ?? optionId,
+            })),
+          })),
     understanding: record.understanding,
   });
 }
@@ -290,7 +294,7 @@ const stepOpportunityAiSchema = z
   });
 
 export const opportunityHypothesisAiResultSchema = z
-  .object({ stepAnalyses: z.array(stepOpportunityAiSchema).min(5).max(8) })
+  .object({ stepAnalyses: z.array(stepOpportunityAiSchema).min(1).max(8) })
   .strict();
 
 export const stepOpportunityAnalysisSchema = z
@@ -305,7 +309,7 @@ export const stepOpportunityAnalysisSchema = z
 export const opportunityHypothesisResultSchema = z
   .object({
     schemaVersion: z.literal(1),
-    stepAnalyses: z.array(stepOpportunityAnalysisSchema).min(5).max(8),
+    stepAnalyses: z.array(stepOpportunityAnalysisSchema).min(1).max(8),
   })
   .strict();
 

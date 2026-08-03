@@ -17,6 +17,7 @@ import {
 } from "../process-operation-manager.ts";
 import { publishProcessChanged } from "../process-events.ts";
 import { loadOpportunityDefaults } from "../opportunity-defaults.ts";
+import type { OpportunityDiscoveryService } from "../opportunity-discovery-service.ts";
 
 function publicFailure() {
   return "Die KI-Potenzialanalyse konnte nicht abgeschlossen werden. Die bereits verfügbaren Ergebnisse bleiben erhalten.";
@@ -27,6 +28,7 @@ export function opportunityRoutes(
   opportunities: OpportunityDiscoveryRepository,
   ai: OpportunityAiAdapter,
   defaultsRoot?: string,
+  service?: OpportunityDiscoveryService,
 ) {
   const app = new Hono();
 
@@ -159,6 +161,19 @@ export function opportunityRoutes(
   });
 
   app.post("/:processId", async (c) => {
+    if (service) {
+      try {
+        return c.json(await service.start(c.req.param("processId")), 202);
+      } catch (error) {
+        return c.json(
+          {
+            error:
+              error instanceof Error ? error.message : "Start nicht möglich.",
+          },
+          409,
+        );
+      }
+    }
     const process = await processes.required(c.req.param("processId"));
     if (process.state !== "confirmed")
       return c.json(
@@ -201,6 +216,19 @@ export function opportunityRoutes(
 
   app.post("/:processId/retry", async (c) => {
     const processId = c.req.param("processId");
+    if (service) {
+      try {
+        return c.json(await service.retry(processId), 202);
+      } catch (error) {
+        return c.json(
+          {
+            error:
+              error instanceof Error ? error.message : "Retry nicht möglich.",
+          },
+          409,
+        );
+      }
+    }
     const process = await processes.required(processId);
     const record = await opportunities.get(processId);
     if (!record)

@@ -14,6 +14,7 @@ import {
   followUpQuestionSchema,
   previousQuestionReviewSchema,
   processCaptureConfigSchema,
+  interactionModeSchema,
   processCaptureRecordSchema,
   processStateSchema,
   processUnderstandingStorageSchema,
@@ -33,6 +34,7 @@ import {
   type ValidationInputSnapshot,
   type WorkCharacteristicAnswer,
 } from "../../domain/src/process-understanding.ts";
+import { ChatCaptureRepository } from "./chat-capture-repository.ts";
 import { atomicWrite } from "./atomic-write.ts";
 import { audit } from "./audit-log.ts";
 
@@ -45,6 +47,11 @@ const metadataSchema = z.object({
     version: z.union([z.literal(1), z.literal(2)]),
   }),
   configHash: z.string().regex(/^[a-f0-9]{64}$/),
+  interactionMode: interactionModeSchema.default("form"),
+  confirmationQuality: z
+    .enum(["complete", "with_gaps"])
+    .nullable()
+    .default(null),
   confirmedAt: z.string().datetime().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
@@ -287,7 +294,7 @@ export class ProcessCaptureRepository {
         configSnapshot,
         answers,
         followUps,
-        understanding,
+        rawUnderstandingText,
         uploadNames,
       ] = await Promise.all([
         readFile(join(dir, "metadata.yaml"), "utf8").then((text) =>
@@ -305,11 +312,7 @@ export class ProcessCaptureRepository {
         readFile(join(dir, "follow-ups.json"), "utf8").then((text) =>
           followUpsFileSchema.parse(JSON.parse(text)),
         ),
-        readFile(join(dir, "process-understanding.json"), "utf8").then((text) =>
-          z
-            .union([processUnderstandingStorageSchema, z.null()])
-            .parse(JSON.parse(text)),
-        ),
+        readFile(join(dir, "process-understanding.json"), "utf8"),
         readdir(join(dir, "uploads")),
       ]);
       if (processConfigHash(configSnapshot) !== metadata.configHash)
@@ -323,11 +326,27 @@ export class ProcessCaptureRepository {
             ),
           ),
       );
+      const chat =
+        metadata.interactionMode === "chat"
+          ? new ChatCaptureRepository(this.root)
+          : null;
+      const chatState = chat ? await chat.state(id) : null;
+      const understanding = chat
+        ? metadata.state === "confirmed"
+          ? z
+              .union([processUnderstandingStorageSchema, z.null()])
+              .parse(JSON.parse(rawUnderstandingText))
+          : await chat.lastValid(id)
+        : z
+            .union([processUnderstandingStorageSchema, z.null()])
+            .parse(JSON.parse(rawUnderstandingText));
       const record = processCaptureRecordSchema.parse({
         ...metadata,
         cover,
         configSnapshot,
         ...answers,
+        selectedUploadIds:
+          chatState?.selectedUploadIds ?? answers.selectedUploadIds,
         workCharacteristicAnswers: answers.workCharacteristicAnswers ?? [],
         followUps: followUps.questions,
         followUpAnswers: followUps.answers,
@@ -338,6 +357,13 @@ export class ProcessCaptureRepository {
       if (record.understanding)
         assertUnderstandingReferences(record, record.understanding, {
           allowHumanCorrections: true,
+          chatMessageIds: chat
+            ? new Set(
+                (await chat.transcript(id))
+                  .filter((item) => item.role === "user")
+                  .map((item) => item.id),
+              )
+            : undefined,
         });
       return record;
     } catch (error) {
@@ -352,9 +378,14 @@ export class ProcessCaptureRepository {
     return record;
   }
 
-  async create(coverInput: unknown, configInput: unknown) {
+  async create(
+    coverInput: unknown,
+    configInput: unknown,
+    interactionModeInput: unknown = "form",
+  ) {
     const cover = coverSchema.parse(coverInput);
     const config = processCaptureConfigSchema.parse(configInput);
+    const interactionMode = interactionModeSchema.parse(interactionModeInput);
     if (config.profile.version !== 2)
       throw new Error(
         "Neue Prozessaufnahmen benötigen die aktuelle Profilversion.",
@@ -377,6 +408,8 @@ export class ProcessCaptureRepository {
       state: "capture_in_progress",
       profile: config.profile,
       configHash: processConfigHash(config),
+      interactionMode,
+      confirmationQuality: null,
       cover,
       configSnapshot: config,
       mainAnswers: [],
@@ -392,12 +425,19 @@ export class ProcessCaptureRepository {
       updatedAt: now,
     });
     await mkdir(join(this.dir(id), "uploads"), { recursive: true });
-    await this.writeRecord(record);
-    await atomicWrite(join(this.dir(id), "operations.jsonl"), "");
-    await audit(join(this.dir(id), "history.jsonl"), "process-created", {
-      profile: record.profile,
-      configHash: record.configHash,
-    });
+    try {
+      await this.writeRecord(record);
+      if (interactionMode === "chat")
+        await new ChatCaptureRepository(this.root).initialize(id);
+      await atomicWrite(join(this.dir(id), "operations.jsonl"), "");
+      await audit(join(this.dir(id), "history.jsonl"), "process-created", {
+        profile: record.profile,
+        configHash: record.configHash,
+      });
+    } catch (error) {
+      await rm(this.dir(id), { recursive: true, force: true });
+      throw error;
+    }
     return record;
   }
 
@@ -718,6 +758,34 @@ export class ProcessCaptureRepository {
     return this.required(id);
   }
 
+  async finalizeChatCapture(
+    id: string,
+    understanding: ProcessUnderstanding,
+    quality: "complete" | "with_gaps",
+  ) {
+    const record = await this.required(id);
+    if (
+      record.interactionMode !== "chat" ||
+      record.state !== "capture_in_progress"
+    )
+      throw new Error("Dieser Chat kann nicht bestätigt werden.");
+    const now = new Date().toISOString();
+    await this.writeJson(id, "process-understanding.json", understanding);
+    await this.writeMetadata({
+      ...record,
+      state: "confirmed",
+      confirmedAt: now,
+      confirmationQuality: quality,
+      updatedAt: now,
+    });
+    await audit(
+      join(this.dir(id), "history.jsonl"),
+      "chat-understanding-confirmed",
+      { confirmedAt: now, quality },
+    );
+    return this.required(id);
+  }
+
   async saveUpload(id: string, file: File) {
     const record = await this.required(id);
     if (
@@ -858,6 +926,11 @@ export class ProcessCaptureRepository {
       .reverse();
   }
 
+  async appendHistory(id: string, event: string, detail: unknown) {
+    await this.required(id);
+    await audit(join(this.dir(id), "history.jsonl"), event, detail);
+  }
+
   async deleteCapture(id: string, active = false) {
     await this.required(id);
     if (active)
@@ -933,6 +1006,8 @@ export class ProcessCaptureRepository {
       | "state"
       | "profile"
       | "configHash"
+      | "interactionMode"
+      | "confirmationQuality"
       | "confirmedAt"
       | "createdAt"
       | "updatedAt"

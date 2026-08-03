@@ -126,7 +126,7 @@ export function ProcessDetailPage() {
           action={
             <Link
               className={buttonVariants({ variant: "secondary" })}
-              to={`/processes/${id}/capture`}
+              to={`/processes/${id}/${process.interactionMode === "chat" ? "chat" : "capture"}`}
             >
               {navigation.capture.actionLabel} <ArrowRight />
             </Link>
@@ -140,6 +140,12 @@ export function ProcessDetailPage() {
           action={opportunityAction(navigation.opportunity)}
         />
       </div>
+      {process.interactionMode === "chat" &&
+        process.confirmationQuality === "with_gaps" && (
+          <p className="rounded-md border border-amber-500/30 bg-amber-50 p-3 text-sm text-amber-950">
+            Der Prozess wurde mit offenen Punkten bestätigt.
+          </p>
+        )}
       <ProcessDeleteDialog
         open={deleteOpen}
         processName={process.cover.processName}

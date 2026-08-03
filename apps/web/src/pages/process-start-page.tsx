@@ -40,6 +40,9 @@ export function ProcessStartPage() {
     processName: false,
   });
   const [busy, setBusy] = useState(false);
+  const [interactionMode, setInteractionMode] = useState<"chat" | "form">(
+    "chat",
+  );
   const [error, setError] = useState("");
   const fieldErrors = {
     department: cover.department.trim()
@@ -80,8 +83,11 @@ export function ProcessStartPage() {
         cover,
         config,
         demoDataConfirmed: true,
+        interactionMode,
       });
-      navigate(`/processes/${record.id}/capture`);
+      navigate(
+        `/processes/${record.id}/${interactionMode === "chat" ? "chat" : "capture"}`,
+      );
     } catch (e) {
       setError((e as Error).message);
       setBusy(false);
@@ -229,6 +235,48 @@ export function ProcessStartPage() {
                 </p>
               </div>
             </div>
+            <fieldset className="space-y-3">
+              <legend className="text-sm font-semibold">
+                Art der Erfassung
+              </legend>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label
+                  className={`cursor-pointer rounded-lg border p-4 ${interactionMode === "chat" ? "border-primary bg-primary/5" : "border-border"}`}
+                >
+                  <input
+                    className="sr-only"
+                    type="radio"
+                    name="interactionMode"
+                    checked={interactionMode === "chat"}
+                    onChange={() => setInteractionMode("chat")}
+                  />
+                  <span className="mb-2 inline-flex rounded bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">
+                    Empfohlen
+                  </span>
+                  <span className="block font-semibold">Chat</span>
+                  <span className="mt-1 block text-sm text-muted-foreground">
+                    Unterlagen hochladen, Rückfragen beantworten und das
+                    Prozessbild gemeinsam prüfen.
+                  </span>
+                </label>
+                <label
+                  className={`cursor-pointer rounded-lg border p-4 ${interactionMode === "form" ? "border-primary bg-primary/5" : "border-border"}`}
+                >
+                  <input
+                    className="sr-only"
+                    type="radio"
+                    name="interactionMode"
+                    checked={interactionMode === "form"}
+                    onChange={() => setInteractionMode("form")}
+                  />
+                  <span className="block font-semibold">Formular</span>
+                  <span className="mt-1 block text-sm text-muted-foreground">
+                    Den Prozess in festen Themenblöcken beschreiben und
+                    anschließend prüfen.
+                  </span>
+                </label>
+              </div>
+            </fieldset>
             {error && (
               <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
                 {error}

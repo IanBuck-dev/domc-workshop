@@ -104,6 +104,10 @@ export const processStateSchema = z.enum([
   "review_required",
   "confirmed",
 ]);
+export const interactionModeSchema = z.enum(["chat", "form"]);
+export const confirmationQualitySchema = z
+  .enum(["complete", "with_gaps"])
+  .nullable();
 export const provenanceSchema = z.enum([
   "user_stated",
   "file_evidence",
@@ -341,6 +345,7 @@ export const evidenceReferenceSchema = z
       "follow_up_answer",
       "upload",
       "human_correction",
+      "chat_message",
     ]),
     sourceId: identifierSchema,
     excerpt: z.string().trim().min(1).max(2_000),
@@ -849,6 +854,8 @@ export const processCaptureRecordSchema = z
       version: z.union([z.literal(1), z.literal(2)]),
     }),
     configHash: z.string().regex(/^[a-f0-9]{64}$/),
+    interactionMode: interactionModeSchema.default("form"),
+    confirmationQuality: confirmationQualitySchema.default(null),
     cover: coverSchema,
     configSnapshot: processCaptureConfigSchema,
     mainAnswers: z.array(topicAnswerSchema).max(5),
@@ -999,25 +1006,38 @@ export const processCaptureRecordSchema = z
         : workCharacteristicAnswersSchema.safeParse(
             record.workCharacteristicAnswers,
           ).success;
-    if (record.state !== "capture_in_progress" && !workCharacteristicsValid)
+    if (
+      record.interactionMode === "form" &&
+      record.state !== "capture_in_progress" &&
+      !workCharacteristicsValid
+    )
       ctx.addIssue({
         code: "custom",
         path: ["workCharacteristicAnswers"],
         message: "This process state requires all four work characteristics.",
       });
-    if (record.state === "capture_in_progress" && record.validationRuns.length)
+    if (
+      record.interactionMode === "form" &&
+      record.state === "capture_in_progress" &&
+      record.validationRuns.length
+    )
       ctx.addIssue({
         code: "custom",
         path: ["state"],
         message: "Capture-in-progress cannot contain a completed validation.",
       });
-    if (record.state !== "capture_in_progress" && !hasAllMainAnswers)
+    if (
+      record.interactionMode === "form" &&
+      record.state !== "capture_in_progress" &&
+      !hasAllMainAnswers
+    )
       ctx.addIssue({
         code: "custom",
         path: ["state"],
         message: "This process state requires all five main answers.",
       });
     if (
+      record.interactionMode === "form" &&
       record.state === "follow_up_required" &&
       (record.followUps.length === 0 ||
         (latestValidation !== undefined &&
@@ -1029,6 +1049,7 @@ export const processCaptureRecordSchema = z
         message: "Follow-up-required state requires unanswered questions.",
       });
     if (
+      record.interactionMode === "form" &&
       ["capture_in_progress", "follow_up_required", "synthesis_ready"].includes(
         record.state,
       ) &&
@@ -1040,6 +1061,7 @@ export const processCaptureRecordSchema = z
         message: "This process state cannot contain a synthesized result.",
       });
     if (
+      record.interactionMode === "form" &&
       ["review_required", "confirmed"].includes(record.state) &&
       record.understanding === null
     )
@@ -1053,6 +1075,36 @@ export const processCaptureRecordSchema = z
         code: "custom",
         path: ["confirmedAt"],
         message: "Confirmation timestamp and process state must agree.",
+      });
+    if (
+      record.interactionMode === "chat" &&
+      record.state === "confirmed" &&
+      record.confirmationQuality === null
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["confirmationQuality"],
+        message: "A confirmed chat capture requires a confirmation quality.",
+      });
+    if (
+      record.interactionMode === "chat" &&
+      record.state === "confirmed" &&
+      record.understanding === null
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["understanding"],
+        message: "A confirmed chat capture requires a valid understanding.",
+      });
+    if (
+      record.interactionMode === "chat" &&
+      record.state !== "confirmed" &&
+      record.confirmationQuality !== null
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["confirmationQuality"],
+        message: "Chat confirmation quality is only stored after confirmation.",
       });
   });
 
@@ -1155,7 +1207,10 @@ export function assertWorkCharacteristicAnswers(
 export function assertUnderstandingReferences(
   record: ProcessCaptureRecord,
   understanding: ProcessUnderstanding,
-  options: { allowHumanCorrections?: boolean } = {},
+  options: {
+    allowHumanCorrections?: boolean;
+    chatMessageIds?: Set<string>;
+  } = {},
 ) {
   const selected = new Map(
     record.uploads
@@ -1185,6 +1240,8 @@ export function assertUnderstandingReferences(
     if (evidence.kind === "follow_up_answer")
       return !followUpAnswers.has(evidence.sourceId);
     if (evidence.kind === "upload") return !selected.has(evidence.sourceId);
+    if (evidence.kind === "chat_message")
+      return !options.chatMessageIds?.has(evidence.sourceId);
     return !(
       options.allowHumanCorrections === true &&
       evidence.kind === "human_correction" &&

@@ -149,12 +149,49 @@ async function waitForValidationRuns(
 }
 
 describe("process capture API", () => {
+  test("requires an explicit mode and blocks Form mutations for Chat Capture", async () => {
+    const { app, config } = await fixture();
+    const missingMode = await app.request("/api/processes", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ cover, config, demoDataConfirmed: true }),
+    });
+    expect(missingMode.status).toBe(400);
+    const created = await (
+      await app.request("/api/processes", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          cover,
+          config,
+          demoDataConfirmed: true,
+          interactionMode: "chat",
+        }),
+      })
+    ).json();
+    const blocked = await app.request(`/api/processes/${created.id}/answers`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        answers: answers(),
+        workCharacteristicAnswers: workCharacteristicAnswers(),
+        selectedUploadIds: [],
+      }),
+    });
+    expect(blocked.status).toBe(409);
+  });
+
   test("completes the no-followup happy path", async () => {
     const { app, repo, config, modelCalls } = await fixture();
     const createdResponse = await app.request("/api/processes", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ cover, config, demoDataConfirmed: true }),
+      body: JSON.stringify({
+        cover,
+        config,
+        demoDataConfirmed: true,
+        interactionMode: "form",
+      }),
     });
     expect(createdResponse.status).toBe(201);
     const created = await createdResponse.json();
@@ -226,7 +263,12 @@ describe("process capture API", () => {
       await app.request("/api/processes", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ cover, config, demoDataConfirmed: true }),
+        body: JSON.stringify({
+          cover,
+          config,
+          demoDataConfirmed: true,
+          interactionMode: "form",
+        }),
       })
     ).json();
     const missing = await app.request(`/api/processes/${created.id}/answers`, {
@@ -281,7 +323,12 @@ describe("process capture API", () => {
       await app.request("/api/processes", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ cover, config, demoDataConfirmed: true }),
+        body: JSON.stringify({
+          cover,
+          config,
+          demoDataConfirmed: true,
+          interactionMode: "form",
+        }),
       })
     ).json();
     await app.request(`/api/processes/${created.id}/answers`, {
@@ -367,7 +414,12 @@ describe("process capture API", () => {
       await app.request("/api/processes", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ cover, config, demoDataConfirmed: true }),
+        body: JSON.stringify({
+          cover,
+          config,
+          demoDataConfirmed: true,
+          interactionMode: "form",
+        }),
       })
     ).json();
     const multipart = new FormData();
@@ -536,7 +588,12 @@ describe("process capture API", () => {
       await app.request("/api/processes", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ cover, config, demoDataConfirmed: true }),
+        body: JSON.stringify({
+          cover,
+          config,
+          demoDataConfirmed: true,
+          interactionMode: "form",
+        }),
       })
     ).json();
     await app.request(`/api/processes/${created.id}/answers`, {
@@ -590,7 +647,12 @@ describe("process capture API", () => {
       await app.request("/api/processes", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ cover, config, demoDataConfirmed: true }),
+        body: JSON.stringify({
+          cover,
+          config,
+          demoDataConfirmed: true,
+          interactionMode: "form",
+        }),
       })
     ).json();
     await app.request(`/api/processes/${created.id}/answers`, {

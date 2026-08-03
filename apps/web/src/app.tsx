@@ -7,6 +7,7 @@ import { ProcessListPage } from "./pages/process-list-page";
 import { ProcessDetailPage } from "./pages/process-detail-page";
 import { ProcessStartPage } from "./pages/process-start-page";
 import { ProcessCapturePage } from "./pages/process-capture-page";
+import { ProcessChatPage } from "./pages/process-chat-page";
 import { SettingsPage } from "./pages/settings-page";
 import { OpportunityDiscoveryPage } from "./pages/opportunity-discovery-page";
 import { ProcessEventsProvider } from "./lib/process-events";
@@ -59,6 +60,7 @@ export function App() {
             path="/processes/:id/capture"
             element={<ProcessCapturePage />}
           />
+          <Route path="/processes/:id/chat" element={<ProcessChatPage />} />
           <Route path="/processes/:id/opportunities">
             <Route index element={<Navigate to="hypotheses" replace />} />
             <Route

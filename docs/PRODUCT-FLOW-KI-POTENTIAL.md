@@ -6,10 +6,10 @@ Status: process-capture module implemented. The separate opportunity-discovery
 module is implemented according to
 [PLAN-KI-POTENTIAL-SCENARIOS.md](PLAN-KI-POTENTIAL-SCENARIOS.md).
 
-Objective: replace the current assessment prototype and the older discovery/PDD
-prototype with one compact two-page form that captures how a department process
-works today and produces a confirmed, structured, evidence-backed process
-understanding.
+Objective: capture how a department process works today and produce one
+confirmed, structured, evidence-backed process understanding. Chat Capture is
+the primary interaction; the compact two-page Form Capture remains the immutable
+alternative for comparative testing.
 
 Cleanup is mandatory and belongs to this implementation. Keeping gateway,
 criteria, scoring, ranking, comparison, PDD, idea-portfolio, and legacy chat
@@ -24,10 +24,13 @@ and the reference commit `58ff74f` preserve the removed implementation.
 
 ## Required outcome
 
-The completed process-capture module has one active product journey:
+The completed process-capture module has two immutable journeys with one shared
+canonical output:
 
-1. `/processes/new` — setup only;
-2. `/processes/:id/capture` — five editable topic answers with explicit,
+1. `/processes/new` — setup and interaction-mode selection, default `Chat`;
+2. `/processes/:id/chat` — document-first conversation and a live, read-only
+   linear process diagram;
+3. `/processes/:id/capture` — five editable topic answers with explicit,
    iterative validation, bounded synthesis, review, correction, and final
    confirmation.
 
@@ -56,11 +59,40 @@ Required inputs:
 - `Name des Geschäftsprozesses`
 - demo/anonymized-data confirmation
 
-There is no process-description field and no interaction-mode selector. Submit
-creates a process capture with a validated immutable `compact-v1` configuration
-snapshot and routes to page 2.
+There is no process-description field. Two radio cards select the immutable
+interaction mode: `Chat` (default and recommended) or `Formular`. Submit creates
+a process capture with a validated immutable `compact-v1` configuration
+snapshot and routes to the selected second page. Existing records without a
+stored mode are read as `form`.
 
-### Page 2 — capture and review
+### Page 2A — Chat Capture
+
+The first visit shows a browser-local three-step introduction. The deterministic
+first message blocks the composer until the user either uploads and selects up
+to five process documents or explicitly continues without documents. Each
+explicit action starts one bounded Claude turn in the process's resumable Chat
+Capture session; loading the page never starts or resumes Claude.
+
+Claude maintains the complete root `process-understanding.json`. That working
+file is untrusted. The application validates every observed revision, checks
+upload and chat-message evidence references, and atomically publishes only a
+valid, hash-deduplicated last-known-good snapshot. Invalid or partial writes keep
+the previous diagram visible and never become canonical facts.
+
+The workspace shows the compact German chat on the left and a read-only linear
+React Flow diagram on the right. At tablet widths they become `Gespräch` and
+`Prozessbild` tabs. Diagram nodes contain only step number, name, and activity.
+Steps and adjacent transitions can be mentioned in the composer through stable,
+typed references. V1 does not draw branches, loops, or editable graph fields.
+
+`Prozessbild bestätigen` is enabled only for a currently valid working state.
+Knowledge gaps or conflicts require one explicit override and persist
+`confirmationQuality: with_gaps`; otherwise the quality is `complete`.
+Confirmation locks the chat, records the deterministic thank-you message, and
+starts the existing Opportunity Discovery pipeline. A downstream start failure
+does not roll back the durable process confirmation.
+
+### Page 2B — Form Capture and review
 
 Page 2 remains one route and presents these states:
 
@@ -149,13 +181,15 @@ prototype performs no document conversion and uses no external viewer.
 - at most one follow-up per topic;
 - any number of user-triggered validation rounds, each bounded to one fresh
   Claude session and at most one question per topic;
-- five to eight high-level process steps;
+- one to eight high-level process steps for Chat Capture; Form synthesis still
+  targets five to eight and manual Form review may reduce the flow to one;
 - one normal main path;
 - no rare-edge-case or exhaustive variant modeling;
 - maximum five selected documents;
 - maximum 20 MB per file and 100 MB per process capture;
 - Claude model `claude-opus-4-8`, reasoning effort `medium`;
-- one global AI operation at a time;
+- one active Chat Capture turn per process in the V1 single-client assumption;
+  existing structured operations retain their current global operation policy;
 - no web tools or autonomous loops.
 
 The prototype assumes cooperative users who provide useful sentences or bullet

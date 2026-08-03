@@ -6,7 +6,7 @@
   "properties": {
     "stepAnalyses": {
       "type": "array",
-      "minItems": 5,
+      "minItems": 1,
       "maxItems": 8,
       "items": {
         "type": "object",
