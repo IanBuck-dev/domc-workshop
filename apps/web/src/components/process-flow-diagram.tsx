@@ -16,6 +16,25 @@ import {
 import { MessageCircle } from "lucide-react";
 import type { ChatMention, ProcessUnderstanding } from "../lib/process-types";
 import type { ChatMentionTarget } from "./chat-mention";
+import { Skeleton } from "./ui/skeleton";
+
+export function ProcessFlowDiagramSkeleton({
+  className,
+}: {
+  className?: string;
+}) {
+  return (
+    <div
+      className={`flex h-full min-h-0 items-center justify-center bg-muted/30 p-6 ${className ?? ""}`}
+      role="status"
+      aria-busy="true"
+      aria-label="Prozessbild wird geladen"
+    >
+      <span className="sr-only">Prozessbild wird geladen</span>
+      <Skeleton className="h-48 w-64 rounded-xl" />
+    </div>
+  );
+}
 
 type StepNodeData = {
   order: number;
@@ -250,10 +269,7 @@ export function ProcessFlowDiagram({
         <div className="max-w-sm">
           <div className="mx-auto mb-5 flex gap-3" aria-hidden="true">
             {[0, 1, 2].map((item) => (
-              <span
-                key={item}
-                className="h-16 flex-1 animate-pulse rounded-lg border bg-muted"
-              />
+              <Skeleton key={item} className="h-16 flex-1 rounded-lg border" />
             ))}
           </div>
           <p className="font-medium">

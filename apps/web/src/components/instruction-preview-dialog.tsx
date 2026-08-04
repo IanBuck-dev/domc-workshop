@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
+import { Skeleton } from "./ui/skeleton";
 
 export interface InstructionPreview {
   base: string;
@@ -45,9 +46,26 @@ export function InstructionPreviewDialog({
         </DialogHeader>
         <div className="space-y-5">
           {loading && (
-            <p aria-live="polite" className="text-muted-foreground">
-              Anweisungen werden geladen …
-            </p>
+            <div
+              aria-live="polite"
+              role="status"
+              aria-busy="true"
+              aria-label="Anweisungen werden geladen"
+              className="space-y-5"
+            >
+              <span className="sr-only">Anweisungen werden geladen</span>
+              {Array.from({ length: 3 }, (_, index) => (
+                <div
+                  key={index}
+                  className="space-y-3 rounded-lg border border-border p-4"
+                >
+                  <Skeleton className="h-5 w-56" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+                </div>
+              ))}
+            </div>
           )}
           {error && (
             <p

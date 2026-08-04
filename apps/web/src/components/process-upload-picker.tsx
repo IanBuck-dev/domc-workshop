@@ -1,10 +1,11 @@
-import { FileText, Paperclip, Trash2, Upload } from "lucide-react";
+import { FileText, Trash2, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { api } from "../lib/api-client";
 import type { ProcessCaptureRecord, UploadRecord } from "../lib/process-types";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Checkbox } from "./ui/checkbox";
+import { Spinner } from "./ui/spinner";
 
 export function ProcessUploadPicker({
   processId,
@@ -127,9 +128,10 @@ export function ProcessUploadPicker({
           type="button"
           variant="secondary"
           disabled={disabled || busy || uploads.length >= configLimit}
+          aria-busy={busy}
           onClick={() => input.current?.click()}
         >
-          {busy ? <Paperclip className="animate-spin" /> : <Upload />}
+          {busy ? <Spinner /> : <Upload />}
           {busy ? "Datei wird verarbeitet …" : "Unterlage hinzufügen"}
         </Button>
         <small className="block text-caption text-muted-foreground">

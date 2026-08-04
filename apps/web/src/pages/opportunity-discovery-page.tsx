@@ -1,10 +1,4 @@
-import {
-  AlertTriangle,
-  ArrowLeft,
-  LoaderCircle,
-  RefreshCw,
-  Sparkles,
-} from "lucide-react";
+import { AlertTriangle, ArrowLeft, RefreshCw, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { OpportunityHypothesesView } from "../components/opportunity-hypotheses-view";
@@ -15,6 +9,8 @@ import type { OpportunityDiscoveryDetail } from "../lib/opportunity-types";
 import type { ProcessCaptureRecord } from "../lib/process-types";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
+import { Skeleton } from "../components/ui/skeleton";
+import { Spinner } from "../components/ui/spinner";
 import { useProcessChanged } from "../lib/process-events";
 
 export function OpportunityDiscoveryPage({
@@ -67,12 +63,7 @@ export function OpportunityDiscoveryPage({
         {error}
       </p>
     );
-  if (!detail || !process)
-    return (
-      <main className="grid min-h-48 place-items-center text-muted-foreground">
-        Potenzialanalyse wird geladen …
-      </main>
-    );
+  if (!detail || !process) return <OpportunityDiscoveryPageSkeleton id={id} />;
 
   const record = detail.record;
   const scenariosAvailable = [
@@ -156,6 +147,7 @@ export function OpportunityDiscoveryPage({
             <Button
               variant="primary"
               disabled={busy}
+              aria-busy={busy}
               onClick={async () => {
                 setBusy(true);
                 setError("");
@@ -169,7 +161,8 @@ export function OpportunityDiscoveryPage({
                 }
               }}
             >
-              <RefreshCw /> {busy ? "Wird gestartet …" : "Erneut versuchen"}
+              {busy ? <Spinner /> : <RefreshCw />}{" "}
+              {busy ? "Wird gestartet …" : "Erneut versuchen"}
             </Button>
           )}
         </Card>
@@ -181,7 +174,7 @@ export function OpportunityDiscoveryPage({
           className="items-center gap-3 p-10 text-center"
           aria-live="polite"
         >
-          <LoaderCircle className="size-7 animate-spin text-primary" />
+          <Spinner className="size-7 text-primary" />
           <p className="text-eyebrow uppercase text-primary">Phase 1 von 2</p>
           <h2 className="text-title">Die Prozessschritte werden untersucht.</h2>
           <p className="max-w-xl text-muted-foreground">
@@ -223,28 +216,30 @@ export function OpportunityDiscoveryPage({
           />
         </>
       )}
-      {phase === "scenarios" && !record.scenarios && (
-        <Card
-          as="section"
-          className="items-center gap-3 p-10 text-center"
-          aria-live="polite"
-        >
-          {record.state === "scenarios_failed" ? (
+      {phase === "scenarios" &&
+        !record.scenarios &&
+        record.state === "scenarios_failed" && (
+          <Card
+            as="section"
+            className="items-center gap-3 p-10 text-center"
+            aria-live="polite"
+          >
             <AlertTriangle className="size-7 text-amber-700" />
-          ) : (
-            <LoaderCircle className="size-7 animate-spin text-primary" />
-          )}
-          <p className="text-eyebrow uppercase text-primary">Phase 2 von 2</p>
-          <h2 className="text-title">
-            {record.state === "scenarios_failed"
-              ? "Die Szenarien sind noch nicht verfügbar."
-              : "Drei Szenarien werden erstellt."}
-          </h2>
-          <p className="text-muted-foreground">
-            Sie können währenddessen zu den Potenzialhypothesen zurückkehren.
-          </p>
-        </Card>
-      )}
+            <p className="text-eyebrow uppercase text-primary">Phase 2 von 2</p>
+            <h2 className="text-title">
+              Die Szenarien sind noch nicht verfügbar.
+            </h2>
+            <p className="text-muted-foreground">
+              Sie können währenddessen zu den Potenzialhypothesen zurückkehren.
+            </p>
+          </Card>
+        )}
+      {/* Die drei Szenarien haben eine feste, bekannte Form (drei Spalten) –
+          anders als die formlose Schritt-Analyse in Phase 1 bekommt dieser
+          Wartezustand daher ein Skelett statt eines Spinners. */}
+      {phase === "scenarios" &&
+        !record.scenarios &&
+        record.state !== "scenarios_failed" && <ScenariosSkeleton />}
       {phase === "scenarios" && record.scenarios && (
         <OpportunityScenariosView
           scenarios={record.scenarios.scenarios}
@@ -252,6 +247,68 @@ export function OpportunityDiscoveryPage({
           steps={record.sourceProcess.understanding.steps}
         />
       )}
+    </section>
+  );
+}
+
+function OpportunityDiscoveryPageSkeleton({ id }: { id: string }) {
+  return (
+    <section className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+      <Link
+        className="inline-flex items-center gap-2 text-label text-primary hover:underline"
+        to={`/processes/${id}`}
+      >
+        <ArrowLeft /> Zum Prozess
+      </Link>
+      <div
+        className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end"
+        role="status"
+        aria-busy="true"
+        aria-label="Potenzialanalyse wird geladen"
+      >
+        <span className="sr-only">Potenzialanalyse wird geladen</span>
+        <div className="space-y-2">
+          <p className="text-eyebrow uppercase text-primary">
+            KI-Potenziale entdecken
+          </p>
+          <Skeleton className="mt-1 h-9 w-72 sm:h-11" />
+          <Skeleton className="mt-2 h-4 w-56" />
+        </div>
+        <Skeleton className="h-9 w-64" />
+      </div>
+      <Skeleton className="h-64 w-full rounded-lg" />
+    </section>
+  );
+}
+
+function ScenariosSkeleton() {
+  return (
+    <section
+      className="space-y-4"
+      role="status"
+      aria-busy="true"
+      aria-label="Szenarien werden erstellt"
+    >
+      <span className="sr-only">Szenarien werden erstellt</span>
+      <header className="max-w-3xl space-y-2">
+        <Skeleton className="h-7 w-72" />
+        <Skeleton className="h-4 w-full max-w-xl" />
+      </header>
+      <div className="grid gap-4 lg:grid-cols-3">
+        {Array.from({ length: 3 }, (_, index) => (
+          <Card as="div" key={index} className="gap-0 overflow-hidden p-0">
+            <div className="border-b px-5 py-4">
+              <Skeleton className="h-5 w-24" />
+            </div>
+            <div className="space-y-4 p-5">
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          </Card>
+        ))}
+      </div>
     </section>
   );
 }

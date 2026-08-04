@@ -20,6 +20,7 @@ import {
 } from "../components/ui/collapsible";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { Skeleton } from "../components/ui/skeleton";
 import { Textarea } from "../components/ui/textarea";
 import { api } from "../lib/api-client";
 import {
@@ -53,12 +54,19 @@ export function SettingsPage() {
       .catch((reason: Error) => setError(reason.message));
   }, []);
 
-  if (!config)
+  if (!config && error)
     return (
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <p>{error || "Einstellungen werden geladen …"}</p>
+        <p
+          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-label text-destructive"
+          role="alert"
+        >
+          {error}
+        </p>
       </main>
     );
+
+  if (!config) return <SettingsPageSkeleton />;
 
   function save() {
     try {
@@ -420,6 +428,37 @@ export function SettingsPage() {
         preview={preview}
         onClose={() => setPreviewOpen(false)}
       />
+    </section>
+  );
+}
+
+function SettingsPageSkeleton() {
+  return (
+    <section
+      className="mx-auto w-full max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:py-12"
+      role="status"
+      aria-busy="true"
+      aria-label="Einstellungen werden geladen"
+    >
+      <span className="sr-only">Einstellungen werden geladen</span>
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="max-w-3xl space-y-2">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-9 w-80 sm:h-11" />
+          <Skeleton className="h-4 w-full max-w-xl" />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Skeleton className="h-9 w-32" />
+          <Skeleton className="h-9 w-32" />
+          <Skeleton className="h-9 w-32" />
+        </div>
+      </div>
+      <Skeleton className="h-9 w-72" />
+      <div className="space-y-4">
+        {Array.from({ length: 3 }, (_, index) => (
+          <Skeleton key={index} className="h-16 w-full rounded-lg" />
+        ))}
+      </div>
     </section>
   );
 }

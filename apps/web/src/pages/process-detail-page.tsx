@@ -2,7 +2,6 @@ import {
   ArrowLeft,
   ArrowRight,
   EllipsisVertical,
-  LoaderCircle,
   Sparkles,
   Trash2,
   Workflow,
@@ -27,25 +26,42 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
+import { Skeleton } from "../components/ui/skeleton";
+import { Spinner } from "../components/ui/spinner";
 
 export function ProcessDetailPage() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
   const [process, setProcess] = useState<ProcessCaptureRecord | null>(null);
   const [opportunity, setOpportunity] = useState<OpportunityDiscoverySummary>();
+  const [opportunityLoaded, setOpportunityLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
+  // Der Kopfbereich braucht nur `process` — er wartet nicht auf die
+  // Potenzial-Übersicht, die für ihre eigene Kachel getrennt lädt.
   useEffect(() => {
     let active = true;
-    Promise.all([api.process(id), api.opportunitySummaries()])
-      .then(([nextProcess, summaries]) => {
+    api
+      .process(id)
+      .then((nextProcess) => active && setProcess(nextProcess))
+      .catch((reason: Error) => active && setError(reason.message));
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
+  useEffect(() => {
+    let active = true;
+    api
+      .opportunitySummaries()
+      .then((summaries) => {
         if (!active) return;
-        setProcess(nextProcess);
         setOpportunity(summaries.find((item) => item.processId === id));
+        setOpportunityLoaded(true);
       })
       .catch((reason: Error) => active && setError(reason.message));
     return () => {
@@ -62,10 +78,10 @@ export function ProcessDetailPage() {
         {error}
       </p>
     );
-  if (!process)
-    return <main className="app-loading">Prozess wird geladen …</main>;
 
-  const navigation = processNavigationModel(process, opportunity);
+  const navigation = process
+    ? processNavigationModel(process, opportunity)
+    : null;
   return (
     <section className="mx-auto w-full max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
       <Link
@@ -77,35 +93,54 @@ export function ProcessDetailPage() {
       <div className="flex items-start justify-between gap-5">
         <div>
           <p className="mb-2 text-eyebrow uppercase text-primary">Prozess</p>
-          <h1 className="text-title sm:text-display">
-            {process.cover.processName}
-          </h1>
-          <p className="mt-3 text-muted-foreground">
-            {process.cover.department} · {process.id} · aktualisiert{" "}
-            {new Date(process.updatedAt).toLocaleString("de-DE", {
-              dateStyle: "short",
-              timeStyle: "short",
-            })}
-          </p>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Weitere Aktionen">
-              <EllipsisVertical />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              variant="destructive"
-              onSelect={() => {
-                setDeleteError("");
-                setDeleteOpen(true);
-              }}
+          {process ? (
+            <>
+              <h1 className="text-title sm:text-display">
+                {process.cover.processName}
+              </h1>
+              <p className="mt-3 text-muted-foreground">
+                {process.cover.department} · {process.id} · aktualisiert{" "}
+                {new Date(process.updatedAt).toLocaleString("de-DE", {
+                  dateStyle: "short",
+                  timeStyle: "short",
+                })}
+              </p>
+            </>
+          ) : (
+            <div
+              className="space-y-3"
+              role="status"
+              aria-busy="true"
+              aria-label="Prozess wird geladen"
             >
-              <Trash2 /> Prozess löschen
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <span className="sr-only">Prozess wird geladen</span>
+              <Skeleton className="h-9 w-72 max-w-full" />
+              <Skeleton className="h-5 w-56 max-w-full" />
+            </div>
+          )}
+        </div>
+        {process ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Weitere Aktionen">
+                <EllipsisVertical />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={() => {
+                  setDeleteError("");
+                  setDeleteOpen(true);
+                }}
+              >
+                <Trash2 /> Prozess löschen
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Skeleton className="size-9 shrink-0 rounded-md" />
+        )}
       </div>
       {error && (
         <p
@@ -116,29 +151,38 @@ export function ProcessDetailPage() {
         </p>
       )}
       <div className="grid gap-4 md:grid-cols-2">
-        <ProcessModuleCard
-          title="Prozessaufnahme"
-          description="Erfasste Angaben, Rückfragen und das bestätigte Prozessbild."
-          icon={<Workflow />}
-          state={navigation.capture}
-          action={
-            <Link
-              className={buttonVariants({ variant: "secondary" })}
-              to={`/processes/${id}/${process.interactionMode === "chat" ? "chat" : "capture"}`}
-            >
-              {navigation.capture.actionLabel} <ArrowRight />
-            </Link>
-          }
-        />
-        <ProcessModuleCard
-          title="KI-Potenziale"
-          description="Potenzialhypothesen und drei Szenarien für den Einsatz von KI."
-          icon={<Sparkles />}
-          state={navigation.opportunity}
-          action={opportunityAction(navigation.opportunity)}
-        />
+        {process && navigation ? (
+          <ProcessModuleCard
+            title="Prozessaufnahme"
+            description="Erfasste Angaben, Rückfragen und das bestätigte Prozessbild."
+            icon={<Workflow />}
+            state={navigation.capture}
+            action={
+              <Link
+                className={buttonVariants({ variant: "secondary" })}
+                to={`/processes/${id}/${process.interactionMode === "chat" ? "chat" : "capture"}`}
+              >
+                {navigation.capture.actionLabel} <ArrowRight />
+              </Link>
+            }
+          />
+        ) : (
+          <ProcessModuleCardSkeleton />
+        )}
+        {process && navigation && opportunityLoaded ? (
+          <ProcessModuleCard
+            title="KI-Potenziale"
+            description="Potenzialhypothesen und drei Szenarien für den Einsatz von KI."
+            icon={<Sparkles />}
+            state={navigation.opportunity}
+            action={opportunityAction(navigation.opportunity)}
+          />
+        ) : (
+          <ProcessModuleCardSkeleton />
+        )}
       </div>
-      {process.interactionMode === "chat" &&
+      {process &&
+        process.interactionMode === "chat" &&
         process.confirmationQuality === "with_gaps" && (
           <p className="rounded-md border border-amber-500/30 bg-amber-50 p-3 text-ui text-amber-950">
             Der Prozess wurde mit offenen Punkten bestätigt.
@@ -146,7 +190,7 @@ export function ProcessDetailPage() {
         )}
       <ProcessDeleteDialog
         open={deleteOpen}
-        processName={process.cover.processName}
+        processName={process?.cover.processName ?? ""}
         busy={deleting}
         error={deleteError}
         onClose={() => {
@@ -179,6 +223,7 @@ export function ProcessDetailPage() {
       return (
         <Button
           disabled={busy}
+          aria-busy={busy}
           onClick={async () => {
             setBusy(true);
             setError("");
@@ -193,7 +238,7 @@ export function ProcessDetailPage() {
         >
           {busy ? (
             <>
-              <LoaderCircle className="animate-spin" /> Startet …
+              <Spinner /> Startet …
             </>
           ) : (
             <>
@@ -213,6 +258,33 @@ export function ProcessDetailPage() {
       );
     return null;
   }
+}
+
+function ProcessModuleCardSkeleton() {
+  return (
+    <Card className="py-0">
+      <CardContent
+        className="grid min-h-52 grid-cols-[auto_minmax(0,1fr)] gap-4 p-5"
+        role="status"
+        aria-busy="true"
+        aria-label="Modul wird geladen"
+      >
+        <span className="sr-only">Modul wird geladen</span>
+        <Skeleton className="size-11 rounded-lg" />
+        <div className="flex min-w-0 flex-col">
+          <div className="flex items-start justify-between gap-3">
+            <Skeleton className="h-5 w-36" />
+            <Skeleton className="h-5 w-20 rounded-full" />
+          </div>
+          <Skeleton className="mt-3 h-4 w-full" />
+          <Skeleton className="mt-2 h-4 w-2/3" />
+          <div className="mt-auto flex min-h-11 items-center justify-end pt-4">
+            <Skeleton className="h-9 w-28" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 function ProcessModuleCard({

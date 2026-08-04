@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { AppBootScreen } from "./components/app-boot-screen";
 import { AppShell } from "./components/app-shell";
 import { api } from "./lib/api-client";
 import { LoginPage } from "./pages/login-page";
@@ -41,8 +42,7 @@ export function App() {
       .catch(() => setAuth("no"));
   }, []);
   if (publicPaths.has(location.pathname)) return <PublicRoutes />;
-  if (auth === "loading")
-    return <main className="app-loading">Anwendung wird geladen …</main>;
+  if (auth === "loading") return <AppBootScreen />;
   if (auth === "no") return <LoginPage onLogin={() => setAuth("yes")} />;
   return (
     <ProcessEventsProvider>

@@ -4,6 +4,35 @@ import type { ChatMention, ProcessUnderstanding } from "../lib/process-types";
 import type { ChatMentionTarget } from "./chat-mention";
 import { ProcessConfirmationActions } from "./process-confirmation-actions";
 import { Button } from "./ui/button";
+import { Skeleton } from "./ui/skeleton";
+
+export function ProcessTrackerSkeleton() {
+  return (
+    <aside
+      className="flex h-full min-h-0 flex-col border-l bg-muted"
+      role="status"
+      aria-busy="true"
+      aria-label="Prozessbild wird geladen"
+    >
+      <span className="sr-only">Prozessbild wird geladen</span>
+      <header className="flex items-center justify-between border-b px-3 py-3">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-3 w-20" />
+        </div>
+        <Skeleton className="size-8 shrink-0 rounded-md" />
+      </header>
+      <div className="min-h-0 flex-1 space-y-6 px-3 py-4">
+        {[0, 1, 2, 3].map((index) => (
+          <div key={index} className="flex items-start gap-2">
+            <Skeleton className="size-6 shrink-0 rounded-full" />
+            <Skeleton className="h-4 flex-1" />
+          </div>
+        ))}
+      </div>
+    </aside>
+  );
+}
 
 export function ProcessTracker({
   understanding,

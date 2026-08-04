@@ -6,15 +6,24 @@ import { useParams } from "react-router-dom";
 import { ChatCaptureTutorial } from "../components/chat-capture-tutorial";
 import { DocumentPreviewDialog } from "../components/document-preview-dialog";
 import { ProcessChatComposer } from "../components/process-chat-composer";
-import { ProcessChatTranscript } from "../components/process-chat-transcript";
+import {
+  ProcessChatTranscript,
+  ProcessChatTranscriptSkeleton,
+} from "../components/process-chat-transcript";
 import type { ProcessChatMessageMetadata } from "../components/process-chat-transcript";
 import {
   isChatMentionTargetAvailable,
   type ChatMentionTarget,
 } from "../components/chat-mention";
 import { ProcessConfirmationActions } from "../components/process-confirmation-actions";
-import { ProcessFlowDiagram } from "../components/process-flow-diagram";
-import { ProcessTracker } from "../components/process-tracker";
+import {
+  ProcessFlowDiagram,
+  ProcessFlowDiagramSkeleton,
+} from "../components/process-flow-diagram";
+import {
+  ProcessTracker,
+  ProcessTrackerSkeleton,
+} from "../components/process-tracker";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +36,7 @@ import {
 } from "../components/ui/alert-dialog";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
+import { Skeleton } from "../components/ui/skeleton";
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -196,8 +206,24 @@ export function ProcessChatPage() {
       }),
     [id],
   );
+  // Schleuse: höchstens ein Nachlauf gleichzeitig. Trifft ein Aufruf ein,
+  // während einer läuft, wird er nicht gestartet, sondern als Nachlauf-Marke
+  // vorgemerkt — das `syncMessages`-Flag der wartenden Aufrufe wird dabei
+  // verodert, damit ein Transkript-Abgleich nicht verloren geht. Nach dem
+  // Ende läuft die Marke genau einmal nach. Refs statt State, damit die
+  // Schleuse selbst kein Rendern auslöst (siehe Ticket 006).
+  const reloadRunning = useRef(false);
+  const reloadPending = useRef<{ syncMessages: boolean } | null>(null);
   const reloadView = useCallback(
     async ({ syncMessages }: { syncMessages: boolean }) => {
+      if (reloadRunning.current) {
+        reloadPending.current = {
+          syncMessages:
+            (reloadPending.current?.syncMessages ?? false) || syncMessages,
+        };
+        return;
+      }
+      reloadRunning.current = true;
       try {
         const data = (await api.chat(id)) as View;
         setView((current) => {
@@ -223,6 +249,13 @@ export function ProcessChatPage() {
           setMessagesRef.current(transcriptMessages(data.transcript));
       } catch (reason) {
         setError((reason as Error).message);
+      } finally {
+        reloadRunning.current = false;
+        const pending = reloadPending.current;
+        if (pending) {
+          reloadPending.current = null;
+          void reloadView(pending);
+        }
       }
     },
     [id],
@@ -398,9 +431,11 @@ export function ProcessChatPage() {
       } else setError((reason as Error).message);
     }
   }
-  if (!view)
-    return <main className="app-loading">Gespräch wird geladen …</main>;
-  const confirmed = view.processState === "confirmed";
+  // `useDesktop()` liest `window.matchMedia` synchron — die Layoutbreite
+  // steht damit schon vor den Daten fest. Die komplette Hülle zeichnet sich
+  // deshalb sofort; nur die datenabhängigen Flächen unten bekommen ein
+  // Skelett, `view` bleibt bis dahin optional.
+  const confirmed = view?.processState === "confirmed";
   const activityLabel = !busy
     ? null
     : activity === "reading_documents"
@@ -416,7 +451,7 @@ export function ProcessChatPage() {
       : desktop
         ? "col-span-12 mx-auto w-5/12 max-w-3xl px-4 sm:px-6"
         : "col-span-12 px-4 sm:px-6";
-  const transcript = (
+  const transcript = view ? (
     <ProcessChatTranscript
       messages={chat.messages}
       busy={busy}
@@ -457,6 +492,8 @@ export function ProcessChatPage() {
           : undefined
       }
     />
+  ) : (
+    <ProcessChatTranscriptSkeleton chatClassName={chatClass} />
   );
   return (
     <section
@@ -465,7 +502,7 @@ export function ProcessChatPage() {
       className="relative flex h-full min-h-0 flex-col bg-background"
     >
       <ChatCaptureTutorial
-        open={tutorial && !confirmed}
+        open={tutorial && Boolean(view) && !confirmed}
         onDone={() => {
           completeChatTutorial();
           setTutorial(false);
@@ -522,24 +559,45 @@ export function ProcessChatPage() {
               <header
                 className={`${chatClass} mb-4 flex items-end justify-between gap-4`}
               >
-                <div>
-                  <p className="text-overline uppercase text-primary">
-                    Prozesserfassung · Chat
-                  </p>
-                  <h1 className="mt-1 text-title">{view.cover.processName}</h1>
-                  <p className="text-ui text-muted-foreground">
-                    {view.cover.department} · {id}
-                  </p>
-                </div>
-                <Badge variant="outline">
-                  {view.confirmationQuality === "with_gaps"
-                    ? "Mit offenen Punkten bestätigt"
-                    : confirmed
-                      ? "Abgeschlossen"
-                      : busy
-                        ? "KI arbeitet …"
-                        : "Bereit für Ergänzung"}
-                </Badge>
+                {view ? (
+                  <>
+                    <div>
+                      <p className="text-overline uppercase text-primary">
+                        Prozesserfassung · Chat
+                      </p>
+                      <h1 className="mt-1 text-title">
+                        {view.cover.processName}
+                      </h1>
+                      <p className="text-ui text-muted-foreground">
+                        {view.cover.department} · {id}
+                      </p>
+                    </div>
+                    <Badge variant="outline">
+                      {view.confirmationQuality === "with_gaps"
+                        ? "Mit offenen Punkten bestätigt"
+                        : confirmed
+                          ? "Abgeschlossen"
+                          : busy
+                            ? "KI arbeitet …"
+                            : "Bereit für Ergänzung"}
+                    </Badge>
+                  </>
+                ) : (
+                  <>
+                    <div
+                      className="space-y-2"
+                      role="status"
+                      aria-busy="true"
+                      aria-label="Gespräch wird geladen"
+                    >
+                      <span className="sr-only">Gespräch wird geladen</span>
+                      <Skeleton className="h-3 w-40" />
+                      <Skeleton className="h-6 w-56" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                    <Skeleton className="h-6 w-32 rounded-full" />
+                  </>
+                )}
               </header>
             </div>
             {desktop ? (
@@ -572,22 +630,28 @@ export function ProcessChatPage() {
                   value="diagram"
                   className="m-0 h-[calc(100dvh-13rem)]"
                 >
-                  <ProcessFlowDiagram
-                    understanding={view.understanding}
-                    status={view.understandingStatus}
-                    updating={busy && Boolean(view.understanding)}
-                    onMention={confirmed ? undefined : addMention}
-                    focusedTarget={focusedTarget}
-                  />
-                  {!confirmed && (
-                    <div className="border-t bg-background p-4">
-                      <ProcessConfirmationActions
-                        confirmationAllowed={view.confirmationAllowed}
-                        busy={busy}
-                        label="Prozessbild bestätigen"
-                        onConfirm={() => void confirm(false)}
+                  {view ? (
+                    <>
+                      <ProcessFlowDiagram
+                        understanding={view.understanding}
+                        status={view.understandingStatus}
+                        updating={busy && Boolean(view.understanding)}
+                        onMention={confirmed ? undefined : addMention}
+                        focusedTarget={focusedTarget}
                       />
-                    </div>
+                      {!confirmed && (
+                        <div className="border-t bg-background p-4">
+                          <ProcessConfirmationActions
+                            confirmationAllowed={view.confirmationAllowed}
+                            busy={busy}
+                            label="Prozessbild bestätigen"
+                            onConfirm={() => void confirm(false)}
+                          />
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <ProcessFlowDiagramSkeleton className="h-full" />
                   )}
                 </TabsContent>
               </Tabs>
@@ -609,7 +673,9 @@ export function ProcessChatPage() {
               <div
                 className={`pointer-events-auto min-h-0 ${expanded ? "col-start-5 col-span-8" : "col-start-10 col-span-3"}`}
               >
-                {expanded ? (
+                {!view ? (
+                  <ProcessTrackerSkeleton />
+                ) : expanded ? (
                   <div className="flex h-full min-h-0 flex-col border-l bg-muted">
                     <header className="flex items-center justify-between border-b px-4 py-3">
                       <div>
@@ -667,7 +733,8 @@ export function ProcessChatPage() {
               </div>
             </div>
           )}
-          {(desktop || tab === "chat") &&
+          {view &&
+            (desktop || tab === "chat") &&
             view.state.documentGate !== "pending" &&
             !confirmed && (
               <div

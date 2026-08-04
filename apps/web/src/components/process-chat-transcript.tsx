@@ -17,6 +17,7 @@ import {
 } from "./process-chat-milestone-card";
 import { Message, MessageContent } from "./ui/message";
 import { Marker, MarkerContent, MarkerIcon } from "./ui/marker";
+import { Skeleton } from "./ui/skeleton";
 import { Spinner } from "./ui/spinner";
 import {
   MessageScrollerContent,
@@ -69,6 +70,41 @@ export function withoutLegacyMentionPrefix(
       remainder = remainder.slice(prefix.length).replace(/^\s+/u, "");
   }
   return remainder;
+}
+
+export function ProcessChatTranscriptSkeleton({
+  chatClassName,
+}: {
+  chatClassName: string;
+}) {
+  return (
+    <MessageScrollerContent
+      role="status"
+      aria-busy="true"
+      aria-label="Gespräch wird geladen"
+      className="gap-6 pb-[calc(var(--chat-composer-height,0px)+1.5rem)] pt-2"
+    >
+      <span className="sr-only">Gespräch wird geladen</span>
+      {[
+        { align: "start", width: "w-3/4" },
+        { align: "end", width: "w-1/2" },
+        { align: "start", width: "w-2/3" },
+      ].map((bubble, index) => (
+        <MessageScrollerItem key={index} className="grid grid-cols-12">
+          <div className={chatClassName}>
+            <div
+              className={`flex flex-col gap-2 ${bubble.align === "end" ? "items-end" : "items-start"}`}
+            >
+              <Skeleton className={`h-4 ${bubble.width}`} />
+              <Skeleton
+                className={`h-4 ${bubble.align === "end" ? "w-1/3" : "w-1/2"}`}
+              />
+            </div>
+          </div>
+        </MessageScrollerItem>
+      ))}
+    </MessageScrollerContent>
+  );
 }
 
 export function ProcessChatTranscript({

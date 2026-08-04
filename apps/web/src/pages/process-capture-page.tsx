@@ -1,9 +1,4 @@
-import {
-  AlertTriangle,
-  ArrowLeft,
-  LoaderCircle,
-  RefreshCw,
-} from "lucide-react";
+import { AlertTriangle, ArrowLeft, RefreshCw } from "lucide-react";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ProcessBrief } from "../components/process-brief";
@@ -21,6 +16,8 @@ import type {
 } from "../lib/process-types";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
+import { Skeleton } from "../components/ui/skeleton";
+import { Spinner } from "../components/ui/spinner";
 import { useAiOperations, useProcessChanged } from "../lib/process-events";
 
 const stateIndex: Record<ProcessCaptureRecord["state"], number> = {
@@ -188,12 +185,19 @@ export function ProcessCapturePage() {
     }
   }
 
-  if (!record)
+  if (!record && error)
     return (
       <section className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <p>{error || "Prozess wird geladen …"}</p>
+        <p
+          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-label text-destructive"
+          role="alert"
+        >
+          {error}
+        </p>
       </section>
     );
+
+  if (!record) return <ProcessCapturePageSkeleton processId={id} />;
 
   return (
     <section className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
@@ -350,7 +354,9 @@ export function ProcessCapturePage() {
                         .length,
                   )
                 }
+                aria-busy={busy}
               >
+                {busy && <Spinner />}
                 {busy
                   ? "Wird gestartet …"
                   : hasCompletedValidation
@@ -409,6 +415,34 @@ export function ProcessCapturePage() {
             }}
           />
         )}
+    </section>
+  );
+}
+
+function ProcessCapturePageSkeleton({ processId }: { processId: string }) {
+  return (
+    <section className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+      <Link
+        className="inline-flex items-center gap-2 text-label text-primary hover:underline"
+        to={`/processes/${processId}`}
+      >
+        <ArrowLeft className="size-4" /> Zum Prozess
+      </Link>
+      <div
+        className="space-y-3"
+        role="status"
+        aria-busy="true"
+        aria-label="Prozess wird geladen"
+      >
+        <span className="sr-only">Prozess wird geladen</span>
+        <Skeleton className="h-4 w-48" />
+        <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+          <Skeleton className="h-9 w-72 sm:h-11" />
+          <Skeleton className="h-10 w-full min-w-[22rem] xl:w-[28rem]" />
+        </div>
+        <Skeleton className="h-4 w-64" />
+      </div>
+      <Skeleton className="h-64 w-full rounded-lg" />
     </section>
   );
 }
@@ -485,7 +519,7 @@ function OperationPanel({
       className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-4 p-4"
       aria-live="polite"
     >
-      <LoaderCircle className="size-5 animate-spin text-primary" />
+      <Spinner className="size-5 text-primary" />
       <div className="space-y-1">
         <b>{label}</b>
         <p className="text-ui text-muted-foreground">

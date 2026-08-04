@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
+import { Skeleton } from "./ui/skeleton";
 
 const textTypes = new Set(["text/plain", "text/markdown", "text/csv"]);
 const officeTypes = new Set([
@@ -92,7 +93,16 @@ export function DocumentPreviewDialog({
             </div>
           )}
           {!office && loading && (
-            <p className="text-muted-foreground">Datei wird geladen …</p>
+            <div
+              className="space-y-3"
+              role="status"
+              aria-busy="true"
+              aria-label="Datei wird geladen"
+            >
+              <span className="sr-only">Datei wird geladen</span>
+              <Skeleton className="h-6 w-2/3" />
+              <Skeleton className="h-48 w-full rounded-md" />
+            </div>
           )}
           {!office && error && (
             <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-ui text-destructive">

@@ -8,7 +8,6 @@ import {
   FileSpreadsheet,
   FileText,
   FileType,
-  LoaderCircle,
   Presentation,
   X,
 } from "lucide-react";
@@ -21,6 +20,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "./ui/collapsible";
+import { Spinner } from "./ui/spinner";
 
 const visibleUploadCount = 3;
 
@@ -154,7 +154,7 @@ function CoverageStatus({
     presentation.tone === "complete" ? (
       <Check className="size-3.5" aria-hidden="true" />
     ) : presentation.tone === "processing" ? (
-      <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" />
+      <Spinner className="size-3.5" aria-hidden="true" />
     ) : presentation.tone === "partial" || presentation.tone === "failed" ? (
       <AlertCircle className="size-3.5" aria-hidden="true" />
     ) : null;

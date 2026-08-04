@@ -1,7 +1,8 @@
-import { AlertTriangle, LoaderCircle, X } from "lucide-react";
+import { AlertTriangle, Clock, X } from "lucide-react";
 import { api } from "../lib/api-client";
 import { useAiOperations } from "../lib/process-events";
 import { Button } from "./ui/button";
+import { Spinner } from "./ui/spinner";
 
 export function AiOperationQueue() {
   const operations = useAiOperations();
@@ -19,10 +20,10 @@ export function AiOperationQueue() {
         >
           {operation.state === "failed" ? (
             <AlertTriangle className="size-4 shrink-0 text-destructive" />
+          ) : operation.state === "running" ? (
+            <Spinner className="size-4 shrink-0 text-primary" />
           ) : (
-            <LoaderCircle
-              className={`size-4 shrink-0 text-primary ${operation.state === "running" ? "animate-spin" : ""}`}
-            />
+            <Clock className="size-4 shrink-0 text-primary" />
           )}
           <span className="min-w-0 flex-1">
             {operationLabel(operation.operationName)} ·{" "}

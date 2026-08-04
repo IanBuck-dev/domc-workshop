@@ -1,4 +1,4 @@
-import { AlertTriangle, LoaderCircle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,6 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
+import { Spinner } from "./ui/spinner";
 
 export function ProcessDeleteDialog({
   open,
@@ -62,11 +63,12 @@ export function ProcessDeleteDialog({
             type="button"
             className="bg-destructive text-white hover:bg-destructive/90"
             disabled={busy}
+            aria-busy={busy}
             onClick={onConfirm}
           >
             {busy ? (
               <>
-                <LoaderCircle className="animate-spin" /> Wird gelöscht …
+                <Spinner /> Wird gelöscht …
               </>
             ) : (
               "Endgültig löschen"

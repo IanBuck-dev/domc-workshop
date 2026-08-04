@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
+import { Spinner } from "../components/ui/spinner";
 
 export function ProcessStartPage() {
   const navigate = useNavigate();
@@ -283,9 +284,10 @@ export function ProcessStartPage() {
                 type="submit"
                 size="lg"
                 disabled={!config || !coverIsValid || busy}
+                aria-busy={busy}
               >
                 {busy ? "Wird angelegt …" : "Weiter zu Schritt 2"}
-                {!busy && <ArrowRight aria-hidden="true" />}
+                {busy ? <Spinner /> : <ArrowRight aria-hidden="true" />}
               </Button>
             </div>
           </form>

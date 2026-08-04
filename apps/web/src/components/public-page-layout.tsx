@@ -5,6 +5,7 @@ import { api } from "../lib/api-client";
 import type { PublicSiteInformation } from "../lib/public-site-information";
 import { BrandLockup } from "./brand-mark";
 import { PublicFooter } from "./public-footer";
+import { Skeleton } from "./ui/skeleton";
 
 export function PublicPageLayout({
   children,
@@ -47,13 +48,34 @@ export function PublicPageLayout({
         )}
         {information
           ? children(information)
-          : !error && (
-              <p className="text-muted-foreground">
-                Informationen werden geladen …
-              </p>
-            )}
+          : !error && <PublicPageContentSkeleton />}
       </main>
       <PublicFooter />
+    </div>
+  );
+}
+
+function PublicPageContentSkeleton() {
+  return (
+    <div
+      className="space-y-6"
+      role="status"
+      aria-busy="true"
+      aria-label="Informationen werden geladen"
+    >
+      <span className="sr-only">Informationen werden geladen</span>
+      <Skeleton className="h-8 w-2/3" />
+      <div className="space-y-3">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-5/6" />
+      </div>
+      <div className="space-y-3">
+        <Skeleton className="h-5 w-1/3" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+      </div>
     </div>
   );
 }

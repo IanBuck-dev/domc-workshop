@@ -17,6 +17,7 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
+import { Spinner } from "./ui/spinner";
 import { cn } from "../lib/utils";
 
 export function ProcessBrief({
@@ -279,9 +280,11 @@ export function ProcessBrief({
             <Button
               variant="primary"
               disabled={saving}
+              aria-busy={saving}
               onClick={() => void save()}
             >
-              <Save /> {saving ? "Wird gespeichert …" : "Änderungen speichern"}
+              {saving ? <Spinner /> : <Save />}{" "}
+              {saving ? "Wird gespeichert …" : "Änderungen speichern"}
             </Button>
           </div>
         </Card>

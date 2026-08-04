@@ -5,6 +5,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { Spinner } from "../components/ui/spinner";
 import { PublicFooter } from "../components/public-footer";
 
 export function LoginPage({ onLogin }: { onLogin: () => void }) {
@@ -69,7 +70,13 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
                   {error}
                 </p>
               )}
-              <Button type="submit" className="w-full" disabled={busy}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={busy}
+                aria-busy={busy}
+              >
+                {busy && <Spinner />}
                 {busy ? "Anmeldung läuft …" : "Anmelden"}
               </Button>
             </form>
