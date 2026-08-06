@@ -14,12 +14,14 @@ import { OpportunityDiscoveryRepository } from "../../../packages/storage/src/op
 import { processCaptureRoutes } from "./routes/process-captures.ts";
 import { authRoutes } from "./routes/auth.ts";
 import { configRoutes } from "./routes/config.ts";
+import { demoRoutes } from "./routes/demo.ts";
 import { aiOperationRoutes } from "./routes/ai-operations.ts";
 import { eventRoutes } from "./routes/events.ts";
 import { loadPublicSiteInformation } from "./public-site-information.ts";
 import { opportunityRoutes } from "./routes/opportunities.ts";
 import { chatCaptureRoutes } from "./routes/chat-captures.ts";
 import { ChatCaptureService } from "./chat-capture-service.ts";
+import { ChatTurnRunner } from "./chat-turn-runner.ts";
 import { OpportunityDiscoveryService } from "./opportunity-discovery-service.ts";
 import { requireSession } from "./session.ts";
 import {
@@ -46,6 +48,7 @@ const chatService = new ChatCaptureService(
   processRepo,
   new ClaudeChatCaptureAdapter(),
 );
+const chatTurnRunner = new ChatTurnRunner(chatService, processRepo);
 await opportunityRepo.recoverInterrupted();
 app.onError((error, c) => {
   console.error(error);
@@ -83,15 +86,27 @@ app.get("/api/public/site-information", async (c) =>
 app.route("/api/auth", authRoutes());
 app.use("/api/*", requireSession);
 app.route("/api/config", configRoutes());
+app.route("/api/demo", demoRoutes());
 app.route(
   "/api/processes",
-  processCaptureRoutes(processRepo, new ClaudeProcessAiAdapter(), (id) =>
-    chatService.deleteSessions(id),
+  processCaptureRoutes(
+    processRepo,
+    new ClaudeProcessAiAdapter(),
+    async (id) => {
+      // Ein laufender Zug hält sonst Dateien des gelöschten Prozesses offen.
+      await chatTurnRunner.stop(id);
+      await chatService.deleteSessions(id);
+    },
   ),
 );
 app.route(
   "/api/processes",
-  chatCaptureRoutes(chatService, processRepo, opportunityService),
+  chatCaptureRoutes(
+    chatService,
+    processRepo,
+    opportunityService,
+    chatTurnRunner,
+  ),
 );
 app.route(
   "/api/opportunities",

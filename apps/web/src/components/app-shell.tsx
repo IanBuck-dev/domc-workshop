@@ -22,7 +22,7 @@ export function AppShell({
   return (
     <div
       className={cn(
-        "bg-background",
+        "relative bg-background",
         chatRoute ? "flex h-dvh flex-col overflow-hidden" : "min-h-screen",
       )}
     >

@@ -118,7 +118,7 @@ describe("chat capture UI contract", () => {
       'message.metadata?.action === "analyze_documents"',
     );
     expect(gate).toContain("DocumentAttachmentList");
-    expect(attachments).toContain('mode: "selectable"');
+    expect(attachments).toContain('mode: "removable"');
     expect(attachments).toContain('mode: "readonly"');
     expect(attachments).toContain("Collapsible");
     expect(attachments).toContain("1 weitere Unterlage anzeigen");
@@ -151,5 +151,48 @@ describe("chat capture UI contract", () => {
     expect(tracker).toContain("onConfirm && (");
     expect(actions).not.toContain("processId");
     expect(actions).not.toContain("confirmed");
+  });
+  test("splits the demo sidecar by capture step and calls suggestions Vorschläge", async () => {
+    const sidecar = await readFile(
+      join(process.cwd(), "apps/web/src/components/demo-sidecar.tsx"),
+      "utf8",
+    );
+    const page = await readFile(
+      join(process.cwd(), "apps/web/src/pages/process-chat-page.tsx"),
+      "utf8",
+    );
+    expect(sidecar).toContain("Vorschläge");
+    expect(sidecar).not.toContain(">Züge<");
+    expect(sidecar).toContain(
+      "Vorschlag ${zug.nummer} in den Composer einfügen",
+    );
+    expect(sidecar).toContain('stage?: "documents" | "chat"');
+    expect(sidecar).toContain('const zeigeVorschlaege = stage !== "documents"');
+    expect(sidecar).toContain("offeneDokumente");
+    expect(sidecar).toContain("Dieses Szenario nutzt keine Unterlagen.");
+    expect(page).toContain(
+      'stage={view.state.documentGate === "pending" ? "documents" : "chat"}',
+    );
+    expect(page).toContain(
+      "uploadedFileNames={view.uploads.map((upload) => upload.name)}",
+    );
+  });
+
+  test("treats skipping documents and stopping a turn as explicit server actions", async () => {
+    const page = await readFile(
+      join(process.cwd(), "apps/web/src/pages/process-chat-page.tsx"),
+      "utf8",
+    );
+    const service = await readFile(
+      join(process.cwd(), "apps/server/src/chat-capture-service.ts"),
+      "utf8",
+    );
+    expect(page).toContain("api.skipChatDocuments(id, crypto.randomUUID())");
+    expect(page).toContain("api.stopChatTurn(id)");
+    expect(page).not.toContain('send("skip_documents")');
+    expect(page).toContain("Boolean(view?.activeTurn)");
+    expect(page).toContain("view?.activeTurn?.kind");
+    expect(service).toContain("skipDocumentsAssistantText");
+    expect(service).toContain("Was löst den Vorgang aus");
   });
 });

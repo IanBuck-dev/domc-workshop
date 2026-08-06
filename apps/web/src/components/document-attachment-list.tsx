@@ -14,7 +14,6 @@ import {
 import { useState } from "react";
 import type { ProcessUnderstanding, UploadRecord } from "../lib/process-types";
 import { Button } from "./ui/button";
-import { Checkbox } from "./ui/checkbox";
 import {
   Collapsible,
   CollapsibleContent,
@@ -177,11 +176,9 @@ function CoverageStatus({
   );
 }
 
-type SelectableProps = SharedProps & {
-  mode: "selectable";
-  selectedIds: string[];
+type RemovableProps = SharedProps & {
+  mode: "removable";
   disabled: boolean;
-  onSelected: (ids: string[]) => void;
   onRemove: (upload: UploadRecord) => void;
 };
 type ReadonlyProps = SharedProps & {
@@ -190,7 +187,7 @@ type ReadonlyProps = SharedProps & {
   processing?: boolean;
 };
 
-export function DocumentAttachmentList(props: SelectableProps | ReadonlyProps) {
+export function DocumentAttachmentList(props: RemovableProps | ReadonlyProps) {
   const [open, setOpen] = useState(false);
   if (!props.uploads.length) return null;
   const visibleUploads = props.uploads.slice(0, visibleUploadCount);
@@ -201,8 +198,6 @@ export function DocumentAttachmentList(props: SelectableProps | ReadonlyProps) {
       : `${additionalUploads.length} weitere Unterlagen anzeigen`;
 
   const renderUpload = (upload: UploadRecord) => {
-    const selected =
-      props.mode === "selectable" && props.selectedIds.includes(upload.id);
     const coveragePresentation =
       props.mode === "readonly"
         ? getAttachmentCoveragePresentation(
@@ -212,20 +207,6 @@ export function DocumentAttachmentList(props: SelectableProps | ReadonlyProps) {
         : null;
     return (
       <li key={upload.id} className="flex items-center gap-2 p-3">
-        {props.mode === "selectable" && (
-          <Checkbox
-            checked={selected}
-            disabled={props.disabled}
-            aria-label={`${upload.name} auswählen`}
-            onCheckedChange={(checked) =>
-              props.onSelected(
-                checked === true
-                  ? [...props.selectedIds, upload.id]
-                  : props.selectedIds.filter((id) => id !== upload.id),
-              )
-            }
-          />
-        )}
         <UploadIcon mediaType={upload.mediaType} />
         <div className="min-w-0 flex-1">
           <button
@@ -253,7 +234,7 @@ export function DocumentAttachmentList(props: SelectableProps | ReadonlyProps) {
         >
           <Eye className="size-4" />
         </Button>
-        {props.mode === "selectable" && (
+        {props.mode === "removable" && (
           <Button
             type="button"
             variant="ghost"

@@ -1,0 +1,26 @@
+Schadennummer;Datum;Werkstatt;Direktabrechnung;Bruttobetrag;Selbstbeteiligung;Status
+GS-2026-07-0301;01.07.2026;Scheiben-Schmidt GmbH;ja;389,50;0,00;Reguliert
+GS-2026-07-0302;01.07.2026;Autoglas Wessel;ja;412,00;0,00;Reguliert
+GS-2026-07-0303;02.07.2026;ohne Werkstatt;nein;265,00;150,00;Reguliert
+GS-2026-07-0304;02.07.2026;GlasFix Dortmund;ja;356,20;0,00;Reguliert
+GS-2026-07-0305;03.07.2026;Kfz Meister Runde;nein;1.180,00;150,00;In Prüfung
+GS-2026-07-0306;03.07.2026;Autoglas Wessel;ja;299,90;0,00;Reguliert
+GS-2026-07-0307;04.07.2026;Scheiben-Schmidt GmbH;ja;445,00;0,00;Reguliert
+GS-2026-07-0308;04.07.2026;ohne Werkstatt;nein;198,50;48,50;Reguliert
+GS-2026-07-0309;05.07.2026;GlasFix Dortmund;ja;372,00;0,00;Reguliert
+GS-2026-07-0310;06.07.2026;Autohaus Brenner;nein;340,00;150,00;Reguliert
+GS-2026-07-0311;07.07.2026;Autoglas Wessel;ja;410,90;0,00;Offen
+GS-2026-07-0312;07.07.2026;Scheiben-Schmidt GmbH;ja;389,00;0,00;Reguliert
+GS-2026-07-0313;08.07.2026;ohne Werkstatt;nein;150,00;150,00;Abgelehnt
+GS-2026-07-0314;08.07.2026;GlasFix Dortmund;ja;356,00;0,00;Reguliert
+GS-2026-07-0315;09.07.2026;Kfz Meister Runde;nein;1.399,00;150,00;In Prüfung
+GS-2026-07-0316;10.07.2026;Autoglas Wessel;ja;298,00;0,00;Reguliert
+GS-2026-07-0317;11.07.2026;Scheiben-Schmidt GmbH;ja;415,50;0,00;Reguliert
+GS-2026-07-0318;11.07.2026;ohne Werkstatt;nein;220,00;70,00;Reguliert
+GS-2026-07-0319;12.07.2026;GlasFix Dortmund;ja;362,90;0,00;Reguliert
+GS-2026-07-0320;14.07.2026;Autohaus Brenner;nein;480,00;150,00;Reguliert
+GS-2026-07-0321;15.07.2026;Autoglas Wessel;ja;405,00;0,00;Reguliert
+GS-2026-07-0322;16.07.2026;Scheiben-Schmidt GmbH;ja;299,00;0,00;Offen
+GS-2026-07-0323;17.07.2026;ohne Werkstatt;nein;312,00;150,00;Reguliert
+GS-2026-07-0324;18.07.2026;GlasFix Dortmund;ja;388,50;0,00;Reguliert
+GS-2026-07-0325;21.07.2026;Kfz Meister Runde;nein;265,00;115,00;Reguliert

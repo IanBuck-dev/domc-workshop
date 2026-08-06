@@ -8,8 +8,6 @@ import { Button } from "./ui/button";
 export function ChatDocumentGate({
   processId,
   uploads,
-  selected,
-  onSelected,
   busy,
   onChanged,
   onPreview,
@@ -18,8 +16,6 @@ export function ChatDocumentGate({
 }: {
   processId: string;
   uploads: UploadRecord[];
-  selected: string[];
-  onSelected: (ids: string[]) => void;
   busy: boolean;
   onChanged: () => Promise<void> | void;
   onPreview: (upload: UploadRecord) => void;
@@ -42,8 +38,8 @@ export function ChatDocumentGate({
             Unterlagen bereitstellen
           </p>
           <p className="mt-1 text-ui text-muted-foreground">
-            Bis zu fünf Arbeitsanweisungen, Präsentationen oder
-            Beispieldokumente gemeinsam auswählen.
+            Alle hochgeladenen Unterlagen werden ausgewertet — höchstens fünf
+            Arbeitsanweisungen, Präsentationen oder Beispieldokumente.
           </p>
         </div>
       </div>
@@ -83,18 +79,15 @@ export function ChatDocumentGate({
         />
       </label>
       <DocumentAttachmentList
-        mode="selectable"
+        mode="removable"
         uploads={uploads}
-        selectedIds={selected}
         disabled={disabled}
-        onSelected={onSelected}
         onPreview={onPreview}
         onRemove={(upload) => {
           setError("");
           void api
             .removeUpload(processId, upload.id)
             .then(async () => {
-              onSelected(selected.filter((id) => id !== upload.id));
               await onChanged();
             })
             .catch((reason) =>
@@ -104,7 +97,7 @@ export function ChatDocumentGate({
       />
       <div className="mt-4 flex flex-wrap gap-2">
         <Button
-          disabled={disabled || !selected.length}
+          disabled={disabled || !uploads.length}
           onClick={() =>
             void onAnalyze().catch((reason) =>
               report(

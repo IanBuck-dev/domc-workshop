@@ -1,28 +1,33 @@
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import { Hono } from "hono";
 import { z } from "zod";
-import { resolve } from "node:path";
 import {
   chatActivityEventSchema,
   chatUnderstandingEventSchema,
-  type ChatActivityKind,
 } from "../../../../packages/domain/src/chat-capture.ts";
 import type { ProcessCaptureRepository } from "../../../../packages/storage/src/process-capture-repository.ts";
 import type { ChatCaptureService } from "../chat-capture-service.ts";
+import { ChatTurnRunner } from "../chat-turn-runner.ts";
 import type { OpportunityDiscoveryService } from "../opportunity-discovery-service.ts";
 import { publishProcessChanged } from "../process-events.ts";
 
 const confirmSchema = z.object({ override: z.boolean() }).strict();
+const skipSchema = z.object({ id: z.string().uuid() }).strict();
 
 export function chatCaptureRoutes(
   service: ChatCaptureService,
   processes: ProcessCaptureRepository,
   opportunities: OpportunityDiscoveryService,
+  runner: ChatTurnRunner = new ChatTurnRunner(service, processes),
 ) {
   const app = new Hono();
   app.get("/:id/chat", async (c) => {
     try {
-      return c.json(await service.view(c.req.param("id")));
+      const id = c.req.param("id");
+      return c.json({
+        ...(await service.view(id)),
+        activeTurn: runner.snapshot(id),
+      });
     } catch (error) {
       return c.json(
         {
@@ -33,14 +38,35 @@ export function chatCaptureRoutes(
       );
     }
   });
-  app.post("/:id/chat", async (c) => {
-    let active: Awaited<ReturnType<ChatCaptureService["startTurn"]>>;
+  app.post("/:id/chat/skip-documents", async (c) => {
     try {
-      active = await service.startTurn(
-        c.req.param("id"),
-        await c.req.json(),
-        c.req.raw.signal,
+      const body = skipSchema.parse(await c.req.json());
+      const id = c.req.param("id");
+      const result = await service.skipDocuments(id, body.id);
+      publishProcessChanged(id);
+      return c.json(result);
+    } catch (error) {
+      return c.json(
+        {
+          error:
+            error instanceof Error
+              ? error.message
+              : "Der Vorgang konnte nicht fortgesetzt werden.",
+        },
+        409,
       );
+    }
+  });
+  app.post("/:id/chat/stop", async (c) => {
+    const stopped = await runner.stop(c.req.param("id"));
+    return stopped
+      ? c.json({ stopped: true })
+      : c.json({ error: "Es läuft keine Antwort." }, 409);
+  });
+  app.post("/:id/chat", async (c) => {
+    let active: Awaited<ReturnType<ChatTurnRunner["start"]>>;
+    try {
+      active = await runner.start(c.req.param("id"), await c.req.json());
     } catch (error) {
       return c.json(
         {
@@ -81,118 +107,50 @@ export function chatCaptureRoutes(
       });
       return createUIMessageStreamResponse({ stream });
     }
+    // Der Zug selbst läuft im Runner und überlebt diese Verbindung. Hier wird
+    // nur zugehört: Fortschritt weiterreichen, am Ende den Antworttext
+    // schreiben. Bricht die Verbindung ab (Neuladen), fällt allein der Zuhörer
+    // weg.
+    const turn = active.turn;
     const stream = createUIMessageStream({
       execute: async ({ writer }) => {
-        let lastKey = "";
-        let scanning = false;
-        let lastActivity: ChatActivityKind | null = null;
-        const activity = (kind: ChatActivityKind) => {
-          if (lastActivity === kind) return;
-          lastActivity = kind;
-          writer.write({
-            type: "data-chat-activity",
-            data: chatActivityEventSchema.parse({
-              schemaVersion: 1,
-              state: "active",
-              kind,
-              timestamp: new Date().toISOString(),
-            }),
-            transient: true,
-          });
-        };
-        const understandingState = (
-          value: Awaited<ReturnType<ChatCaptureService["chats"]["reconcile"]>>,
-        ) => {
-          writer.write({
-            type: "data-understanding-state",
-            data: chatUnderstandingEventSchema.parse({
-              status: value.status,
-              ...(value.status === "valid" ? { revision: value.revision } : {}),
-              timestamp: new Date().toISOString(),
-            }),
-            transient: true,
-          });
-        };
-        if (active.action === "analyze_documents")
-          activity("reading_documents");
-        const scan = async () => {
-          if (scanning) return;
-          scanning = true;
-          try {
-            const value = await service.chats.reconcile(
-              await processes.required(active.record.id),
-            );
-            const key = `${value.status}:${value.status === "valid" ? value.revision : ""}`;
-            if (!lastKey) {
-              lastKey = key;
-              understandingState(value);
-              return;
-            }
-            if (key === lastKey) return;
-            lastKey = key;
-            activity("updating_diagram");
-            understandingState(value);
-          } finally {
-            scanning = false;
-          }
-        };
-        const watcher = setInterval(() => void scan(), 350);
+        const detach = runner.attach(turn, (event) => {
+          if (event.type === "activity")
+            writer.write({
+              type: "data-chat-activity",
+              data: chatActivityEventSchema.parse({
+                schemaVersion: 1,
+                state: "active",
+                kind: event.kind,
+                timestamp: new Date().toISOString(),
+              }),
+              transient: true,
+            });
+          else
+            writer.write({
+              type: "data-understanding-state",
+              data: event.data,
+              transient: true,
+            });
+        });
         try {
-          for await (const part of active.result.fullStream) {
-            if (part.type === "error") throw part.error;
-            if (part.type === "abort")
-              throw new Error("Chat turn aborted by provider.");
-            if (
-              part.type === "tool-input-start" &&
-              active.action === "analyze_documents" &&
-              (part.toolName === "Read" || part.toolName === "Glob")
-            ) {
-              activity("reading_documents");
-              continue;
-            }
-            if (part.type !== "tool-call") continue;
-            const toolName = part.toolName;
-            if (
-              active.action === "analyze_documents" &&
-              (toolName === "Read" || toolName === "Glob")
-            ) {
-              activity("reading_documents");
-              continue;
-            }
-            if (toolName !== "Write") continue;
-            const input = part.input;
-            const target =
-              input && typeof input === "object"
-                ? ((input as Record<string, unknown>).file_path ??
-                  (input as Record<string, unknown>).path)
-                : undefined;
-            if (
-              typeof target === "string" &&
-              resolve(processes.dir(active.record.id), target) ===
-                resolve(
-                  processes.dir(active.record.id),
-                  "process-understanding.json",
-                )
-            )
-              activity("updating_diagram");
+          const outcome = await turn.done;
+          // Ein ausdrücklich gestoppter Zug ist kein Fehler: Die Stopp-Meldung
+          // steht bereits im Transkript, die Oberfläche lädt es nach.
+          if (!outcome.ok) {
+            if (outcome.aborted) return;
+            throw new Error(outcome.message);
           }
-          activity("checking_open_points");
-          const completed = await service.finishTurn(active);
           const textId = crypto.randomUUID();
           writer.write({ type: "text-start", id: textId });
           writer.write({
             type: "text-delta",
             id: textId,
-            delta: completed.assistant.text,
+            delta: outcome.text,
           });
           writer.write({ type: "text-end", id: textId });
-          understandingState(completed.understanding);
-          publishProcessChanged(active.record.id);
-        } catch (error) {
-          await service.failTurn(active, c.req.raw.signal.aborted);
-          throw error;
         } finally {
-          clearInterval(watcher);
+          detach();
           writer.write({
             type: "data-chat-activity",
             data: chatActivityEventSchema.parse({

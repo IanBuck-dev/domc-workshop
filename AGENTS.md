@@ -35,6 +35,25 @@ The prototype's login is gated. Credentials live in the user's 1Password in the 
 - Preserve `user_stated`, `file_evidence`, `ai_structured`, `ai_inferred`, `user_confirmed`, and `unknown` provenance in storage and UI.
 - Use `./scripts/qa changed` during implementation and focused `./scripts/qa test <file>` while repairing failures. Use `./scripts/qa all` once before handoff. Read full `.local/validation-runs` logs only when the compact failure excerpt is insufficient.
 
+## Demo-Daten (`demo-data/`)
+
+- Zweck: realistische Testdaten für reproduzierbare Tuningrunden. `freezeContracts()`
+  friert Prompt und Schema pro Prozess ein, also wirkt jede Promptänderung nur auf neu
+  angelegte Prozesse — jede Tuningrunde braucht deshalb einen frischen Prozess mit
+  identischem Ausgangsmaterial.
+- Ausschließlich erfundene Daten der fiktiven **LifeCorp Versicherung** unter der Domain
+  `lifecorp.example`. Niemals reale Kunden-, Vertrags- oder Schadendaten in `demo-data/`
+  ablegen.
+- Ausschließlich Deutsch.
+- `bun run seed <slug>|--alle|--list` seedet über die Repository-Schicht direkt (kein
+  HTTP, keine Zugangsdaten nötig). Der Dev-Start seedet einen leeren Workspace
+  automatisch; `DEMO_SEED=0` schaltet das ab.
+- Der Demo-Sidecar in der Web-App speist sich aus `GET /api/demo/szenarien`.
+- `tests/demo-data.test.ts` hält die Szenarien konsistent — Schema, Dokumentenlisten,
+  Fachbereiche, Formularfelder.
+- Systemnamen und Personas kommen aus `demo-data/UNTERNEHMEN.md` und müssen über alle
+  Szenarien hinweg konsistent bleiben.
+
 ## UX rules
 
 - Write German interface copy for an insurance manager, not a developer.

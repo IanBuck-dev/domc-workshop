@@ -1,0 +1,38 @@
+{
+  "slug": "beitragsanpassung",
+  "titel": "Beitragsanpassung Bestandsvertrag",
+  "cover": {
+    "department": "Vertrag",
+    "participantName": "Edda Brandt",
+    "participantEmail": "edda.brandt@lifecorp.example",
+    "processName": "Beitragsanpassung Bestandsvertrag"
+  },
+  "interactionMode": "chat",
+  "dokumente": [
+    {
+      "quelle": "dokumente/verfahrensanweisung-beitragsanpassung.md",
+      "zielname": "Verfahrensanweisung_Beitragsanpassung.pdf",
+      "format": "pdf"
+    },
+    {
+      "quelle": "dokumente/protokoll-fachrunde.md",
+      "zielname": "Protokoll_Fachrunde_Beitragsanpassung.md",
+      "format": "md"
+    }
+  ],
+  "formular": {
+    "antworten": {
+      "purpose-scope": "Wir passen einmal im Jahr die Beiträge laufender Hausrat- und Wohngebäudeverträge an den aktuellen Index an. Der Prozess beginnt, wenn das Aktuariat im Herbst die Anpassungsfaktoren liefert, und endet, wenn alle Kunden informiert sind und offene Widersprüche entschieden sind.",
+      "flow-roles": "Das Aktuariat liefert die Indexwerte, wir im Fachbereich Vertrag prüfen die Liste und starten den Anpassungslauf in VERA. Die Anschreiben gehen dann an die Kunden raus, die meisten heute über das Kundenportal, ein Rest noch per Post. Widersprüche landen inzwischen beim Serviceteam Bestand, nicht mehr bei uns.",
+      "information-systems": "Ich arbeite in VERA für die Vertragsdaten und den Anpassungslauf selbst, in PARTO schaue ich bei Widerspruchsfällen die Kundenhistorie nach, und die Anschreiben liegen in AKTE ab. Fürs Portal sehe ich nur, ob ein Kunde angeschlossen ist oder nicht.",
+      "decisions-controls-handoffs": "Die eigentliche Entscheidung, ob jemand angepasst wird, macht die Indexliste vom Aktuariat, da entscheiden wir nicht mehr selbst. Bei Widersprüchen entscheidet inzwischen das Serviceteam Bestand; nur wenn es fachlich strittig ist, kommt es zu uns zurück.",
+      "effort-pain-goals": "Am meisten Zeit kostet es, wenn ein Kunde ohne Portalzugang anruft, weil ihm das Anschreiben komisch vorkommt. Da fehlt uns noch ein guter Hinweistext. Ansonsten läuft der Lauf in VERA inzwischen recht rund."
+    },
+    "arbeitsmerkmale": {
+      "combined-information-sources": ["yes"],
+      "content-types": ["free-text", "other-freeform-files"],
+      "case-specific-recognition": ["detect-unusual-cases"],
+      "uncertain-decisions": ["decide-with-incomplete-rules"]
+    }
+  }
+}

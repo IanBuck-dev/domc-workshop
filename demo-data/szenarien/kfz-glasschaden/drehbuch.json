@@ -1,0 +1,54 @@
+{
+  "zuege": [
+    {
+      "nummer": 1,
+      "antwort": "Ich mach die Kfz-Glasschäden, also Scheiben und Schiebedächer. Das meiste läuft eh übers Clearing, da fass ich nichts an - ich krieg nur die Fälle, wo keine Partnerwerkstatt dran ist oder wo das Clearing aus irgendeinem Grund nicht gegriffen hat. Am Ende hat der Kunde sein Geld und der Fall ist zu.",
+      "hinweis": "Eröffnet Zweck/Abgrenzung; grenzt bewusst den automatisierten Clearing-Anteil vom manuellen Fall ab, damit der Assistent den Prozessumfang korrekt fasst."
+    },
+    {
+      "nummer": 2,
+      "antwort": "Zuerst leg ich den Schaden in KOMPASS an, falls noch nicht passiert. Dann guck ich in VERA nach, ob überhaupt Kasko mit Glasschutz besteht und der Vertrag am Schadentag gelaufen ist. Kein Einschluss oder Vertrag nicht aktiv - dann ist der Fall erledigt, wird abgelehnt.",
+      "hinweis": "Liefert die ersten beiden Hauptschritte (Erfassung, Deckungsprüfung) inklusive der Ablehnungsverzweigung als Decision-Kandidat."
+    },
+    {
+      "nummer": 3,
+      "antwort": "Wenn die Deckung passt, schau ich mir die Rechnung an. Ob die Summe realistisch ist, Stundensätze und so. Dann zieh ich die 150 Euro Selbstbeteiligung ab und stoß die Zahlung über SAP FI an. Zum Schluss kommt alles in die AKTE und der Vorgang ist durch.",
+      "hinweis": "Vervollständigt den Hauptablauf (Rechnungsprüfung, SB-Abzug, Auszahlung, Ablage) - prüft Reihenfolge und Granularität gegen die Arbeitsanweisung."
+    },
+    {
+      "nummer": 4,
+      "antwort": "Systeme sind KOMPASS für den Schaden selbst, VERA für die Vertragsdaten, SAP FI für die Zahlung und AKTE für die Ablage. Wer Partnerwerkstatt ist, steht in PARTO, aber da guck ich eigentlich nie selbst rein, das läuft im Hintergrund.",
+      "hinweis": "Prüft, ob der Assistent alle fünf Systeme korrekt und mit der richtigen Rolle im Prozess zuordnet, inklusive PARTO als Randsystem ohne aktive Nutzung durch Edda."
+    },
+    {
+      "nummer": 5,
+      "antwort": "Die wichtigste Entscheidung ist die Deckung - besteht Versicherungsschutz oder nicht. Danach ob die Rechnung plausibel ist oder ob ich bei der Werkstatt nachfrage. Eine echte Übergabe an andere gibt's eigentlich nicht, außer bei Leasing, da geht's Geld an die Leasinggesellschaft.",
+      "hinweis": "Deckt Entscheidungen und Kontrollen ab; testet, ob der Assistent Deckungsprüfung und Rechnungsplausibilität als zwei getrennte Entscheidungen erkennt statt sie zu verschmelzen."
+    },
+    {
+      "nummer": 6,
+      "antwort": "Bei mir landen vielleicht 25 bis 30 Fälle die Woche, der Rest - also so 60, 70 Prozent - läuft automatisch über Clearing. Ein Fall dauert bei mir meistens 15, 20 Minuten, außer ich muss bei der Werkstatt nachfragen, dann zieht sich das über Tage.",
+      "hinweis": "Liefert Mengengerüst und Bearbeitungsdauer; prüft, ob der Assistent das in volumeAndTime korrekt und ohne Übertreibung übernimmt."
+    },
+    {
+      "nummer": 7,
+      "antwort": "Am meisten Zeit frisst das Nachfragen bei Werkstätten, wenn die Rechnung nicht passt, das ist vielleicht jeder zehnte Fall. Und die Fälle, die eigentlich Partnerwerkstatt wären, aber trotzdem bei mir landen, weil im Clearing was fehlt - das nervt am meisten, weil ich die eigentlich gar nicht bearbeiten müsste.",
+      "hinweis": "Pain Points; prüft, ob die Clearing-Fehlläufer als eigenständiges, wiederkehrendes Problem erfasst werden statt als Einzelfall."
+    },
+    {
+      "nummer": 8,
+      "antwort": "Zwei Sonderfälle noch: Bei Oldtimern, also über 30 Jahre alt, brauch ich vorher ein kurzes Gutachten, weil die Standardscheiben oft nicht passen. Und bei Leasingfahrzeugen zahl ich nicht an den Kunden, sondern an die Leasinggesellschaft, und muss vorher deren Kontodaten in VERA checken.",
+      "hinweis": "Sonderfälle Oldtimer und Leasing aus der Arbeitsanweisung; prüft, ob der Assistent diese als Varianten innerhalb bestehender Schritte behandelt statt als eigene Hauptschritte."
+    },
+    {
+      "nummer": 9,
+      "antwort": "Nein, das mach ich komplett allein, da ist keine Freigabe von jemand anderem nötig, außer die Summe ist wirklich ungewöhnlich hoch, dann frag ich schon mal die Teamleitung. Aber das ist selten.",
+      "hinweis": "Antwort auf eine erwartbare Rückfrage zu Freigaben/Vier-Augen-Prinzip; prüft, ob der Assistent gezielt nach fehlenden Kontrollpunkten fragt statt sie anzunehmen."
+    },
+    {
+      "nummer": 10,
+      "antwort": "Die Fallliste, die ich mitgeschickt hab, ist ganz normaler Juli, nichts Besonderes markiert. Die Spalte Direktabrechnung zeigt halt, was übers Clearing lief und was ich von Hand hatte - is ja klar ersichtlich.",
+      "hinweis": "Reaktion auf eine mögliche Rückfrage zur CSV-Fallliste; prüft, ob documentCoverage für die Fallliste korrekt als geprüft/complete markiert wird und die Spalten richtig interpretiert werden."
+    }
+  ]
+}

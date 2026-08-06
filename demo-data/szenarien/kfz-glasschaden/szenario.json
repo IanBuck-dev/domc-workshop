@@ -1,0 +1,43 @@
+{
+  "slug": "kfz-glasschaden",
+  "titel": "Kfz-Glasschaden-Regulierung",
+  "cover": {
+    "department": "Schaden",
+    "participantName": "Edda Brandt",
+    "participantEmail": "edda.brandt@lifecorp.example",
+    "processName": "Kfz-Glasschaden-Regulierung"
+  },
+  "interactionMode": "chat",
+  "dokumente": [
+    {
+      "quelle": "dokumente/arbeitsanweisung-glasschaden.md",
+      "zielname": "Arbeitsanweisung_Glasschaden_Kfz.pdf",
+      "format": "pdf"
+    },
+    {
+      "quelle": "dokumente/fallliste-glasschaden.csv",
+      "zielname": "Fallliste_Glasschaden_Juli.csv",
+      "format": "csv"
+    },
+    {
+      "quelle": "dokumente/systemhinweise-clearing.txt",
+      "zielname": "Systemhinweise_Clearing.txt",
+      "format": "txt"
+    }
+  ],
+  "formular": {
+    "antworten": {
+      "purpose-scope": "Es geht um Glasschäden am Auto, also Windschutzscheibe, Seitenscheiben, manchmal auch das Glasschiebedach. Der Prozess fängt an, wenn eine Meldung reinkommt, und endet damit, dass der Kunde sein Geld hat und der Vorgang abgeschlossen ist. Das meiste läuft aber automatisch über die Werkstätten, das sehe ich gar nicht - ich habe nur die Fälle ohne Partnerwerkstatt oder wo aus irgendeinem Grund nicht automatisch abgerechnet werden konnte.",
+      "flow-roles": "Erst lege ich den Schaden in KOMPASS an, falls das noch nicht passiert ist. Dann prüfe ich in VERA, ob überhaupt Kasko mit Glasschutz besteht und der Vertrag zum Datum lief. Danach schaue ich mir die Rechnung an, ob die plausibel ist, ziehe die Selbstbeteiligung ab und stoße die Zahlung über SAP FI an. Am Ende lege ich alles in AKTE ab und setze den Fall auf erledigt.",
+      "information-systems": "Ich brauche vor allem KOMPASS für den Schaden selbst, VERA für die Vertragsdaten und AKTE zum Ablegen der Unterlagen. Die Rechnung kommt meistens als PDF oder Foto rein, manchmal auch nur handschriftlich eingescannt von kleineren Werkstätten. Welche Werkstatt Partner ist, steht in PARTO, das schaue ich aber selten selbst nach.",
+      "decisions-controls-handoffs": "Die wichtigste Entscheidung ist eigentlich die Deckungsprüfung - ob und wie viel überhaupt erstattet wird. Bei der Rechnungsprüfung entscheide ich, ob die Summe plausibel ist oder ob ich nachfrage. Übergaben gibt es kaum, außer bei Leasingfällen, da geht die Zahlung an die Leasinggesellschaft statt an den Kunden, und ich muss vorher deren Kontodaten in VERA checken.",
+      "effort-pain-goals": "Zeit kostet vor allem das Nachfragen bei Werkstätten, wenn Rechnungen nicht plausibel sind, das kommt vielleicht bei jedem zehnten Fall vor. Nervig sind auch die Fälle, die eigentlich Partnerwerkstatt sind aber trotzdem bei mir landen, weil im Clearing was gefehlt hat. Schön wäre, wenn das zuverlässiger automatisch erkannt würde."
+    },
+    "arbeitsmerkmale": {
+      "combined-information-sources": ["yes"],
+      "content-types": ["free-text", "images-scans"],
+      "case-specific-recognition": ["detect-unusual-cases", "adapt-case-flow"],
+      "uncertain-decisions": ["decide-with-incomplete-rules"]
+    }
+  }
+}

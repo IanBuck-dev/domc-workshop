@@ -4,6 +4,7 @@ import { ArrowDown, ChevronsRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ChatCaptureTutorial } from "../components/chat-capture-tutorial";
+import { DemoSidecar } from "../components/demo-sidecar";
 import { DocumentPreviewDialog } from "../components/document-preview-dialog";
 import { ProcessChatComposer } from "../components/process-chat-composer";
 import {
@@ -50,6 +51,7 @@ import {
   TabsTrigger,
 } from "../components/ui/tabs";
 import { api, ApiError } from "../lib/api-client";
+import { useProcessChanged } from "../lib/process-events";
 import {
   chatTutorialCompleted,
   completeChatTutorial,
@@ -80,6 +82,12 @@ type View = {
   understandingStatus: "missing" | "invalid" | "valid";
   confirmationAllowed: boolean;
   confirmationQuality: "complete" | "with_gaps" | null;
+  activeTurn: {
+    turnId: string;
+    action: "message" | "analyze_documents";
+    kind: ChatActivityKind | null;
+    startedAt: string;
+  } | null;
 };
 type ProcessChatUIMessage = UIMessage<
   ProcessChatMessageMetadata,
@@ -163,14 +171,15 @@ export function ProcessChatPage() {
   const [view, setView] = useState<View | null>(null);
   const [text, setText] = useState("");
   const [mentions, setMentions] = useState<ChatMention[]>([]);
-  const [selected, setSelected] = useState<string[]>([]);
   const [turnUploadIds, setTurnUploadIds] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [tutorial, setTutorial] = useState(!chatTutorialCompleted());
   const [tab, setTab] = useState<"chat" | "diagram">("chat");
   const [expanded, setExpanded] = useState(false);
   const [diagramUnread, setDiagramUnread] = useState(false);
-  const [activity, setActivity] = useState<ChatActivityKind | null>(null);
+  const [streamActivity, setStreamActivity] = useState<ChatActivityKind | null>(
+    null,
+  );
   const [overrideData, setOverrideData] = useState<{
     knowledgeGaps: string[];
     conflicts: string[];
@@ -238,13 +247,6 @@ export function ProcessChatPage() {
           lastRevision.current = revision;
           return data;
         });
-        setSelected((current) =>
-          data.state.documentGate === "documents_selected"
-            ? data.state.selectedUploadIds
-            : current.filter((uploadId) =>
-                data.uploads.some((upload) => upload.id === uploadId),
-              ),
-        );
         if (syncMessages)
           setMessagesRef.current(transcriptMessages(data.transcript));
       } catch (reason) {
@@ -269,7 +271,7 @@ export function ProcessChatPage() {
     transport,
     resume: false,
     onError(reason) {
-      setActivity(null);
+      setStreamActivity(null);
       setError(reason.message);
       syncTranscript();
     },
@@ -277,7 +279,9 @@ export function ProcessChatPage() {
       if (part.type === "data-chat-activity") {
         const parsed = chatActivityEventSchema.safeParse(part.data);
         if (parsed.success)
-          setActivity(parsed.data.state === "active" ? parsed.data.kind : null);
+          setStreamActivity(
+            parsed.data.state === "active" ? parsed.data.kind : null,
+          );
         return;
       }
       if (part.type === "data-understanding-state") {
@@ -296,12 +300,27 @@ export function ProcessChatPage() {
       }
     },
     onFinish() {
-      setActivity(null);
+      setStreamActivity(null);
       syncTranscript();
     },
   });
   setMessagesRef.current = chat.setMessages;
-  const busy = chat.status === "submitted" || chat.status === "streaming";
+  // Ein Zug läuft serverseitig weiter, auch wenn diese Seite ihn nicht selbst
+  // angestoßen hat (Neuladen, zweiter Tab). `activeTurn` hält die Oberfläche
+  // deshalb genauso beschäftigt wie der eigene Strom.
+  const busy =
+    chat.status === "submitted" ||
+    chat.status === "streaming" ||
+    Boolean(view?.activeTurn);
+  // Der Server meldet jede Änderung an diesem Prozess — Zugstart (Schleuse
+  // wechselt, Composer erscheint) ebenso wie Zugende (Antwort im Transkript).
+  useProcessChanged(id, () =>
+    // Während der eigene Strom läuft, nur den Zustand nachziehen: das
+    // Transkript würde die gerade eintreffende Antwort überschreiben.
+    reloadView({
+      syncMessages: chat.status !== "streaming" && chat.status !== "submitted",
+    }).catch(() => undefined),
+  );
   useEffect(() => {
     tabRef.current = tab;
   }, [tab]);
@@ -309,7 +328,8 @@ export function ProcessChatPage() {
     void syncTranscript();
   }, [syncTranscript]);
   useEffect(() => {
-    if (chat.status === "ready" || chat.status === "error") setActivity(null);
+    if (chat.status === "ready" || chat.status === "error")
+      setStreamActivity(null);
   }, [chat.status]);
   useEffect(() => {
     if (!desktop) setExpanded(false);
@@ -360,17 +380,40 @@ export function ProcessChatPage() {
     },
     [view?.state.lastValidRevision, view?.understanding],
   );
-  async function send(
-    action: "message" | "analyze_documents" | "skip_documents",
-  ) {
+  async function stopTurn() {
+    try {
+      await api.stopChatTurn(id);
+    } catch {
+      // Ist der Zug bereits fertig, gibt es nichts mehr zu stoppen.
+    }
+    chat.stop();
+    await reloadView({ syncMessages: true });
+  }
+  // Der Verzicht auf Unterlagen ist kein KI-Zug, sondern ein fester
+  // Zustandswechsel mit fester Rückfrage — deshalb kein Strom, kein „Denkt
+  // nach …", und der Composer steht sofort bereit.
+  async function skipDocuments() {
+    if (busy) return;
+    setError("");
+    try {
+      await api.skipChatDocuments(id, crypto.randomUUID());
+      await reloadView({ syncMessages: true });
+      requestAnimationFrame(() => composerRef.current?.focus());
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "Der Vorgang konnte nicht fortgesetzt werden.",
+      );
+    }
+  }
+  async function send(action: "message" | "analyze_documents") {
     if (busy) return;
     setError("");
     const content =
-      action === "skip_documents"
-        ? "Ich möchte ohne Unterlagen fortfahren."
-        : action === "analyze_documents"
-          ? "Bitte werten Sie die ausgewählten Unterlagen aus."
-          : text.trim();
+      action === "analyze_documents"
+        ? "Bitte werten Sie die ausgewählten Unterlagen aus."
+        : text.trim();
     if (!content) return;
     setText("");
     const sentMentions = mentions;
@@ -391,16 +434,16 @@ export function ProcessChatPage() {
           body: {
             action,
             selectedUploadIds:
-              action === "skip_documents"
-                ? []
-                : action === "analyze_documents"
-                  ? selected
-                  : turnUploadIds,
+              action === "analyze_documents"
+                ? (view?.uploads.map((upload) => upload.id) ?? [])
+                : turnUploadIds,
             mentions: sentMentions,
           },
         },
       );
-      if (action === "message") setTurnUploadIds([]);
+      // Auch die Schleuse verbraucht ihre Anhänge: Sie schickt ohnehin alle
+      // Uploads mit, im Composer darf danach kein Rest-Chip hängen bleiben.
+      setTurnUploadIds([]);
     } catch (reason) {
       setError(
         reason instanceof Error
@@ -408,6 +451,19 @@ export function ProcessChatPage() {
           : "Die Nachricht konnte nicht gesendet werden.",
       );
       throw reason;
+    }
+  }
+  async function uploadFile(file: File) {
+    try {
+      const upload = await api.upload(id, file);
+      setView((current) =>
+        current
+          ? { ...current, uploads: [...current.uploads, upload] }
+          : current,
+      );
+      setTurnUploadIds((current) => [...current, upload.id]);
+    } catch (reason) {
+      setError((reason as Error).message);
     }
   }
   async function confirm(override = false) {
@@ -436,6 +492,9 @@ export function ProcessChatPage() {
   // deshalb sofort; nur die datenabhängigen Flächen unten bekommen ein
   // Skelett, `view` bleibt bis dahin optional.
   const confirmed = view?.processState === "confirmed";
+  // Nach einem Neuladen kommt der Stand nicht mehr aus dem eigenen Strom,
+  // sondern aus dem laufenden Zug auf dem Server.
+  const activity = streamActivity ?? view?.activeTurn?.kind ?? null;
   const activityLabel = !busy
     ? null
     : activity === "reading_documents"
@@ -481,13 +540,11 @@ export function ProcessChatPage() {
           ? {
               processId: id,
               uploads: view.uploads,
-              selected,
-              onSelected: setSelected,
               busy,
               onChanged: () => reloadView({ syncMessages: false }),
               onPreview: setPreview,
               onAnalyze: () => send("analyze_documents"),
-              onSkip: () => send("skip_documents"),
+              onSkip: () => skipDocuments(),
             }
           : undefined
       }
@@ -513,6 +570,20 @@ export function ProcessChatPage() {
         upload={preview}
         onClose={() => setPreview(null)}
       />
+      {desktop && view && !confirmed && (
+        <DemoSidecar
+          processName={view.cover.processName}
+          // Solange die Unterlagen-Schleuse offen ist, hilft nur die
+          // Dokumentenliste; Antwortvorschläge kommen erst danach.
+          stage={view.state.documentGate === "pending" ? "documents" : "chat"}
+          uploadedFileNames={view.uploads.map((upload) => upload.name)}
+          onInsertText={(insertedText) => {
+            setText(insertedText);
+            requestAnimationFrame(() => composerRef.current?.focus());
+          }}
+          onUploadFile={uploadFile}
+        />
+      )}
       <AlertDialog open={Boolean(overrideData)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -764,23 +835,10 @@ export function ProcessChatPage() {
                     error={error}
                     composerRef={composerRef}
                     onSend={() => void send("message").catch(() => {})}
-                    onStop={() => void chat.stop()}
-                    onUpload={async (file) => {
-                      try {
-                        const upload = await api.upload(id, file);
-                        setView((current) =>
-                          current
-                            ? {
-                                ...current,
-                                uploads: [...current.uploads, upload],
-                              }
-                            : current,
-                        );
-                        setTurnUploadIds((current) => [...current, upload.id]);
-                      } catch (reason) {
-                        setError((reason as Error).message);
-                      }
-                    }}
+                    // Der Zug läuft im Server, nicht in dieser Verbindung:
+                    // Nur ein ausdrücklicher Stopp beendet ihn.
+                    onStop={() => void stopTurn()}
+                    onUpload={uploadFile}
                   />
                 </div>
               </div>

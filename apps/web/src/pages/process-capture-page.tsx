@@ -1,6 +1,7 @@
 import { AlertTriangle, ArrowLeft, RefreshCw } from "lucide-react";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { DemoSidecar } from "../components/demo-sidecar";
 import { ProcessBrief } from "../components/process-brief";
 import { ProcessValidationComment } from "../components/process-validation-comment";
 import {
@@ -35,7 +36,6 @@ export function ProcessCapturePage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [workCharacteristicSelections, setWorkCharacteristicSelections] =
     useState<Record<string, string[]>>({});
-  const [selectedUploadIds, setSelectedUploadIds] = useState<string[]>([]);
   const [invalidCharacteristicIds, setInvalidCharacteristicIds] = useState<
     Set<string>
   >(new Set());
@@ -78,7 +78,6 @@ export function ProcessCapturePage() {
         ]),
       ),
     );
-    setSelectedUploadIds(record.selectedUploadIds);
   }, [record]);
 
   const operation = operations.find((item) => item.processId === id);
@@ -128,8 +127,51 @@ export function ProcessCapturePage() {
         workCharacteristicSelections,
         record.workCharacteristicAnswers,
       ),
-      selectedUploadIds,
+      record.uploads.map((upload) => upload.id),
     );
+  }
+
+  async function uploadFile(file: File) {
+    if (!record) return;
+    try {
+      const upload = await api.upload(record.id, file);
+      setRecord((current) =>
+        current
+          ? { ...current, uploads: [...current.uploads, upload] }
+          : current,
+      );
+    } catch (reason) {
+      setError((reason as Error).message);
+    }
+  }
+
+  function fillForm(formular: {
+    antworten: Record<string, string>;
+    arbeitsmerkmale: Record<string, string[]>;
+  }) {
+    if (!record) return;
+    const topicIds = new Set<string>(
+      record.configSnapshot.topics.map((topic) => topic.id),
+    );
+    const characteristicIds = new Set<string>(
+      workCharacteristicDefinitions.map((definition) => definition.id),
+    );
+    setAnswers((current) => {
+      const next = { ...current };
+      for (const [topicId, text] of Object.entries(formular.antworten))
+        if (topicIds.has(topicId)) next[topicId] = text;
+      return next;
+    });
+    setWorkCharacteristicSelections((current) => {
+      const next = { ...current };
+      for (const [characteristicId, optionIds] of Object.entries(
+        formular.arbeitsmerkmale,
+      ))
+        if (characteristicIds.has(characteristicId))
+          next[characteristicId] = optionIds;
+      return next;
+    });
+    setInvalidCharacteristicIds(new Set());
   }
 
   async function submitMainAnswers(event: FormEvent) {
@@ -199,8 +241,19 @@ export function ProcessCapturePage() {
 
   if (!record) return <ProcessCapturePageSkeleton processId={id} />;
 
+  const editable =
+    record.state === "capture_in_progress" ||
+    record.state === "follow_up_required";
+
   return (
     <section className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+      {editable && (
+        <DemoSidecar
+          processName={record.cover.processName}
+          onUploadFile={uploadFile}
+          onFillForm={fillForm}
+        />
+      )}
       <Link
         className="inline-flex items-center gap-2 text-label text-primary hover:underline"
         to={`/processes/${id}`}
@@ -318,10 +371,8 @@ export function ProcessCapturePage() {
           <ProcessUploadPicker
             processId={record.id}
             uploads={record.uploads}
-            selectedIds={selectedUploadIds}
             disabled={locked}
             onUploadsChange={(uploads) => setRecord({ ...record, uploads })}
-            onSelectionChange={setSelectedUploadIds}
             onError={setError}
           />
           <Card className="gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">

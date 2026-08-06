@@ -56,6 +56,20 @@ async function uploadBlob(processId: string, uploadId: string) {
   return response.blob();
 }
 
+async function demoSzenarioDatei(slug: string, zielname: string) {
+  const response = await fetch(
+    `/api/demo/szenarien/${encodeURIComponent(slug)}/dateien/${encodeURIComponent(zielname)}`,
+  );
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(
+      (body as { error?: string }).error ??
+        "Die Datei konnte nicht geladen werden.",
+    );
+  }
+  return response.blob();
+}
+
 export const api = {
   publicSiteInformation: () =>
     req<PublicSiteInformation>("/public/site-information"),
@@ -148,20 +162,15 @@ export const api = {
   confirm: (id: string) =>
     req<ProcessCaptureRecord>(`/processes/${id}/confirm`, { method: "POST" }),
   chat: (id: string) => req<ChatView>(`/processes/${id}/chat`),
-  chatTurn: (
-    id: string,
-    value: {
-      id: string;
-      text: string;
-      action: "message" | "analyze_documents" | "skip_documents";
-      selectedUploadIds?: string[];
-      mentions?: import("./process-types").ChatMention[];
-    },
-  ) =>
-    req<ChatTurn>(`/processes/${id}/chat`, {
+  /** Verzicht auf Unterlagen: fester Zustandswechsel, kein KI-Zug. */
+  skipChatDocuments: (id: string, turnId: string) =>
+    req<{ duplicate: boolean }>(`/processes/${id}/chat/skip-documents`, {
       method: "POST",
-      body: JSON.stringify(value),
+      body: JSON.stringify({ id: turnId }),
     }),
+  /** Beendet den laufenden Zug serverseitig — er überlebt sonst jeden Reload. */
+  stopChatTurn: (id: string) =>
+    req<{ stopped: true }>(`/processes/${id}/chat/stop`, { method: "POST" }),
   confirmChat: (id: string, override: boolean) =>
     req<{
       record: ProcessCaptureRecord;
@@ -195,6 +204,34 @@ export const api = {
       `/opportunities/${processId}/retry`,
       { method: "POST" },
     ),
+  demoSzenarien: () => req<{ szenarien: DemoSzenario[] }>("/demo/szenarien"),
+  demoSzenarioDatei,
+};
+
+export type DemoSzenario = {
+  slug: string;
+  titel: string;
+  cover: {
+    department: string;
+    participantName: string;
+    participantEmail: string;
+    processName: string;
+  };
+  interactionMode: "chat" | "form";
+  dokumente: Array<{
+    quelle: string;
+    zielname: string;
+    format: "pdf" | "csv" | "txt" | "md";
+  }>;
+  zuege: Array<{
+    nummer: number;
+    antwort: string;
+    hinweis?: string;
+  }>;
+  formular?: {
+    antworten: Record<string, string>;
+    arbeitsmerkmale: Record<string, string[]>;
+  };
 };
 
 type ChatView = {
@@ -208,14 +245,11 @@ type ChatView = {
   understandingStatus: "missing" | "invalid" | "valid";
   confirmationQuality: "complete" | "with_gaps" | null;
   confirmationAllowed: boolean;
-};
-type ChatTurn = {
-  duplicate: boolean;
-  assistant?: import("./process-types").ChatTranscriptEvent;
-  understanding: {
-    status: "missing" | "invalid" | "valid";
-    revision?: string;
-    understanding: ProcessUnderstanding | null;
-  };
-  data: unknown[];
+  /** Läuft gerade ein Zug für diesen Prozess? Überlebt das Neuladen der Seite. */
+  activeTurn: {
+    turnId: string;
+    action: "message" | "analyze_documents";
+    kind: import("./process-types").ChatActivityKind | null;
+    startedAt: string;
+  } | null;
 };

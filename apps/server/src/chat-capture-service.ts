@@ -13,10 +13,15 @@ import { ProcessCaptureRepository } from "../../../packages/storage/src/process-
 
 export type { ChatUnderstandingEvent } from "../../../packages/domain/src/chat-capture.ts";
 
+/** Feste Texte des Unterlagen-Verzichts — kein Modell beteiligt. */
+const skipDocumentsUserText = "Ich möchte ohne Unterlagen fortfahren.";
+const skipDocumentsAssistantText =
+  "In Ordnung, dann halten wir den Ablauf allein im Gespräch fest. Beschreiben Sie ihn mir bitte so genau wie möglich: Was löst den Vorgang aus, welche Schritte folgen in welcher Reihenfolge, wer ist jeweils beteiligt, welche Systeme und Unterlagen nutzen Sie dabei, an welchen Stellen wird entschieden und womit endet der Vorgang? Fangen Sie ruhig beim ersten Schritt an — Details ergänzen wir gemeinsam.";
+
 export type ActiveChatTurn = {
   duplicate: false;
   requestId: string;
-  action: "message" | "analyze_documents" | "skip_documents";
+  action: "message" | "analyze_documents";
   record: ProcessCaptureRecord;
   previousSessionId: string;
   replacementCandidateId: string | null;
@@ -56,6 +61,52 @@ export class ChatCaptureService {
     };
   }
 
+  /**
+   * Verzicht auf Unterlagen. Bewusst kein KI-Zug: Die Schleuse wechselt auf
+   * „skipped" und der Assistent stellt eine feste, ausführliche Rückfrage.
+   * Damit steht der Composer sofort bereit, statt auf ein Modell zu warten,
+   * und es entsteht keine Claude-Sitzung ohne fachlichen Inhalt.
+   * Mehrfache Aufrufe mit derselben `turnId` bleiben folgenlos.
+   */
+  async skipDocuments(id: string, turnId: string) {
+    const record = await this.processes.required(id);
+    if (record.interactionMode !== "chat" || record.state === "confirmed")
+      throw new Error("Der Chat ist für diesen Prozess nicht verfügbar.");
+    const state = await this.chats.state(id);
+    if (state.documentGate !== "pending")
+      throw new Error("Der Umgang mit Unterlagen wurde bereits festgelegt.");
+    const now = new Date().toISOString();
+    const saved = await this.chats.append(id, {
+      schemaVersion: 1,
+      id: turnId,
+      turnId,
+      at: now,
+      role: "user",
+      status: "complete",
+      text: skipDocumentsUserText,
+      mentions: [],
+      action: "skip_documents",
+    });
+    if (!saved) return { duplicate: true as const };
+    await this.chats.updateState(id, {
+      documentGate: "skipped",
+      selectedUploadIds: [],
+      lastTurnOutcome: "completed",
+    });
+    await this.chats.append(id, {
+      schemaVersion: 1,
+      id: crypto.randomUUID(),
+      turnId,
+      at: new Date().toISOString(),
+      role: "assistant",
+      status: "complete",
+      text: skipDocumentsAssistantText,
+      mentions: [],
+      action: "skip_documents",
+    });
+    return { duplicate: false as const };
+  }
+
   async startTurn(
     id: string,
     input: unknown,
@@ -77,15 +128,12 @@ export class ChatCaptureService {
         ))
     )
       throw new Error("Bitte wählen Sie mindestens eine eigene Datei aus.");
-    if (request.action === "skip_documents" && request.selectedUploadIds.length)
-      throw new Error("Ohne Unterlagen darf keine Datei ausgewählt sein.");
-
-    if (state.documentGate === "pending" && request.action !== "message")
+    if (
+      state.documentGate === "pending" &&
+      request.action === "analyze_documents"
+    )
       await this.chats.updateState(id, {
-        documentGate:
-          request.action === "analyze_documents"
-            ? "documents_selected"
-            : "skipped",
+        documentGate: "documents_selected",
         selectedUploadIds: request.selectedUploadIds,
       });
     const saved = await this.chats.append(id, {
@@ -137,11 +185,9 @@ export class ChatCaptureService {
           .join("\n")}`
       : "";
     const actionInstruction =
-      request.action === "skip_documents"
-        ? "Es gibt keine Unterlagen. Bitte erstellen Sie zunächst den bestmöglichen Stand und fragen Sie kompakt nach normaler Reihenfolge, Auslöser, Ergebnis, Beteiligten, Systemen/Unterlagen und wichtigen Entscheidungen."
-        : request.action === "analyze_documents"
-          ? "Werten Sie die ausgewählten Unterlagen aus, schreiben Sie vor Ihrer Antwort den bestgestützten vollständigen Stand und fragen Sie nur die wichtigste offene Frage."
-          : "Übernehmen Sie die Nutzeraussage in den vollständigen Stand, aktualisieren Sie die Datei und fragen Sie höchstens die wichtigste verbleibende Frage.";
+      request.action === "analyze_documents"
+        ? "Werten Sie die ausgewählten Unterlagen aus, schreiben Sie vor Ihrer Antwort den bestgestützten vollständigen Stand und fragen Sie nur die wichtigste offene Frage."
+        : "Übernehmen Sie die Nutzeraussage in den vollständigen Stand, aktualisieren Sie die Datei und fragen Sie höchstens die wichtigste verbleibende Frage.";
     const replacementCandidateId = session.replacementCandidateId;
     const activeSessionId = replacementCandidateId ?? session.activeSessionId;
     const recoveryContext = replacementCandidateId

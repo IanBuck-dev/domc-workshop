@@ -12,7 +12,9 @@ export default defineConfig({
   server: {
     host: "127.0.0.1",
     port: 5173,
-    proxy: { "/api": "http://127.0.0.1:3210" },
+    proxy: {
+      "/api": process.env.VITE_API_PROXY_TARGET ?? "http://127.0.0.1:3210",
+    },
   },
   build: { outDir: "../../dist/web", emptyOutDir: true },
 });

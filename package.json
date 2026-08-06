@@ -16,7 +16,8 @@
     "format": "prettier --check .",
     "format:write": "prettier --write .",
     "test": "bun test",
-    "icons": "bun run scripts/generate-icons.ts"
+    "icons": "bun run scripts/generate-icons.ts",
+    "seed": "bun run scripts/seed-demo-process.ts"
   },
   "dependencies": {
     "@ai-sdk/react": "4.0.51",

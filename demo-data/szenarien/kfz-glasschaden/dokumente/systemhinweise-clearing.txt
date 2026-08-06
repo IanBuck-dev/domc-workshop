@@ -1,0 +1,55 @@
+Interne Notizen Team Kfz-Sachschaden - Clearing-Schnittstelle Glasschaden
+(fortlaufend ergänzt, zuletzt Juni 2026 - bei Bedarf einfach unten dranhängen)
+
+--- Grundsätzliches ---
+Clearing = die automatische Direktabrechnung mit den Partnerwerkstätten.
+Läuft eigentlich zuverlässig, ca. 70% aller Glasschadenfälle gehen komplett
+daran vorbei bei uns, d.h. wir sehen die gar nicht in der Bearbeitung, nur
+im Reporting hinterher. Gut so, spart uns massig Zeit.
+
+--- Bekannte Stolperfallen ---
+
+1. Werkstatt ist im Prinzip Partner, aber Kennzeichen im Clearing fehlt
+   -> kommt dann trotzdem als "manueller Fall" bei uns an, obwohl es eigentlich
+   automatisch hätte laufen sollen. Passiert öfter bei neuen Werkstätten,
+   die frisch angebunden wurden. Einfach normal wie ohne Partnerwerkstatt
+   bearbeiten, nicht versuchen das nachträglich zu clearen, dauert ewig.
+
+2. Fehlercode CLR-409 ("Duplicate Reference") - kommt wenn die Werkstatt
+   dieselbe Rechnung zweimal eingereicht hat, meistens weil die erste
+   Übertragung ohne Rückmeldung blieb und die dann nochmal geschickt haben.
+   NICHT die zweite einfach ablehnen, erst prüfen ob die erste überhaupt
+   bei uns angekommen ist (Status in KOMPASS checken).
+
+3. Fehlercode CLR-502 - das ist einfach die Schnittstelle die gerade
+   nicht erreichbar ist. Meistens nachts/früh morgens, löst sich von
+   selbst innerhalb von 1-2 Stunden. Nicht direkt eskalieren, erstmal
+   30 Min warten und nochmal schauen.
+
+4. Beträge über 1.200 EUR gehen NICHT automatisch durchs Clearing, auch
+   wenn Partnerwerkstatt - die landen absichtlich bei uns zur manuellen
+   Prüfung. Ist so eingestellt, kein Fehler.
+
+5. Leasingfälle werden vom Clearing nicht erkannt (das System weiß nicht
+   wer least), die kommen also fast immer manuell rein, auch wenn
+   Partnerwerkstatt. Bankverbindung dann in VERA nachschauen, nicht
+   einfach die vom Kunden nehmen.
+
+--- Ansprechpartner IT ---
+Bei technischen Problemen mit der Schnittstelle (nicht bei fachlichen
+Fragen!) an die IT-Betriebsgruppe Schadensysteme wenden, die betreuen
+das Clearing mit. Am besten über den normalen Support-Weg, bei
+"dringend" auch direkt anrufen.
+
+--- Sonstiges ---
+Werkstattliste (welche Werkstatt ist Partner) liegt in PARTO, nicht in
+KOMPASS - falls jemand mal sucht wo das steht.
+
+Wenn eine Werkstatt öfter komische Rechnungen schickt (Stundensätze
+deutlich zu hoch o.ä.), bitte kurz Bescheid sagen, das sammeln wir
+für die nächste Vertragsverhandlung mit den Partnern.
+
+Alte Notiz von Anfang des Jahres, evtl. nicht mehr aktuell: es gab wohl
+mal Testfälle im System, die sollten eigentlich raus sein - falls
+irgendwo ein Fall mit komischer Schadennummer auftaucht bitte nicht
+wundern und einfach ignorieren bzw. der Teamleitung melden.

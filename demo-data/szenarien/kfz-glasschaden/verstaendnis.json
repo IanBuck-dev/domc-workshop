@@ -1,0 +1,463 @@
+{
+  "schemaVersion": 2,
+  "purpose": {
+    "value": "Regulierung von Kfz-Glasschäden (Windschutzscheibe, Seiten- und Heckscheiben, Glasschiebedächer), die nicht bereits automatisiert über die Clearing-Schnittstelle mit Partnerwerkstätten direktabgerechnet werden.",
+    "provenance": "user_stated",
+    "evidenceIds": ["ev-chat-1", "ev-doc-aa-1"],
+    "confidence": 90,
+    "assumptions": [],
+    "confirmed": true
+  },
+  "trigger": {
+    "value": "Eine Schadenmeldung ohne Partnerwerkstatt oder eine Werkstattrechnung, für die die Clearing-Schnittstelle nicht gegriffen hat, geht bei der Sachbearbeitung Kfz-Sachschaden ein.",
+    "provenance": "user_stated",
+    "evidenceIds": ["ev-chat-1", "ev-doc-aa-1"],
+    "confidence": 88,
+    "assumptions": [],
+    "confirmed": true
+  },
+  "outcome": {
+    "value": "Der regulierte Betrag ist ausgezahlt (an die versicherte Person oder bei Leasing an die Leasinggesellschaft), Rechnung und Prüfvermerk sind in AKTE abgelegt, der Vorgang steht in KOMPASS auf 'Reguliert'.",
+    "provenance": "user_stated",
+    "evidenceIds": ["ev-chat-3", "ev-doc-aa-1"],
+    "confidence": 90,
+    "assumptions": [],
+    "confirmed": true
+  },
+  "boundaries": {
+    "value": "Beginnt mit der manuellen Bearbeitung eines Falls ohne funktionierendes Clearing und endet mit der Ablage in AKTE und dem Statuswechsel in KOMPASS. Die automatisierte Direktabrechnung über die Clearing-Schnittstelle selbst ist nicht Teil dieses Prozesses.",
+    "provenance": "user_stated",
+    "evidenceIds": ["ev-chat-1"],
+    "confidence": 85,
+    "assumptions": [],
+    "confirmed": true
+  },
+  "participants": {
+    "value": [
+      "Sachbearbeitung Kfz-Sachschaden (Edda Brandt)",
+      "Teamleitung Kfz-Sachschaden (bei ungewöhnlich hohen Summen)",
+      "IT-Betriebsgruppe Schadensysteme (bei Clearing-Störungen)",
+      "Vertragsabteilung (bei unklaren Deckungsfragen)"
+    ],
+    "provenance": "user_stated",
+    "evidenceIds": ["ev-chat-9", "ev-doc-aa-1"],
+    "confidence": 82,
+    "assumptions": [],
+    "confirmed": true
+  },
+  "informationSources": {
+    "value": [
+      "Schadenmeldung mit Kennzeichen, Schadendatum und Art des Glasschadens",
+      "Vertrags- und Deckungsdaten",
+      "Werkstattrechnung oder Kostenvoranschlag, teils als Foto oder Scan",
+      "Werkstattstammdaten zur Partnerzuordnung"
+    ],
+    "provenance": "user_stated",
+    "evidenceIds": ["ev-chat-4", "ev-doc-aa-1"],
+    "confidence": 85,
+    "assumptions": [],
+    "confirmed": true
+  },
+  "systems": {
+    "value": ["KOMPASS", "VERA", "SAP FI", "AKTE", "PARTO"],
+    "provenance": "user_stated",
+    "evidenceIds": ["ev-chat-4", "ev-doc-aa-1"],
+    "confidence": 92,
+    "assumptions": [],
+    "confirmed": true
+  },
+  "decisions": {
+    "value": [
+      "Besteht Kaskoschutz mit Glaseinschluss und war der Vertrag zum Schadendatum aktiv?",
+      "Ist die Werkstattrechnung plausibel oder muss bei der Werkstatt nachgefragt werden?",
+      "Geht die Auszahlung an die versicherte Person oder, bei Leasing, an die Leasinggesellschaft?"
+    ],
+    "provenance": "user_stated",
+    "evidenceIds": ["ev-chat-5", "ev-doc-aa-1"],
+    "confidence": 88,
+    "assumptions": [],
+    "confirmed": true
+  },
+  "controls": {
+    "value": [
+      "Deckungsprüfung gegen die Vertragsdaten in VERA vor jeder Zahlung",
+      "Plausibilitätsprüfung der Rechnung gegen Referenzwerte",
+      "Informelle Eskalation an die Teamleitung bei ungewöhnlich hohen Summen",
+      "Ab dem dritten Glasschaden am selben Fahrzeug im Kalenderjahr Hinweis an die Betrugsprävention"
+    ],
+    "provenance": "user_stated",
+    "evidenceIds": ["ev-chat-5", "ev-chat-9", "ev-doc-aa-1"],
+    "confidence": 80,
+    "assumptions": [],
+    "confirmed": true
+  },
+  "handoffs": {
+    "value": [
+      "Bei unklaren Deckungsfragen Eskalation an die Vertragsabteilung",
+      "Bei technischen Clearing-Problemen Weiterleitung an die IT-Betriebsgruppe Schadensysteme"
+    ],
+    "provenance": "user_stated",
+    "evidenceIds": ["ev-doc-aa-1"],
+    "confidence": 75,
+    "assumptions": [],
+    "confirmed": true
+  },
+  "volumeAndTime": {
+    "value": [
+      "Ca. 90 Glasschadenfälle pro Woche insgesamt, davon ca. 70 % Direktabrechnung über Clearing",
+      "Ca. 25-30 manuelle Fälle pro Woche bei der Sachbearbeitung",
+      "Bearbeitungsdauer ca. 15-20 Minuten je manuellem Fall ohne Rückfrage"
+    ],
+    "provenance": "user_stated",
+    "evidenceIds": ["ev-chat-6"],
+    "confidence": 78,
+    "assumptions": [],
+    "confirmed": true
+  },
+  "painPoints": {
+    "value": [
+      "Nachfragen bei Werkstätten bei nicht plausiblen Rechnungen, ca. jeder zehnte Fall",
+      "Fälle, die eigentlich automatisch über Clearing hätten laufen sollen, landen wegen fehlender Kennzeichnung trotzdem manuell bei der Sachbearbeitung"
+    ],
+    "provenance": "user_stated",
+    "evidenceIds": ["ev-chat-7"],
+    "confidence": 82,
+    "assumptions": [],
+    "confirmed": true
+  },
+  "improvementGoals": {
+    "value": [
+      "Zuverlässigere automatische Erkennung, ob eine Werkstatt Partner ist, damit weniger Fälle fälschlich manuell ankommen"
+    ],
+    "provenance": "user_stated",
+    "evidenceIds": ["ev-chat-7"],
+    "confidence": 70,
+    "assumptions": [],
+    "confirmed": true
+  },
+  "evidence": [
+    {
+      "id": "ev-chat-1",
+      "kind": "chat_message",
+      "sourceId": "8f14e45f-ceea-4d1e-8b2a-000000000001",
+      "excerpt": "Ich mach die Kfz-Glasschäden, also Scheiben und Schiebedächer. Das meiste läuft eh übers Clearing, da fass ich nichts an - ich krieg nur die Fälle, wo keine Partnerwerkstatt dran ist oder wo das Clearing aus irgendeinem Grund nicht gegriffen hat."
+    },
+    {
+      "id": "ev-chat-2",
+      "kind": "chat_message",
+      "sourceId": "8f14e45f-ceea-4d1e-8b2a-000000000002",
+      "excerpt": "Zuerst leg ich den Schaden in KOMPASS an, falls noch nicht passiert. Dann guck ich in VERA nach, ob überhaupt Kasko mit Glasschutz besteht und der Vertrag am Schadentag gelaufen ist. Kein Einschluss oder Vertrag nicht aktiv - dann ist der Fall erledigt, wird abgelehnt."
+    },
+    {
+      "id": "ev-chat-3",
+      "kind": "chat_message",
+      "sourceId": "8f14e45f-ceea-4d1e-8b2a-000000000003",
+      "excerpt": "Zieh ich die 150 Euro Selbstbeteiligung ab und stoß die Zahlung über SAP FI an. Zum Schluss kommt alles in die AKTE und der Vorgang ist durch."
+    },
+    {
+      "id": "ev-chat-4",
+      "kind": "chat_message",
+      "sourceId": "8f14e45f-ceea-4d1e-8b2a-000000000004",
+      "excerpt": "Systeme sind KOMPASS für den Schaden selbst, VERA für die Vertragsdaten, SAP FI für die Zahlung und AKTE für die Ablage. Wer Partnerwerkstatt ist, steht in PARTO."
+    },
+    {
+      "id": "ev-chat-5",
+      "kind": "chat_message",
+      "sourceId": "8f14e45f-ceea-4d1e-8b2a-000000000005",
+      "excerpt": "Die wichtigste Entscheidung ist die Deckung - besteht Versicherungsschutz oder nicht. Danach ob die Rechnung plausibel ist oder ob ich bei der Werkstatt nachfrage."
+    },
+    {
+      "id": "ev-chat-6",
+      "kind": "chat_message",
+      "sourceId": "8f14e45f-ceea-4d1e-8b2a-000000000006",
+      "excerpt": "Bei mir landen vielleicht 25 bis 30 Fälle die Woche, der Rest - also so 60, 70 Prozent - läuft automatisch über Clearing. Ein Fall dauert bei mir meistens 15, 20 Minuten."
+    },
+    {
+      "id": "ev-chat-7",
+      "kind": "chat_message",
+      "sourceId": "8f14e45f-ceea-4d1e-8b2a-000000000007",
+      "excerpt": "Am meisten Zeit frisst das Nachfragen bei Werkstätten. Und die Fälle, die eigentlich Partnerwerkstatt wären, aber trotzdem bei mir landen, weil im Clearing was fehlt - das nervt am meisten."
+    },
+    {
+      "id": "ev-chat-8",
+      "kind": "chat_message",
+      "sourceId": "8f14e45f-ceea-4d1e-8b2a-000000000008",
+      "excerpt": "Bei Oldtimern brauch ich vorher ein kurzes Gutachten. Und bei Leasingfahrzeugen zahl ich nicht an den Kunden, sondern an die Leasinggesellschaft, und muss vorher deren Kontodaten in VERA checken."
+    },
+    {
+      "id": "ev-chat-9",
+      "kind": "chat_message",
+      "sourceId": "8f14e45f-ceea-4d1e-8b2a-000000000009",
+      "excerpt": "Das mach ich komplett allein, außer die Summe ist wirklich ungewöhnlich hoch, dann frag ich schon mal die Teamleitung."
+    },
+    {
+      "id": "ev-doc-aa-1",
+      "kind": "upload",
+      "sourceId": "11111111-1111-4111-8111-111111111101",
+      "excerpt": "Es wird geprüft, ob die Werkstatt an das Direktabrechnungsverfahren ('Clearing') angeschlossen ist ... Ist keine Partnerwerkstatt beteiligt oder liegt eine Werkstattrechnung ohne Clearing-Kennzeichen vor, erfolgt die Bearbeitung manuell gemäß 3.3 bis 3.6."
+    },
+    {
+      "id": "ev-doc-csv-1",
+      "kind": "upload",
+      "sourceId": "11111111-1111-4111-8111-111111111102",
+      "excerpt": "Spalte 'Direktabrechnung' unterscheidet je Fall zwischen automatischer Clearing-Abrechnung und manueller Bearbeitung; Beträge liegen überwiegend zwischen 150 und 1.400 Euro."
+    },
+    {
+      "id": "ev-doc-txt-1",
+      "kind": "upload",
+      "sourceId": "11111111-1111-4111-8111-111111111103",
+      "excerpt": "Werkstatt ist im Prinzip Partner, aber Kennzeichen im Clearing fehlt -> kommt dann trotzdem als 'manueller Fall' bei uns an, obwohl es eigentlich automatisch hätte laufen sollen."
+    }
+  ],
+  "documentCoverage": [
+    {
+      "uploadId": "11111111-1111-4111-8111-111111111101",
+      "name": "Arbeitsanweisung_Glasschaden_Kfz.pdf",
+      "status": "complete",
+      "processedCharacters": 4200,
+      "limitation": null
+    },
+    {
+      "uploadId": "11111111-1111-4111-8111-111111111102",
+      "name": "Fallliste_Glasschaden_Juli.csv",
+      "status": "complete",
+      "processedCharacters": 1800,
+      "limitation": null
+    },
+    {
+      "uploadId": "11111111-1111-4111-8111-111111111103",
+      "name": "Systemhinweise_Clearing.txt",
+      "status": "complete",
+      "processedCharacters": 2600,
+      "limitation": null
+    }
+  ],
+  "knowledgeGaps": [
+    "Genaue Referenzwerte, gegen die Stundensätze und Materialkosten bei der Rechnungsprüfung abgeglichen werden, sind nicht dokumentiert.",
+    "Ab welcher Schadenhöhe eine Summe als 'ungewöhnlich hoch' gilt und die Teamleitung informell einbezogen wird, ist nicht beziffert."
+  ],
+  "conflicts": [],
+  "steps": [
+    {
+      "id": "step-1",
+      "order": 1,
+      "name": "Schadenmeldung erfassen",
+      "activity": "Eingehende Meldung per Partnerportal, Telefon oder E-Mail unter einer neuen Schadennummer in KOMPASS erfassen, mit Kennzeichen, Schadendatum, Art des Glasschadens und, sofern bekannt, der reparierenden Werkstatt.",
+      "inputs": ["Schadenmeldung (Partnerportal, Telefon oder E-Mail)"],
+      "outputs": ["Angelegter Schadenvorgang in KOMPASS"],
+      "informationItems": [
+        {
+          "id": "step-1-info-1",
+          "name": "Kennzeichen, Schadendatum, Art des Glasschadens, ggf. Werkstatt",
+          "source": "Schadenmeldung",
+          "type": "free_text",
+          "typeDetail": null
+        }
+      ],
+      "decisions": [],
+      "miscellaneous": "Fälle mit angeschlossener Partnerwerkstatt und funktionierendem Clearing-Kennzeichen laufen an dieser Stelle nicht manuell weiter, sondern automatisiert über die Clearing-Schnittstelle direkt zur Zahlung.",
+      "provenance": "user_stated",
+      "evidenceIds": ["ev-chat-1", "ev-doc-aa-1"],
+      "confidence": 88,
+      "assumptions": [],
+      "confirmed": true
+    },
+    {
+      "id": "step-2",
+      "order": 2,
+      "name": "Deckung prüfen",
+      "activity": "Anhand der Vertragsdaten in VERA prüfen, ob eine Kaskoversicherung mit Einschluss von Glasschäden besteht und der Vertrag zum Schadendatum aktiv war.",
+      "inputs": [
+        "Angelegter Schadenvorgang in KOMPASS",
+        "Vertragsdaten in VERA"
+      ],
+      "outputs": ["Deckungsentscheidung (Zusage oder Ablehnung)"],
+      "informationItems": [
+        {
+          "id": "step-2-info-1",
+          "name": "Kaskoeinschluss Glasschaden und Vertragsstatus zum Schadendatum",
+          "source": "VERA",
+          "type": "system_field",
+          "typeDetail": null
+        }
+      ],
+      "decisions": [
+        {
+          "id": "step-2-dec-1",
+          "question": "Besteht Kaskoschutz mit Glaseinschluss und war der Vertrag zum Schadendatum aktiv?",
+          "mode": "rule_based",
+          "options": [
+            {
+              "id": "step-2-dec-1-opt-1",
+              "label": "Ja - Deckung besteht",
+              "determination": "Einschluss vorhanden und Vertrag zum Schadendatum aktiv.",
+              "consequence": "Vorgang wird weiterbearbeitet.",
+              "nextStepId": "step-3"
+            },
+            {
+              "id": "step-2-dec-1-opt-2",
+              "label": "Nein - keine Deckung",
+              "determination": "Kein Einschluss oder Vertrag zum Schadendatum nicht aktiv.",
+              "consequence": "Vorgang wird abgelehnt und die Ablehnung im KOMPASS-Vorgang dokumentiert.",
+              "nextStepId": null
+            }
+          ]
+        }
+      ],
+      "miscellaneous": "Bei unklaren Deckungsfragen erfolgt eine Eskalation an die Vertragsabteilung.",
+      "provenance": "user_stated",
+      "evidenceIds": ["ev-chat-2", "ev-doc-aa-1"],
+      "confidence": 85,
+      "assumptions": [],
+      "confirmed": true
+    },
+    {
+      "id": "step-3",
+      "order": 3,
+      "name": "Rechnung prüfen",
+      "activity": "Die eingereichte Werkstattrechnung oder den Kostenvoranschlag auf Plausibilität prüfen: Leistungsumfang, Materialkosten und Stundensätze gegen Referenzwerte abgleichen.",
+      "inputs": ["Werkstattrechnung oder Kostenvoranschlag"],
+      "outputs": ["Geprüfte, freigegebene Rechnung"],
+      "informationItems": [
+        {
+          "id": "step-3-info-1",
+          "name": "Werkstattrechnung oder Kostenvoranschlag",
+          "source": "Werkstatt",
+          "type": "image_or_scan",
+          "typeDetail": null
+        }
+      ],
+      "decisions": [
+        {
+          "id": "step-3-dec-1",
+          "question": "Ist die Rechnung plausibel oder muss bei der Werkstatt nachgefragt werden?",
+          "mode": "professional_judgement",
+          "options": [
+            {
+              "id": "step-3-dec-1-opt-1",
+              "label": "Plausibel",
+              "determination": null,
+              "consequence": "Rechnung wird freigegeben, Bearbeitung geht weiter.",
+              "nextStepId": "step-4"
+            },
+            {
+              "id": "step-3-dec-1-opt-2",
+              "label": "Nicht plausibel",
+              "determination": null,
+              "consequence": "Rückfrage bei der Werkstatt, Bearbeitung verzögert sich.",
+              "nextStepId": "step-3"
+            }
+          ]
+        }
+      ],
+      "miscellaneous": "Bei Oldtimern (Erstzulassung vor mehr als 30 Jahren) wird vor der Freigabe zusätzlich ein kurzes Gutachten zum Zeitwert bzw. zur fachgerechten Verglasung eingeholt.",
+      "provenance": "user_stated",
+      "evidenceIds": ["ev-chat-3", "ev-chat-7", "ev-chat-8", "ev-doc-aa-1"],
+      "confidence": 82,
+      "assumptions": [],
+      "confirmed": true
+    },
+    {
+      "id": "step-4",
+      "order": 4,
+      "name": "Selbstbeteiligung berechnen",
+      "activity": "Von der geprüften Rechnungssumme die vertraglich vereinbarte Selbstbeteiligung für Glasschäden in Höhe von 150 Euro abziehen und den Auszahlungsbetrag ermitteln.",
+      "inputs": ["Geprüfte, freigegebene Rechnung"],
+      "outputs": ["Ermittelter Auszahlungsbetrag"],
+      "informationItems": [],
+      "decisions": [],
+      "miscellaneous": "Selbstbeteiligung Glasschaden Kfz: 150 Euro.",
+      "provenance": "user_stated",
+      "evidenceIds": ["ev-chat-3", "ev-doc-aa-1"],
+      "confidence": 90,
+      "assumptions": [],
+      "confirmed": true
+    },
+    {
+      "id": "step-5",
+      "order": 5,
+      "name": "Auszahlung anstoßen",
+      "activity": "Den ermittelten Betrag über SAP FI zur Auszahlung anweisen. Bei Leasingfahrzeugen erfolgt die Auszahlung abweichend an die im Vertrag hinterlegte Leasinggesellschaft.",
+      "inputs": ["Ermittelter Auszahlungsbetrag"],
+      "outputs": ["Ausgelöste Zahlungsanweisung in SAP FI"],
+      "informationItems": [
+        {
+          "id": "step-5-info-1",
+          "name": "Bankverbindung der versicherten Person bzw. der Leasinggesellschaft",
+          "source": "VERA",
+          "type": "system_field",
+          "typeDetail": null
+        }
+      ],
+      "decisions": [
+        {
+          "id": "step-5-dec-1",
+          "question": "Geht die Auszahlung an die versicherte Person oder an die Leasinggesellschaft?",
+          "mode": "rule_based",
+          "options": [
+            {
+              "id": "step-5-dec-1-opt-1",
+              "label": "Versicherte Person",
+              "determination": "Fahrzeug ist nicht geleast.",
+              "consequence": "Auszahlung an die im Vertrag hinterlegte Bankverbindung der versicherten Person.",
+              "nextStepId": "step-6"
+            },
+            {
+              "id": "step-5-dec-1-opt-2",
+              "label": "Leasinggesellschaft",
+              "determination": "Fahrzeug ist geleast.",
+              "consequence": "Auszahlung an die zuvor in VERA verifizierte Bankverbindung der Leasinggesellschaft.",
+              "nextStepId": "step-6"
+            }
+          ]
+        }
+      ],
+      "miscellaneous": null,
+      "provenance": "user_stated",
+      "evidenceIds": ["ev-chat-3", "ev-chat-8", "ev-doc-aa-1"],
+      "confidence": 85,
+      "assumptions": [],
+      "confirmed": true
+    },
+    {
+      "id": "step-6",
+      "order": 6,
+      "name": "Unterlagen ablegen",
+      "activity": "Rechnung, Prüfvermerk und Zahlungsbestätigung im Dokumentenmanagementsystem AKTE unter der Schadennummer ablegen.",
+      "inputs": ["Rechnung", "Prüfvermerk", "Zahlungsbestätigung"],
+      "outputs": ["Vollständige Vorgangsablage in AKTE"],
+      "informationItems": [
+        {
+          "id": "step-6-info-1",
+          "name": "Rechnung, Prüfvermerk, Zahlungsbestätigung",
+          "source": "AKTE",
+          "type": "document",
+          "typeDetail": null
+        }
+      ],
+      "decisions": [],
+      "miscellaneous": null,
+      "provenance": "user_stated",
+      "evidenceIds": ["ev-chat-3", "ev-doc-aa-1"],
+      "confidence": 88,
+      "assumptions": [],
+      "confirmed": true
+    },
+    {
+      "id": "step-7",
+      "order": 7,
+      "name": "Vorgang abschließen",
+      "activity": "Den KOMPASS-Vorgang auf den Status 'Reguliert' setzen. Bei mehr als zwei Glasschäden am selben Fahrzeug im laufenden Kalenderjahr zusätzlich einen Hinweis an die Betrugsprävention erfassen.",
+      "inputs": ["Vollständige Vorgangsablage in AKTE"],
+      "outputs": ["Abgeschlossener Vorgang in KOMPASS"],
+      "informationItems": [],
+      "decisions": [],
+      "miscellaneous": "Ab dem dritten Glasschaden im Kalenderjahr am selben Fahrzeug wird ein Hinweis an die Betrugsprävention erfasst; die Regulierung selbst verzögert sich dadurch nicht.",
+      "provenance": "user_stated",
+      "evidenceIds": ["ev-chat-3", "ev-doc-aa-1"],
+      "confidence": 85,
+      "assumptions": [],
+      "confirmed": true
+    }
+  ]
+}

@@ -4,24 +4,19 @@ import { api } from "../lib/api-client";
 import type { ProcessCaptureRecord, UploadRecord } from "../lib/process-types";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Checkbox } from "./ui/checkbox";
 import { Spinner } from "./ui/spinner";
 
 export function ProcessUploadPicker({
   processId,
   uploads,
-  selectedIds,
   disabled,
   onUploadsChange,
-  onSelectionChange,
   onError,
 }: {
   processId: string;
   uploads: UploadRecord[];
-  selectedIds: string[];
   disabled?: boolean;
   onUploadsChange: (uploads: UploadRecord[]) => void;
-  onSelectionChange: (ids: string[]) => void;
   onError: (message: string) => void;
 }) {
   const input = useRef<HTMLInputElement>(null);
@@ -34,7 +29,6 @@ export function ProcessUploadPicker({
     try {
       const upload = await api.upload(processId, file);
       onUploadsChange([...uploads, upload]);
-      onSelectionChange([...selectedIds, upload.id]);
     } catch (error) {
       onError((error as Error).message);
     } finally {
@@ -49,7 +43,6 @@ export function ProcessUploadPicker({
     try {
       await api.removeUpload(processId, upload.id);
       onUploadsChange(uploads.filter((item) => item.id !== upload.id));
-      onSelectionChange(selectedIds.filter((id) => id !== upload.id));
     } catch (error) {
       onError((error as Error).message);
     } finally {
@@ -70,26 +63,14 @@ export function ProcessUploadPicker({
       </CardHeader>
       <CardContent className="space-y-4 px-5 sm:px-6">
         <p className="text-ui text-muted-foreground">
-          Gute, aktuelle Unterlagen helfen beim Einordnen. Wählen Sie aus,
-          welche Dateien für diese Prozessaufnahme berücksichtigt werden sollen.
+          Gute, aktuelle Unterlagen helfen beim Einordnen. Alle hinzugefügten
+          Unterlagen werden bei dieser Prozessaufnahme berücksichtigt.
         </p>
         {uploads.length > 0 && (
           <ul className="divide-y rounded-lg border border-border">
             {uploads.map((upload) => (
               <li key={upload.id} className="flex items-center gap-3 p-3">
-                <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
-                  <Checkbox
-                    name={`upload-${upload.id}-selected`}
-                    checked={selectedIds.includes(upload.id)}
-                    disabled={disabled || busy}
-                    onCheckedChange={(checked) =>
-                      onSelectionChange(
-                        checked === true
-                          ? [...selectedIds, upload.id]
-                          : selectedIds.filter((id) => id !== upload.id),
-                      )
-                    }
-                  />
+                <div className="flex min-w-0 flex-1 items-center gap-3">
                   <FileText className="size-5 shrink-0 text-primary" />
                   <span className="min-w-0">
                     <b className="block truncate text-ui">{upload.name}</b>
@@ -97,7 +78,7 @@ export function ProcessUploadPicker({
                       {formatBytes(upload.size)}
                     </small>
                   </span>
-                </label>
+                </div>
                 <Button
                   type="button"
                   variant="ghost"
