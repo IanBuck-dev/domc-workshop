@@ -13,9 +13,20 @@ import {
   type NodeProps,
   type ReactFlowInstance,
 } from "@xyflow/react";
-import { MessageCircle } from "lucide-react";
+import { Info, MessageCircle } from "lucide-react";
 import type { ChatMention, ProcessUnderstanding } from "../lib/process-types";
 import type { ChatMentionTarget } from "./chat-mention";
+import { ProcessStepDetails } from "./process-step-details";
+import { Button } from "./ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
 import { Skeleton } from "./ui/skeleton";
 
 export function ProcessFlowDiagramSkeleton({
@@ -31,7 +42,7 @@ export function ProcessFlowDiagramSkeleton({
       aria-label="Prozessbild wird geladen"
     >
       <span className="sr-only">Prozessbild wird geladen</span>
-      <Skeleton className="h-48 w-64 rounded-xl" />
+      <Skeleton className="h-32 w-80 rounded-xl" />
     </div>
   );
 }
@@ -42,46 +53,75 @@ type StepNodeData = {
   activity: string;
   mention: ChatMention;
   onMention?: (mention: ChatMention) => void;
+  onInspect?: () => void;
   focused?: boolean;
 };
 
 const StepNode = memo(function StepNode({ data }: NodeProps) {
   const value = data as unknown as StepNodeData;
   return (
+    // Die Höhe wächst mit dem Inhalt statt fest zu stehen: Bei `h-48` blieb
+    // unter dem Text die halbe Karte leer. `min-h` hält kurze Schritte trotzdem
+    // auf einer gemeinsamen Grundfläche.
     <div
-      className={`group h-48 w-64 overflow-hidden rounded-xl border border-border bg-card p-4 ${value.focused ? "ring-2 ring-primary ring-offset-2" : ""}`}
+      className={`group grid min-h-28 w-80 gap-2 overflow-hidden rounded-xl border border-border bg-card p-4 ${value.focused ? "ring-2 ring-primary ring-offset-2" : ""}`}
     >
       <Handle type="target" position={Position.Top} className="opacity-0" />
-      <div className="flex items-start gap-3">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-label text-primary-foreground">
+      <div className="flex items-start gap-2">
+        {/* Gleicher Nummernkreis wie in der schmalen Spalte: `size-5` bleibt
+            innerhalb der ersten Titelzeile, `size-6` hing zwei Pixel darunter. */}
+        <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-caption text-primary-foreground">
           {value.order}
         </span>
-        <div className="min-w-0 flex-1">
-          <p
-            className="line-clamp-3 font-semibold leading-snug"
-            title={value.name}
-          >
-            {value.name}
-          </p>
-          <p
-            className="mt-1 line-clamp-3 text-ui text-muted-foreground"
-            title={value.activity}
-          >
-            {value.activity}
-          </p>
-        </div>
-        {value.onMention && (
+        {/*
+          `hyphens-auto`: Deutsche Komposita wie „Zuständigkeitsklärung" sind
+          länger als die Spalte und wurden sonst mitten im Wort umbrochen.
+        */}
+        <p
+          className="line-clamp-3 min-w-0 flex-1 hyphens-auto break-words font-semibold leading-snug"
+          title={value.name}
+        >
+          {value.name}
+        </p>
+        {/*
+          `pointer-events-auto` ist nötig, weil React Flow die Knoten ohne
+          Auswahl und ohne Ziehen auf `pointer-events: none` setzt; aus
+          demselben Grund sind beide Knöpfe dauerhaft sichtbar statt beim
+          Überfahren der Karte einzublenden — ein Hover auf der Karte kommt gar
+          nicht erst an.
+        */}
+        <div className="pointer-events-auto flex shrink-0 items-center gap-0.5">
           <button
             type="button"
-            className="nodrag rounded-md p-1.5 text-muted-foreground opacity-0 transition hover:bg-secondary hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring group-hover:opacity-100"
-            onClick={() => value.onMention?.(value.mention)}
-            aria-label={`Schritt ${value.order} im Gespräch erwähnen`}
-            title="Im Gespräch erwähnen"
+            className="nodrag rounded-md p-1 text-muted-foreground transition hover:bg-accent hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            onClick={() => value.onInspect?.()}
+            aria-label={`Schritt ${value.order} im Detail ansehen`}
+            title="Details ansehen"
           >
-            <MessageCircle className="size-4" />
+            <Info className="size-4" />
           </button>
-        )}
+          {value.onMention && (
+            <button
+              type="button"
+              className="nodrag rounded-md p-1 text-muted-foreground transition hover:bg-accent hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              onClick={() => value.onMention?.(value.mention)}
+              aria-label={`Schritt ${value.order} im Gespräch erwähnen`}
+              title="Im Gespräch erwähnen"
+            >
+              <MessageCircle className="size-4" />
+            </button>
+          )}
+        </div>
       </div>
+      {/* Über die volle Breite, nicht neben dem Nummernkreis eingerückt — wie
+          in der schmalen Spalte. Hier ohne `hyphens-auto`: Im Fließtext setzt
+          die Silbentrennung in fast jeder Zeile einen Bindestrich. */}
+      <p
+        className="line-clamp-3 break-words text-ui text-muted-foreground"
+        title={value.activity}
+      >
+        {value.activity}
+      </p>
       <Handle type="source" position={Position.Bottom} className="opacity-0" />
     </div>
   );
@@ -188,6 +228,9 @@ export function ProcessFlowDiagram({
   focusedTarget?: ChatMentionTarget | null;
 }) {
   const flowRef = useRef<ReactFlowInstance<any, any> | null>(null);
+  const [inspectStepId, setInspectStepId] = useState<string | null>(null);
+  const steps = understanding?.steps ?? [];
+  const inspectStep = steps.find((step) => step.id === inspectStepId) ?? null;
   const graph = useMemo(() => {
     const steps = understanding?.steps ?? [];
     const nodes = steps.map((step, index) => ({
@@ -206,6 +249,7 @@ export function ProcessFlowDiagram({
           understandingRevision: null,
         },
         onMention,
+        onInspect: () => setInspectStepId(step.id),
         focused:
           focusedTarget?.kind === "step" && focusedTarget.stepId === step.id,
       },
@@ -326,6 +370,34 @@ export function ProcessFlowDiagram({
           className="!right-3 !top-3"
         />
       </ReactFlow>
+      {/* Geschwister des Diagramms, damit Zoom und Neuaufbau der Knoten den Dialog nicht beeinflussen. */}
+      {inspectStep && (
+        <Dialog
+          open
+          onOpenChange={(open) => {
+            if (!open) setInspectStepId(null);
+          }}
+        >
+          {/* `sm:` nötig, weil DialogContent selbst ein `sm:max-w-lg` mitbringt. */}
+          <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>
+                Schritt {inspectStep.order}: {inspectStep.name}
+              </DialogTitle>
+              <DialogDescription>{inspectStep.activity}</DialogDescription>
+            </DialogHeader>
+            {/* `min-w-0`: Rasterkinder wachsen sonst über den Dialog hinaus. */}
+            <div className="min-w-0">
+              <ProcessStepDetails step={inspectStep} steps={steps} />
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="secondary">Schließen</Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

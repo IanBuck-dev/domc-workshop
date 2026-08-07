@@ -9,7 +9,7 @@ import { cn } from "../lib/utils";
 type Step = ProcessUnderstanding["steps"][number];
 type InformationItem = Step["informationItems"][number];
 
-const informationTypeCopy: Record<InformationItem["type"], string> = {
+export const informationTypeCopy: Record<InformationItem["type"], string> = {
   system_field: "Systemfeld",
   email: "E-Mail",
   spreadsheet: "Tabelle",

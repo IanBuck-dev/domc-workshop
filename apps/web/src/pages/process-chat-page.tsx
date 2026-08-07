@@ -576,6 +576,9 @@ export function ProcessChatPage() {
           // Solange die Unterlagen-Schleuse offen ist, hilft nur die
           // Dokumentenliste; Antwortvorschläge kommen erst danach.
           stage={view.state.documentGate === "pending" ? "documents" : "chat"}
+          // Im erweiterten Prozessbild rückt die Chatspalte an den linken Rand;
+          // der Griff läge dann über dem Text.
+          suppressed={expanded}
           uploadedFileNames={view.uploads.map((upload) => upload.name)}
           onInsertText={(insertedText) => {
             setText(insertedText);

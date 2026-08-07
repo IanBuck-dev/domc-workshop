@@ -18,6 +18,7 @@ const slugKey = "claims-ai.demo-sidecar.slug.v1";
 export function DemoSidecar({
   processName,
   stage,
+  suppressed = false,
   uploadedFileNames,
   onInsertText,
   onUploadFile,
@@ -31,6 +32,13 @@ export function DemoSidecar({
    * (Startseite, Formular) bleibt der Sidecar vollständig.
    */
   stage?: "documents" | "chat";
+  /**
+   * Blendet den Sidecar samt Griff vorübergehend aus — etwa im erweiterten
+   * Prozessbild, wo der Griff sonst über der schmalen Chatspalte liegt. Der
+   * gewählte Zustand bleibt erhalten: Die Komponente bleibt eingehängt und
+   * rendert nur nichts.
+   */
+  suppressed?: boolean;
   /** Bereits hochgeladene Dateien — sie verschwinden aus der Liste. */
   uploadedFileNames?: string[];
   onInsertText?: (text: string) => void;
@@ -70,7 +78,7 @@ export function DemoSidecar({
     if (slug) localStorage.setItem(slugKey, slug);
   }, [slug]);
 
-  if (!szenarien || szenarien.length === 0) return null;
+  if (suppressed || !szenarien || szenarien.length === 0) return null;
 
   const gewaehlt =
     szenarien.find((item) => item.slug === slug) ??

@@ -76,12 +76,17 @@ describe("chat capture UI contract", () => {
     );
     expect(source).toContain("nodesDraggable={false}");
     expect(source).toContain("nodesConnectable={false}");
-    expect(source).toContain("h-48 w-64 overflow-hidden");
+    // Höhe wächst mit dem Inhalt, Breite reicht für deutsche Komposita.
+    expect(source).toContain("grid min-h-28 w-80 gap-2 overflow-hidden");
+    // Nummernkreis so hoch wie die Titelzeile — wie in der schmalen Spalte.
     expect(source).toContain(
-      'className="line-clamp-3 font-semibold leading-snug"',
+      "flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-caption",
     );
     expect(source).toContain(
-      'className="mt-1 line-clamp-3 text-ui text-muted-foreground"',
+      'className="line-clamp-3 min-w-0 flex-1 hyphens-auto break-words font-semibold leading-snug"',
+    );
+    expect(source).toContain(
+      'className="line-clamp-3 break-words text-ui text-muted-foreground"',
     );
     expect(source).toContain("title={value.name}");
     expect(source).toContain("title={value.activity}");
@@ -95,6 +100,53 @@ describe("chat capture UI contract", () => {
     expect(source).toContain("Übergang-");
     expect(source).toContain("Schritt-");
     expect(source).toContain("onMention");
+    expect(source).toContain("onInspect");
+    expect(source).toContain(
+      "aria-label={`Schritt ${value.order} im Detail ansehen`}",
+    );
+    expect(source).toContain("DialogContent");
+    // React Flow setzt die Knoten auf pointer-events: none — ohne das hier
+    // sind Info- und Erwähnen-Knopf mit der Maus nicht erreichbar.
+    expect(source).toContain("pointer-events-auto flex shrink-0 items-center");
+    expect(source).toContain("<ProcessStepDetails step={inspectStep}");
+  });
+
+  test("shows the same step details in the narrow column and the node dialog", async () => {
+    const [tracker, details] = await Promise.all(
+      [
+        "apps/web/src/components/process-tracker.tsx",
+        "apps/web/src/components/process-step-details.tsx",
+      ].map((file) => readFile(join(process.cwd(), file), "utf8")),
+    );
+    expect(tracker).toContain("<details");
+    expect(tracker).toContain("group-open/step:rotate-180");
+    expect(tracker).toContain("[&::-webkit-details-marker]:hidden");
+    expect(tracker).toContain("{step.activity}");
+    expect(tracker).toContain('layout="compact"');
+    expect(tracker).toContain("openStepIds.has(step.id)");
+    // Der Nummernkreis ist so hoch wie die Namenszeile, die Aktivität steht
+    // darunter, und zwischen den Karten steht nur ein zentrierter Pfeil.
+    expect(tracker).toContain(
+      "flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-caption",
+    );
+    expect(tracker).toContain(
+      'className="mt-1 line-clamp-2 block text-caption text-muted-foreground"',
+    );
+    expect(tracker).toContain("<ArrowDown");
+    expect(tracker).not.toContain("h-px flex-1");
+    for (const heading of [
+      "Input",
+      "Output",
+      "Informationen",
+      "Varianten und Entscheidungen",
+      "Sonstiges",
+    ])
+      expect(details).toContain(heading);
+    expect(details).toContain('layout === "compact"');
+    expect(details).toContain("informationTypeCopy");
+    expect(details).toContain("decisionModeCopy");
+    // Die kompakte Spalte darf keine Lesetabelle mit Mindestbreite mitbringen.
+    expect(details).not.toContain("min-w-[3");
   });
 
   test("wires milestone cards, structured mentions, shared attachments, and confirmed sidebars", async () => {
@@ -110,6 +162,11 @@ describe("chat capture UI contract", () => {
           "apps/web/src/components/process-confirmation-actions.tsx",
         ].map((file) => readFile(join(process.cwd(), file), "utf8")),
       );
+    // Nutzerblase und Antwort lesen sich gleich groß — `text-foreground`
+    // daneben würde `text-body` durch tailwind-merge verdrängen.
+    expect(transcript).toContain(
+      '"max-w-[85%] rounded-xl bg-muted px-4 py-3 text-body"',
+    );
     expect(transcript).toContain("classifyChatMilestone");
     expect(transcript).toContain("ChatMentionToken");
     expect(transcript).toContain("scrollAnchor={");
@@ -170,6 +227,9 @@ describe("chat capture UI contract", () => {
     expect(sidecar).toContain('const zeigeVorschlaege = stage !== "documents"');
     expect(sidecar).toContain("offeneDokumente");
     expect(sidecar).toContain("Dieses Szenario nutzt keine Unterlagen.");
+    // Im erweiterten Prozessbild darf der Griff nicht über der Chatspalte liegen.
+    expect(sidecar).toContain("if (suppressed || !szenarien");
+    expect(page).toContain("suppressed={expanded}");
     expect(page).toContain(
       'stage={view.state.documentGate === "pending" ? "documents" : "chat"}',
     );
