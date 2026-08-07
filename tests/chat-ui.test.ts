@@ -90,7 +90,18 @@ describe("chat capture UI contract", () => {
     );
     expect(source).toContain("title={value.name}");
     expect(source).toContain("title={value.activity}");
-    expect(source).toContain("position: { x: 80, y: index * 240 }");
+    // Dagre bestimmt die vertikale Rangfolge statt fester Y-Abstände.
+    expect(source).toContain('layout.setGraph({ rankdir: "TB",');
+    expect(source).toContain("dagre.layout(layout)");
+    // BPMN-light ergänzt Ereignisse und eine Verzweigung zum Schrittfluss.
+    expect(source).toContain("bpmnEvent: EventNode");
+    expect(source).toContain("gateway: GatewayNode");
+    // Die Rückkante führt getrennt durch die linke Gutter-Spalte.
+    expect(source).toContain(
+      "edgeTypes = { mention: MentionEdge, gutter: GutterEdge }",
+    );
+    // React Flow setzt die Kantenschicht bei elementsSelectable=false auf none.
+    expect(source).toContain('style={{ pointerEvents: "stroke" }}');
     expect(source).toContain("position={Position.Top}");
     expect(source).toContain("position={Position.Bottom}");
     expect(source).toContain("MarkerType.ArrowClosed");
