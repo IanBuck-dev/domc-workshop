@@ -150,11 +150,13 @@ export const chatSessionRecordSchema = z
   })
   .strict();
 
-export const chatActionSchema = z.enum([
-  "message",
-  "analyze_documents",
-  "skip_documents",
-]);
+/**
+ * Aktionen, die einen KI-Zug auslösen. „skip_documents" gehört bewusst nicht
+ * dazu: Der Verzicht auf Unterlagen ist ein fest verdrahteter Zustandswechsel
+ * mit fester Rückfrage (eigene Route), kein Modellaufruf. Als Transkriptwert
+ * bleibt „skip_documents" bestehen.
+ */
+export const chatActionSchema = z.enum(["message", "analyze_documents"]);
 export const chatMessageRequestSchema = z
   .object({
     id: z.string().uuid(),

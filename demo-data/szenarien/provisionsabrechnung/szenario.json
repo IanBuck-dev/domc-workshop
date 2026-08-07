@@ -1,0 +1,27 @@
+{
+  "slug": "provisionsabrechnung",
+  "titel": "Provisionsabrechnung Außendienst",
+  "cover": {
+    "department": "Vertrieb",
+    "participantName": "Edda Brandt",
+    "participantEmail": "edda.brandt@lifecorp.example",
+    "processName": "Provisionsabrechnung Außendienst"
+  },
+  "interactionMode": "chat",
+  "dokumente": [],
+  "formular": {
+    "antworten": {
+      "purpose-scope": "Einmal im Monat rechnen wir die Provisionen für unsere rund 120 Außendienstler und 40 Makler ab. Auslöser ist der Monatsabschluss, das Ergebnis ist die Provisionsgutschrift, die über SAP FI ausgezahlt wird. Start ist der PROVISO-Lauf nach Buchungsschluss, Ende ist die Zahlung plus die Klärung offener Reklamationen.",
+      "flow-roles": "PROVISO rechnet automatisch anhand der Verträge und Courtagesätze. Ich prüfe den Lauf, korrigiere Fälle mit Vertragsänderungen von Hand und gleiche die Stornohaftung ab. Für ein paar Makler gibt es Sondervereinbarungen, die PROVISO nicht kennt, die stehen in einer Excel-Liste, die eine Kollegin aus dem Vertriebsinnendienst pflegt. Danach stimme ich mit der Finanzbuchhaltung die Auszahlung über SAP FI ab und bearbeite Reklamationen, die per Outlook reinkommen.",
+      "information-systems": "Ich arbeite hauptsächlich in PROVISO, dazu PARTO für die Vermittlerdaten, SAP FI für die Auszahlung und Outlook für Reklamationsmails. Die Excel-Sonderliste mit den Maklersondervereinbarungen liegt auf einem Laufwerksordner und wird von einer Kollegin gepflegt, nicht von mir. Eine schriftliche Anleitung dafür gibt es nicht.",
+      "decisions-controls-handoffs": "Ich entscheide, ob eine Korrektur manuell in PROVISO eingegeben wird oder ob ich erst mit dem Vertrieb rückfragen muss. Bei der Stornohaftung entscheide ich, ob eine Rückbelastung noch in der Haftungszeit liegt. Freigeben lassen muss ich mir nichts im Regelfall, nur bei größeren Abweichungen spreche ich kurz mit meiner Teamleitung.",
+      "effort-pain-goals": "Am meisten Zeit kostet es, wenn die Kollegin mit der Excel-Sonderliste im Urlaub ist, weil dann niemand genau weiß, was aktuell drinsteht. Dazu die Reklamationen, weil die unstrukturiert per Mail reinkommen und ich sie einzeln zuordnen muss. Zum Monatsabschluss ist es besonders eng, weil alles in wenigen Tagen fertig sein muss."
+    },
+    "arbeitsmerkmale": {
+      "combined-information-sources": ["yes"],
+      "content-types": ["free-text", "other-freeform-files"],
+      "case-specific-recognition": ["detect-unusual-cases", "adapt-case-flow"],
+      "uncertain-decisions": ["decide-with-incomplete-rules"]
+    }
+  }
+}

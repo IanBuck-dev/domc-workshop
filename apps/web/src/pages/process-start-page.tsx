@@ -7,6 +7,7 @@ import type {
   ProcessCaptureConfig,
   ProcessCaptureRecord,
 } from "../lib/process-types";
+import { DemoSidecar } from "../components/demo-sidecar";
 import { Button } from "../components/ui/button";
 import {
   Card,
@@ -94,8 +95,20 @@ export function ProcessStartPage() {
       setBusy(false);
     }
   }
+  function fillCover(demoCover: ProcessCaptureRecord["cover"]) {
+    setCover(demoCover);
+    setInteractionMode("chat");
+    setTouched({
+      department: true,
+      participantName: true,
+      participantEmail: true,
+      processName: true,
+    });
+    setError("");
+  }
   return (
     <section className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:py-16">
+      <DemoSidecar processName={cover.processName} onFillCover={fillCover} />
       <div className="mb-8 space-y-2">
         <p className="text-eyebrow uppercase text-primary">Schritt 1 von 2</p>
         <h1 className="text-title text-foreground sm:text-display">

@@ -83,7 +83,10 @@ The workspace shows the compact German chat on the left and a read-only linear
 React Flow diagram on the right. At tablet widths they become `Gespräch` and
 `Prozessbild` tabs. Diagram nodes contain only step number, name, and activity.
 Steps and adjacent transitions can be mentioned in the composer through stable,
-typed references. V1 does not draw branches, loops, or editable graph fields.
+typed references. In the narrow column each step expands to its read-only
+details — inputs, outputs, information, decisions, and miscellaneous — and every
+diagram node carries an info button that opens the same details in a dialog. V1
+does not draw branches, loops, or editable graph fields.
 
 `Prozessbild bestätigen` is enabled only for a currently valid working state.
 Knowledge gaps or conflicts require one explicit override and persist

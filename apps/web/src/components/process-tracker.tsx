@@ -1,8 +1,9 @@
-import { Expand, MessageCircle } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { ArrowDown, ChevronDown, Expand, MessageCircle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import type { ChatMention, ProcessUnderstanding } from "../lib/process-types";
 import type { ChatMentionTarget } from "./chat-mention";
 import { ProcessConfirmationActions } from "./process-confirmation-actions";
+import { ProcessStepDetails } from "./process-step-details";
 import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
 
@@ -57,16 +58,28 @@ export function ProcessTracker({
 }) {
   const steps = understanding?.steps ?? [];
   const stepRefs = useRef(new Map<string, HTMLLIElement>());
+  // Mehrere Schritte dürfen gleichzeitig offen sein — wie in der Formularerfassung.
+  const [openStepIds, setOpenStepIds] = useState<Set<string>>(new Set());
   useEffect(() => {
     const id =
       focusedTarget?.kind === "step"
         ? focusedTarget.stepId
         : focusedTarget?.fromStepId;
-    if (id)
-      stepRefs.current
-        .get(id)
-        ?.scrollIntoView({ block: "center", behavior: "smooth" });
+    if (!id) return;
+    stepRefs.current
+      .get(id)
+      ?.scrollIntoView({ block: "center", behavior: "smooth" });
+    if (focusedTarget?.kind === "step")
+      setOpenStepIds((current) => new Set(current).add(id));
   }, [focusedTarget]);
+  function changeOpenStep(stepId: string, open: boolean) {
+    setOpenStepIds((current) => {
+      const next = new Set(current);
+      if (open) next.add(stepId);
+      else next.delete(stepId);
+      return next;
+    });
+  }
   return (
     <aside className="flex h-full min-h-0 flex-col border-l bg-muted">
       <header className="flex items-center justify-between border-b px-3 py-3">
@@ -108,42 +121,84 @@ export function ProcessTracker({
                   if (element) stepRefs.current.set(step.id, element);
                   else stepRefs.current.delete(step.id);
                 }}
-                className={`group relative rounded-md pb-5 ${stepFocused ? "bg-primary/10 ring-1 ring-primary/40" : ""}`}
+                className={`group relative rounded-md pb-3 ${stepFocused ? "ring-1 ring-primary/40" : ""}`}
               >
-                <div className="flex items-start gap-2">
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-label text-primary-foreground">
-                    {step.order}
-                  </span>
-                  <p
-                    className="line-clamp-2 min-w-0 flex-1 text-label"
-                    title={step.name}
-                  >
-                    {step.name}
-                  </p>
-                  {onMention && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onMention({
-                          kind: "step",
-                          stepId: step.id,
-                          label: `Schritt-${step.order}`,
-                          nameSnapshot: null,
-                          understandingRevision: null,
-                        })
-                      }
-                      className="rounded p-1 text-muted-foreground opacity-0 hover:bg-muted focus:opacity-100 group-hover:opacity-100"
-                      aria-label={`Schritt ${step.order} im Gespräch erwähnen`}
-                    >
-                      <MessageCircle className="size-4" />
-                    </button>
-                  )}
-                </div>
-                {next && (
-                  <div className="group/transition ml-3 mt-2 flex items-center gap-1 text-muted-foreground">
-                    <span aria-hidden="true">↓</span>
+                <details
+                  className={`group/step rounded-md ${stepFocused ? "bg-primary/10" : "bg-background"}`}
+                  open={openStepIds.has(step.id)}
+                  onToggle={(event) => {
+                    if (event.currentTarget.open !== openStepIds.has(step.id))
+                      changeOpenStep(step.id, event.currentTarget.open);
+                  }}
+                >
+                  {/* `hover:bg-accent`, nicht `bg-muted`: Die Spalte selbst ist
+                      schon `bg-muted`, der Zeilen-Hover wäre dort unsichtbar. */}
+                  <summary className="cursor-pointer list-none rounded-md p-2 marker:hidden hover:bg-accent [&::-webkit-details-marker]:hidden">
+                    {/*
+                      Kopfzeile und Unterzeile sind getrennt: Der Nummernkreis
+                      ist genauso hoch wie die Zeile des Namens (`size-5` zu
+                      `text-label`, 20px), und die Aktivität läuft darunter über
+                      die volle Breite statt neben dem Kreis eingerückt.
+                    */}
+                    {/* `items-start`: Bei zweizeiligen Namen soll der Kreis auf
+                        der ersten Zeile sitzen, nicht mittig dazwischen. */}
+                    <span className="flex items-start gap-2">
+                      <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-caption text-primary-foreground">
+                        {step.order}
+                      </span>
+                      <span
+                        className="line-clamp-2 min-w-0 flex-1 text-label"
+                        title={step.name}
+                      >
+                        {step.name}
+                      </span>
+                      {onMention && (
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            onMention({
+                              kind: "step",
+                              stepId: step.id,
+                              label: `Schritt-${step.order}`,
+                              nameSnapshot: null,
+                              understandingRevision: null,
+                            });
+                          }}
+                          className="rounded p-1 text-muted-foreground opacity-0 hover:bg-background focus:opacity-100 group-hover:opacity-100"
+                          aria-label={`Schritt ${step.order} im Gespräch erwähnen`}
+                        >
+                          <MessageCircle className="size-4" />
+                        </button>
+                      )}
+                      <ChevronDown
+                        className="size-4 shrink-0 text-muted-foreground transition-transform group-open/step:rotate-180"
+                        aria-hidden="true"
+                      />
+                    </span>
                     <span
-                      className={`h-px flex-1 ${transitionFocused ? "bg-primary" : "bg-border"}`}
+                      className="mt-1 line-clamp-2 block text-caption text-muted-foreground"
+                      title={step.activity}
+                    >
+                      {step.activity}
+                    </span>
+                  </summary>
+                  <div className="border-t border-border px-2 pb-4 pt-4">
+                    <ProcessStepDetails
+                      step={step}
+                      steps={steps}
+                      layout="compact"
+                    />
+                  </div>
+                </details>
+                {next && (
+                  // Nur ein zentrierter Pfeil, keine Trennlinie: Die Karten
+                  // grenzen sich schon durch ihre Fläche ab.
+                  <div className="group/transition relative mt-3 flex items-center justify-center">
+                    <ArrowDown
+                      className={`size-4 ${transitionFocused ? "text-primary" : "text-muted-foreground"}`}
+                      aria-hidden="true"
                     />
                     {onMention && (
                       <button
@@ -158,7 +213,10 @@ export function ProcessTracker({
                             understandingRevision: null,
                           })
                         }
-                        className="rounded p-1 opacity-0 hover:bg-muted focus:opacity-100 group-hover/transition:opacity-100"
+                        // Direkt rechts neben dem Pfeil, aber absolut
+                        // positioniert: So bleibt der Pfeil mittig, egal ob der
+                        // Knopf gerade sichtbar ist.
+                        className="absolute left-1/2 ml-3 rounded p-1 text-muted-foreground opacity-0 hover:bg-background focus:opacity-100 group-hover/transition:opacity-100"
                         aria-label={`Übergang nach Schritt ${step.order} im Gespräch erwähnen`}
                       >
                         <MessageCircle className="size-4" />

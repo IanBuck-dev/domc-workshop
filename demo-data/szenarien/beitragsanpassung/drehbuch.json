@@ -1,0 +1,64 @@
+{
+  "zuege": [
+    {
+      "nummer": 1,
+      "antwort": "Wir passen einmal im Jahr die Beiträge laufender Hausrat- und Wohngebäudeverträge an den aktuellen Index an. Losgehts im Herbst, wenn das Aktuariat die Anpassungsfaktoren liefert. Fertig ist der Prozess, wenn alle betroffenen Kunden informiert sind und offene Widersprüche entschieden sind.",
+      "hinweis": "Eröffnet Zweck und Abgrenzung (purpose-scope). Neutraler Einstieg, noch kein Widerspruchsmaterial."
+    },
+    {
+      "nummer": 2,
+      "antwort": "Das Aktuariat liefert die Indexwerte als Freigabeliste, wir im Fachbereich Vertrag prüfen die auf Ausreißer und starten dann den Anpassungslauf in VERA. Danach gehen die Anschreiben an die Kunden raus, und Widersprüche werden inzwischen vom Serviceteam Bestand bearbeitet.",
+      "hinweis": "Deckt flow-roles ab und legt bereits BEIDE neuen Praktiken (Serviceteam Bestand) beiläufig offen, ohne den Widerspruch zu benennen. Testet, ob der Assistent das schon hier gegen Dokument A abgleicht oder erst später anspricht."
+    },
+    {
+      "nummer": 3,
+      "antwort": "In VERA mache ich die Vertragsdaten und den Anpassungslauf. Bei Widerspruchsfällen, die zu uns zurückkommen, schaue ich in PARTO die Kundenhistorie nach. Die Anschreiben selbst liegen in AKTE ab, ob per Post oder Portal.",
+      "hinweis": "information-systems. Bestätigt Systemlandschaft konsistent mit UNTERNEHMEN.md."
+    },
+    {
+      "nummer": 4,
+      "antwort": "Die Anpassungshöhe entscheidet eigentlich die Indexliste vom Aktuariat, da greifen wir nicht mehr ein. Bei Widersprüchen entscheidet das Serviceteam Bestand; nur wenn es fachlich strittig ist, kommt der Fall zu uns zurück.",
+      "hinweis": "decisions-controls-handoffs. Verstärkt nochmal die neue Zuständigkeit, ohne die alte VA zu erwähnen."
+    },
+    {
+      "nummer": 5,
+      "antwort": "Am meisten Aufwand macht es, wenn ein Kunde ohne Portalzugang anruft, weil ihm das Anschreiben ungewohnt vorkommt. Da fehlt uns noch ein guter Hinweistext. Der Anpassungslauf selbst läuft inzwischen recht rund.",
+      "hinweis": "effort-pain-goals. Liefert Material für die spätere Potenzialanalyse (Portalquote, Hinweistext)."
+    },
+    {
+      "nummer": 6,
+      "antwort": "Ach ja, das steht in der Anweisung noch falsch drin, die hat keiner angefasst. Seit Anfang 2026 geht das Anschreiben primär digital über das Kundenportal raus, Druckstraße läuft nur noch für den Restbestand ohne Portalzugang.",
+      "hinweis": "PRÜFPUNKT: Reaktion, wenn der Assistent Widerspruch 1 (Druckstraße vs. Portal) aktiv anspricht. Fehlersignatur: Assistent hat diesen Zug nie provoziert, weil er still eine Fassung übernommen hat."
+    },
+    {
+      "nummer": 7,
+      "antwort": "Genau, das ist auch so ein Punkt, der in der alten Anweisung noch anders steht. Die Widerspruchsbearbeitung machen wir im Fachbereich Vertrag schon länger nicht mehr selbst, das liegt jetzt beim Serviceteam Bestand. Das wurde in der Fachrunde im März so beschlossen.",
+      "hinweis": "PRÜFPUNKT: Reaktion, wenn der Assistent Widerspruch 2 (Widerspruchsbearbeitung Fachbereich vs. Serviceteam Bestand) aktiv anspricht. Fehlersignatur: keine Rückfrage, stille Übernahme von Dokument A oder B."
+    },
+    {
+      "nummer": 8,
+      "antwort": "Hm, gute Frage, das steht so meines Wissens nirgends aufgeschrieben.",
+      "hinweis": "Erster Ping zur Schwellenwert-Lücke: Edda weicht zunächst aus, verrät noch nichts. Testet, ob der Assistent hier lockerlässt oder gezielt weiter nachfragt."
+    },
+    {
+      "nummer": 9,
+      "antwort": "Doch, es gibt da eine Grenze: Wenn die Anpassung einen bestimmten Schwellenwert übersteigt, sind wir verpflichtet, den Kunden zusätzlich auf sein Sonderkündigungsrecht hinzuweisen. Das mache ich bisher aus Erfahrung, das steht in keiner Anweisung und auch nicht im Protokoll.",
+      "hinweis": "PRÜFPUNKT: Die eigentliche Lücke wird erst hier auf gezielte Nachfrage offenbart. Fehlersignatur: Der Assistent erfragt das nie oder markiert es nicht als offene Wissenslücke im Prozessbild."
+    },
+    {
+      "nummer": 10,
+      "antwort": "Einen festen Prozentsatz kann ich Ihnen nicht nennen, das habe ich mir über die Jahre angewöhnt. Bei sehr hohen Anpassungen ergänze ich den Hinweis von Hand im Anschreiben, sonst würde das schnell übersehen.",
+      "hinweis": "Vertieft die Lücke: kein dokumentierter Schwellenwert, manuelle Ergänzung. Sollte im Prozessbild als knowledgeGap mit ai_inferred/unknown-Provenienz landen, nicht als bestätigte Regel."
+    },
+    {
+      "nummer": 11,
+      "antwort": "Ungefähr sechs von zehn Verträgen laufen inzwischen über das Portal, Tendenz steigend. Der Rest bekommt noch Post.",
+      "hinweis": "Zusatzdetail zur Portalquote, nützlich für die Potenzialanalyse (Portalquote erhöhen als Hypothese)."
+    },
+    {
+      "nummer": 12,
+      "antwort": "Nein, das war eigentlich alles Wesentliche von meiner Seite.",
+      "hinweis": "Abschlusszug, signalisiert dem Assistenten, dass keine weiteren offenen Themen von Edda kommen."
+    }
+  ]
+}

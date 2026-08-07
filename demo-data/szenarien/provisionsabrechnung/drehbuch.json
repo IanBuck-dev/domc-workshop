@@ -1,0 +1,74 @@
+{
+  "zuege": [
+    {
+      "nummer": 1,
+      "antwort": "Da gibt's nichts Schriftliches, das machen wir seit Jahren einfach so.",
+      "hinweis": "Antwort auf die Dokumentenfrage. Danach im UI \"ohne Dokumente fortfahren\" wählen. Prüft, ob der Assistent klaglos in die reine Gesprächsaufnahme wechselt."
+    },
+    {
+      "nummer": 2,
+      "antwort": "Ich mache die Provisionsabrechnung für den Außendienst.",
+      "hinweis": "Bewusst knapp. Prüft, ob der Assistent gezielt nach Auslöser, Ergebnis, Umfang nachfragt statt sich mit dem Einzeiler zufriedenzugeben."
+    },
+    {
+      "nummer": 3,
+      "antwort": "Einmal im Monat, nach Buchungsschluss. Wir zahlen die Provisionen an unsere Außendienstler und an Makler aus, die für uns vermitteln. Am Ende steht die Gutschrift, die über die Finanzbuchhaltung rausgeht.",
+      "hinweis": "Liefert Rhythmus, Empfänger und Zielergebnis nach. Erwartet: der Assistent hält Auslöser (Buchungsschluss) und Ergebnis (Auszahlung) fest."
+    },
+    {
+      "nummer": 4,
+      "antwort": "Rund 120 Außendienstler und ungefähr 40 Makler, das schwankt ein bisschen.",
+      "hinweis": "Mengenangabe auf Nachfrage. Sollte kommen, wenn der Assistent nach dem Umfang fragt."
+    },
+    {
+      "nummer": 5,
+      "antwort": "PROVISO rechnet das automatisch aus, anhand der Verträge und der hinterlegten Courtagesätze. Der Lauf startet, sobald der Monat in der Buchhaltung zu ist.",
+      "hinweis": "Erster Prozessschritt: der automatische PROVISO-Lauf. Systemname muss exakt PROVISO erscheinen."
+    },
+    {
+      "nummer": 6,
+      "antwort": "Ich schau mir danach die Stornofälle an. Wenn ein Vertrag in der Haftungszeit storniert wird, muss die schon gezahlte Provision zurückbelastet werden, das rechnet PROVISO zwar mit, aber ich prüfe die Fälle trotzdem gegen.",
+      "hinweis": "Stornohaftung. Muss im Prozessverständnis auftauchen, inklusive Rückbelastung und dass Edda gegenprüft statt blind zu vertrauen."
+    },
+    {
+      "nummer": 7,
+      "antwort": "Bei Vertragsänderungen, die noch nicht im System nachgezogen sind, korrigiere ich manuell. Zum Beispiel wenn ein Vertrag rückwirkend geändert wurde und der Provisionssatz sich dadurch ändert.",
+      "hinweis": "Manuelle Korrekturen bei Vertragsänderungen. Erwartet gezielte Rückfrage, wie Edda erkennt, dass so ein Fall vorliegt, falls das noch offen ist."
+    },
+    {
+      "nummer": 8,
+      "antwort": "Ach, und einmal im Quartal ist auch noch der Außendienst-Workshop, aber das hat mit der Abrechnung nichts zu tun, das ist nur bei mir im Kalender in der gleichen Woche.",
+      "hinweis": "Bewusstes Abschweifen zur Realismusprobe. Fehlersignatur: Assistent übernimmt den Workshop fälschlich als Prozessschritt oder Systemhinweis statt ihn als irrelevant einzuordnen."
+    },
+    {
+      "nummer": 9,
+      "antwort": "Manche Makler haben Sondervereinbarungen, andere Sätze oder Boni, die PROVISO gar nicht kennt. Die stehen in einer Excel-Liste, die eine Kollegin aus dem Vertriebsinnendienst pflegt. Ich frag da nach, wenn ich unsicher bin.",
+      "hinweis": "Zentraler Prüfpunkt: die Excel-Nebenliste muss im Prozessverständnis auftauchen, inklusive dass sie von einer Kollegin gepflegt wird, nicht von Edda selbst."
+    },
+    {
+      "nummer": 10,
+      "antwort": "Wie die Liste genau aufgebaut ist, weiß ich ehrlich gesagt nicht im Detail, ich bekomme von ihr nur die Zahlen für meine Fälle zugeschickt.",
+      "hinweis": "Bewusste Wissenslücke. Fehlersignatur: Assistent erfindet einen Aufbau oder Inhalt der Excel-Liste, statt die Lücke als Wissenslücke zu erfassen."
+    },
+    {
+      "nummer": 11,
+      "antwort": "Zum Schluss stimme ich die Summen mit SAP FI ab, damit die Auszahlung tatsächlich rausgeht. Das macht eine Kollegin in der Finanzbuchhaltung, ich liefere nur die freigegebenen Beträge.",
+      "hinweis": "Abstimmung mit SAP FI. Prüft, ob der Assistent die Rollentrennung zwischen Edda und Finanzbuchhaltung sauber erfasst."
+    },
+    {
+      "nummer": 12,
+      "antwort": "Reklamationen kommen einfach per Mail rein, wenn ein Vermittler findet, seine Abrechnung stimmt nicht. Die sortiere ich selbst, es gibt keine feste Vorlage oder ein Ticketsystem dafür.",
+      "hinweis": "Reklamationsbearbeitung per Outlook. Erwartet, dass Outlook als System und der unstrukturierte, formularlose Ablauf erfasst werden."
+    },
+    {
+      "nummer": 13,
+      "antwort": "Am schlimmsten ist die letzte Woche vorm Monatsabschluss, dann kommt alles gleichzeitig: Korrekturen, Reklamationen, und die Abstimmung mit SAP FI muss auch noch fertig werden.",
+      "hinweis": "Zeitdruck-Situation zum Monatsabschluss. Sollte als Aufwands-/Problemhinweis erfasst werden, nicht als eigener Regelschritt."
+    },
+    {
+      "nummer": 14,
+      "antwort": "Größere Abweichungen bespreche ich kurz mit meiner Teamleitung, aber das kommt selten vor. Ansonsten entscheide ich das selbst.",
+      "hinweis": "Letzter Zug: Freigabe-/Eskalationsregel bei größeren Abweichungen. Rundet Rollen und Entscheidungen ab."
+    }
+  ]
+}

@@ -26,6 +26,8 @@ class FakeChatAdapter implements ChatCaptureClaudeAdapter {
   finishReason = "stop";
   completeUnderstanding = false;
   streamError = false;
+  /** Hält den Zug offen, bis der Test ihn freigibt — für Stopp-/Reload-Proben. */
+  hold: Promise<void> | null = null;
   async startTurn(request: ChatCaptureTurnRequest) {
     this.calls.push(request);
     const lines = (
@@ -67,6 +69,14 @@ class FakeChatAdapter implements ChatCaptureClaudeAdapter {
         input: { file_path: "process-understanding.json" },
       };
       if (adapter.streamError) throw new Error("provider failed");
+      if (adapter.hold)
+        await new Promise<void>((resolve, reject) => {
+          const stop = () =>
+            reject(new Error("Chat turn aborted by provider."));
+          if (request.signal.aborted) return stop();
+          request.signal.addEventListener("abort", stop, { once: true });
+          adapter.hold!.then(resolve, reject);
+        });
       complete();
     })(this);
     return {
@@ -119,6 +129,36 @@ async function fixture() {
   };
 }
 
+/**
+ * Öffnet die Unterlagen-Schleuse. Der Verzicht ist ein fest verdrahteter
+ * Zustandswechsel ohne KI-Zug — Voraussetzung für jede gewöhnliche Nachricht.
+ */
+async function openGate(app: Hono, id: string) {
+  const response = await app.request(
+    `/api/processes/${id}/chat/skip-documents`,
+    {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id: crypto.randomUUID() }),
+    },
+  );
+  expect(response.status).toBe(200);
+}
+
+/** Wartet, bis der Server keinen Zug mehr für diesen Prozess führt. */
+async function settle(app: Hono, id: string) {
+  for (let attempt = 0; attempt < 200; attempt += 1) {
+    const view = (await (
+      await app.request(`/api/processes/${id}/chat`)
+    ).json()) as {
+      activeTurn: unknown;
+    };
+    if (!view.activeTurn) return;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  throw new Error("Der Zug wurde nicht beendet.");
+}
+
 describe("chat capture API", () => {
   test("GET is passive and the document gate blocks ordinary messages", async () => {
     const { app, processes, record, ai } = await fixture();
@@ -149,14 +189,15 @@ describe("chat capture API", () => {
 
   test("streams a turn, resumes the same session, and persists one idempotent user event", async () => {
     const { app, record, ai, service } = await fixture();
+    await openGate(app, record.id);
     const firstId = crypto.randomUUID();
     const first = await app.request(`/api/processes/${record.id}/chat`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         id: firstId,
-        text: "Ohne Unterlagen fortfahren.",
-        action: "skip_documents",
+        text: "Bitte erfassen Sie den Prozess.",
+        action: "message",
         selectedUploadIds: [],
         mentions: [],
       }),
@@ -202,13 +243,14 @@ describe("chat capture API", () => {
 
   test("publishes only safe transient activity and understanding events", async () => {
     const { app, record } = await fixture();
+    await openGate(app, record.id);
     const response = await app.request(`/api/processes/${record.id}/chat`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         id: crypto.randomUUID(),
-        text: "Ohne Unterlagen fortfahren.",
-        action: "skip_documents",
+        text: "Bitte erfassen Sie den Prozess.",
+        action: "message",
         selectedUploadIds: [],
         mentions: [],
       }),
@@ -227,10 +269,11 @@ describe("chat capture API", () => {
 
   test("returns duplicate turns with safe state and idle cleanup only", async () => {
     const { app, record, ai } = await fixture();
+    await openGate(app, record.id);
     const request = {
       id: crypto.randomUUID(),
-      text: "Ohne Unterlagen fortfahren.",
-      action: "skip_documents",
+      text: "Bitte erfassen Sie den Prozess.",
+      action: "message",
       selectedUploadIds: [],
       mentions: [],
     };
@@ -255,14 +298,15 @@ describe("chat capture API", () => {
 
   test("cleans up activity and persists a failed provider stream once", async () => {
     const { app, record, ai, service } = await fixture();
+    await openGate(app, record.id);
     ai.streamError = true;
     const response = await app.request(`/api/processes/${record.id}/chat`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         id: crypto.randomUUID(),
-        text: "Ohne Unterlagen fortfahren.",
-        action: "skip_documents",
+        text: "Bitte erfassen Sie den Prozess.",
+        action: "message",
         selectedUploadIds: [],
         mentions: [],
       }),
@@ -277,13 +321,14 @@ describe("chat capture API", () => {
 
   test("requires explicit override, confirms durably, and starts opportunities", async () => {
     const { app, processes, record, opportunityStarts } = await fixture();
+    await openGate(app, record.id);
     const turn = await app.request(`/api/processes/${record.id}/chat`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         id: crypto.randomUUID(),
-        text: "Ohne Unterlagen fortfahren.",
-        action: "skip_documents",
+        text: "Bitte erfassen Sie den Prozess.",
+        action: "message",
         selectedUploadIds: [],
         mentions: [],
       }),
@@ -317,14 +362,15 @@ describe("chat capture API", () => {
 
   test("confirms a complete understanding without override and starts opportunities", async () => {
     const { app, processes, record, ai, opportunityStarts } = await fixture();
+    await openGate(app, record.id);
     ai.completeUnderstanding = true;
     const turn = await app.request(`/api/processes/${record.id}/chat`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         id: crypto.randomUUID(),
-        text: "Ohne Unterlagen fortfahren.",
-        action: "skip_documents",
+        text: "Bitte erfassen Sie den Prozess.",
+        action: "message",
         selectedUploadIds: [],
         mentions: [],
       }),
@@ -363,14 +409,15 @@ describe("chat capture API", () => {
 
   test("records an unclean provider finish as failed and prepares recovery", async () => {
     const { app, record, ai, service } = await fixture();
+    await openGate(app, record.id);
     ai.finishReason = "error";
     const response = await app.request(`/api/processes/${record.id}/chat`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         id: crypto.randomUUID(),
-        text: "Ohne Unterlagen fortfahren.",
-        action: "skip_documents",
+        text: "Bitte erfassen Sie den Prozess.",
+        action: "message",
         selectedUploadIds: [],
         mentions: [],
       }),
@@ -411,13 +458,14 @@ describe("chat capture API", () => {
 
   test("forwards abort state and records an explicitly aborted turn", async () => {
     const { record, ai, service } = await fixture();
+    await service.skipDocuments(record.id, crypto.randomUUID());
     const controller = new AbortController();
     const active = await service.startTurn(
       record.id,
       {
         id: crypto.randomUUID(),
-        text: "Ohne Unterlagen fortfahren.",
-        action: "skip_documents",
+        text: "Bitte erfassen Sie den Prozess.",
+        action: "message",
         selectedUploadIds: [],
         mentions: [],
       },
@@ -437,13 +485,14 @@ describe("chat capture API", () => {
 
   test("keeps confirmation durable when automatic opportunity start fails", async () => {
     const { app, processes, record, opportunities } = await fixture();
+    await openGate(app, record.id);
     const turn = await app.request(`/api/processes/${record.id}/chat`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         id: crypto.randomUUID(),
-        text: "Ohne Unterlagen fortfahren.",
-        action: "skip_documents",
+        text: "Bitte erfassen Sie den Prozess.",
+        action: "message",
         selectedUploadIds: [],
         mentions: [],
       }),
@@ -463,5 +512,139 @@ describe("chat capture API", () => {
     expect(confirmed.status).toBe(200);
     expect((await confirmed.json()).opportunityStart).toBe("failed");
     expect((await processes.required(record.id)).state).toBe("confirmed");
+  });
+
+  test("skips documents without any model call and stays idempotent", async () => {
+    const { app, record, ai, service } = await fixture();
+    const turnId = crypto.randomUUID();
+    const body = { id: turnId };
+    const first = await app.request(
+      `/api/processes/${record.id}/chat/skip-documents`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      },
+    );
+    expect(first.status).toBe(200);
+    expect(await first.json()).toEqual({ duplicate: false });
+    expect(ai.calls).toHaveLength(0);
+    const state = await service.chats.state(record.id);
+    expect(state.documentGate).toBe("skipped");
+    expect(state.lastTurnOutcome).toBe("completed");
+    // Eröffnungsnachricht plus das feste Paar aus Verzicht und Rückfrage.
+    const transcript = await service.chats.transcript(record.id);
+    expect(transcript).toHaveLength(3);
+    expect(transcript[1]).toMatchObject({
+      role: "user",
+      action: "skip_documents",
+      status: "complete",
+    });
+    expect(transcript[2]).toMatchObject({
+      role: "assistant",
+      action: "skip_documents",
+      status: "complete",
+    });
+    expect(transcript[2]?.text).toContain("Was löst den Vorgang aus");
+    const repeat = await app.request(
+      `/api/processes/${record.id}/chat/skip-documents`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      },
+    );
+    // Zweiter Klick auf denselben Knopf: Die Schleuse ist zu, nichts wird
+    // doppelt geschrieben.
+    expect(repeat.status).toBe(409);
+    expect(await service.chats.transcript(record.id)).toHaveLength(3);
+  });
+
+  test("keeps a turn running when the client connection goes away", async () => {
+    const { app, record, ai, service } = await fixture();
+    await openGate(app, record.id);
+    let release!: () => void;
+    ai.hold = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const response = await app.request(`/api/processes/${record.id}/chat`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        text: "Bitte erfassen Sie den Prozess.",
+        action: "message",
+        selectedUploadIds: [],
+        mentions: [],
+      }),
+    });
+    // Neuladen der Seite: Der Antwortstrom wird verworfen, der Zug nicht.
+    await response.body?.cancel();
+    release();
+    await settle(app, record.id);
+    expect((await service.chats.state(record.id)).lastTurnOutcome).toBe(
+      "completed",
+    );
+    const transcript = await service.chats.transcript(record.id);
+    expect(transcript.at(-1)).toMatchObject({
+      role: "assistant",
+      status: "complete",
+    });
+    expect(transcript.at(-1)?.text).toContain(
+      "Ich habe einen ersten Stand erstellt",
+    );
+  });
+
+  test("reports the running turn, rejects a second one, and stops on request", async () => {
+    const { app, record, ai, service } = await fixture();
+    await openGate(app, record.id);
+    ai.hold = new Promise<void>(() => {});
+    const running = app.request(`/api/processes/${record.id}/chat`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        text: "Bitte erfassen Sie den Prozess.",
+        action: "message",
+        selectedUploadIds: [],
+        mentions: [],
+      }),
+    });
+    await running;
+    const view = await (
+      await app.request(`/api/processes/${record.id}/chat`)
+    ).json();
+    expect(view.activeTurn).toMatchObject({ action: "message" });
+    const second = await app.request(`/api/processes/${record.id}/chat`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        text: "Noch eine Nachricht.",
+        action: "message",
+        selectedUploadIds: [],
+        mentions: [],
+      }),
+    });
+    expect(second.status).toBe(409);
+    expect(ai.calls).toHaveLength(1);
+    const stopped = await app.request(`/api/processes/${record.id}/chat/stop`, {
+      method: "POST",
+    });
+    expect(stopped.status).toBe(200);
+    expect((await service.chats.state(record.id)).lastTurnOutcome).toBe(
+      "aborted",
+    );
+    const idle = await app.request(`/api/processes/${record.id}/chat/stop`, {
+      method: "POST",
+    });
+    expect(idle.status).toBe(409);
+    expect(
+      (
+        (await (
+          await app.request(`/api/processes/${record.id}/chat`)
+        ).json()) as { activeTurn: unknown }
+      ).activeTurn,
+    ).toBeNull();
   });
 });

@@ -191,7 +191,11 @@ export function ProcessChatTranscript({
                   <MessageContent
                     className={
                       message.role === "user"
-                        ? "max-w-[85%] rounded-xl bg-muted px-4 py-3 text-body text-foreground"
+                        ? // Kein `text-foreground` daneben: tailwind-merge hält
+                          // die eigenen Schriftgrößen (`text-body`) für eine
+                          // Farbe und würde sie verwerfen — die Blase fiele dann
+                          // auf 14px zurück, während die Antwort 16px behält.
+                          "max-w-[85%] rounded-xl bg-muted px-4 py-3 text-body"
                         : "max-w-full text-body"
                     }
                   >

@@ -25,6 +25,12 @@ describe("chat AI runtime contract", () => {
       join(process.cwd(), "apps/server/src/routes/chat-captures.ts"),
       "utf8",
     );
+    // Die Zugschleife lebt seit dem Hintergrund-Runner nicht mehr in der Route:
+    // Die Route hört nur noch zu.
+    const runner = await readFile(
+      join(process.cwd(), "apps/server/src/chat-turn-runner.ts"),
+      "utf8",
+    );
     expect(adapter).toContain("streamText");
     expect(adapter).toContain('provider("claude-opus-4-8"');
     expect(adapter).toContain('effort: "medium"');
@@ -32,12 +38,17 @@ describe("chat AI runtime contract", () => {
     expect(adapter).toContain("settingSources: []");
     expect(adapter).toContain("maxTurns: 12");
     expect(route).toContain("createUIMessageStreamResponse");
-    expect(route).toContain(
+    expect(runner).toContain(
       "for await (const part of active.result.fullStream)",
     );
+    expect(runner).not.toContain("consumeStream");
     expect(route).not.toContain("consumeStream");
     expect(route).toContain("data-chat-activity");
     expect(route).not.toContain("writer.write({ type: part.type");
+    // Der Zug bekommt sein eigenes Abbruchsignal — die HTTP-Verbindung darf ihn
+    // nicht mehr beenden (Neuladen der Seite).
+    expect(runner).toContain("new AbortController()");
+    expect(route).not.toContain("c.req.raw.signal");
   });
 
   test("keeps the published JSON schema aligned with nested runtime IDs", async () => {

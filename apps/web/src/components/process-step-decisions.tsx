@@ -10,7 +10,7 @@ import { cn } from "../lib/utils";
 type Step = ProcessUnderstanding["steps"][number];
 type Decision = Step["decisions"][number];
 
-const decisionModeCopy: Record<Decision["mode"], string> = {
+export const decisionModeCopy: Record<Decision["mode"], string> = {
   rule_based: "Feste Regel",
   professional_judgement: "Fachliche Einschätzung",
   mixed: "Regel und fachliche Einschätzung",
