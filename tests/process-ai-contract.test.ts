@@ -484,14 +484,15 @@ describe("process AI contract", () => {
       followUpAnswers: [],
     });
     expect(result.value.steps).toHaveLength(5);
-    expect(result.value.schemaVersion).toBe(2);
+    expect(result.value.schemaVersion).toBe(3);
     expect(result.value.steps[0]?.informationItems[0]?.id).toBe(
       "info-step-1-1",
     );
-    expect(result.value.steps[0]?.decisions[0]?.id).toBe("decision-step-1-1");
-    expect(result.value.steps[0]?.decisions[0]?.options[0]?.id).toBe(
-      "option-step-1-1-1",
-    );
+    expect(result.value.flow.nodes).toContainEqual({
+      id: "step-1",
+      kind: "step",
+      stepId: "step-1",
+    });
     expect(
       captured?.command.slice(captured.command.indexOf("--tools") + 1)[0],
     ).toBe("Read,Glob,Bash");
@@ -520,7 +521,7 @@ describe("process AI contract", () => {
     }
   });
 
-  test("requires the v2 synthesis fields and keeps nested IDs server-owned", async () => {
+  test("requires the v3 synthesis fields and keeps nested IDs server-owned", async () => {
     const schema = JSON.parse(
       await readFile(
         join(
@@ -533,17 +534,17 @@ describe("process AI contract", () => {
         "utf8",
       ),
     );
-    expect(schema.$id).toBe("claims-ai/process-understanding/v2");
+    expect(schema.$id).toBe("claims-ai/process-understanding/v3");
     expect(schema.required).toContain("schemaVersion");
     expect(schema.$defs.step.required).toEqual(
       expect.arrayContaining([
         "inputs",
         "outputs",
         "informationItems",
-        "decisions",
         "miscellaneous",
       ]),
     );
+    expect(schema.required).toContain("flow");
     expect(schema.$defs.informationItem.required).toContain("typeDetail");
     expect(
       processSynthesisResultSchema.safeParse(synthesisUnderstanding()).success,

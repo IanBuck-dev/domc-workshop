@@ -60,8 +60,9 @@ describe("chat AI runtime contract", () => {
     );
     expect(schema.properties.steps.minItems).toBe(1);
     expect(schema.$defs.informationItem.required).toContain("id");
-    expect(schema.$defs.decision.required).toContain("id");
-    expect(schema.$defs.decisionOption.required).toContain("id");
+    expect(schema.properties.flow.$ref).toBe("#/$defs/flow");
+    expect(schema.$defs.gatewayNode.required).toContain("question");
+    expect(schema.$defs.flowEdge.required).toEqual(["id", "source", "target"]);
     expect(schema.$defs.evidence.properties.kind.enum).toContain(
       "human_correction",
     );

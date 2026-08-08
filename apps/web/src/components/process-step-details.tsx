@@ -2,6 +2,7 @@ import type { ProcessUnderstanding } from "../lib/process-types";
 import {
   ProcessStepDecisions,
   decisionModeCopy,
+  gatewayForStep,
 } from "./process-step-decisions";
 import {
   ProcessStepInformation,
@@ -29,10 +30,12 @@ type Step = ProcessUnderstanding["steps"][number];
 export function ProcessStepDetails({
   step,
   steps,
+  flow,
   layout = "wide",
 }: {
   step: Step;
   steps: ProcessUnderstanding["steps"];
+  flow: ProcessUnderstanding["flow"];
   layout?: "wide" | "compact";
 }) {
   const compact = layout === "compact";
@@ -53,13 +56,9 @@ export function ProcessStepDetails({
         />
       )}
       {compact ? (
-        <CompactDecisions decisions={step.decisions ?? []} steps={steps} />
+        <CompactDecisions stepId={step.id} flow={flow} steps={steps} />
       ) : (
-        <ProcessStepDecisions
-          stepId={step.id}
-          decisions={step.decisions ?? []}
-          steps={steps}
-        />
+        <ProcessStepDecisions stepId={step.id} flow={flow} steps={steps} />
       )}
       <section className="grid gap-2">
         <SectionHeading compact={compact}>Sonstiges</SectionHeading>
@@ -169,65 +168,47 @@ function CompactInformation({ items }: { items: Step["informationItems"] }) {
 }
 
 function CompactDecisions({
-  decisions,
+  stepId,
+  flow,
   steps,
 }: {
-  decisions: Step["decisions"];
+  stepId: string;
+  flow: ProcessUnderstanding["flow"];
   steps: ProcessUnderstanding["steps"];
 }) {
-  const stepById = new Map(steps.map((item) => [item.id, item]));
+  const { gateway, edges } = gatewayForStep(flow, stepId);
+  const targetLabel = (targetId: string) => {
+    const target = flow.nodes.find((node) => node.id === targetId);
+    if (target?.kind === "step") {
+      const step = steps.find((item) => item.id === target.stepId);
+      return step ? `Weiter mit Schritt ${step.order}` : "Ziel unbekannt";
+    }
+    return target?.kind === "endEvent" ? "Prozessende" : "Ziel unbekannt";
+  };
   return (
     <section className="grid gap-2">
       <SectionHeading compact>Varianten und Entscheidungen</SectionHeading>
-      {decisions.length ? (
-        <ul className="grid gap-4">
-          {decisions.map((decision) => (
-            <li
-              key={decision.id}
-              className="grid gap-2 border-l-2 border-border pl-3 text-caption"
-            >
-              {/* Halbfett gegen die Optionen darunter, die nur `font-medium`
-                  tragen — sonst liest sich der Block als eine Ebene. */}
-              <p className="font-semibold">{decision.question}</p>
-              <Badge variant="outline" className="justify-self-start">
-                {decisionModeCopy[decision.mode]}
-              </Badge>
-              {decision.options.length ? (
-                <ul className="grid gap-2">
-                  {decision.options.map((option) => {
-                    const next = option.nextStepId
-                      ? stepById.get(option.nextStepId)
-                      : undefined;
-                    return (
-                      <li key={option.id}>
-                        <span className="font-medium">{option.label}</span>
-                        <span className="block text-muted-foreground">
-                          {option.determination ??
-                            "Feststellung noch unbekannt"}{" "}
-                          → {option.consequence ?? "Folge noch unbekannt"}
-                        </span>
-                        {next && (
-                          // Nur die Nummer: Der volle Schrittname stünde hier
-                          // ein zweites Mal und nähme zwei weitere Zeilen.
-                          <span
-                            className="block text-muted-foreground"
-                            title={next.name}
-                          >
-                            Weiter mit Schritt {next.order}
-                          </span>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <p className="text-caption text-muted-foreground">
-                  Entscheidungsoptionen noch unbekannt
-                </p>
-              )}
-            </li>
-          ))}
-        </ul>
+      {gateway ? (
+        <div className="grid gap-2 border-l-2 border-border pl-3 text-caption">
+          <p className="font-semibold">{gateway.question}</p>
+          <Badge variant="outline" className="justify-self-start">
+            {decisionModeCopy[gateway.mode]}
+          </Badge>
+          <ul className="grid gap-2">
+            {edges.map((edge) => (
+              <li key={edge.id}>
+                <span className="font-medium">{edge.label}</span>
+                <span className="block text-muted-foreground">
+                  {edge.determination ?? "Feststellung noch unbekannt"} →{" "}
+                  {edge.consequence ?? "Folge noch unbekannt"}
+                </span>
+                <span className="block text-muted-foreground">
+                  {targetLabel(edge.target)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : (
         <p className="text-caption text-muted-foreground">
           Keine Entscheidung erforderlich oder benannt

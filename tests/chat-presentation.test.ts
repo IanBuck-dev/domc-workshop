@@ -107,14 +107,16 @@ describe("chat milestone presentation", () => {
 
   test("removes only legacy prefixes backed by structured mentions", () => {
     const mention = {
-      kind: "step" as const,
-      stepId: "step-1",
-      label: "Schritt-1",
+      kind: "node" as const,
+      nodeId: "step-1",
+      label: 'Schritt 1 „Eingang prüfen"',
       nameSnapshot: "Eingang prüfen",
       understandingRevision: revision,
     };
     expect(
-      withoutLegacyMentionPrefix("@Schritt-1 Bitte prüfen.", [mention]),
+      withoutLegacyMentionPrefix('@Schritt 1 „Eingang prüfen" Bitte prüfen.', [
+        mention,
+      ]),
     ).toBe("Bitte prüfen.");
     expect(withoutLegacyMentionPrefix("@freier-text", [mention])).toBe(
       "@freier-text",
@@ -137,61 +139,81 @@ describe("chat milestone presentation", () => {
     expect(classifyChatMilestone(message("message"))).toBeNull();
   });
 
-  test("keeps step and transition mentions live only for current stable targets", () => {
+  test("resolves current graph nodes and edges without linear adjacency", () => {
     const current = understanding();
-    const [first, second] = current.steps;
-    if (!first || !second) throw new Error("Fixture requires two steps.");
-    const step = {
-      kind: "step" as const,
-      stepId: first.id,
-      label: "Schritt-1",
+    const first = current.steps[0];
+    if (!first) throw new Error("Fixture requires a step.");
+    const node = {
+      kind: "node" as const,
+      nodeId: "step-1",
+      label: 'Schritt 1 „Hauptschritt 1"',
       nameSnapshot: first.name,
       understandingRevision: revision,
     };
-    expect(resolveChatMention(step, current)).toMatchObject({
-      target: { kind: "step", stepId: first.id },
-      currentLabel: `Jetzt Schritt ${first.order} · ${first.name}`,
+    expect(resolveChatMention(node, current)).toMatchObject({
+      target: { kind: "node", nodeId: "step-1" },
+      currentLabel: `Schritt ${first.order} „${first.name}"`,
     });
     expect(
-      resolveChatMention({ ...step, stepId: "removed" }, current)
+      resolveChatMention({ ...node, nodeId: "step-99" }, current)
         .historicalLabel,
-    ).toBe("Schritt existiert nur in einer früheren Version");
-    const transition = {
-      kind: "transition" as const,
-      fromStepId: first.id,
-      toStepId: second.id,
-      label: "Übergang-1-2",
-      nameSnapshot: `Von ${first.name} zu ${second.name}`,
+    ).toBe("Bezug existiert nur in einer früheren Version");
+    const edge = {
+      kind: "edge" as const,
+      edgeId: "edge-2",
+      label: "Übergang Schritt 1 → 2",
+      nameSnapshot: null,
       understandingRevision: revision,
     };
-    expect(resolveChatMention(transition, current).target).toEqual({
-      kind: "transition",
-      fromStepId: first.id,
-      toStepId: second.id,
+    expect(resolveChatMention(edge, current).target).toEqual({
+      kind: "edge",
+      edgeId: "edge-2",
     });
-    const reordered = structuredClone(current);
-    [reordered.steps[0], reordered.steps[1]] = [
-      reordered.steps[1]!,
-      reordered.steps[0]!,
-    ];
-    expect(resolveChatMention(transition, reordered).historicalLabel).toBe(
-      "Übergang existiert nur in einer früheren Version",
-    );
+    expect(
+      resolveChatMention({ ...edge, edgeId: "edge-99" }, current)
+        .historicalLabel,
+    ).toBe("Übergang existiert nur in einer früheren Version");
+    expect(
+      isChatMentionTargetAvailable({ kind: "edge", edgeId: "edge-2" }, current),
+    ).toBe(true);
     expect(
       isChatMentionTargetAvailable(
-        {
-          kind: "transition",
-          fromStepId: first.id,
-          toStepId: second.id,
-        },
-        reordered,
-      ),
-    ).toBe(false);
-    expect(
-      isChatMentionTargetAvailable(
-        { kind: "step", stepId: "removed" },
+        { kind: "node", nodeId: "step-99" },
         current,
       ),
     ).toBe(false);
+  });
+
+  test("uses edge labels and graph order for readable transition tokens", () => {
+    const current = structuredClone(understanding());
+    current.flow.edges.push({
+      id: "edge-7",
+      source: "step-3",
+      target: "step-1",
+      label: "Unterlagen nachfordern",
+    });
+    const resolved = resolveChatMention(
+      {
+        kind: "edge",
+        edgeId: "edge-7",
+        label: "alt",
+        nameSnapshot: null,
+        understandingRevision: revision,
+      },
+      current,
+    );
+    expect(resolved.currentLabel).toBe('Rücksprung „Unterlagen nachfordern"');
+    expect(
+      resolveChatMention(
+        {
+          kind: "node",
+          nodeId: "start",
+          label: "alt",
+          nameSnapshot: null,
+          understandingRevision: revision,
+        },
+        current,
+      ).currentLabel,
+    ).toBe('Start „Ein Lead wurde länger nicht kontaktiert."');
   });
 });

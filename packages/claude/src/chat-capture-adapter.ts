@@ -1,5 +1,10 @@
-import { streamText } from "ai";
-import { createClaudeCode, deleteSession } from "ai-sdk-provider-claude-code";
+import { streamText, tool } from "ai";
+import {
+  createAiSdkMcpServer,
+  createClaudeCode,
+  deleteSession,
+} from "ai-sdk-provider-claude-code";
+import { z } from "zod";
 import type {
   ChatCaptureClaudeAdapter,
   ChatCaptureTurnRequest,
@@ -13,6 +18,19 @@ export class ClaudeChatCaptureAdapter implements ChatCaptureClaudeAdapter {
     const spawnClaudeCodeProcess = await prepareChatSandboxSpawn({
       cwd: request.cwd,
     });
+    let verifiedRevision: string | null = null;
+    const processTools = {
+      verify_process_flow: tool({
+        description:
+          "Prüft die bereits geschriebene process-understanding.json vollständig. Nach jedem Write und vor dem Abschluss aufrufen; Fehler korrigieren und erneut prüfen.",
+        inputSchema: z.object({}),
+        execute: async () => {
+          const verification = await request.verifyProcessFlow();
+          verifiedRevision = verification.ok ? verification.revision : null;
+          return verification;
+        },
+      }),
+    };
     const provider = createClaudeCode({
       defaultSettings: {
         pathToClaudeCodeExecutable: Bun.which("claude") ?? "claude",
@@ -23,7 +41,16 @@ export class ClaudeChatCaptureAdapter implements ChatCaptureClaudeAdapter {
         maxBudgetUsd: request.maxBudgetUsd,
         persistSession: true,
         settingSources: [],
-        allowedTools: ["Read", "Glob", "Bash", "Write"],
+        mcpServers: {
+          process: createAiSdkMcpServer("process", processTools),
+        },
+        allowedTools: [
+          "Read",
+          "Glob",
+          "Bash",
+          "Write",
+          "mcp__process__verify_process_flow",
+        ],
         permissionMode: "bypassPermissions",
         allowDangerouslySkipPermissions: true,
         spawnClaudeCodeProcess,
@@ -42,6 +69,10 @@ export class ClaudeChatCaptureAdapter implements ChatCaptureClaudeAdapter {
         timeout: { totalMs: request.timeoutMs },
       }),
       requestedSessionId: request.sessionId,
+      verification: () => ({
+        ok: verifiedRevision !== null,
+        revision: verifiedRevision,
+      }),
     };
   }
 

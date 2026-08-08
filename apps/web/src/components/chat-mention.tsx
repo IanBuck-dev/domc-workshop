@@ -1,8 +1,7 @@
 import type { ChatMention, ProcessUnderstanding } from "../lib/process-types";
 
 export type ChatMentionTarget =
-  | { kind: "step"; stepId: string }
-  | { kind: "transition"; fromStepId: string; toStepId: string };
+  { kind: "node"; nodeId: string } | { kind: "edge"; edgeId: string };
 
 export type ResolvedChatMention = {
   target: ChatMentionTarget | null;
@@ -11,66 +10,91 @@ export type ResolvedChatMention = {
   showCurrentLabel: boolean;
 };
 
+function nodeLabel(nodeId: string, understanding: ProcessUnderstanding) {
+  const node = understanding.flow.nodes.find((item) => item.id === nodeId);
+  if (!node) return null;
+  if (node.kind === "startEvent")
+    return understanding.trigger.value
+      ? `Start „${understanding.trigger.value}"`
+      : "Start";
+  if (node.kind === "endEvent")
+    return understanding.outcome.value
+      ? `Ende „${understanding.outcome.value}"`
+      : "Ende";
+  if (node.kind === "gateway") return `Verzweigung „${node.question}"`;
+  const step = understanding.steps.find((item) => item.id === node.stepId);
+  return step ? `Schritt ${step.order} „${step.name}"` : null;
+}
+
+function stepOrderForNode(
+  nodeId: string,
+  understanding: ProcessUnderstanding,
+): number | undefined {
+  const node = understanding.flow.nodes.find((item) => item.id === nodeId);
+  if (node?.kind === "step")
+    return understanding.steps.find((step) => step.id === node.stepId)?.order;
+  if (node?.kind === "gateway") {
+    const source = understanding.flow.edges.find(
+      (edge) => edge.target === node.id,
+    )?.source;
+    return source ? stepOrderForNode(source, understanding) : undefined;
+  }
+  return undefined;
+}
+
+function edgeLabel(edgeId: string, understanding: ProcessUnderstanding) {
+  const edge = understanding.flow.edges.find((item) => item.id === edgeId);
+  if (!edge) return null;
+  const sourceOrder = stepOrderForNode(edge.source, understanding);
+  const targetOrder = stepOrderForNode(edge.target, understanding);
+  // Ein Rücksprung ist fachlich die Kante zurück zu einem früheren Schritt.
+  const backwards =
+    sourceOrder !== undefined &&
+    targetOrder !== undefined &&
+    targetOrder < sourceOrder;
+  if (edge.label)
+    return `${backwards ? "Rücksprung" : "Übergang"} „${edge.label}"`;
+  const source = nodeLabel(edge.source, understanding);
+  const target = nodeLabel(edge.target, understanding);
+  return source && target ? `Übergang ${source} → ${target}` : null;
+}
+
 export function isChatMentionTargetAvailable(
   target: ChatMentionTarget,
   understanding: ProcessUnderstanding | null,
 ) {
-  const steps = understanding?.steps ?? [];
-  if (target.kind === "step")
-    return steps.some((step) => step.id === target.stepId);
-  const fromIndex = steps.findIndex((step) => step.id === target.fromStepId);
-  const toIndex = steps.findIndex((step) => step.id === target.toStepId);
-  return fromIndex >= 0 && toIndex === fromIndex + 1;
+  if (!understanding) return false;
+  return target.kind === "node"
+    ? understanding.flow.nodes.some((node) => node.id === target.nodeId)
+    : understanding.flow.edges.some((edge) => edge.id === target.edgeId);
 }
 
 export function resolveChatMention(
   mention: ChatMention,
   understanding: ProcessUnderstanding | null,
 ): ResolvedChatMention {
-  const steps = understanding?.steps ?? [];
-  if (mention.kind === "step") {
-    const step = steps.find((item) => item.id === mention.stepId);
-    return step
-      ? {
-          target: { kind: "step", stepId: step.id },
-          currentLabel: `Jetzt Schritt ${step.order} · ${step.name}`,
-          historicalLabel: null,
-          showCurrentLabel:
-            mention.label !== `Schritt-${step.order}` ||
-            (mention.nameSnapshot !== null &&
-              mention.nameSnapshot !== step.name),
-        }
-      : {
-          target: null,
-          currentLabel: null,
-          historicalLabel: "Schritt existiert nur in einer früheren Version",
-          showCurrentLabel: false,
-        };
-  }
-  const fromIndex = steps.findIndex((item) => item.id === mention.fromStepId);
-  const toIndex = steps.findIndex((item) => item.id === mention.toStepId);
-  const from = steps[fromIndex];
-  const to = steps[toIndex];
-  return from && to && toIndex === fromIndex + 1
-    ? {
-        target: {
-          kind: "transition",
-          fromStepId: from.id,
-          toStepId: to.id,
-        },
-        currentLabel: `Jetzt Übergang Schritt ${from.order} zu Schritt ${to.order}`,
-        historicalLabel: null,
-        showCurrentLabel:
-          mention.label !== `Übergang-${from.order}-${to.order}` ||
-          (mention.nameSnapshot !== null &&
-            mention.nameSnapshot !== `Von ${from.name} zu ${to.name}`),
-      }
-    : {
-        target: null,
-        currentLabel: null,
-        historicalLabel: "Übergang existiert nur in einer früheren Version",
-        showCurrentLabel: false,
-      };
+  const target: ChatMentionTarget =
+    mention.kind === "node"
+      ? { kind: "node", nodeId: mention.nodeId }
+      : { kind: "edge", edgeId: mention.edgeId };
+  const currentLabel = understanding
+    ? target.kind === "node"
+      ? nodeLabel(target.nodeId, understanding)
+      : edgeLabel(target.edgeId, understanding)
+    : null;
+  if (currentLabel)
+    return {
+      target,
+      currentLabel,
+      historicalLabel: null,
+      showCurrentLabel: false,
+    };
+  return {
+    target: null,
+    currentLabel: null,
+    historicalLabel: `${mention.kind === "node" ? "Bezug" : "Übergang"} existiert nur in einer früheren Version`,
+    showCurrentLabel: false,
+  };
 }
 
 export function ChatMentionToken({
@@ -82,7 +106,7 @@ export function ChatMentionToken({
   resolved: ResolvedChatMention;
   onActivate: (target: ChatMentionTarget) => void;
 }) {
-  const label = `@${mention.label}`;
+  const label = `@${resolved.currentLabel ?? mention.label}`;
   if (!resolved.target)
     return (
       <span
@@ -99,7 +123,7 @@ export function ChatMentionToken({
       <button
         type="button"
         className="inline-flex max-w-full items-center whitespace-nowrap rounded-full border border-primary/25 bg-primary/10 px-2 py-1 text-left text-label text-primary hover:bg-primary/15 focus:outline-none focus:ring-2 focus:ring-ring"
-        aria-label={`${label}. ${resolved.currentLabel}`}
+        aria-label={label}
         onClick={() => onActivate(resolved.target!)}
       >
         {label}

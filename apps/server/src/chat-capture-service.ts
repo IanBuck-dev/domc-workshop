@@ -10,6 +10,7 @@ import type { ProcessCaptureRecord } from "../../../packages/domain/src/process-
 import type { ChatCaptureClaudeAdapter } from "../../../packages/claude/src/chat-capture-contracts.ts";
 import { ChatCaptureRepository } from "../../../packages/storage/src/chat-capture-repository.ts";
 import { ProcessCaptureRepository } from "../../../packages/storage/src/process-capture-repository.ts";
+import { verifyProcessFlowFile } from "./process-flow-verification.ts";
 
 export type { ChatUnderstandingEvent } from "../../../packages/domain/src/chat-capture.ts";
 
@@ -26,6 +27,7 @@ export type ActiveChatTurn = {
   previousSessionId: string;
   replacementCandidateId: string | null;
   result: StreamTextResult<ToolSet, any, any>;
+  verification: () => { ok: boolean; revision: string | null };
 };
 
 export class ChatCaptureService {
@@ -77,7 +79,7 @@ export class ChatCaptureService {
       throw new Error("Der Umgang mit Unterlagen wurde bereits festgelegt.");
     const now = new Date().toISOString();
     const saved = await this.chats.append(id, {
-      schemaVersion: 1,
+      schemaVersion: 2,
       id: turnId,
       turnId,
       at: now,
@@ -94,7 +96,7 @@ export class ChatCaptureService {
       lastTurnOutcome: "completed",
     });
     await this.chats.append(id, {
-      schemaVersion: 1,
+      schemaVersion: 2,
       id: crypto.randomUUID(),
       turnId,
       at: new Date().toISOString(),
@@ -137,7 +139,7 @@ export class ChatCaptureService {
         selectedUploadIds: request.selectedUploadIds,
       });
     const saved = await this.chats.append(id, {
-      schemaVersion: 1,
+      schemaVersion: 2,
       id: request.id,
       turnId: request.id,
       at: new Date().toISOString(),
@@ -167,9 +169,9 @@ export class ChatCaptureService {
     const mentionText = request.mentions.length
       ? `\n\nBezüge aus dem Prozessbild:\n${request.mentions
           .map((mention) =>
-            mention.kind === "step"
-              ? `- ${mention.label} (stabile ID ${mention.stepId}, historischer Name: ${mention.nameSnapshot ?? "nicht verfügbar"}, Stand: ${mention.understandingRevision ?? "nicht verfügbar"})`
-              : `- ${mention.label} (${mention.fromStepId} -> ${mention.toStepId}, historischer Name: ${mention.nameSnapshot ?? "nicht verfügbar"}, Stand: ${mention.understandingRevision ?? "nicht verfügbar"})`,
+            mention.kind === "node"
+              ? `- ${mention.label} (Knoten-ID ${mention.nodeId}, historischer Name: ${mention.nameSnapshot ?? "nicht verfügbar"}, Stand: ${mention.understandingRevision ?? "nicht verfügbar"})`
+              : `- ${mention.label} (Kanten-ID ${mention.edgeId}, historischer Name: ${mention.nameSnapshot ?? "nicht verfügbar"}, Stand: ${mention.understandingRevision ?? "nicht verfügbar"})`,
           )
           .join("\n")}`
       : "";
@@ -203,6 +205,10 @@ export class ChatCaptureService {
       timeoutMs: record.configSnapshot.ai.timeoutMs,
       maxBudgetUsd: record.configSnapshot.ai.maxBudgetUsd,
       signal,
+      verifyProcessFlow: () =>
+        verifyProcessFlowFile(
+          join(this.processes.dir(id), "process-understanding.json"),
+        ),
     });
     return {
       duplicate: false,
@@ -212,6 +218,7 @@ export class ChatCaptureService {
       previousSessionId: session.activeSessionId,
       replacementCandidateId,
       result: result.result,
+      verification: result.verification,
     };
   }
 
@@ -223,6 +230,16 @@ export class ChatCaptureService {
     ]);
     if (finishReason !== "stop")
       throw new Error(`Chat turn did not finish cleanly: ${finishReason}`);
+    const verification = turn.verification();
+    const current = await verifyProcessFlowFile(
+      join(this.processes.dir(turn.record.id), "process-understanding.json"),
+    );
+    if (
+      !verification.ok ||
+      !current.ok ||
+      verification.revision !== current.revision
+    )
+      throw new Error("Chat turn did not verify the process flow.");
     const metadata = finalStep.providerMetadata?.["claude-code"] as
       Record<string, unknown> | undefined;
     const sessionId =
@@ -244,7 +261,7 @@ export class ChatCaptureService {
       lastTurnAt: new Date().toISOString(),
     });
     const assistant: ChatTranscriptEvent = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       id: crypto.randomUUID(),
       turnId: turn.requestId,
       at: new Date().toISOString(),
@@ -262,6 +279,7 @@ export class ChatCaptureService {
       assistant,
       understanding: await this.chats.reconcile(
         await this.processes.required(turn.record.id),
+        true,
       ),
     };
   }
@@ -271,7 +289,7 @@ export class ChatCaptureService {
       lastTurnOutcome: aborted ? "aborted" : "failed",
     });
     await this.chats.append(turn.record.id, {
-      schemaVersion: 1,
+      schemaVersion: 2,
       id: crypto.randomUUID(),
       turnId: turn.requestId,
       at: new Date().toISOString(),

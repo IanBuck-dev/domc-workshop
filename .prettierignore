@@ -3,3 +3,4 @@ workspace
 .local
 bun.lock
 .agents
+.claude

@@ -11,29 +11,28 @@ import { processCaptureRecordSchema } from "../packages/domain/src/process-under
 import { cover, processConfig } from "./process-fixtures.ts";
 
 describe("chat capture domain", () => {
-  test("validates stable step and transition mentions and rejects duplicates", () => {
+  test("validates stable node and edge mentions and rejects duplicates", () => {
     expect(
       chatMentionSchema.parse({
-        kind: "step",
-        stepId: "step-1",
+        kind: "node",
+        nodeId: "step-1",
         label: "Schritt-1",
       }),
     ).toEqual({
-      kind: "step",
-      stepId: "step-1",
+      kind: "node",
+      nodeId: "step-1",
       label: "Schritt-1",
       nameSnapshot: null,
       understandingRevision: null,
     });
     expect(
       chatMentionSchema.parse({
-        kind: "transition",
-        fromStepId: "step-1",
-        toStepId: "step-2",
+        kind: "edge",
+        edgeId: "edge-2",
         label: "Übergang-1-2",
       }),
     ).toMatchObject({
-      kind: "transition",
+      kind: "edge",
       nameSnapshot: null,
       understandingRevision: null,
     });
@@ -43,8 +42,8 @@ describe("chat capture domain", () => {
         text: "Bitte ändern.",
         action: "message",
         mentions: [
-          { kind: "step", stepId: "step-1", label: "Schritt-1" },
-          { kind: "step", stepId: "step-1", label: "Schritt-1" },
+          { kind: "node", nodeId: "step-1", label: "Schritt-1" },
+          { kind: "node", nodeId: "step-1", label: "Schritt-1" },
         ],
       }),
     ).toThrow("Mentions must be unique");
@@ -52,14 +51,14 @@ describe("chat capture domain", () => {
 
   test("defaults legacy mention snapshots and bounds new snapshots", () => {
     const legacy = chatTranscriptEventSchema.parse({
-      schemaVersion: 1,
+      schemaVersion: 2,
       id: crypto.randomUUID(),
       turnId: null,
       at: new Date().toISOString(),
       role: "user",
       status: "complete",
       text: "Bitte prüfen.",
-      mentions: [{ kind: "step", stepId: "step-1", label: "Schritt-1" }],
+      mentions: [{ kind: "node", nodeId: "step-1", label: "Schritt-1" }],
       action: "message",
     });
     expect(legacy.mentions[0]).toMatchObject({
@@ -68,8 +67,8 @@ describe("chat capture domain", () => {
     });
     expect(() =>
       chatMentionSchema.parse({
-        kind: "step",
-        stepId: "step-1",
+        kind: "node",
+        nodeId: "step-1",
         label: "Schritt-1",
         nameSnapshot: "x".repeat(241),
         understandingRevision: "a".repeat(64),

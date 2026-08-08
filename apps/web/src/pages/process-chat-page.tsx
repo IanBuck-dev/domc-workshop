@@ -137,30 +137,31 @@ function messageText(message: UIMessage) {
     .join("");
 }
 function mentionKey(mention: ChatMention) {
-  return mention.kind === "step"
-    ? `step:${mention.stepId}`
-    : `transition:${mention.fromStepId}:${mention.toStepId}`;
+  return mention.kind === "node"
+    ? `node:${mention.nodeId}`
+    : `edge:${mention.edgeId}`;
 }
 function snapshotMention(
   mention: ChatMention,
   understanding: ProcessUnderstanding | null,
   revision: string | null | undefined,
 ): ChatMention {
-  const steps = understanding?.steps ?? [];
-  if (mention.kind === "step") {
-    const step = steps.find((item) => item.id === mention.stepId);
-    return {
-      ...mention,
-      nameSnapshot: step?.name.slice(0, 240) ?? null,
-      understandingRevision: revision ?? null,
-    };
-  }
-  const from = steps.find((item) => item.id === mention.fromStepId);
-  const to = steps.find((item) => item.id === mention.toStepId);
+  const node =
+    mention.kind === "node"
+      ? understanding?.flow.nodes.find((item) => item.id === mention.nodeId)
+      : undefined;
+  const edge =
+    mention.kind === "edge"
+      ? understanding?.flow.edges.find((item) => item.id === mention.edgeId)
+      : undefined;
   return {
     ...mention,
     nameSnapshot:
-      from && to ? `Von ${from.name} zu ${to.name}`.slice(0, 240) : null,
+      (node?.kind === "step"
+        ? understanding?.steps.find((step) => step.id === node.stepId)?.name
+        : node?.kind === "gateway"
+          ? node.question
+          : edge?.label) ?? null,
     understandingRevision: revision ?? null,
   };
 }

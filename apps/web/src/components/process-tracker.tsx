@@ -1,7 +1,7 @@
 import { ArrowDown, ChevronDown, Expand, MessageCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ChatMention, ProcessUnderstanding } from "../lib/process-types";
-import type { ChatMentionTarget } from "./chat-mention";
+import { resolveChatMention, type ChatMentionTarget } from "./chat-mention";
 import { ProcessConfirmationActions } from "./process-confirmation-actions";
 import { ProcessStepDetails } from "./process-step-details";
 import { Button } from "./ui/button";
@@ -57,21 +57,57 @@ export function ProcessTracker({
   focusedTarget?: ChatMentionTarget | null;
 }) {
   const steps = understanding?.steps ?? [];
+  const stepNodeIds = new Map(
+    understanding?.flow.nodes
+      .filter((node) => node.kind === "step")
+      .map((node) => [node.stepId, node.id]) ?? [],
+  );
+  const edges = understanding?.flow.edges ?? [];
+  const edgeMention = (edgeId: string, fallback: string): ChatMention => {
+    const mention: ChatMention = {
+      kind: "edge",
+      edgeId,
+      label: fallback,
+      nameSnapshot: null,
+      understandingRevision: null,
+    };
+    return understanding
+      ? {
+          ...mention,
+          label:
+            resolveChatMention(mention, understanding).currentLabel ?? fallback,
+        }
+      : mention;
+  };
   const stepRefs = useRef(new Map<string, HTMLLIElement>());
   // Mehrere Schritte dürfen gleichzeitig offen sein — wie in der Formularerfassung.
   const [openStepIds, setOpenStepIds] = useState<Set<string>>(new Set());
   useEffect(() => {
-    const id =
-      focusedTarget?.kind === "step"
-        ? focusedTarget.stepId
-        : focusedTarget?.fromStepId;
+    if (!understanding) return;
+    const targetNodeId =
+      focusedTarget?.kind === "node"
+        ? focusedTarget.nodeId
+        : focusedTarget &&
+          understanding.flow.edges.find(
+            (edge) => edge.id === focusedTarget.edgeId,
+          )?.source;
+    const nodeId = understanding.flow.nodes.find(
+      (node) => node.kind === "gateway" && node.id === targetNodeId,
+    )
+      ? understanding.flow.edges.find((edge) => edge.target === targetNodeId)
+          ?.source
+      : targetNodeId;
+    const stepNode = understanding.flow.nodes.find(
+      (node) => node.kind === "step" && node.id === nodeId,
+    );
+    const id = stepNode?.kind === "step" ? stepNode.stepId : undefined;
     if (!id) return;
     stepRefs.current
       .get(id)
       ?.scrollIntoView({ block: "center", behavior: "smooth" });
-    if (focusedTarget?.kind === "step")
+    if (focusedTarget?.kind === "node" && id)
       setOpenStepIds((current) => new Set(current).add(id));
-  }, [focusedTarget]);
+  }, [focusedTarget, understanding]);
   function changeOpenStep(stepId: string, open: boolean) {
     setOpenStepIds((current) => {
       const next = new Set(current);
@@ -105,15 +141,26 @@ export function ProcessTracker({
       </header>
       <ol className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
         {steps.length ? (
-          steps.map((step, index) => {
-            const next = steps[index + 1];
+          steps.map((step) => {
+            const stepNodeId = stepNodeIds.get(step.id);
+            const directEdge = stepNodeId
+              ? edges.find((item) => item.source === stepNodeId)
+              : undefined;
+            const gateway = directEdge
+              ? understanding?.flow.nodes.find(
+                  (node) =>
+                    node.kind === "gateway" && node.id === directEdge.target,
+                )
+              : undefined;
+            const gatewayEdges = gateway
+              ? edges.filter((item) => item.source === gateway.id)
+              : [];
             const stepFocused =
-              focusedTarget?.kind === "step" &&
-              focusedTarget.stepId === step.id;
+              focusedTarget?.kind === "node" &&
+              focusedTarget.nodeId === stepNodeId;
             const transitionFocused =
-              focusedTarget?.kind === "transition" &&
-              focusedTarget.fromStepId === step.id &&
-              focusedTarget.toStepId === next?.id;
+              focusedTarget?.kind === "edge" &&
+              focusedTarget.edgeId === directEdge?.id;
             return (
               <li
                 key={step.id}
@@ -158,13 +205,14 @@ export function ProcessTracker({
                           onClick={(event) => {
                             event.preventDefault();
                             event.stopPropagation();
-                            onMention({
-                              kind: "step",
-                              stepId: step.id,
-                              label: `Schritt-${step.order}`,
-                              nameSnapshot: null,
-                              understandingRevision: null,
-                            });
+                            if (stepNodeId)
+                              onMention({
+                                kind: "node",
+                                nodeId: stepNodeId,
+                                label: `Schritt ${step.order} „${step.name}"`,
+                                nameSnapshot: null,
+                                understandingRevision: null,
+                              });
                           }}
                           className="rounded p-1 text-muted-foreground opacity-0 hover:bg-background focus:opacity-100 group-hover:opacity-100"
                           aria-label={`Schritt ${step.order} im Gespräch erwähnen`}
@@ -188,41 +236,74 @@ export function ProcessTracker({
                     <ProcessStepDetails
                       step={step}
                       steps={steps}
+                      flow={understanding!.flow}
                       layout="compact"
                     />
                   </div>
                 </details>
-                {next && (
-                  // Nur ein zentrierter Pfeil, keine Trennlinie: Die Karten
-                  // grenzen sich schon durch ihre Fläche ab.
-                  <div className="group/transition relative mt-3 flex items-center justify-center">
-                    <ArrowDown
-                      className={`size-4 ${transitionFocused ? "text-primary" : "text-muted-foreground"}`}
-                      aria-hidden="true"
-                    />
-                    {onMention && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onMention({
-                            kind: "transition",
-                            fromStepId: step.id,
-                            toStepId: next.id,
-                            label: `Übergang-${step.order}-${next.order}`,
-                            nameSnapshot: null,
-                            understandingRevision: null,
-                          })
-                        }
-                        // Direkt rechts neben dem Pfeil, aber absolut
-                        // positioniert: So bleibt der Pfeil mittig, egal ob der
-                        // Knopf gerade sichtbar ist.
-                        className="absolute left-1/2 ml-3 rounded p-1 text-muted-foreground opacity-0 hover:bg-background focus:opacity-100 group-hover/transition:opacity-100"
-                        aria-label={`Übergang nach Schritt ${step.order} im Gespräch erwähnen`}
-                      >
-                        <MessageCircle className="size-4" />
-                      </button>
-                    )}
+                {gateway?.kind === "gateway" ? (
+                  <div className="mt-3 grid gap-2 rounded-md border bg-background p-2 text-caption">
+                    <p className="font-medium">{gateway.question}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {gatewayEdges.map((edge) => {
+                        const target = understanding?.flow.nodes.find(
+                          (node) => node.id === edge.target,
+                        );
+                        const targetStep =
+                          target?.kind === "step"
+                            ? steps.find((item) => item.id === target.stepId)
+                            : undefined;
+                        const backwards =
+                          targetStep && targetStep.order < step.order;
+                        const label = backwards
+                          ? `${edge.label} ↺ zurück zu Schritt ${targetStep.order}`
+                          : `${edge.label} → weiter`;
+                        return (
+                          <button
+                            type="button"
+                            key={edge.id}
+                            onClick={() =>
+                              onMention?.(edgeMention(edge.id, label))
+                            }
+                            className={`rounded border bg-card px-2 py-1 text-left hover:bg-accent ${focusedTarget?.kind === "edge" && focusedTarget.edgeId === edge.id ? "border-primary text-primary" : ""}`}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
+                ) : (
+                  directEdge && (
+                    // Nur ein zentrierter Pfeil, keine Trennlinie: Die Karten
+                    // grenzen sich schon durch ihre Fläche ab.
+                    <div className="group/transition relative mt-3 flex items-center justify-center">
+                      <ArrowDown
+                        className={`size-4 ${transitionFocused ? "text-primary" : "text-muted-foreground"}`}
+                        aria-hidden="true"
+                      />
+                      {onMention && directEdge && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onMention(
+                              edgeMention(
+                                directEdge.id,
+                                `Übergang nach Schritt ${step.order}`,
+                              ),
+                            )
+                          }
+                          // Direkt rechts neben dem Pfeil, aber absolut
+                          // positioniert: So bleibt der Pfeil mittig, egal ob der
+                          // Knopf gerade sichtbar ist.
+                          className="absolute left-1/2 ml-3 rounded p-1 text-muted-foreground opacity-0 hover:bg-background focus:opacity-100 group-hover/transition:opacity-100"
+                          aria-label={`Übergang nach Schritt ${step.order} im Gespräch erwähnen`}
+                        >
+                          <MessageCircle className="size-4" />
+                        </button>
+                      )}
+                    </div>
+                  )
                 )}
               </li>
             );

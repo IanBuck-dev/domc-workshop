@@ -204,9 +204,9 @@ export function ProcessChatTranscript({
                         {mentions.map((mention) => (
                           <ChatMentionToken
                             key={
-                              mention.kind === "step"
-                                ? mention.stepId
-                                : `${mention.fromStepId}:${mention.toStepId}`
+                              mention.kind === "node"
+                                ? `node:${mention.nodeId}`
+                                : `edge:${mention.edgeId}`
                             }
                             mention={mention}
                             resolved={resolveChatMention(

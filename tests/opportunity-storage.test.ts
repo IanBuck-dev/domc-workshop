@@ -13,6 +13,7 @@ import { createHash } from "node:crypto";
 import { dump, load } from "js-yaml";
 import { ProcessCaptureRepository } from "../packages/storage/src/process-capture-repository.ts";
 import { OpportunityDiscoveryRepository } from "../packages/storage/src/opportunity-discovery-repository.ts";
+import { migrateProcessFlowStorage } from "../packages/storage/src/process-flow-migration.ts";
 import { WorkspaceRepository } from "../packages/storage/src/workspace-repository.ts";
 import {
   aiTrace,
@@ -194,7 +195,7 @@ describe("opportunity discovery repository", () => {
   });
 
   test("reads completed historical opportunity snapshots with legacy understanding", async () => {
-    const { process, opportunities, defaults } = await fixture();
+    const { root, process, opportunities, defaults } = await fixture();
     await opportunities.create(process, defaults.config, defaults.contracts);
     await opportunities.markHypothesesRunning(process.id);
     await opportunities.saveHypotheses(
@@ -221,9 +222,10 @@ describe("opportunity discovery repository", () => {
       writeFile(metadataPath, dump(metadata, { noRefs: true, lineWidth: 120 })),
     ]);
 
+    await migrateProcessFlowStorage(root);
     const historical = await opportunities.required(process.id);
     expect(historical.state).toBe("completed");
-    expect(historical.sourceProcess.understanding.schemaVersion).toBe(2);
+    expect(historical.sourceProcess.understanding.schemaVersion).toBe(3);
     expect(historical.sourceProcess.understanding.steps[0]).toMatchObject({
       inputs: ["Lead ist fällig"],
       informationItems: [

@@ -102,7 +102,7 @@ const listFact = (value: string[] | null, evidenceIds = ["flow-roles"]) => ({
 
 export function understanding(stepCount = 5): ProcessUnderstanding {
   return processUnderstandingSchema.parse({
-    schemaVersion: 2,
+    schemaVersion: 3,
     purpose: stringFact("Kalte Leads fachlich korrekt erneut ansprechen."),
     trigger: stringFact("Ein Lead wurde länger nicht kontaktiert."),
     outcome: stringFact("Eine geprüfte Nachricht wurde versendet."),
@@ -115,7 +115,6 @@ export function understanding(stepCount = 5): ProcessUnderstanding {
       ["information-systems"],
     ),
     systems: listFact(["Vertriebs-CRM"], ["information-systems"]),
-    decisions: listFact(["Kontakt erlaubt?"], ["decisions-controls-handoffs"]),
     controls: listFact(
       ["Einwilligung prüfen"],
       ["decisions-controls-handoffs"],
@@ -146,32 +145,6 @@ export function understanding(stepCount = 5): ProcessUnderstanding {
           typeDetail: null,
         },
       ],
-      decisions:
-        index === 0
-          ? [
-              {
-                id: "decision-1-1",
-                question: "Ist die erneute Kontaktaufnahme erlaubt?",
-                mode: "rule_based" as const,
-                options: [
-                  {
-                    id: "option-1-1-1",
-                    label: "Ja",
-                    determination: "Eine gültige Einwilligung ist hinterlegt.",
-                    consequence: "Der Lead wird weiterbearbeitet.",
-                    nextStepId: stepCount > 1 ? "step-2" : null,
-                  },
-                  {
-                    id: "option-1-1-2",
-                    label: "Nein",
-                    determination: "Keine gültige Einwilligung ist hinterlegt.",
-                    consequence: "Die Kontaktaufnahme wird beendet.",
-                    nextStepId: null,
-                  },
-                ],
-              },
-            ]
-          : [],
       miscellaneous: "Plausibilitätsprüfung durch den Vertrieb.",
       provenance: "ai_structured" as const,
       evidenceIds: [
@@ -193,16 +166,43 @@ export function understanding(stepCount = 5): ProcessUnderstanding {
     documentCoverage: [],
     knowledgeGaps: ["Exakte Fallzahl unbekannt"],
     conflicts: [],
+    flow: {
+      nodes: [
+        { id: "start", kind: "startEvent" },
+        ...Array.from({ length: stepCount }, (_, index) => ({
+          id: `step-${index + 1}`,
+          kind: "step" as const,
+          stepId: `step-${index + 1}`,
+        })),
+        { id: "end", kind: "endEvent" },
+      ],
+      edges: [
+        { id: "edge-1", source: "start", target: "step-1" },
+        ...Array.from({ length: stepCount - 1 }, (_, index) => ({
+          id: `edge-${index + 2}`,
+          source: `step-${index + 1}`,
+          target: `step-${index + 2}`,
+        })),
+        {
+          id: `edge-${stepCount + 1}`,
+          source: `step-${stepCount}`,
+          target: "end",
+        },
+      ],
+    },
   });
 }
 
+// V2 bleibt ausschließlich Eingabe eines späteren Migrationslaufs.
 export function legacyUnderstanding(stepCount = 5) {
   const current = understanding(stepCount);
   const globalFacts = structuredClone(current) as Record<string, unknown>;
   delete globalFacts.schemaVersion;
   delete globalFacts.steps;
+  delete globalFacts.flow;
   return {
     ...globalFacts,
+    decisions: listFact(["Kontakt erlaubt?"], ["decisions-controls-handoffs"]),
     steps: Array.from({ length: stepCount }, (_, index) => ({
       id: `step-${index + 1}`,
       order: index + 1,
@@ -244,16 +244,6 @@ export function synthesisUnderstanding(stepCount = 5) {
         source: item.source,
         type: item.type,
         typeDetail: item.typeDetail,
-      })),
-      decisions: step.decisions.map((decision) => ({
-        question: decision.question,
-        mode: decision.mode,
-        options: decision.options.map((option) => ({
-          label: option.label,
-          determination: option.determination,
-          consequence: option.consequence,
-          nextStepId: option.nextStepId,
-        })),
       })),
     })),
   };

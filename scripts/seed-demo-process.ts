@@ -152,7 +152,7 @@ async function confirmWithUnderstanding(
     const messageId = crypto.randomUUID();
     chatMessageIdMap.set(eintrag.sourceId, messageId);
     await chatRepo.append(processId, {
-      schemaVersion: 1,
+      schemaVersion: 2,
       id: messageId,
       turnId: null,
       at: new Date().toISOString(),

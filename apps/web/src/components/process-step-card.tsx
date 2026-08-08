@@ -12,19 +12,23 @@ type Step = ProcessUnderstanding["steps"][number];
 export function ProcessStepCard({
   step,
   steps,
+  flow,
   sourceOptions,
   isEditMode,
   open,
   onOpenChange,
   onChange,
+  onFlowChange,
 }: {
   step: Step;
   steps: Step[];
+  flow: ProcessUnderstanding["flow"];
   sourceOptions: string[];
   isEditMode: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onChange: (step: Step) => void;
+  onFlowChange: (flow: ProcessUnderstanding["flow"]) => void;
 }) {
   function update(next: Partial<Step>) {
     onChange({ ...step, ...next });
@@ -131,10 +135,10 @@ export function ProcessStepCard({
           />
           <ProcessStepDecisions
             stepId={step.id}
-            decisions={step.decisions ?? []}
+            flow={flow}
             steps={steps}
             isEditMode={isEditMode}
-            onChange={(decisions) => update({ decisions })}
+            onChange={onFlowChange}
           />
           <section className="grid gap-2">
             <h3 className="text-subheading">Sonstiges</h3>

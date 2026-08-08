@@ -17,7 +17,8 @@
     "format:write": "prettier --write .",
     "test": "bun test",
     "icons": "bun run scripts/generate-icons.ts",
-    "seed": "bun run scripts/seed-demo-process.ts"
+    "seed": "bun run scripts/seed-demo-process.ts",
+    "migrate:process-flow": "bun run scripts/migrate-process-flow-storage.ts"
   },
   "dependencies": {
     "@ai-sdk/react": "4.0.51",

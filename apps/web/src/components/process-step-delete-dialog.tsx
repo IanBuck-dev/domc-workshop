@@ -4,26 +4,42 @@ import type { ProcessUnderstanding } from "../lib/process-types";
 import { Button, IconButton } from "./ui/button";
 
 export type ProcessStepDeleteReference = {
-  stepId: string;
-  decisionId: string;
-  optionId: string;
+  edgeId: string;
+  sourceNodeId: string;
 };
 
 export function ProcessStepDeleteDialog({
   step,
   steps,
+  flow,
+  trigger,
   references,
   onClose,
   onConfirm,
 }: {
   step: ProcessUnderstanding["steps"][number] | null;
   steps: ProcessUnderstanding["steps"];
+  flow: ProcessUnderstanding["flow"];
+  trigger: string | null;
   references: ProcessStepDeleteReference[];
   onClose: () => void;
   onConfirm: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const stepById = new Map(steps.map((item) => [item.id, item]));
+  const sourceLabel = (nodeId: string) => {
+    const node = flow.nodes.find((item) => item.id === nodeId);
+    if (node?.kind === "gateway") return node.question;
+    if (node?.kind === "step") {
+      const source = stepById.get(node.stepId);
+      return source
+        ? `Schritt ${source.order}: ${source.name || "Ohne Bezeichnung"}`
+        : "Unbekannter Schritt";
+    }
+    return node?.kind === "startEvent"
+      ? (trigger ?? "Prozessstart")
+      : "Unbekannter Knoten";
+  };
 
   useEffect(() => {
     if (step && dialog.current && !dialog.current.open)
@@ -62,13 +78,9 @@ export function ProcessStepDeleteDialog({
             <b>Dieser Schritt wird noch als Folgeschritt verwendet.</b>
             <ul>
               {references.map((reference) => {
-                const source = stepById.get(reference.stepId);
-                const decision = source?.decisions.find(
-                  (item) => item.id === reference.decisionId,
-                );
                 return (
-                  <li key={`${reference.decisionId}-${reference.optionId}`}>
-                    Schritt {source?.order}: {decision?.question}
+                  <li key={reference.edgeId}>
+                    {sourceLabel(reference.sourceNodeId)}
                   </li>
                 );
               })}

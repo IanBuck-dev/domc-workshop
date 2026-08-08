@@ -34,9 +34,9 @@ export function ProcessChatComposer({
   onUpload: (file: File) => Promise<void>;
 }) {
   const key = (mention: ChatMention) =>
-    mention.kind === "step"
-      ? `step:${mention.stepId}`
-      : `transition:${mention.fromStepId}:${mention.toStepId}`;
+    mention.kind === "node"
+      ? `node:${mention.nodeId}`
+      : `edge:${mention.edgeId}`;
   return (
     <form
       className="border-t bg-background p-4"

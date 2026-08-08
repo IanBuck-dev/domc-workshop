@@ -131,8 +131,10 @@ describe("opportunity Claude contract", () => {
       "Fehlende Quellen, Informationsarten, Optionen oder Feststellungskriterien",
     );
     expect(captured[0]!.stdin).toContain('"informationItems"');
-    expect(captured[0]!.stdin).toContain('"decisions"');
-    expect(captured[0]!.stdin).toContain('"mode": "rule_based"');
+    expect(captured[0]!.stdin).toContain('"flow"');
+    expect(captured[0]!.stdin).toContain('"nodes"');
+    expect(captured[0]!.stdin).toContain('"edges"');
+    expect(captured[0]!.stdin).not.toContain('"decisions"');
     expect(captured[1]!.command.join(" ")).toContain(
       "pro Szenario höchstens vier Aktionen",
     );

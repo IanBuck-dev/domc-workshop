@@ -8,7 +8,7 @@
     {
       "nummer": 2,
       "antwort": "Zuerst leg ich den Schaden in KOMPASS an, falls noch nicht passiert. Dann guck ich in VERA nach, ob überhaupt Kasko mit Glasschutz besteht und der Vertrag am Schadentag gelaufen ist. Kein Einschluss oder Vertrag nicht aktiv - dann ist der Fall erledigt, wird abgelehnt.",
-      "hinweis": "Liefert die ersten beiden Hauptschritte (Erfassung, Deckungsprüfung) inklusive der Ablehnungsverzweigung als Decision-Kandidat."
+      "hinweis": "Liefert die ersten beiden Hauptschritte (Erfassung, Deckungsprüfung) inklusive der Ablehnung bei fehlender Deckung als Verzweigung im Prozessbild (Nein führt direkt zum Ende)."
     },
     {
       "nummer": 3,
@@ -22,8 +22,8 @@
     },
     {
       "nummer": 5,
-      "antwort": "Die wichtigste Entscheidung ist die Deckung - besteht Versicherungsschutz oder nicht. Danach ob die Rechnung plausibel ist oder ob ich bei der Werkstatt nachfrage. Eine echte Übergabe an andere gibt's eigentlich nicht, außer bei Leasing, da geht's Geld an die Leasinggesellschaft.",
-      "hinweis": "Deckt Entscheidungen und Kontrollen ab; testet, ob der Assistent Deckungsprüfung und Rechnungsplausibilität als zwei getrennte Entscheidungen erkennt statt sie zu verschmelzen."
+      "antwort": "Die wichtigste Entscheidung ist die Deckung - besteht Versicherungsschutz oder nicht. Danach ob die Rechnung plausibel ist oder ob ich bei der Werkstatt nachfrage. Wenn ich nachgefragt hab und die Antwort da ist, prüf ich die Rechnung nochmal von vorn. Eine echte Übergabe an andere gibt's eigentlich nicht, außer bei Leasing, da geht's Geld an die Leasinggesellschaft.",
+      "hinweis": "Deckt Entscheidungen und Kontrollen ab; testet, ob der Assistent Deckungsprüfung und Rechnungsplausibilität als zwei getrennte Verzweigungen erkennt und die Werkstatt-Rückfrage als Rücksprung zur Rechnungsprüfung ins Prozessbild zeichnet, statt beides zu verschmelzen."
     },
     {
       "nummer": 6,

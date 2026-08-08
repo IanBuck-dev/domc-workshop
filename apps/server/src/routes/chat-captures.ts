@@ -193,7 +193,7 @@ export function chatCaptureRoutes(
         finalized.quality,
       );
       await service.chats.append(record.id, {
-        schemaVersion: 1,
+        schemaVersion: 2,
         id: crypto.randomUUID(),
         turnId: null,
         at: new Date().toISOString(),
