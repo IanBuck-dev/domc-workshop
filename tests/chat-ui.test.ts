@@ -132,6 +132,29 @@ describe("chat capture UI contract", () => {
     expect(source).toContain("flow={understanding!.flow}");
   });
 
+  test("uses the shared branching placeholder in both empty process views", async () => {
+    const [placeholder, tracker, diagram] = await Promise.all(
+      [
+        "apps/web/src/components/process-flow-placeholder.tsx",
+        "apps/web/src/components/process-tracker.tsx",
+        "apps/web/src/components/process-flow-diagram.tsx",
+      ].map((file) => readFile(join(process.cwd(), file), "utf8")),
+    );
+    expect(tracker).toContain('ProcessFlowPlaceholder variant="narrow"');
+    expect(diagram).toContain('ProcessFlowPlaceholder variant="wide"');
+    expect(placeholder).toContain('aria-hidden="true"');
+    expect(placeholder).toContain("Entscheidung");
+    expect(placeholder).toContain('label="Ja"');
+    expect(placeholder).toContain('label="Nein"');
+    expect(tracker).toContain(
+      "Vergleichen Sie das Bild mit dem tatsächlichen Prozess.",
+    );
+    expect(diagram).toContain(
+      "Es erscheint automatisch, sobald ein gültiger Zwischenstand",
+    );
+    expect(diagram).not.toContain("[0, 1, 2].map");
+  });
+
   test("shows the same step details in the narrow column and the node dialog", async () => {
     const [tracker, details] = await Promise.all(
       [

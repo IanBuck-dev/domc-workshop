@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ChatMention, ProcessUnderstanding } from "../lib/process-types";
 import { resolveChatMention, type ChatMentionTarget } from "./chat-mention";
 import { ProcessConfirmationActions } from "./process-confirmation-actions";
+import { ProcessFlowPlaceholder } from "./process-flow-placeholder";
 import { ProcessStepDetails } from "./process-step-details";
 import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
@@ -309,10 +310,19 @@ export function ProcessTracker({
             );
           })
         ) : (
-          <li className="py-8 text-center text-ui text-muted-foreground">
-            {status === "invalid"
-              ? "Das Prozessbild wird noch aufgebaut …"
-              : "Hier entsteht Ihr Prozessbild."}
+          <li className="py-6 text-center">
+            <ProcessFlowPlaceholder variant="narrow" />
+            <p className="mt-4 font-medium text-foreground">
+              {status === "invalid"
+                ? "Das Prozessbild wird noch aufgebaut …"
+                : "Hier entsteht Ihr Prozessbild."}
+            </p>
+            <p className="mt-2 text-ui text-muted-foreground">
+              Vergleichen Sie das Bild mit dem tatsächlichen Prozess.
+              <br />
+              Kommentare können direkt zu einem Schritt oder der Verbindung
+              gemacht werden.
+            </p>
           </li>
         )}
       </ol>

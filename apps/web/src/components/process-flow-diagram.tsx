@@ -30,6 +30,7 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { Skeleton } from "./ui/skeleton";
+import { ProcessFlowPlaceholder } from "./process-flow-placeholder";
 
 export function ProcessFlowDiagramSkeleton({
   className,
@@ -621,22 +622,28 @@ export function ProcessFlowDiagram({
   }, [focus]);
   if (!graph.nodes.length)
     return (
-      <div className="flex h-full min-h-80 items-center justify-center p-8 text-center">
-        <div className="max-w-sm">
-          <div className="mx-auto mb-5 flex gap-3" aria-hidden="true">
-            {[0, 1, 2].map((item) => (
-              <Skeleton key={item} className="h-16 flex-1 rounded-lg border" />
-            ))}
+      <div className="flex h-full min-h-80 items-center justify-center p-8">
+        <div className="flex w-full max-w-5xl flex-wrap items-center justify-center gap-x-12 gap-y-6">
+          <div className="max-w-sm flex-1 basis-72">
+            <p className="font-medium">
+              {status === "invalid"
+                ? "Das Prozessbild wird noch aufgebaut …"
+                : "Aus Ihren Angaben entsteht hier das erste Prozessbild."}
+            </p>
+            <p className="mt-2 text-ui text-muted-foreground">
+              Es erscheint automatisch, sobald ein gültiger Zwischenstand
+              vorliegt.
+            </p>
+            <p className="mt-2 text-ui text-muted-foreground">
+              Vergleichen Sie das Bild mit dem tatsächlichen Prozess.
+              <br />
+              Kommentare können direkt zu einem Schritt oder der Verbindung
+              gemacht werden.
+            </p>
           </div>
-          <p className="font-medium">
-            {status === "invalid"
-              ? "Das Prozessbild wird noch aufgebaut …"
-              : "Aus Ihren Angaben entsteht hier das erste Prozessbild."}
-          </p>
-          <p className="mt-2 text-ui text-muted-foreground">
-            Es erscheint automatisch, sobald ein gültiger Zwischenstand
-            vorliegt.
-          </p>
+          <div className="w-full max-w-[500px] flex-1 basis-80">
+            <ProcessFlowPlaceholder variant="wide" />
+          </div>
         </div>
       </div>
     );

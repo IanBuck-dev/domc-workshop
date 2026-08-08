@@ -10,6 +10,7 @@ Build a local prototype that captures and confirms how a department process work
 - Run terminal commands with a non-login shell so Node 22 from nvm is used.
 - Use Bun for dependency installation, development scripts, bundling, and cross-platform prototype compilation.
 - Treat the locally authenticated `claude` CLI as the only AI provider in the first prototype.
+- On macOS the dev server always starts without the AI sandbox (`scripts/dev.ts` auto-detects darwin); the sandbox is for Linux environments only.
 - Keep all submitted content and generated artifacts in repository-local files. Never commit real insurance or personal data.
 
 ## Local credentials
