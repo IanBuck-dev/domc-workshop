@@ -27,3 +27,4 @@ coverage/
 *.swp
 *.swo
 ~$*.xlsx
+.claude/
