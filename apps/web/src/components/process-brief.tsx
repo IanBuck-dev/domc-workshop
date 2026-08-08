@@ -93,6 +93,10 @@ export function ProcessBrief({
     }));
   }
 
+  function updateFlow(flow: ProcessUnderstanding["flow"]) {
+    setDraft((current) => ({ ...current, flow }));
+  }
+
   function selectStep(stepId: string) {
     setSelectedStepId(stepId);
     setOpenStepIds((current) => new Set(current).add(stepId));
@@ -222,11 +226,13 @@ export function ProcessBrief({
               key={step.id}
               step={step}
               steps={orderedSteps}
+              flow={visibleUnderstanding.flow}
               sourceOptions={sourceOptions}
               isEditMode={isEditMode}
               open={openStepIds.has(step.id)}
               onOpenChange={(open) => changeOpenStep(step.id, open)}
               onChange={updateStep}
+              onFlowChange={updateFlow}
             />
           ))}
         </ol>
@@ -327,6 +333,8 @@ export function ProcessBrief({
       <ProcessStepDeleteDialog
         step={deleteStep}
         steps={orderedSteps}
+        flow={visibleUnderstanding.flow}
+        trigger={visibleUnderstanding.trigger.value}
         references={deleteReferences}
         onClose={() => setDeleteStepId(null)}
         onConfirm={() => {
@@ -361,6 +369,47 @@ function collectSourceOptions(understanding: ProcessUnderstanding) {
 
 function firstInvalidField(value: ProcessUnderstanding) {
   const knownStepIds = new Set(value.steps.map((step) => step.id));
+  const stepIdForNode = (nodeId: string): string | undefined => {
+    const node = value.flow.nodes.find((item) => item.id === nodeId);
+    if (node?.kind === "step") return node.stepId;
+    if (node?.kind === "gateway") {
+      const incoming = value.flow.edges.find((edge) => edge.target === node.id);
+      const source = value.flow.nodes.find(
+        (item) => item.id === incoming?.source,
+      );
+      return source?.kind === "step" ? source.stepId : undefined;
+    }
+    return undefined;
+  };
+  for (const node of value.flow.nodes)
+    if (node.kind === "step" && !knownStepIds.has(node.stepId))
+      return {
+        stepId: value.steps[0]!.id,
+        name: "",
+        message:
+          "Ein Ablaufknoten verweist auf einen nicht vorhandenen Schritt.",
+      };
+  for (const gateway of value.flow.nodes) {
+    if (gateway.kind !== "gateway") continue;
+    const stepId = stepIdForNode(gateway.id) ?? value.steps[0]!.id;
+    const step = value.steps.find((item) => item.id === stepId);
+    const stepOrder = step?.order ?? 1;
+    if (!gateway.question.trim())
+      return {
+        stepId,
+        name: `${stepId}-gateway-${gateway.id}-question`,
+        message: `Bitte formulieren Sie die leere Entscheidungsfrage in Schritt ${stepOrder} oder entfernen Sie sie.`,
+      };
+    for (const edge of value.flow.edges.filter(
+      (item) => item.source === gateway.id,
+    ))
+      if (!edge.label?.trim())
+        return {
+          stepId,
+          name: `${stepId}-gateway-${gateway.id}-edge-${edge.id}-label`,
+          message: `Bitte benennen Sie die leere Entscheidungsoption in Schritt ${stepOrder} oder entfernen Sie sie.`,
+        };
+  }
   for (const step of value.steps) {
     if (!step.name.trim())
       return {
@@ -408,28 +457,15 @@ function firstInvalidField(value: ProcessUnderstanding) {
           message: `Bitte benennen Sie die andere Informationsart in Schritt ${step.order}.`,
         };
     }
-    for (const decision of step.decisions) {
-      if (!decision.question.trim())
-        return {
-          stepId: step.id,
-          name: `${step.id}-decision-${decision.id}-question`,
-          message: `Bitte formulieren Sie die leere Entscheidungsfrage in Schritt ${step.order} oder entfernen Sie sie.`,
-        };
-      for (const option of decision.options) {
-        if (!option.label.trim())
-          return {
-            stepId: step.id,
-            name: `${step.id}-decision-${decision.id}-option-${option.id}-label`,
-            message: `Bitte benennen Sie die leere Entscheidungsoption in Schritt ${step.order} oder entfernen Sie sie.`,
-          };
-        if (option.nextStepId && !knownStepIds.has(option.nextStepId))
-          return {
-            stepId: step.id,
-            name: `${step.id}-decision-${decision.id}-option-${option.id}-next-step`,
-            message: `Der Folgeschritt in Schritt ${step.order} ist nicht mehr vorhanden.`,
-          };
-      }
-    }
   }
+  const knownNodeIds = new Set(value.flow.nodes.map((node) => node.id));
+  for (const edge of value.flow.edges)
+    if (!knownNodeIds.has(edge.source) || !knownNodeIds.has(edge.target))
+      return {
+        stepId: value.steps[0]!.id,
+        name: "",
+        message:
+          "Eine Ablaufkante verweist auf einen nicht vorhandenen Knoten.",
+      };
   return null;
 }

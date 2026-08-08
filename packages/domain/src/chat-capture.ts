@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { processFlowIdentifierSchema } from "./process-understanding.ts";
 
 const idSchema = z.string().trim().min(1).max(160);
 const textSchema = z.string().trim().min(1).max(20_000);
@@ -79,8 +80,8 @@ export const chatCaptureStateSchema = z
 export const chatMentionSchema = z.discriminatedUnion("kind", [
   z
     .object({
-      kind: z.literal("step"),
-      stepId: idSchema,
+      kind: z.literal("node"),
+      nodeId: processFlowIdentifierSchema,
       label: z.string().trim().min(1).max(500),
       nameSnapshot: z.string().trim().min(1).max(240).nullable().default(null),
       understandingRevision: z
@@ -92,9 +93,8 @@ export const chatMentionSchema = z.discriminatedUnion("kind", [
     .strict(),
   z
     .object({
-      kind: z.literal("transition"),
-      fromStepId: idSchema,
-      toStepId: idSchema,
+      kind: z.literal("edge"),
+      edgeId: processFlowIdentifierSchema,
       label: z.string().trim().min(1).max(500),
       nameSnapshot: z.string().trim().min(1).max(240).nullable().default(null),
       understandingRevision: z
@@ -108,7 +108,7 @@ export const chatMentionSchema = z.discriminatedUnion("kind", [
 
 export const chatTranscriptEventSchema = z
   .object({
-    schemaVersion: z.literal(1),
+    schemaVersion: z.literal(2),
     id: z.string().uuid(),
     turnId: z.string().uuid().nullable(),
     at: z.string().datetime(),
@@ -127,9 +127,9 @@ export const chatTranscriptEventSchema = z
   .strict()
   .superRefine((value, ctx) => {
     const keys = value.mentions.map((mention) =>
-      mention.kind === "step"
-        ? `step:${mention.stepId}`
-        : `transition:${mention.fromStepId}:${mention.toStepId}`,
+      mention.kind === "node"
+        ? `node:${mention.nodeId}`
+        : `edge:${mention.edgeId}`,
     );
     if (new Set(keys).size !== keys.length)
       ctx.addIssue({
@@ -168,9 +168,9 @@ export const chatMessageRequestSchema = z
   .strict()
   .superRefine((value, ctx) => {
     const keys = value.mentions.map((mention) =>
-      mention.kind === "step"
-        ? `step:${mention.stepId}`
-        : `transition:${mention.fromStepId}:${mention.toStepId}`,
+      mention.kind === "node"
+        ? `node:${mention.nodeId}`
+        : `edge:${mention.edgeId}`,
     );
     if (new Set(keys).size !== keys.length)
       ctx.addIssue({

@@ -54,7 +54,7 @@ describe("chat capture storage", () => {
     ).toMatch(/^[a-f0-9]{64}$/);
     const messageId = crypto.randomUUID();
     const event = {
-      schemaVersion: 1 as const,
+      schemaVersion: 2 as const,
       id: messageId,
       turnId: messageId,
       at: new Date().toISOString(),
@@ -77,7 +77,7 @@ describe("chat capture storage", () => {
     const { root, processes, record, chats } = await fixture();
     const messageId = crypto.randomUUID();
     await chats.append(record.id, {
-      schemaVersion: 1,
+      schemaVersion: 2,
       id: messageId,
       turnId: messageId,
       at: new Date().toISOString(),
@@ -96,7 +96,10 @@ describe("chat capture storage", () => {
       join(processes.dir(record.id), "process-understanding.json"),
       JSON.stringify(value),
     );
-    const valid = await chats.reconcile(await processes.required(record.id));
+    const valid = await chats.reconcile(
+      await processes.required(record.id),
+      true,
+    );
     expect(valid.status).toBe("valid");
     if (valid.status !== "valid") throw new Error("Expected valid revision");
     const initialRevision = valid.revision;
@@ -108,7 +111,7 @@ describe("chat capture storage", () => {
       ),
       "utf8",
     );
-    await chats.reconcile(await processes.required(record.id));
+    await chats.reconcile(await processes.required(record.id), true);
     expect(
       (await readFile(join(processes.dir(record.id), "history.jsonl"), "utf8"))
         .split("\n")
@@ -158,6 +161,7 @@ describe("chat capture storage", () => {
     const reloadedChats = new ChatCaptureRepository(root);
     const recovered = await reloadedChats.reconcile(
       await reloadedProcesses.required(record.id),
+      true,
     );
     expect(recovered.status).toBe("valid");
     if (recovered.status === "valid") {
@@ -197,9 +201,16 @@ describe("chat capture storage", () => {
     ).toHaveLength(5);
     const identityChanged = structuredClone(nextValue);
     identityChanged.steps[0]!.id = "new-first-step";
+    const firstNode = identityChanged.flow.nodes.find(
+      (node): node is Extract<typeof node, { kind: "step" }> =>
+        node.kind === "step" && node.stepId === "step-1",
+    );
+    if (!firstNode) throw new Error("Der erste Schrittknoten fehlt.");
+    firstNode.stepId = "new-first-step";
     await writeFile(working, JSON.stringify(identityChanged));
     const identityRevision = await chats.reconcile(
       await processes.required(record.id),
+      true,
     );
     expect(identityRevision.status).toBe("valid");
     const identityAudit = (
@@ -221,7 +232,7 @@ describe("chat capture storage", () => {
     const { processes, record, chats } = await fixture();
     const messageId = crypto.randomUUID();
     await chats.append(record.id, {
-      schemaVersion: 1,
+      schemaVersion: 2,
       id: messageId,
       turnId: messageId,
       at: new Date().toISOString(),
@@ -271,7 +282,7 @@ describe("chat capture storage", () => {
 
     const messageId = crypto.randomUUID();
     await chats.append(record.id, {
-      schemaVersion: 1,
+      schemaVersion: 2,
       id: messageId,
       turnId: messageId,
       at: new Date().toISOString(),

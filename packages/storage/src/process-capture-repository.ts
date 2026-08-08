@@ -183,7 +183,6 @@ const globalFactNames = [
   "participants",
   "informationSources",
   "systems",
-  "decisions",
   "controls",
   "handoffs",
   "volumeAndTime",

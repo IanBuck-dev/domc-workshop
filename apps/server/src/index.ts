@@ -23,6 +23,7 @@ import { chatCaptureRoutes } from "./routes/chat-captures.ts";
 import { ChatCaptureService } from "./chat-capture-service.ts";
 import { ChatTurnRunner } from "./chat-turn-runner.ts";
 import { OpportunityDiscoveryService } from "./opportunity-discovery-service.ts";
+import { migrateProcessFlowStorage } from "../../../packages/storage/src/process-flow-migration.ts";
 import { requireSession } from "./session.ts";
 import {
   workspacePath,
@@ -35,6 +36,7 @@ import {
 const root = workspacePath();
 await mkdir(root, { recursive: true });
 await acquireInstanceLock(root);
+await migrateProcessFlowStorage(root);
 const processRepo = new ProcessCaptureRepository(root),
   opportunityRepo = new OpportunityDiscoveryRepository(root),
   app = new Hono();

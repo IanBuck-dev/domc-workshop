@@ -46,9 +46,10 @@ eine Sache auf einmal.
 ### Zug 2 - Erste Hauptschritte
 
 **Erwartung:** Zwei Schritte entstehen (Schadenerfassung in KOMPASS,
-Deckungsprüfung in VERA) mit korrekter Systemzuordnung. Die
-Ablehnungsverzweigung bei fehlender Deckung wird als Decision am
-Deckungsprüfungsschritt erfasst, nicht als eigener Hauptschritt.
+Deckungsprüfung in VERA) mit korrekter Systemzuordnung. Die Ablehnung bei
+fehlender Deckung erscheint im Prozessbild als Verzweigung nach der
+Deckungsprüfung (Ja: weiterbearbeiten, Nein: direkt zum Ende), nicht als
+eigener Hauptschritt.
 
 **Fehlersignatur:** KOMPASS und VERA werden vertauscht oder die Ablehnung
 erzeugt einen eigenen, unnötigen Hauptschritt.
@@ -76,12 +77,16 @@ in Eddas eigenem Ablauf dargestellt.
 ### Zug 5 - Entscheidungen und Kontrollen
 
 **Erwartung:** Deckungsprüfung und Rechnungsplausibilität werden als zwei
-getrennte Decisions erfasst, nicht zusammengefasst. Die abweichende
-Auszahlung bei Leasing wird als Sonderfall vermerkt, nicht als reguläre
-Übergabe an eine dritte Rolle.
+getrennte Verzweigungen im Prozessbild erfasst, nicht zusammengefasst. Die
+Werkstatt-Rückfrage bei nicht plausibler Rechnung führt als eigener Schritt
+zurück zur Rechnungsprüfung (Rücksprung im Prozessbild), statt den Prozess
+zu beenden. Die abweichende Auszahlung bei Leasing wird als Sonderfall
+vermerkt, nicht als reguläre Übergabe an eine dritte Rolle.
 
-**Fehlersignatur:** Nur eine einzige, grobe "Prüfung" als Decision, ohne die
-fachliche Unterscheidung zwischen Deckung und Rechnung.
+**Fehlersignatur:** Nur eine einzige, grobe "Prüfung" als Verzweigung, ohne
+die fachliche Unterscheidung zwischen Deckung und Rechnung - oder die
+Werkstatt-Rückfrage endet als Sackgasse, statt zurück in die
+Rechnungsprüfung zu führen.
 
 ### Zug 6 - Mengen und Dauer
 
@@ -145,6 +150,10 @@ zwischen Clearing- und manuellen Fällen interpretiert.
   (z. B. Selbstbeteiligungshöhe, Oldtimer- und Leasingregel).
 - **Werte:** Selbstbeteiligung 150 €, ca. 90 Fälle/Woche mit ca. 70 %
   Direktabrechnung, Bearbeitungsdauer 15-20 Minuten je manuellem Fall.
+- **Prozessbild:** drei Verzweigungen (Deckung, Rechnungsplausibilität,
+  Zahlungsempfänger). Der Zweig "Nicht plausibel" führt über den Schritt
+  "Rückfrage bei Werkstatt klären" zurück zur Rechnungsprüfung - eine echte
+  Rückschleife im Prozessbild, kein Abbruch und kein eigenes Prozessende.
 
 ## Erwartungen an die Potenzialanalyse
 

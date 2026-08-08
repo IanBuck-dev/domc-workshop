@@ -69,7 +69,7 @@ describe("chat capture UI contract", () => {
     expect(page).toContain("window.matchMedia(desktopQuery)");
   });
 
-  test("renders a read-only vertical React Flow with directional transitions and mentions", async () => {
+  test("renders the persisted Flow graph with real mentions and topological gutter edges", async () => {
     const source = await readFile(
       join(process.cwd(), "apps/web/src/components/process-flow-diagram.tsx"),
       "utf8",
@@ -93,23 +93,32 @@ describe("chat capture UI contract", () => {
     // Dagre bestimmt die vertikale Rangfolge statt fester Y-Abstände.
     expect(source).toContain('layout.setGraph({ rankdir: "TB",');
     expect(source).toContain("dagre.layout(layout)");
-    // BPMN-light ergänzt Ereignisse und eine Verzweigung zum Schrittfluss.
+    // Ereignisse und Gateways kommen aus dem persistierten Graphen.
     expect(source).toContain("bpmnEvent: EventNode");
     expect(source).toContain("gateway: GatewayNode");
+    expect(source).toContain("understanding.flow.nodes.map");
+    expect(source).toContain("understanding.flow.edges.map");
+    expect(source).toContain("understanding.trigger.value");
+    expect(source).toContain("understanding.outcome.value");
     // Die Rückkante führt getrennt durch die linke Gutter-Spalte.
     expect(source).toContain(
       "edgeTypes = { mention: MentionEdge, gutter: GutterEdge }",
     );
     // React Flow setzt die Kantenschicht bei elementsSelectable=false auf none.
     expect(source).toContain('style={{ pointerEvents: "stroke" }}');
+    expect(source).toContain('hovered ? "opacity-100" : "opacity-0"');
+    expect(source).toContain("setTimeout(() => setHovered(false), 120)");
     expect(source).toContain("position={Position.Top}");
     expect(source).toContain("position={Position.Bottom}");
     expect(source).toContain("MarkerType.ArrowClosed");
     expect(source).toContain('color: "var(--muted-foreground)"');
     expect(source).toContain('position="top-right"');
     expect(source).toContain('className="!right-3 !top-3"');
-    expect(source).toContain("Übergang-");
-    expect(source).toContain("Schritt-");
+    expect(source).toContain("nodeOrder(edge.target) < nodeOrder(edge.source)");
+    expect(source).toContain("edge.id");
+    expect(source).toContain("node.id");
+    expect(source).not.toContain("PROTOTYP");
+    expect(source).not.toContain("prototypeMention");
     expect(source).toContain("onMention");
     expect(source).toContain("onInspect");
     expect(source).toContain(
@@ -119,7 +128,31 @@ describe("chat capture UI contract", () => {
     // React Flow setzt die Knoten auf pointer-events: none — ohne das hier
     // sind Info- und Erwähnen-Knopf mit der Maus nicht erreichbar.
     expect(source).toContain("pointer-events-auto flex shrink-0 items-center");
-    expect(source).toContain("<ProcessStepDetails step={inspectStep}");
+    expect(source).toContain("step={inspectStep}");
+    expect(source).toContain("flow={understanding!.flow}");
+  });
+
+  test("uses the shared branching placeholder in both empty process views", async () => {
+    const [placeholder, tracker, diagram] = await Promise.all(
+      [
+        "apps/web/src/components/process-flow-placeholder.tsx",
+        "apps/web/src/components/process-tracker.tsx",
+        "apps/web/src/components/process-flow-diagram.tsx",
+      ].map((file) => readFile(join(process.cwd(), file), "utf8")),
+    );
+    expect(tracker).toContain('ProcessFlowPlaceholder variant="narrow"');
+    expect(diagram).toContain('ProcessFlowPlaceholder variant="wide"');
+    expect(placeholder).toContain('aria-hidden="true"');
+    expect(placeholder).toContain("Entscheidung");
+    expect(placeholder).toContain('label="Ja"');
+    expect(placeholder).toContain('label="Nein"');
+    expect(tracker).toContain(
+      "Vergleichen Sie das Bild mit dem tatsächlichen Prozess.",
+    );
+    expect(diagram).toContain(
+      "Es erscheint automatisch, sobald ein gültiger Zwischenstand",
+    );
+    expect(diagram).not.toContain("[0, 1, 2].map");
   });
 
   test("shows the same step details in the narrow column and the node dialog", async () => {
@@ -144,6 +177,10 @@ describe("chat capture UI contract", () => {
       'className="mt-1 line-clamp-2 block text-caption text-muted-foreground"',
     );
     expect(tracker).toContain("<ArrowDown");
+    expect(tracker).toContain("gatewayEdges.map");
+    expect(tracker).toContain("↺ zurück zu Schritt");
+    expect(tracker).toContain("→ weiter");
+    expect(tracker).toContain("rounded border bg-card px-2 py-1");
     expect(tracker).not.toContain("h-px flex-1");
     for (const heading of [
       "Input",
@@ -158,6 +195,31 @@ describe("chat capture UI contract", () => {
     expect(details).toContain("decisionModeCopy");
     // Die kompakte Spalte darf keine Lesetabelle mit Mindestbreite mitbringen.
     expect(details).not.toContain("min-w-[3");
+  });
+
+  test("uses Flow gateway fields in process readers and keeps graph structure fixed", async () => {
+    const sources = await Promise.all(
+      [
+        "apps/web/src/components/process-step-card.tsx",
+        "apps/web/src/components/process-step-details.tsx",
+        "apps/web/src/components/process-step-decisions.tsx",
+        "apps/web/src/components/process-brief.tsx",
+        "apps/web/src/components/process-step-delete-dialog.tsx",
+      ].map((file) => readFile(join(process.cwd(), file), "utf8")),
+    );
+    const [card, details, decisions, brief, deleteDialog] = sources;
+    expect(card).toContain("flow={flow}");
+    expect(details).toContain("gatewayForStep(flow, stepId)");
+    expect(decisions).toContain("flow.edges.filter");
+    expect(decisions).toContain("Knoten und Kanten bleiben unverändert");
+    expect(decisions).not.toContain("Entscheidung hinzufügen");
+    expect(brief).toContain("updateFlow");
+    expect(brief).toContain("knownNodeIds");
+    expect(deleteDialog).toContain("sourceLabel");
+    for (const source of sources) {
+      expect(source).not.toContain("step.decisions");
+      expect(source).not.toContain("nextStepId");
+    }
   });
 
   test("wires milestone cards, structured mentions, shared attachments, and confirmed sidebars", async () => {

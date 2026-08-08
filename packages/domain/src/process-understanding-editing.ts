@@ -1,9 +1,8 @@
 import type { ProcessUnderstanding } from "./process-understanding.ts";
 
 type StepReference = {
-  stepId: string;
-  decisionId: string;
-  optionId: string;
+  edgeId: string;
+  sourceNodeId: string;
 };
 
 function renumber(understanding: ProcessUnderstanding) {
@@ -38,13 +37,42 @@ export function insertProcessStep(
     inputs: [],
     outputs: [],
     informationItems: [],
-    decisions: [],
     miscellaneous: null,
     provenance: "user_confirmed",
     evidenceIds: [],
     confidence: null,
     assumptions: [],
     confirmed: true,
+  });
+  const ordinals = next.flow.nodes
+    .filter((node) => node.kind === "step")
+    .map((node) => Number(node.id.slice("step-".length)));
+  const edgeOrdinals = next.flow.edges.map((edge) =>
+    Number(edge.id.slice("edge-".length)),
+  );
+  // Graph-IDs bleiben bei Umordnung stabil; ein neuer Knoten erhält die nächste Ordinal-ID.
+  const nodeId = `step-${Math.max(0, ...ordinals) + 1}`;
+  next.flow.nodes.push({
+    id: nodeId,
+    kind: "step",
+    stepId: id,
+  });
+  const sourceId =
+    index === 0
+      ? "start"
+      : next.flow.nodes.find(
+          (node) =>
+            node.kind === "step" && node.stepId === next.steps[index - 1]!.id,
+        )?.id;
+  const previousEdge = next.flow.edges.find((edge) => edge.source === sourceId);
+  if (!sourceId || !previousEdge)
+    throw new Error("Der Ablauf kann an dieser Position nicht ergänzt werden.");
+  const previousTarget = previousEdge.target;
+  previousEdge.target = nodeId;
+  next.flow.edges.push({
+    id: `edge-${Math.max(0, ...edgeOrdinals) + 1}`,
+    source: nodeId,
+    target: previousTarget,
   });
   return renumber(next);
 }
@@ -72,17 +100,14 @@ export function referencesToStep(
   understanding: ProcessUnderstanding,
   stepId: string,
 ): StepReference[] {
-  return understanding.steps.flatMap((step) =>
-    step.decisions.flatMap((decision) =>
-      decision.options
-        .filter((option) => option.nextStepId === stepId)
-        .map((option) => ({
-          stepId: step.id,
-          decisionId: decision.id,
-          optionId: option.id,
-        })),
-    ),
+  const nodeIds = new Set(
+    understanding.flow.nodes
+      .filter((node) => node.kind === "step" && node.stepId === stepId)
+      .map((node) => node.id),
   );
+  return understanding.flow.edges
+    .filter((edge) => nodeIds.has(edge.target))
+    .map((edge) => ({ edgeId: edge.id, sourceNodeId: edge.source }));
 }
 
 export function removeProcessStep(
@@ -95,10 +120,19 @@ export function removeProcessStep(
   if (index < 0) throw new Error("Der Prozessschritt wurde nicht gefunden.");
   if (referencesToStep(understanding, stepId).length)
     throw new Error(
-      "Der Prozessschritt wird noch von einer Entscheidungsoption verwendet.",
+      "Der Prozessschritt wird noch von einer Ablaufkante verwendet.",
     );
 
   const next = structuredClone(understanding);
+  const nodeIds = new Set(
+    next.flow.nodes
+      .filter((node) => node.kind === "step" && node.stepId === stepId)
+      .map((node) => node.id),
+  );
   next.steps.splice(index, 1);
+  next.flow.nodes = next.flow.nodes.filter((node) => !nodeIds.has(node.id));
+  next.flow.edges = next.flow.edges.filter(
+    (edge) => !nodeIds.has(edge.source) && !nodeIds.has(edge.target),
+  );
   return renumber(next);
 }

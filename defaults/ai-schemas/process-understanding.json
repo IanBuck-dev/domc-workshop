@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "claims-ai/process-understanding/v2",
+  "$id": "claims-ai/process-understanding/v3",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -12,7 +12,6 @@
     "participants",
     "informationSources",
     "systems",
-    "decisions",
     "controls",
     "handoffs",
     "volumeAndTime",
@@ -22,10 +21,11 @@
     "evidence",
     "documentCoverage",
     "knowledgeGaps",
-    "conflicts"
+    "conflicts",
+    "flow"
   ],
   "properties": {
-    "schemaVersion": { "const": 2 },
+    "schemaVersion": { "const": 3 },
     "purpose": { "$ref": "#/$defs/stringFact" },
     "trigger": { "$ref": "#/$defs/stringFact" },
     "outcome": { "$ref": "#/$defs/stringFact" },
@@ -33,7 +33,6 @@
     "participants": { "$ref": "#/$defs/listFact" },
     "informationSources": { "$ref": "#/$defs/listFact" },
     "systems": { "$ref": "#/$defs/listFact" },
-    "decisions": { "$ref": "#/$defs/listFact" },
     "controls": { "$ref": "#/$defs/listFact" },
     "handoffs": { "$ref": "#/$defs/listFact" },
     "volumeAndTime": { "$ref": "#/$defs/listFact" },
@@ -64,7 +63,8 @@
       "type": "array",
       "maxItems": 50,
       "items": { "type": "string", "minLength": 1, "maxLength": 2000 }
-    }
+    },
+    "flow": { "$ref": "#/$defs/flow" }
   },
   "$defs": {
     "provenance": {
@@ -195,51 +195,6 @@
         }
       ]
     },
-    "decisionOption": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "label", "determination", "consequence", "nextStepId"],
-      "properties": {
-        "id": { "type": "string", "minLength": 1, "maxLength": 120 },
-        "label": { "type": "string", "minLength": 1, "maxLength": 1000 },
-        "determination": {
-          "anyOf": [
-            { "type": "string", "minLength": 1, "maxLength": 2000 },
-            { "type": "null" }
-          ]
-        },
-        "consequence": {
-          "anyOf": [
-            { "type": "string", "minLength": 1, "maxLength": 2000 },
-            { "type": "null" }
-          ]
-        },
-        "nextStepId": {
-          "anyOf": [
-            { "type": "string", "minLength": 1, "maxLength": 120 },
-            { "type": "null" }
-          ]
-        }
-      }
-    },
-    "decision": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "question", "mode", "options"],
-      "properties": {
-        "id": { "type": "string", "minLength": 1, "maxLength": 120 },
-        "question": { "type": "string", "minLength": 1, "maxLength": 2000 },
-        "mode": {
-          "type": "string",
-          "enum": ["rule_based", "professional_judgement", "mixed", "unknown"]
-        },
-        "options": {
-          "type": "array",
-          "maxItems": 20,
-          "items": { "$ref": "#/$defs/decisionOption" }
-        }
-      }
-    },
     "step": {
       "type": "object",
       "additionalProperties": false,
@@ -251,7 +206,6 @@
         "inputs",
         "outputs",
         "informationItems",
-        "decisions",
         "miscellaneous",
         "provenance",
         "evidenceIds",
@@ -280,11 +234,6 @@
           "type": "array",
           "maxItems": 40,
           "items": { "$ref": "#/$defs/informationItem" }
-        },
-        "decisions": {
-          "type": "array",
-          "maxItems": 20,
-          "items": { "$ref": "#/$defs/decision" }
         },
         "miscellaneous": {
           "anyOf": [
@@ -352,6 +301,96 @@
             { "type": "string", "minLength": 1, "maxLength": 2000 },
             { "type": "null" }
           ]
+        }
+      }
+    },
+    "flowId": {
+      "type": "string",
+      "pattern": "^(start|end|step-[1-9]\\d*|xor-[1-9]\\d*|edge-[1-9]\\d*)$"
+    },
+    "startEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind"],
+      "properties": {
+        "id": { "const": "start" },
+        "kind": { "const": "startEvent" }
+      }
+    },
+    "stepNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "stepId"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^step-[1-9]\\d*$" },
+        "kind": { "const": "step" },
+        "stepId": { "type": "string", "minLength": 1, "maxLength": 120 }
+      }
+    },
+    "gatewayNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "question", "mode"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^xor-[1-9]\\d*$" },
+        "kind": { "const": "gateway" },
+        "question": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "mode": {
+          "type": "string",
+          "enum": ["rule_based", "professional_judgement", "mixed", "unknown"]
+        }
+      }
+    },
+    "endEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind"],
+      "properties": {
+        "id": { "const": "end" },
+        "kind": { "const": "endEvent" }
+      }
+    },
+    "flowNode": {
+      "oneOf": [
+        { "$ref": "#/$defs/startEvent" },
+        { "$ref": "#/$defs/stepNode" },
+        { "$ref": "#/$defs/gatewayNode" },
+        { "$ref": "#/$defs/endEvent" }
+      ]
+    },
+    "flowEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "source", "target"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^edge-[1-9]\\d*$" },
+        "source": { "$ref": "#/$defs/flowId" },
+        "target": { "$ref": "#/$defs/flowId" },
+        "label": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "determination": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "consequence": { "type": "string", "minLength": 1, "maxLength": 2000 }
+      }
+    },
+    "flow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nodes", "edges"],
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 64,
+          "items": { "$ref": "#/$defs/flowNode" }
+        },
+        "edges": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 128,
+          "items": { "$ref": "#/$defs/flowEdge" }
         }
       }
     }

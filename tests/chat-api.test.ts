@@ -26,6 +26,8 @@ class FakeChatAdapter implements ChatCaptureClaudeAdapter {
   finishReason = "stop";
   completeUnderstanding = false;
   streamError = false;
+  skipFlowVerification = false;
+  flowVerificationCalls = 0;
   /** Hält den Zug offen, bis der Test ihn freigibt — für Stopp-/Reload-Proben. */
   hold: Promise<void> | null = null;
   async startTurn(request: ChatCaptureTurnRequest) {
@@ -50,6 +52,10 @@ class FakeChatAdapter implements ChatCaptureClaudeAdapter {
       join(request.cwd, "process-understanding.json"),
       JSON.stringify(value),
     );
+    const flowVerification = this.skipFlowVerification
+      ? null
+      : await request.verifyProcessFlow();
+    this.flowVerificationCalls++;
     let complete!: () => void;
     const completed = new Promise<void>((resolve) => {
       complete = resolve;
@@ -81,6 +87,10 @@ class FakeChatAdapter implements ChatCaptureClaudeAdapter {
     })(this);
     return {
       requestedSessionId: request.sessionId,
+      verification: () => ({
+        ok: flowVerification?.ok === true,
+        revision: flowVerification?.ok ? flowVerification.revision : null,
+      }),
       result: {
         fullStream,
         text: completed.then(() => "Ich habe einen ersten Stand erstellt."),
@@ -219,8 +229,8 @@ describe("chat capture API", () => {
         selectedUploadIds: [],
         mentions: [
           {
-            kind: "step",
-            stepId: "step-1",
+            kind: "node",
+            nodeId: "step-1",
             label: "Schritt-1",
             nameSnapshot: "Eingang prüfen",
             understandingRevision: "a".repeat(64),
@@ -265,6 +275,30 @@ describe("chat capture API", () => {
     expect(body).not.toContain("intern");
     expect(body).not.toContain("uploads/example.txt");
     expect(body).not.toContain("process-understanding.json");
+  });
+
+  test("fails the turn when the agent does not finish with a green flow check", async () => {
+    const { app, record, ai, service } = await fixture();
+    await openGate(app, record.id);
+    ai.skipFlowVerification = true;
+    const response = await app.request(`/api/processes/${record.id}/chat`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        text: "Bitte erfassen Sie den Prozess.",
+        action: "message",
+        selectedUploadIds: [],
+        mentions: [],
+      }),
+    });
+    expect(await response.text()).toContain(
+      "Die Antwort konnte nicht abgeschlossen werden",
+    );
+    expect((await service.chats.state(record.id)).lastTurnOutcome).toBe(
+      "failed",
+    );
+    expect(await service.chats.lastValid(record.id)).toBeNull();
   });
 
   test("returns duplicate turns with safe state and idle cleanup only", async () => {

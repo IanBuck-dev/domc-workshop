@@ -104,7 +104,7 @@ export class ChatCaptureRepository {
       ),
     ]);
     await this.append(id, {
-      schemaVersion: 1,
+      schemaVersion: 2,
       id: crypto.randomUUID(),
       turnId: null,
       at: now,
@@ -175,7 +175,11 @@ export class ChatCaptureRepository {
       ),
     );
   }
-  async reconcile(record: ProcessCaptureRecord) {
+  /**
+   * Liest den Arbeitsstand; nur ein vom Capture-Agenten verifizierter Zug darf
+   * ihn veröffentlichen. Dadurch bleibt der letzte gültige Stand stabil.
+   */
+  async reconcile(record: ProcessCaptureRecord, publish = false) {
     const file = join(this.processDir(record.id), "process-understanding.json");
     let raw: string;
     try {
@@ -217,7 +221,7 @@ export class ChatCaptureRepository {
       .update(JSON.stringify(understanding))
       .digest("hex");
     const state = await this.state(record.id);
-    if (state.lastValidRevision !== revision) {
+    if (publish && state.lastValidRevision !== revision) {
       const prior = await this.lastValid(record.id).catch(() => null);
       const priorIds = new Set(prior?.steps.map((step) => step.id) ?? []);
       const currentIds = new Set(understanding.steps.map((step) => step.id));
@@ -258,7 +262,7 @@ export class ChatCaptureRepository {
     return { status: "valid" as const, revision, understanding };
   }
   async finalize(record: ProcessCaptureRecord, override: boolean) {
-    const reconciled = await this.reconcile(record);
+    const reconciled = await this.reconcile(record, true);
     if (reconciled.status !== "valid")
       throw new Error("Das Prozessbild ist noch nicht vollständig gültig.");
     const hasOpen =

@@ -7,7 +7,11 @@ import {
   demoSzenarioSchema,
   type DemoSzenario,
 } from "../apps/server/src/demo-scenarios.ts";
-import { processUnderstandingSchema } from "../packages/domain/src/process-understanding.ts";
+import {
+  processUnderstandingSchema,
+  validateProcessFlow,
+  type ProcessUnderstanding,
+} from "../packages/domain/src/process-understanding.ts";
 import { processConfig } from "./process-fixtures.ts";
 
 const szenarienRoot = join(process.cwd(), "demo-data", "szenarien");
@@ -151,5 +155,70 @@ describe("demo-data scenarios", () => {
       const raw = await readJson(path);
       expect(() => processUnderstandingSchema.parse(raw)).not.toThrow();
     }
+  });
+
+  // Lädt alle vorhandenen verstaendnis.json als geparste V3-Verständnisse.
+  async function demoUnderstandings(): Promise<
+    { slug: string; understanding: ProcessUnderstanding }[]
+  > {
+    const slugs = await scenarioSlugs();
+    const result: { slug: string; understanding: ProcessUnderstanding }[] = [];
+    for (const slug of slugs) {
+      const path = join(szenarienRoot, slug, "verstaendnis.json");
+      if (!existsSync(path)) continue;
+      result.push({
+        slug,
+        understanding: processUnderstandingSchema.parse(await readJson(path)),
+      });
+    }
+    return result;
+  }
+
+  test("every demo flow passes validateProcessFlow without issues", async () => {
+    const understandings = await demoUnderstandings();
+    expect(understandings.length).toBeGreaterThanOrEqual(1);
+    for (const { slug, understanding } of understandings) {
+      const issues = validateProcessFlow(
+        understanding.flow,
+        understanding.steps,
+      );
+      expect({ slug, issues }).toEqual({ slug, issues: [] });
+    }
+  });
+
+  // Schutzregel aus der Spec (§9): Die Demo muss eine echte Verzweigung samt
+  // Rücksprung erzählen. Mindestens ein Demo-Verständnis braucht ein Gateway
+  // mit mindestens zwei Ausgängen und eine Kante auf einen Schritt mit
+  // kleinerer order — sonst verschwindet die Demoanforderung unbemerkt.
+  test("at least one demo flow has an XOR gateway and a jump back to an earlier step", async () => {
+    const understandings = await demoUnderstandings();
+    const hasBranchAndJumpBack = understandings.some(({ understanding }) => {
+      const { nodes, edges } = understanding.flow;
+      const orderByNodeId = new Map<string, number>();
+      for (const node of nodes) {
+        if (node.kind !== "step") continue;
+        const step = understanding.steps.find(
+          (candidate) => candidate.id === node.stepId,
+        );
+        if (step) orderByNodeId.set(node.id, step.order);
+      }
+
+      const hasGatewayWithTwoExits = nodes.some(
+        (node) =>
+          node.kind === "gateway" &&
+          edges.filter((edge) => edge.source === node.id).length >= 2,
+      );
+      const hasJumpBack = edges.some((edge) => {
+        const sourceOrder = orderByNodeId.get(edge.source);
+        const targetOrder = orderByNodeId.get(edge.target);
+        return (
+          sourceOrder !== undefined &&
+          targetOrder !== undefined &&
+          targetOrder < sourceOrder
+        );
+      });
+      return hasGatewayWithTwoExits && hasJumpBack;
+    });
+    expect(hasBranchAndJumpBack).toBe(true);
   });
 });

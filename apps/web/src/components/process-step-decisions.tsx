@@ -1,117 +1,119 @@
-import { Plus, Trash2 } from "lucide-react";
 import type { ProcessUnderstanding } from "../lib/process-types";
 import { Badge } from "./ui/badge";
-import { Button, IconButton } from "./ui/button";
 import { Input } from "./ui/input";
 import { NativeSelect } from "./ui/native-select";
 import { Textarea } from "./ui/textarea";
 import { cn } from "../lib/utils";
 
 type Step = ProcessUnderstanding["steps"][number];
-type Decision = Step["decisions"][number];
+type Flow = ProcessUnderstanding["flow"];
+type Gateway = Extract<Flow["nodes"][number], { kind: "gateway" }>;
 
-export const decisionModeCopy: Record<Decision["mode"], string> = {
+export const decisionModeCopy: Record<Gateway["mode"], string> = {
   rule_based: "Feste Regel",
   professional_judgement: "Fachliche Einschätzung",
   mixed: "Regel und fachliche Einschätzung",
   unknown: "Noch nicht bekannt",
 };
 
+export function gatewayForStep(flow: Flow, stepId: string) {
+  const stepNode = flow.nodes.find(
+    (node) => node.kind === "step" && node.stepId === stepId,
+  );
+  const edge = stepNode
+    ? flow.edges.find((item) => item.source === stepNode.id)
+    : undefined;
+  const gateway = edge
+    ? flow.nodes.find(
+        (node): node is Gateway =>
+          node.kind === "gateway" && node.id === edge.target,
+      )
+    : undefined;
+  return {
+    gateway,
+    edges: gateway
+      ? flow.edges.filter((item) => item.source === gateway.id)
+      : [],
+  };
+}
+
+function targetLabel(targetId: string, flow: Flow, steps: Step[]) {
+  const target = flow.nodes.find((node) => node.id === targetId);
+  if (target?.kind === "step") {
+    const step = steps.find((item) => item.id === target.stepId);
+    return step ? `Schritt ${step.order}: ${step.name}` : "Unbekannter Schritt";
+  }
+  return target?.kind === "endEvent" ? "Prozessende" : "Unbekanntes Ziel";
+}
+
 export function ProcessStepDecisions({
   stepId,
-  decisions,
+  flow,
   steps,
   isEditMode = false,
   onChange = () => undefined,
 }: {
-  stepId?: string;
-  decisions: Decision[];
-  steps: ProcessUnderstanding["steps"];
+  stepId: string;
+  flow: Flow;
+  steps: Step[];
   isEditMode?: boolean;
-  onChange?: (decisions: Decision[]) => void;
+  onChange?: (flow: Flow) => void;
 }) {
+  const { gateway, edges } = gatewayForStep(flow, stepId);
   if (isEditMode)
     return (
       <ProcessStepDecisionsEditor
-        stepId={stepId ?? "step"}
-        decisions={decisions}
+        stepId={stepId}
+        gateway={gateway}
+        edges={edges}
+        flow={flow}
         steps={steps}
         onChange={onChange}
       />
     );
-  const stepById = new Map(steps.map((step) => [step.id, step]));
   return (
     <section className="grid gap-3">
       <h3 className="text-subheading">Varianten und Entscheidungen</h3>
-      {decisions.length ? (
-        <div className="grid gap-3">
-          {decisions.map((decision) => (
-            <article
-              className="rounded-lg border bg-muted p-4"
-              key={decision.id}
-            >
-              <header className="flex flex-wrap items-start justify-between gap-3">
-                <h4 className="font-semibold">{decision.question}</h4>
-                <Badge>{decisionModeCopy[decision.mode]}</Badge>
-              </header>
-              {decision.options.length ? (
-                <div className="overflow-x-auto rounded-lg border bg-card">
-                  <table className="w-full min-w-[38rem] text-ui">
-                    <thead>
-                      <tr className="border-b bg-muted text-left">
-                        <th className="px-4 py-3 font-semibold" scope="col">
-                          Option
-                        </th>
-                        <th className="px-4 py-3 font-semibold" scope="col">
-                          Feststellung
-                        </th>
-                        <th className="px-4 py-3 font-semibold" scope="col">
-                          Folge
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {decision.options.map((option) => {
-                        const nextStep = option.nextStepId
-                          ? stepById.get(option.nextStepId)
-                          : undefined;
-                        return (
-                          <tr
-                            className="border-b last:border-b-0"
-                            key={option.id}
-                          >
-                            <td className="px-4 py-3" data-label="Option">
-                              {option.label}
-                            </td>
-                            <td className="px-4 py-3" data-label="Feststellung">
-                              {option.determination ??
-                                "Feststellung noch unbekannt"}
-                            </td>
-                            <td className="px-4 py-3" data-label="Folge">
-                              <span>
-                                {option.consequence ?? "Folge noch unbekannt"}
-                              </span>
-                              {nextStep && (
-                                <small className="mt-1 block text-muted-foreground">
-                                  Weiter mit Schritt {nextStep.order}:{" "}
-                                  {nextStep.name}
-                                </small>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <p className="text-ui text-muted-foreground">
-                  Entscheidungsoptionen noch unbekannt
-                </p>
-              )}
-            </article>
-          ))}
-        </div>
+      {gateway ? (
+        <article className="grid gap-3 rounded-lg border bg-muted p-4">
+          <header className="flex flex-wrap items-start justify-between gap-3">
+            <h4 className="font-semibold">{gateway.question}</h4>
+            <Badge>{decisionModeCopy[gateway.mode]}</Badge>
+          </header>
+          <div className="overflow-x-auto rounded-lg border bg-card">
+            <table className="w-full min-w-[38rem] text-ui">
+              <thead>
+                <tr className="border-b bg-muted text-left">
+                  <th className="px-4 py-3 font-semibold" scope="col">
+                    Kante
+                  </th>
+                  <th className="px-4 py-3 font-semibold" scope="col">
+                    Feststellung
+                  </th>
+                  <th className="px-4 py-3 font-semibold" scope="col">
+                    Folge und Ziel
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {edges.map((edge) => (
+                  <tr className="border-b last:border-b-0" key={edge.id}>
+                    <td className="px-4 py-3">{edge.label}</td>
+                    <td className="px-4 py-3">
+                      {edge.determination ?? "Feststellung noch unbekannt"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span>{edge.consequence ?? "Folge noch unbekannt"}</span>
+                      <small className="mt-1 block text-muted-foreground">
+                        {targetLabel(edge.target, flow, steps)}
+                      </small>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </article>
       ) : (
         <p className="text-ui text-muted-foreground">
           Keine Entscheidung erforderlich oder benannt
@@ -121,254 +123,156 @@ export function ProcessStepDecisions({
   );
 }
 
-export function ProcessStepDecisionsEditor({
+function ProcessStepDecisionsEditor({
   stepId,
-  decisions,
+  gateway,
+  edges,
+  flow,
   steps,
   onChange,
 }: {
   stepId: string;
-  decisions: Decision[];
-  steps: ProcessUnderstanding["steps"];
-  onChange: (decisions: Decision[]) => void;
+  gateway: Gateway | undefined;
+  edges: Flow["edges"];
+  flow: Flow;
+  steps: Step[];
+  onChange: (flow: Flow) => void;
 }) {
-  function updateDecision(index: number, next: Partial<Decision>) {
-    onChange(
-      decisions.map((decision, decisionIndex) =>
-        decisionIndex === index ? { ...decision, ...next } : decision,
-      ),
-    );
-  }
-  function updateOption(
-    decisionIndex: number,
-    optionIndex: number,
-    next: Partial<Decision["options"][number]>,
-  ) {
-    const decision = decisions[decisionIndex]!;
-    updateDecision(decisionIndex, {
-      options: decision.options.map((option, currentOptionIndex) =>
-        currentOptionIndex === optionIndex ? { ...option, ...next } : option,
+  function updateGateway(next: Partial<Gateway>) {
+    if (!gateway) return;
+    onChange({
+      ...flow,
+      nodes: flow.nodes.map((node) =>
+        node.kind === "gateway" && node.id === gateway.id
+          ? { ...node, ...next }
+          : node,
       ),
     });
   }
+  function updateEdge(edgeId: string, next: Partial<Flow["edges"][number]>) {
+    onChange({
+      ...flow,
+      edges: flow.edges.map((edge) =>
+        edge.id === edgeId ? { ...edge, ...next } : edge,
+      ),
+    });
+  }
+  const targets = flow.nodes.filter(
+    (node) => node.kind === "step" || node.kind === "endEvent",
+  );
   return (
     <section className="grid gap-3 rounded-lg border bg-muted p-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="grid gap-1">
         <h3 className="text-subheading">Varianten und Entscheidungen</h3>
-        <Button
-          variant="secondary"
-          className="h-8 px-3 text-caption"
-          onClick={() =>
-            onChange([
-              ...decisions,
-              {
-                id: crypto.randomUUID(),
-                question: "",
-                mode: "unknown",
-                options: [],
-              },
-            ])
-          }
-        >
-          <Plus /> Entscheidung hinzufügen
-        </Button>
+        <p className="text-caption text-muted-foreground">
+          Knoten und Kanten bleiben unverändert; Sie bearbeiten nur die
+          vorhandenen Angaben im Ablauf.
+        </p>
       </div>
-      {decisions.length ? (
-        <div className="grid gap-4">
-          {decisions.map((decision, decisionIndex) => (
+      {gateway ? (
+        <div className="grid gap-4 rounded-lg border bg-card p-4">
+          <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_12rem]">
+            <label className="grid gap-2 text-label">
+              <span>Entscheidungsfrage</span>
+              <Textarea
+                name={`${stepId}-gateway-${gateway.id}-question`}
+                rows={2}
+                required
+                value={gateway.question}
+                onChange={(event) =>
+                  updateGateway({ question: event.target.value })
+                }
+              />
+            </label>
+            <label className="grid gap-2 text-label">
+              <span>Modus</span>
+              <NativeSelect
+                name={`${stepId}-gateway-${gateway.id}-mode`}
+                value={gateway.mode}
+                onChange={(event) =>
+                  updateGateway({ mode: event.target.value as Gateway["mode"] })
+                }
+              >
+                {Object.entries(decisionModeCopy).map(([value, label]) => (
+                  <option value={value} key={value}>
+                    {label}
+                  </option>
+                ))}
+              </NativeSelect>
+            </label>
+          </div>
+          {edges.map((edge, index) => (
             <fieldset
-              className="grid gap-4 rounded-lg border bg-card p-4"
-              key={decision.id}
+              className="grid gap-3 rounded-md border bg-muted p-4 sm:grid-cols-2 lg:grid-cols-4"
+              key={edge.id}
             >
-              <legend>Entscheidung {decisionIndex + 1}</legend>
-              <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_12rem_auto]">
-                <label className="grid gap-2 text-label">
-                  <span>Entscheidungsfrage</span>
-                  <Textarea
-                    name={`${stepId}-decision-${decision.id}-question`}
-                    rows={2}
-                    required
-                    value={decision.question}
-                    onChange={(event) =>
-                      updateDecision(decisionIndex, {
-                        question: event.target.value,
-                      })
-                    }
-                  />
-                </label>
-                <label className="grid gap-2 text-label">
-                  <span>Modus</span>
-                  <NativeSelect
-                    name={`${stepId}-decision-${decision.id}-mode`}
-                    value={decision.mode}
-                    onChange={(event) =>
-                      updateDecision(decisionIndex, {
-                        mode: event.target.value as Decision["mode"],
-                      })
-                    }
-                  >
-                    {Object.entries(decisionModeCopy).map(([value, label]) => (
-                      <option value={value} key={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </NativeSelect>
-                </label>
-                <IconButton
-                  label={`Entscheidung ${decisionIndex + 1} entfernen`}
-                  tone="danger"
-                  onClick={() =>
-                    onChange(
-                      decisions.filter(
-                        (_, currentIndex) => currentIndex !== decisionIndex,
-                      ),
-                    )
+              <legend>Kante {index + 1}</legend>
+              <label
+                className={cn(
+                  "grid gap-2 text-label",
+                  !edge.label?.trim() && "rounded-md bg-destructive/10 p-2",
+                )}
+              >
+                Bezeichnung
+                <Input
+                  name={`${stepId}-gateway-${gateway.id}-edge-${edge.id}-label`}
+                  required
+                  value={edge.label ?? ""}
+                  onChange={(event) =>
+                    updateEdge(edge.id, { label: event.target.value })
                   }
-                >
-                  <Trash2 />
-                </IconButton>
-              </div>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h4 className="font-semibold">Optionen</h4>
-                <Button
-                  variant="secondary"
-                  className="h-8 px-3 text-caption"
-                  onClick={() =>
-                    updateDecision(decisionIndex, {
-                      options: [
-                        ...decision.options,
-                        {
-                          id: crypto.randomUUID(),
-                          label: "",
-                          determination: null,
-                          consequence: null,
-                          nextStepId: null,
-                        },
-                      ],
+                />
+              </label>
+              <label className="grid gap-2 text-label">
+                Feststellung
+                <Textarea
+                  name={`${stepId}-gateway-${gateway.id}-edge-${edge.id}-determination`}
+                  rows={2}
+                  value={edge.determination ?? ""}
+                  placeholder="Noch unbekannt"
+                  onChange={(event) =>
+                    updateEdge(edge.id, {
+                      determination: event.target.value || undefined,
                     })
                   }
+                />
+              </label>
+              <label className="grid gap-2 text-label">
+                Folge
+                <Textarea
+                  name={`${stepId}-gateway-${gateway.id}-edge-${edge.id}-consequence`}
+                  rows={2}
+                  value={edge.consequence ?? ""}
+                  placeholder="Noch unbekannt"
+                  onChange={(event) =>
+                    updateEdge(edge.id, {
+                      consequence: event.target.value || undefined,
+                    })
+                  }
+                />
+              </label>
+              <label className="grid gap-2 text-label">
+                Ziel
+                <NativeSelect
+                  name={`${stepId}-gateway-${gateway.id}-edge-${edge.id}-target`}
+                  value={edge.target}
+                  onChange={(event) =>
+                    updateEdge(edge.id, { target: event.target.value })
+                  }
                 >
-                  <Plus /> Option hinzufügen
-                </Button>
-              </div>
-              {decision.options.length ? (
-                <div className="grid gap-3">
-                  {decision.options.map((option, optionIndex) => (
-                    <fieldset
-                      className="relative grid gap-3 rounded-md border bg-muted p-4 sm:grid-cols-2 lg:grid-cols-4"
-                      key={option.id}
-                    >
-                      <legend>Option {optionIndex + 1}</legend>
-                      <label className="grid gap-2 text-label">
-                        <span>Bezeichnung</span>
-                        <Input
-                          name={`${stepId}-decision-${decision.id}-option-${option.id}-label`}
-                          required
-                          value={option.label}
-                          onChange={(event) =>
-                            updateOption(decisionIndex, optionIndex, {
-                              label: event.target.value,
-                            })
-                          }
-                        />
-                      </label>
-                      <label
-                        className={cn(
-                          "grid gap-2 text-label",
-                          option.determination === null &&
-                            "rounded-md bg-destructive/10 p-2",
-                        )}
-                      >
-                        Feststellung
-                        <Textarea
-                          name={`${stepId}-decision-${decision.id}-option-${option.id}-determination`}
-                          rows={2}
-                          value={option.determination ?? ""}
-                          placeholder="Noch unbekannt"
-                          onChange={(event) =>
-                            updateOption(decisionIndex, optionIndex, {
-                              determination: event.target.value || null,
-                            })
-                          }
-                        />
-                        {option.determination === null && (
-                          <span className="text-caption text-destructive">
-                            Angabe fehlt
-                          </span>
-                        )}
-                      </label>
-                      <label
-                        className={cn(
-                          "grid gap-2 text-label",
-                          option.consequence === null &&
-                            "rounded-md bg-destructive/10 p-2",
-                        )}
-                      >
-                        Folge
-                        <Textarea
-                          name={`${stepId}-decision-${decision.id}-option-${option.id}-consequence`}
-                          rows={2}
-                          value={option.consequence ?? ""}
-                          placeholder="Noch unbekannt"
-                          onChange={(event) =>
-                            updateOption(decisionIndex, optionIndex, {
-                              consequence: event.target.value || null,
-                            })
-                          }
-                        />
-                        {option.consequence === null && (
-                          <span className="text-caption text-destructive">
-                            Angabe fehlt
-                          </span>
-                        )}
-                      </label>
-                      <label className="grid gap-2 text-label">
-                        <span>Optionaler Folgeschritt</span>
-                        <NativeSelect
-                          name={`${stepId}-decision-${decision.id}-option-${option.id}-next-step`}
-                          value={option.nextStepId ?? ""}
-                          onChange={(event) =>
-                            updateOption(decisionIndex, optionIndex, {
-                              nextStepId: event.target.value || null,
-                            })
-                          }
-                        >
-                          <option value="">Kein Folgeschritt festgelegt</option>
-                          {steps.map((step) => (
-                            <option value={step.id} key={step.id}>
-                              Schritt {step.order}: {step.name}
-                            </option>
-                          ))}
-                        </NativeSelect>
-                      </label>
-                      <IconButton
-                        label={`Option ${optionIndex + 1} entfernen`}
-                        tone="danger"
-                        className="absolute right-3 top-3"
-                        onClick={() =>
-                          updateDecision(decisionIndex, {
-                            options: decision.options.filter(
-                              (_, currentIndex) => currentIndex !== optionIndex,
-                            ),
-                          })
-                        }
-                      >
-                        <Trash2 />
-                      </IconButton>
-                    </fieldset>
+                  {targets.map((target) => (
+                    <option value={target.id} key={target.id}>
+                      {targetLabel(target.id, flow, steps)}
+                    </option>
                   ))}
-                </div>
-              ) : (
-                <p className="text-ui text-muted-foreground">
-                  Entscheidungsoptionen noch unbekannt
-                </p>
-              )}
+                </NativeSelect>
+              </label>
             </fieldset>
           ))}
         </div>
       ) : (
         <p className="text-ui text-muted-foreground">
-          Keine Entscheidung erforderlich oder benannt
+          Für diesen Schritt ist keine bearbeitbare Entscheidung hinterlegt.
         </p>
       )}
     </section>

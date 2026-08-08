@@ -437,33 +437,61 @@ export const processInformationItemSchema = z
   .strict()
   .superRefine(addInformationTypeDetailIssue);
 
-export const processDecisionOptionSchema = z
+export const processFlowIdentifierSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .regex(
+    /^(start|end|step-[1-9]\d*|xor-[1-9]\d*|edge-[1-9]\d*)$/,
+    "Graph IDs must be start, end, step-<n>, xor-<n>, or edge-<n>.",
+  );
+
+const flowTextSchema = (maximum: number) =>
+  z.string().trim().min(1).max(maximum);
+
+export const processFlowStartEventNodeSchema = z
+  .object({ id: processFlowIdentifierSchema, kind: z.literal("startEvent") })
+  .strict();
+export const processFlowStepNodeSchema = z
   .object({
-    id: identifierSchema,
-    label: z.string().trim().min(1).max(1_000),
-    determination: z.string().trim().min(1).max(2_000).nullable(),
-    consequence: z.string().trim().min(1).max(2_000).nullable(),
-    nextStepId: identifierSchema.nullable(),
+    id: processFlowIdentifierSchema,
+    kind: z.literal("step"),
+    stepId: identifierSchema,
   })
   .strict();
-
-export const processDecisionSchema = z
+export const processFlowGatewayNodeSchema = z
   .object({
-    id: identifierSchema,
-    question: z.string().trim().min(1).max(2_000),
+    id: processFlowIdentifierSchema,
+    kind: z.literal("gateway"),
+    question: flowTextSchema(2_000),
     mode: processDecisionModeSchema,
-    options: z.array(processDecisionOptionSchema).max(20),
   })
-  .strict()
-  .superRefine((decision, ctx) => {
-    const optionIds = decision.options.map((option) => option.id);
-    if (new Set(optionIds).size !== optionIds.length)
-      ctx.addIssue({
-        code: "custom",
-        path: ["options"],
-        message: "Decision option IDs must be unique.",
-      });
-  });
+  .strict();
+export const processFlowEndEventNodeSchema = z
+  .object({ id: processFlowIdentifierSchema, kind: z.literal("endEvent") })
+  .strict();
+export const processFlowNodeSchema = z.discriminatedUnion("kind", [
+  processFlowStartEventNodeSchema,
+  processFlowStepNodeSchema,
+  processFlowGatewayNodeSchema,
+  processFlowEndEventNodeSchema,
+]);
+export const processFlowEdgeSchema = z
+  .object({
+    id: processFlowIdentifierSchema,
+    source: processFlowIdentifierSchema,
+    target: processFlowIdentifierSchema,
+    label: flowTextSchema(1_000).optional(),
+    determination: flowTextSchema(2_000).optional(),
+    consequence: flowTextSchema(2_000).optional(),
+  })
+  .strict();
+export const processFlowSchema = z
+  .object({
+    nodes: z.array(processFlowNodeSchema).min(3).max(64),
+    edges: z.array(processFlowEdgeSchema).min(2).max(128),
+  })
+  .strict();
 
 export const processStepSchema = z
   .object({
@@ -474,31 +502,11 @@ export const processStepSchema = z
     inputs: uniqueStepTextArray(30),
     outputs: uniqueStepTextArray(30),
     informationItems: z.array(processInformationItemSchema).max(40),
-    decisions: z.array(processDecisionSchema).max(20),
     miscellaneous: z.string().trim().min(1).max(4_000).nullable(),
     ...factBase,
   })
   .strict();
 
-const legacyProcessStepSchema = z
-  .object({
-    id: identifierSchema,
-    order: z.number().int().min(1).max(8),
-    name: z.string().trim().min(1).max(500),
-    trigger: z.string().trim().min(1).max(2_000).nullable(),
-    responsibleRoles: z.array(z.string().trim().min(1).max(500)).max(20),
-    activity: z.string().trim().min(1).max(4_000),
-    information: z.array(z.string().trim().min(1).max(1_000)).max(30),
-    output: z.string().trim().min(1).max(2_000).nullable(),
-    systems: z.array(z.string().trim().min(1).max(500)).max(20),
-    decision: z.string().trim().min(1).max(2_000).nullable(),
-    ruleOrJudgement: z.string().trim().min(1).max(2_000).nullable(),
-    handover: z.string().trim().min(1).max(2_000).nullable(),
-    controls: z.array(z.string().trim().min(1).max(1_000)).max(30),
-    painPoints: z.array(z.string().trim().min(1).max(1_000)).max(30),
-    ...factBase,
-  })
-  .strict();
 export const documentCoverageSchema = z
   .object({
     uploadId: z.string().uuid(),
@@ -530,7 +538,7 @@ export const documentCoverageSchema = z
         message: "Failed document coverage cannot report processed characters.",
       });
   });
-const processUnderstandingFields = {
+const processUnderstandingV3Fields = {
   purpose: stringFactSchema,
   trigger: stringFactSchema,
   outcome: stringFactSchema,
@@ -538,7 +546,6 @@ const processUnderstandingFields = {
   participants: stringListFactSchema,
   informationSources: stringListFactSchema,
   systems: stringListFactSchema,
-  decisions: stringListFactSchema,
   controls: stringListFactSchema,
   handoffs: stringListFactSchema,
   volumeAndTime: stringListFactSchema,
@@ -550,7 +557,256 @@ const processUnderstandingFields = {
   conflicts: z.array(z.string().trim().min(1).max(2_000)).max(50),
 };
 
-function addUnderstandingIssues(
+type ProcessFlow = z.infer<typeof processFlowSchema>;
+type ProcessStep = z.infer<typeof processStepSchema>;
+
+export type FlowIssue = {
+  path: string;
+  code: string;
+  message: string;
+};
+
+function walkGraph(start: string, adjacency: Map<string, string[]>) {
+  const visited = new Set<string>();
+  const pending = [start];
+  while (pending.length) {
+    const id = pending.pop()!;
+    if (visited.has(id)) continue;
+    visited.add(id);
+    for (const target of adjacency.get(id) ?? [])
+      if (!visited.has(target)) pending.push(target);
+  }
+  return visited;
+}
+
+/** Validiert den kanonischen Prozessgraphen ohne Zod- oder UI-Abhängigkeit. */
+export function validateProcessFlow(
+  flow: ProcessFlow,
+  steps: ProcessStep[],
+): FlowIssue[] {
+  const issues: FlowIssue[] = [];
+  const add = (path: string, code: string, message: string) =>
+    issues.push({ path, code, message });
+  const { nodes, edges } = flow;
+  const nodeIds = nodes.map((node) => node.id);
+  const edgeIds = edges.map((edge) => edge.id);
+  const allGraphIds = [...nodeIds, ...edgeIds];
+
+  if (new Set(nodeIds).size !== nodeIds.length)
+    add("flow.nodes", "duplicate_node_id", "Flow node IDs must be unique.");
+  if (new Set(edgeIds).size !== edgeIds.length)
+    add("flow.edges", "duplicate_edge_id", "Flow edge IDs must be unique.");
+  if (new Set(allGraphIds).size !== allGraphIds.length)
+    add(
+      "flow",
+      "duplicate_graph_id",
+      "Node and edge IDs must be unique across the flow.",
+    );
+
+  const starts = nodes.filter((node) => node.kind === "startEvent");
+  const ends = nodes.filter((node) => node.kind === "endEvent");
+  if (starts.length !== 1)
+    add(
+      "flow.nodes",
+      "start_count",
+      "A flow requires exactly one start event.",
+    );
+  if (ends.length !== 1)
+    add("flow.nodes", "end_count", "A flow requires exactly one end event.");
+
+  const nodeById = new Map(nodes.map((node) => [node.id, node]));
+  const outgoing = new Map(nodes.map((node) => [node.id, [] as number[]]));
+  const incoming = new Map(nodes.map((node) => [node.id, [] as number[]]));
+  edges.forEach((edge, edgeIndex) => {
+    if (!/^edge-[1-9]\d*$/.test(edge.id))
+      add(
+        `flow.edges[${edgeIndex}].id`,
+        "edge_id_type",
+        "An edge ID must be edge-<n>.",
+      );
+    if (!nodeById.has(edge.source))
+      add(
+        `flow.edges[${edgeIndex}].source`,
+        "unknown_source",
+        `Unknown source node ID: ${edge.source}`,
+      );
+    if (!nodeById.has(edge.target))
+      add(
+        `flow.edges[${edgeIndex}].target`,
+        "unknown_target",
+        `Unknown target node ID: ${edge.target}`,
+      );
+    outgoing.get(edge.source)?.push(edgeIndex);
+    incoming.get(edge.target)?.push(edgeIndex);
+
+    if (
+      (edge.determination !== undefined || edge.consequence !== undefined) &&
+      nodeById.get(edge.source)?.kind !== "gateway"
+    )
+      add(
+        `flow.edges[${edgeIndex}]`,
+        "gateway_edge_detail",
+        "Determination and consequence are only allowed on gateway edges.",
+      );
+  });
+
+  nodes.forEach((node, nodeIndex) => {
+    const nodePath = `flow.nodes[${nodeIndex}]`;
+    const idMatchesKind =
+      (node.kind === "startEvent" && node.id === "start") ||
+      (node.kind === "endEvent" && node.id === "end") ||
+      (node.kind === "step" && /^step-[1-9]\d*$/.test(node.id)) ||
+      (node.kind === "gateway" && /^xor-[1-9]\d*$/.test(node.id));
+    if (!idMatchesKind)
+      add(
+        `${nodePath}.id`,
+        "node_id_type",
+        "The node ID must match its graph-object type.",
+      );
+    const outgoingEdges = (outgoing.get(node.id) ?? []).map(
+      (index) => edges[index]!,
+    );
+    const incomingEdges = (incoming.get(node.id) ?? []).map(
+      (index) => edges[index]!,
+    );
+
+    if (node.kind === "startEvent") {
+      if (incomingEdges.length !== 0 || outgoingEdges.length !== 1)
+        add(
+          nodePath,
+          "start_degree",
+          "The start event requires no incoming and one outgoing edge.",
+        );
+      if (
+        outgoingEdges[0] &&
+        nodeById.get(outgoingEdges[0].target)?.kind !== "step"
+      )
+        add(
+          nodePath,
+          "start_target",
+          "The start event must lead to a step node.",
+        );
+    }
+
+    if (node.kind === "step") {
+      if (outgoingEdges.length !== 1)
+        add(
+          nodePath,
+          "step_degree",
+          "A step node requires exactly one outgoing edge.",
+        );
+      outgoingEdges.forEach((edge) => {
+        const targetKind = nodeById.get(edge.target)?.kind;
+        if (
+          targetKind !== "step" &&
+          targetKind !== "gateway" &&
+          targetKind !== "endEvent"
+        )
+          add(
+            `flow.edges[${edges.indexOf(edge)}].target`,
+            "step_target",
+            "A step must lead to a step, gateway, or the end event.",
+          );
+      });
+    }
+
+    if (node.kind === "gateway") {
+      if (
+        incomingEdges.length !== 1 ||
+        nodeById.get(incomingEdges[0]?.source ?? "")?.kind !== "step"
+      )
+        add(
+          nodePath,
+          "gateway_source",
+          "A gateway requires exactly one incoming edge from a step.",
+        );
+      if (outgoingEdges.length < 2)
+        add(
+          nodePath,
+          "gateway_degree",
+          "A gateway requires at least two outgoing edges.",
+        );
+      for (const edge of outgoingEdges) {
+        const edgeIndex = edges.indexOf(edge);
+        if (!edge.label)
+          add(
+            `flow.edges[${edgeIndex}].label`,
+            "gateway_label",
+            "Gateway branches require an answer label.",
+          );
+        const targetKind = nodeById.get(edge.target)?.kind;
+        if (targetKind !== "step" && targetKind !== "endEvent")
+          add(
+            `flow.edges[${edgeIndex}].target`,
+            "gateway_target",
+            "A gateway branch must lead to a step or the end event.",
+          );
+      }
+    }
+
+    if (node.kind === "endEvent" && outgoingEdges.length !== 0)
+      add(nodePath, "end_degree", "The end event cannot have outgoing edges.");
+  });
+
+  const knownStepIds = new Set(steps.map((step) => step.id));
+  const stepNodes = nodes.flatMap((node, nodeIndex) =>
+    node.kind === "step" ? [{ node, nodeIndex }] : [],
+  );
+  const referencedStepIds = stepNodes.map(({ node }) => node.stepId);
+  stepNodes.forEach(({ node, nodeIndex }) => {
+    if (!knownStepIds.has(node.stepId))
+      add(
+        `flow.nodes[${nodeIndex}].stepId`,
+        "unknown_step",
+        `Unknown step ID: ${node.stepId}`,
+      );
+  });
+  if (new Set(referencedStepIds).size !== referencedStepIds.length)
+    add(
+      "flow.nodes",
+      "duplicate_step_reference",
+      "Every step may be referenced by only one flow node.",
+    );
+  steps.forEach((step, stepIndex) => {
+    if (!referencedStepIds.includes(step.id))
+      add(
+        `steps[${stepIndex}].id`,
+        "missing_step_node",
+        `Step is missing its flow node: ${step.id}`,
+      );
+  });
+
+  if (starts.length !== 1 || ends.length !== 1) return issues;
+  const adjacency = new Map(nodes.map((node) => [node.id, [] as string[]]));
+  const reverse = new Map(nodes.map((node) => [node.id, [] as string[]]));
+  for (const edge of edges) {
+    if (!nodeById.has(edge.source) || !nodeById.has(edge.target)) continue;
+    adjacency.get(edge.source)!.push(edge.target);
+    reverse.get(edge.target)!.push(edge.source);
+  }
+  const reachableFromStart = walkGraph(starts[0]!.id, adjacency);
+  nodes.forEach((node, nodeIndex) => {
+    if (!reachableFromStart.has(node.id))
+      add(
+        `flow.nodes[${nodeIndex}]`,
+        "unreachable_node",
+        `Node is not reachable from the start event: ${node.id}`,
+      );
+  });
+  // Die Rückwärtssuche erkennt auch erreichbare Zyklen ohne Ausstieg zum Ende.
+  const canReachEnd = walkGraph(ends[0]!.id, reverse);
+  nodes.forEach((node, nodeIndex) => {
+    if (!canReachEnd.has(node.id))
+      add(
+        `flow.nodes[${nodeIndex}]`,
+        "dead_end",
+        `Node cannot reach the end event: ${node.id}`,
+      );
+  });
+  return issues;
+}
+
+function addSharedUnderstandingIssues(
   value: {
     steps: Array<z.infer<typeof processStepSchema>>;
     evidence: Array<z.infer<typeof evidenceReferenceSchema>>;
@@ -562,7 +818,6 @@ function addUnderstandingIssues(
     participants: z.infer<typeof stringListFactSchema>;
     informationSources: z.infer<typeof stringListFactSchema>;
     systems: z.infer<typeof stringListFactSchema>;
-    decisions: z.infer<typeof stringListFactSchema>;
     controls: z.infer<typeof stringListFactSchema>;
     handoffs: z.infer<typeof stringListFactSchema>;
     volumeAndTime: z.infer<typeof stringListFactSchema>;
@@ -595,37 +850,6 @@ function addUnderstandingIssues(
       path: ["steps"],
       message: "Information IDs must be unique.",
     });
-  const decisionIds = value.steps.flatMap((step) =>
-    step.decisions.map((decision) => decision.id),
-  );
-  if (new Set(decisionIds).size !== decisionIds.length)
-    ctx.addIssue({
-      code: "custom",
-      path: ["steps"],
-      message: "Decision IDs must be unique.",
-    });
-  const knownStepIds = new Set(stepIds);
-  value.steps.forEach((step, stepIndex) =>
-    step.decisions.forEach((decision, decisionIndex) =>
-      decision.options.forEach((option, optionIndex) => {
-        if (option.nextStepId && !knownStepIds.has(option.nextStepId))
-          ctx.addIssue({
-            code: "custom",
-            path: [
-              "steps",
-              stepIndex,
-              "decisions",
-              decisionIndex,
-              "options",
-              optionIndex,
-              "nextStepId",
-            ],
-            message: `Unknown next step ID: ${option.nextStepId}`,
-          });
-      }),
-    ),
-  );
-
   const listedEvidenceIds = value.evidence.map((evidence) => evidence.id);
   const evidenceIds = new Set(listedEvidenceIds);
   if (evidenceIds.size !== listedEvidenceIds.length)
@@ -649,7 +873,6 @@ function addUnderstandingIssues(
     value.participants,
     value.informationSources,
     value.systems,
-    value.decisions,
     value.controls,
     value.handoffs,
     value.volumeAndTime,
@@ -669,87 +892,40 @@ function addUnderstandingIssues(
   );
 }
 
-export const processUnderstandingSchema = z
+const processUnderstandingV3BaseSchema = z
   .object({
-    schemaVersion: z.literal(2),
-    ...processUnderstandingFields,
+    schemaVersion: z.literal(3),
+    ...processUnderstandingV3Fields,
     steps: z.array(processStepSchema).min(1).max(8),
-  })
-  .strict()
-  .superRefine(addUnderstandingIssues);
-
-export const processUnderstandingV2Schema = processUnderstandingSchema;
-
-const legacyProcessUnderstandingSchema = z
-  .object({
-    ...processUnderstandingFields,
-    steps: z.array(legacyProcessStepSchema).min(5).max(8),
+    flow: processFlowSchema,
   })
   .strict();
 
-function legacyMiscellaneous(step: z.infer<typeof legacyProcessStepSchema>) {
-  const values: Array<[string, string | string[] | null]> = [
-    ["Verantwortlich", step.responsibleRoles],
-    ["Systeme", step.systems],
-    ["Regel oder fachliche Einschätzung", step.ruleOrJudgement],
-    ["Übergabe", step.handover],
-    ["Kontrollen", step.controls],
-    ["Probleme", step.painPoints],
-  ];
-  const lines = values.flatMap(([label, value]) => {
-    if (Array.isArray(value))
-      return value.length ? [`${label}: ${value.join(", ")}`] : [];
-    return value ? [`${label}: ${value}`] : [];
-  });
-  return lines.length ? lines.join("\n") : null;
+function zodPath(path: string) {
+  return path
+    .split(/[.[\]]/)
+    .filter(Boolean)
+    .map((part) => (/^\d+$/.test(part) ? Number(part) : part));
 }
 
-export function migrateLegacyProcessUnderstanding(input: unknown) {
-  const legacy = legacyProcessUnderstandingSchema.parse(input);
-  return processUnderstandingSchema.parse({
-    ...legacy,
-    schemaVersion: 2,
-    steps: legacy.steps.map((step) => ({
-      id: step.id,
-      order: step.order,
-      name: step.name,
-      activity: step.activity.slice(0, 1_000),
-      inputs: step.trigger ? [step.trigger] : [],
-      outputs: step.output ? [step.output] : [],
-      informationItems: step.information.map((name, index) => ({
-        id: `info-${step.order}-${index + 1}`,
-        name,
-        source: null,
-        type: "unknown" as const,
-        typeDetail: null,
-      })),
-      decisions: step.decision
-        ? [
-            {
-              id: `decision-${step.order}-1`,
-              question: step.decision,
-              mode: "unknown" as const,
-              options: [],
-            },
-          ]
-        : [],
-      miscellaneous: legacyMiscellaneous(step),
-      provenance: step.provenance,
-      evidenceIds: step.evidenceIds,
-      confidence: step.confidence,
-      assumptions: step.assumptions,
-      confirmed: step.confirmed,
-    })),
-  });
-}
-
-export const processUnderstandingStorageSchema = z
-  .union([processUnderstandingSchema, legacyProcessUnderstandingSchema])
-  .transform((value) =>
-    "schemaVersion" in value
-      ? processUnderstandingSchema.parse(value)
-      : migrateLegacyProcessUnderstanding(value),
+function addUnderstandingV3Issues(
+  value: z.infer<typeof processUnderstandingV3BaseSchema>,
+  ctx: z.RefinementCtx,
+) {
+  addSharedUnderstandingIssues(value, ctx);
+  validateProcessFlow(value.flow, value.steps).forEach((issue) =>
+    ctx.addIssue({
+      code: "custom",
+      path: zodPath(issue.path),
+      message: issue.message,
+    }),
   );
+}
+
+export const processUnderstandingSchema =
+  processUnderstandingV3BaseSchema.superRefine(addUnderstandingV3Issues);
+export const processUnderstandingV3Schema = processUnderstandingSchema;
+export const processUnderstandingStorageSchema = processUnderstandingSchema;
 
 const processInformationItemAiSchema = z
   .object({
@@ -760,21 +936,10 @@ const processInformationItemAiSchema = z
   })
   .strict()
   .superRefine(addInformationTypeDetailIssue);
-const processDecisionOptionAiSchema = processDecisionOptionSchema.omit({
-  id: true,
-});
-const processDecisionAiSchema = z
-  .object({
-    question: z.string().trim().min(1).max(2_000),
-    mode: processDecisionModeSchema,
-    options: z.array(processDecisionOptionAiSchema).max(20),
-  })
-  .strict();
 const processStepAiSchema = processStepSchema
-  .omit({ informationItems: true, decisions: true })
+  .omit({ informationItems: true })
   .extend({
     informationItems: z.array(processInformationItemAiSchema).max(40),
-    decisions: z.array(processDecisionAiSchema).max(20),
   })
   .strict();
 
@@ -786,15 +951,16 @@ const processSynthesisEvidenceSchema = evidenceReferenceSchema
 
 export const processSynthesisAiResultSchema = z
   .object({
-    schemaVersion: z.literal(2),
-    ...processUnderstandingFields,
+    schemaVersion: z.literal(3),
+    ...processUnderstandingV3Fields,
     evidence: z.array(processSynthesisEvidenceSchema).max(250),
     steps: z.array(processStepAiSchema).min(5).max(8),
+    flow: processFlowSchema,
   })
   .strict();
 
 function deterministicNestedId(
-  prefix: "info" | "decision" | "option",
+  prefix: "info",
   stepId: string,
   positions: number[],
 ) {
@@ -823,17 +989,6 @@ export function normalizeProcessSynthesisResult(input: unknown) {
       informationItems: step.informationItems.map((item, index) => ({
         ...item,
         id: deterministicNestedId("info", step.id, [index + 1]),
-      })),
-      decisions: step.decisions.map((decision, decisionIndex) => ({
-        ...decision,
-        id: deterministicNestedId("decision", step.id, [decisionIndex + 1]),
-        options: decision.options.map((option, optionIndex) => ({
-          ...option,
-          id: deterministicNestedId("option", step.id, [
-            decisionIndex + 1,
-            optionIndex + 1,
-          ]),
-        })),
       })),
     })),
   });

@@ -67,7 +67,11 @@ async function autoSeedIfEmpty() {
   }
 }
 
-const withoutAiSandbox = process.argv.includes("--without-ai-sandbox");
+// Auf macOS immer ohne KI-Sandbox starten — die Sandbox ist für die
+// Linux-Umgebungen gedacht und bremst lokal nur die Demo aus.
+const withoutAiSandbox =
+  process.argv.includes("--without-ai-sandbox") ||
+  process.platform === "darwin";
 if (withoutAiSandbox)
   console.warn(
     "WARNUNG: Lokaler Präsentationsmodus ohne KI-Sandbox. Nur mit Demo-Daten verwenden.",

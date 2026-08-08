@@ -10,6 +10,7 @@ import {
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ProcessCaptureRepository } from "../packages/storage/src/process-capture-repository.ts";
+import { migrateProcessFlowStorage } from "../packages/storage/src/process-flow-migration.ts";
 import {
   insertProcessStep,
   moveProcessStep,
@@ -382,7 +383,7 @@ describe("process capture repository", () => {
     expect(await readFile(answersPath, "utf8")).toBe(before);
   });
 
-  test("reads legacy understanding without rewriting and persists v2 on nested correction", async () => {
+  test("reads the one-time migrated V3 understanding and persists V3 corrections", async () => {
     const { root, repo, config } = await fixture();
     let record = await repo.create(cover, config);
     record = await repo.saveMainAnswers(
@@ -407,13 +408,14 @@ describe("process capture repository", () => {
     const legacyJson = `${JSON.stringify(legacyUnderstanding(), null, 2)}\n`;
     await writeFile(path, legacyJson, "utf8");
 
+    expect(await migrateProcessFlowStorage(root)).toEqual({ migrated: 1 });
     const restarted = new ProcessCaptureRepository(root);
     const migrated = await restarted.required(record.id);
-    expect(migrated.understanding?.schemaVersion).toBe(2);
+    expect(migrated.understanding?.schemaVersion).toBe(3);
     expect(migrated.understanding?.steps[0]?.informationItems[0]).toMatchObject(
       { source: null, type: "unknown" },
     );
-    expect(await readFile(path, "utf8")).toBe(legacyJson);
+    expect(await readFile(path, "utf8")).not.toBe(legacyJson);
 
     const corrected = structuredClone(migrated.understanding!);
     corrected.steps[0]!.informationItems[0]!.source = "Vertriebs-CRM";
@@ -432,7 +434,7 @@ describe("process capture repository", () => {
       ),
     ).toHaveLength(1);
     const stored = JSON.parse(await readFile(path, "utf8"));
-    expect(stored.schemaVersion).toBe(2);
+    expect(stored.schemaVersion).toBe(3);
     expect(stored.steps[0].informationItems[0]).toMatchObject({
       source: "Vertriebs-CRM",
       type: "system_field",
@@ -442,8 +444,8 @@ describe("process capture repository", () => {
     );
     expect(correction?.detail).toMatchObject({
       note: "Informationsquelle und Hinweis ergänzt.",
-      previous: { schemaVersion: 2 },
-      next: { schemaVersion: 2 },
+      previous: { schemaVersion: 3 },
+      next: { schemaVersion: 3 },
     });
   });
 
@@ -510,7 +512,15 @@ describe("process capture repository", () => {
     );
     record = await repo.saveUnderstanding(record.id, understanding(6), trace());
 
-    let corrected = removeProcessStep(record.understanding!, "step-6");
+    const withoutReference = structuredClone(record.understanding!);
+    const stepSixNode = withoutReference.flow.nodes.find(
+      (node) => node.kind === "step" && node.stepId === "step-6",
+    )!;
+    const incoming = withoutReference.flow.edges.find(
+      (edge) => edge.target === stepSixNode.id,
+    )!;
+    incoming.target = "end";
+    let corrected = removeProcessStep(withoutReference, "step-6");
     corrected = insertProcessStep(corrected, 5, "step-new");
     corrected.steps[0]!.name = "Fachlich korrigierter Start";
     corrected.steps[5] = {

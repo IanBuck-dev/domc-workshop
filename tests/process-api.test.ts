@@ -8,10 +8,8 @@ import { processCaptureRoutes } from "../apps/server/src/routes/process-captures
 import { listProcessOperations } from "../apps/server/src/process-operation-manager.ts";
 import type { ProcessAiAdapter } from "../packages/claude/src/process-ai-contracts.ts";
 import { ProcessCaptureRepository } from "../packages/storage/src/process-capture-repository.ts";
-import {
-  insertProcessStep,
-  removeProcessStep,
-} from "../packages/domain/src/process-understanding-editing.ts";
+import { insertProcessStep } from "../packages/domain/src/process-understanding-editing.ts";
+import type { ProcessUnderstanding } from "../packages/domain/src/process-understanding.ts";
 import {
   answers,
   cover,
@@ -641,7 +639,7 @@ describe("process capture API", () => {
     expect(synthesisCalls).toBe(2);
   });
 
-  test("accepts valid nested v2 corrections and rejects dangling step references", async () => {
+  test("accepts valid V3 corrections and rejects dangling graph references", async () => {
     const { app, repo, config } = await fixture();
     const created = await (
       await app.request("/api/processes", {
@@ -682,8 +680,6 @@ describe("process capture API", () => {
       type: "system_field",
       typeDetail: null,
     });
-    corrected.steps[0]!.decisions[0]!.options[0]!.consequence =
-      "Die Bearbeitung wird mit dem nächsten Schritt fortgesetzt.";
     const response = await app.request(
       `/api/processes/${created.id}/understanding/flow`,
       {
@@ -691,7 +687,7 @@ describe("process capture API", () => {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           understanding: corrected,
-          note: "Information und Entscheidungsfolge ergänzt.",
+          note: "Information ergänzt.",
         }),
       },
     );
@@ -704,7 +700,7 @@ describe("process capture API", () => {
     expect(saved.understanding.steps[1].provenance).toBe("ai_structured");
 
     const invalid = structuredClone(saved.understanding);
-    invalid.steps[0].decisions[0].options[0].nextStepId = "step-missing";
+    invalid.flow.edges[0]!.target = "step-missing";
     const rejected = await app.request(
       `/api/processes/${created.id}/understanding/flow`,
       {
@@ -718,8 +714,7 @@ describe("process capture API", () => {
     );
     expect(rejected.status).toBe(400);
     expect(
-      (await repo.required(created.id)).understanding?.steps[0]?.decisions[0]
-        ?.options[0]?.nextStepId,
+      (await repo.required(created.id)).understanding?.flow.edges[0]?.target,
     ).not.toBe("step-missing");
 
     const withNewStep = insertProcessStep(saved.understanding, 5, "step-new");
@@ -742,13 +737,15 @@ describe("process capture API", () => {
       },
     );
     expect(addedResponse.status).toBe(200);
-    const added = await addedResponse.json();
+    const added = (await addedResponse.json()) as {
+      understanding: ProcessUnderstanding;
+    };
     expect(added.understanding.steps).toHaveLength(6);
 
     const danglingDeletion = structuredClone(added.understanding);
     danglingDeletion.steps = danglingDeletion.steps
-      .filter((step: { id: string }) => step.id !== "step-2")
-      .map((step: { order: number }, index: number) => ({
+      .filter((step) => step.id !== "step-2")
+      .map((step, index) => ({
         ...step,
         order: index + 1,
       }));
@@ -765,7 +762,16 @@ describe("process capture API", () => {
       ).status,
     ).toBe(400);
 
-    const withoutNewStep = removeProcessStep(added.understanding, "step-new");
+    const withoutNewStep = structuredClone(added.understanding);
+    withoutNewStep.steps = withoutNewStep.steps.slice(0, -1);
+    withoutNewStep.flow.nodes = withoutNewStep.flow.nodes.filter(
+      (node) => !(node.kind === "step" && node.stepId === "step-new"),
+    );
+    withoutNewStep.flow.edges = withoutNewStep.flow.edges.filter(
+      (edge) => edge.source !== "step-6",
+    );
+    withoutNewStep.flow.edges.find((edge) => edge.source === "step-5")!.target =
+      "end";
     expect(
       (
         await app.request(`/api/processes/${created.id}/understanding/flow`, {
@@ -779,7 +785,17 @@ describe("process capture API", () => {
       ).status,
     ).toBe(200);
 
-    const belowFormerMinimum = removeProcessStep(withoutNewStep, "step-5");
+    const belowFormerMinimum = structuredClone(withoutNewStep);
+    belowFormerMinimum.steps = belowFormerMinimum.steps.slice(0, -1);
+    belowFormerMinimum.flow.nodes = belowFormerMinimum.flow.nodes.filter(
+      (node) => !(node.kind === "step" && node.stepId === "step-5"),
+    );
+    belowFormerMinimum.flow.edges = belowFormerMinimum.flow.edges.filter(
+      (edge) => edge.source !== "step-5",
+    );
+    belowFormerMinimum.flow.edges.find(
+      (edge) => edge.source === "step-4",
+    )!.target = "end";
     expect(belowFormerMinimum.steps).toHaveLength(4);
     expect(
       (

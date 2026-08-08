@@ -488,7 +488,21 @@ describe("opportunity discovery input and hypotheses", () => {
       );
       const snapshot = createOpportunityProcessSnapshot(process);
       snapshot.understanding.steps = snapshot.understanding.steps.slice(0, 1);
-      snapshot.understanding.steps[0]!.decisions = [];
+      const firstStepNode = snapshot.understanding.flow.nodes.find(
+        (node) => node.kind === "step" && node.stepId === "step-1",
+      )!;
+      snapshot.understanding.flow = {
+        nodes: snapshot.understanding.flow.nodes.filter(
+          (node) =>
+            node.kind === "startEvent" ||
+            node.kind === "endEvent" ||
+            node.id === firstStepNode.id,
+        ),
+        edges: [
+          { id: "edge-1", source: "start", target: firstStepNode.id },
+          { id: "edge-2", source: firstStepNode.id, target: "end" },
+        ],
+      };
       const input = hypothesisAiResult();
       input.stepAnalyses = input.stepAnalyses.slice(0, 1);
 
