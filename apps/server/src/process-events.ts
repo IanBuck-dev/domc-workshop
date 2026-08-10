@@ -11,6 +11,10 @@ import {
 type ProcessEventListener = (event: ProcessEvent) => void;
 
 const listeners = new Set<ProcessEventListener>();
+let lastMemoryConsolidation: Extract<
+  ProcessEvent,
+  { type: "memory-consolidation" }
+> = { type: "memory-consolidation", state: "idle" };
 
 export function subscribeProcessEvents(listener: ProcessEventListener) {
   listeners.add(listener);
@@ -21,6 +25,8 @@ export function subscribeProcessEvents(listener: ProcessEventListener) {
 
 export function publishProcessEvent(event: ProcessEvent) {
   const validated = processEventSchema.parse(event);
+  if (validated.type === "memory-consolidation")
+    lastMemoryConsolidation = validated;
   for (const listener of [...listeners])
     try {
       listener(validated);
@@ -28,6 +34,10 @@ export function publishProcessEvent(event: ProcessEvent) {
       // Eine abgebrochene Verbindung darf die übrigen nicht mitreißen.
       console.error("[process-events] listener failed:", error);
     }
+}
+
+export function lastMemoryConsolidationEvent() {
+  return structuredClone(lastMemoryConsolidation);
 }
 
 export type { ProcessEvent };

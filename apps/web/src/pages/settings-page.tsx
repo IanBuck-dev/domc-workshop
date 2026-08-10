@@ -7,6 +7,7 @@ import {
   Upload,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { CompanyKnowledgeSection } from "../components/company-knowledge-section";
 import {
   InstructionPreviewDialog,
   type InstructionPreview,
@@ -414,6 +415,9 @@ export function SettingsPage() {
               }
             />
           </FormField>
+        </SettingsSection>
+        <SettingsSection title="Gelerntes Firmenwissen">
+          <CompanyKnowledgeSection />
         </SettingsSection>
       </div>
       <div className="flex justify-end pt-2">

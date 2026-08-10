@@ -3,7 +3,12 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { Hono } from "hono";
-import { ChatCaptureService } from "../apps/server/src/chat-capture-service.ts";
+import {
+  ChatCaptureService,
+  composeMemoryPrompt,
+  memoryPromptMaximumBytes,
+} from "../apps/server/src/chat-capture-service.ts";
+import { MemoryRepository } from "../packages/storage/src/memory-repository.ts";
 import { chatCaptureRoutes } from "../apps/server/src/routes/chat-captures.ts";
 import type {
   ChatCaptureClaudeAdapter,
@@ -115,7 +120,8 @@ async function fixture() {
   const processes = new ProcessCaptureRepository(root);
   const record = await processes.create(cover, await processConfig(), "chat");
   const ai = new FakeChatAdapter();
-  const service = new ChatCaptureService(processes, ai);
+  const knowledge = new MemoryRepository(root);
+  const service = new ChatCaptureService(processes, ai, knowledge);
   const opportunityStarts: string[] = [];
   const opportunities = {
     async start(id: string) {
@@ -123,10 +129,25 @@ async function fixture() {
       return { operationId: crypto.randomUUID(), state: "queued" };
     },
   };
+  const memoryStarts: string[] = [];
+  const memory = {
+    fail: false,
+    enqueue(id: string) {
+      if (this.fail) throw new Error("Fiktiver Memory-Startfehler");
+      memoryStarts.push(id);
+      return { operationId: crypto.randomUUID(), state: "queued" as const };
+    },
+  };
   const app = new Hono();
   app.route(
     "/api/processes",
-    chatCaptureRoutes(service, processes, opportunities as any),
+    chatCaptureRoutes(
+      service,
+      processes,
+      opportunities as any,
+      undefined,
+      memory as any,
+    ),
   );
   return {
     app,
@@ -134,8 +155,11 @@ async function fixture() {
     record,
     ai,
     service,
+    knowledge,
     opportunities,
     opportunityStarts,
+    memory,
+    memoryStarts,
   };
 }
 
@@ -170,6 +194,127 @@ async function settle(app: Hono, id: string) {
 }
 
 describe("chat capture API", () => {
+  test("omits the memory block for an empty brain", async () => {
+    const { record, ai, service } = await fixture();
+    await service.skipDocuments(record.id, crypto.randomUUID());
+    const turn = await service.startTurn(
+      record.id,
+      {
+        id: crypto.randomUUID(),
+        text: "Bitte erfassen.",
+        action: "message",
+        selectedUploadIds: [],
+        mentions: [],
+      },
+      new AbortController().signal,
+    );
+    if (turn.duplicate) throw new Error("Expected a chat turn.");
+    expect(ai.calls[0]?.prompt).not.toContain(
+      "## Hintergrundwissen über das Unternehmen",
+    );
+  });
+
+  test("injects memory only for the first and replacement chat session", async () => {
+    const { record, ai, service, knowledge } = await fixture();
+    await knowledge.applyOperations(
+      "test",
+      {
+        operations: [
+          {
+            action: "add",
+            topic: "glossar.md",
+            fact: "Klausur ist die wöchentliche Abstimmung.",
+          },
+        ],
+      },
+      { processId: "PROC-0001", confirmedAt: "2026-08-10" },
+    );
+    await service.skipDocuments(record.id, crypto.randomUUID());
+    const first = await service.startTurn(
+      record.id,
+      {
+        id: crypto.randomUUID(),
+        text: "Bitte erfassen.",
+        action: "message",
+        selectedUploadIds: [],
+        mentions: [],
+      },
+      new AbortController().signal,
+    );
+    if (first.duplicate) throw new Error("Expected a chat turn.");
+    expect(ai.calls[0]?.prompt).toContain(
+      "## Hintergrundwissen über das Unternehmen",
+    );
+    expect(ai.calls[0]?.prompt).toContain("### Datei: offene-fragen.md");
+    for await (const event of first.result.fullStream) {
+      // Der Fake löst seinen Abschluss erst beim Konsum des Streams aus.
+      void event;
+    }
+    await service.finishTurn(first);
+
+    const next = await service.startTurn(
+      record.id,
+      {
+        id: crypto.randomUUID(),
+        text: "Bitte fortsetzen.",
+        action: "message",
+        selectedUploadIds: [],
+        mentions: [],
+      },
+      new AbortController().signal,
+    );
+    if (next.duplicate) throw new Error("Expected a chat turn.");
+    expect(ai.calls[1]?.prompt).not.toContain(
+      "## Hintergrundwissen über das Unternehmen",
+    );
+    await service.failTurn(next, false);
+
+    const recovery = await service.startTurn(
+      record.id,
+      {
+        id: crypto.randomUUID(),
+        text: "Bitte wiederholen.",
+        action: "message",
+        selectedUploadIds: [],
+        mentions: [],
+      },
+      new AbortController().signal,
+    );
+    if (recovery.duplicate) throw new Error("Expected a chat turn.");
+    expect(ai.calls[2]?.prompt).toContain(
+      "## Hintergrundwissen über das Unternehmen",
+    );
+  });
+
+  test("keeps a truncated memory block below 25 KiB without splitting bullets", () => {
+    const topicFiles = {
+      "glossar.md": "## Glossar\n\n",
+      "systeme.md": "## Systeme\n\n",
+      "zustaendigkeiten.md": "## Zuständigkeiten\n\n",
+      "muster.md": "## Muster\n\n",
+      "offene-fragen.md": "## Offene Fragen\n\n",
+    };
+    for (const topic of Object.keys(topicFiles) as Array<
+      keyof typeof topicFiles
+    >)
+      topicFiles[topic] += Array.from(
+        { length: 30 },
+        (_, index) =>
+          `- ${topic} Fakt ${index} ${"x".repeat(850)} (Quelle: PROC-0001, bestätigt 2026-08-10)`,
+      ).join("\n");
+    const composed = composeMemoryPrompt(topicFiles);
+    expect(composed?.truncated).toBe(true);
+    expect(composed?.actualBytes).toBeLessThanOrEqual(memoryPromptMaximumBytes);
+    for (const topic of Object.keys(topicFiles))
+      expect(composed?.block).toContain(`### Datei: ${topic}`);
+    expect(
+      composed?.block
+        .split("\n")
+        .filter((line) => line.startsWith("- "))
+        .every((line) => line.endsWith(")")),
+    ).toBe(true);
+  });
+
   test("GET is passive and the document gate blocks ordinary messages", async () => {
     const { app, processes, record, ai } = await fixture();
     const view = await app.request(`/api/processes/${record.id}/chat`);
@@ -546,6 +691,64 @@ describe("chat capture API", () => {
     expect(confirmed.status).toBe(200);
     expect((await confirmed.json()).opportunityStart).toBe("failed");
     expect((await processes.required(record.id)).state).toBe("confirmed");
+  });
+
+  test("starts memory separately and audits a memory start failure without rollback", async () => {
+    const { app, processes, record, memory, memoryStarts } = await fixture();
+    await openGate(app, record.id);
+    const turn = await app.request(`/api/processes/${record.id}/chat`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        text: "Bitte erfassen Sie den Prozess.",
+        action: "message",
+        selectedUploadIds: [],
+        mentions: [],
+      }),
+    });
+    await turn.text();
+    const confirmed = await app.request(
+      `/api/processes/${record.id}/chat/confirm`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ override: true }),
+      },
+    );
+    expect((await confirmed.json()).memoryStart).toBe("started");
+    expect(memoryStarts).toEqual([record.id]);
+
+    const second = await processes.create(cover, await processConfig(), "chat");
+    memory.fail = true;
+    await openGate(app, second.id);
+    const secondTurn = await app.request(`/api/processes/${second.id}/chat`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        text: "Bitte erfassen Sie den Prozess.",
+        action: "message",
+        selectedUploadIds: [],
+        mentions: [],
+      }),
+    });
+    await secondTurn.text();
+    const failed = await app.request(
+      `/api/processes/${second.id}/chat/confirm`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ override: true }),
+      },
+    );
+    expect((await failed.json()).memoryStart).toBe("failed");
+    expect((await processes.required(second.id)).state).toBe("confirmed");
+    expect(
+      (await processes.history(second.id)).some(
+        (entry) => entry.event === "memory-distillation-failed",
+      ),
+    ).toBe(true);
   });
 
   test("skips documents without any model call and stays idempotent", async () => {

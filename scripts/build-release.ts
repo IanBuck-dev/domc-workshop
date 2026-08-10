@@ -3,7 +3,16 @@ import { join, resolve } from "node:path";
 const mode = process.argv[2] ?? "web";
 await rm("dist", { recursive: true, force: true });
 const vite = Bun.spawn(
-  ["bun", "x", "vite", "build", "--config", "apps/web/vite.config.ts"],
+  [
+    "bun",
+    "x",
+    "vite",
+    "build",
+    "--config",
+    "apps/web/vite.config.ts",
+    "--configLoader",
+    "native",
+  ],
   { stdout: "inherit", stderr: "inherit" },
 );
 if (await vite.exited) process.exit(1);

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["operations"],
+  "properties": {
+    "operations": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["action", "topic", "fact"],
+            "properties": {
+              "action": { "const": "add" },
+              "topic": { "$ref": "#/$defs/topic" },
+              "fact": { "$ref": "#/$defs/fact" }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["action", "topic", "existingFact"],
+            "properties": {
+              "action": { "const": "confirm" },
+              "topic": { "$ref": "#/$defs/topic" },
+              "existingFact": { "$ref": "#/$defs/fact" }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["action", "topic", "existingFact", "fact"],
+            "properties": {
+              "action": { "const": "update" },
+              "topic": { "$ref": "#/$defs/topic" },
+              "existingFact": { "$ref": "#/$defs/fact" },
+              "fact": { "$ref": "#/$defs/fact" }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "topic": {
+      "enum": [
+        "glossar.md",
+        "systeme.md",
+        "zustaendigkeiten.md",
+        "muster.md",
+        "offene-fragen.md"
+      ]
+    },
+    "fact": { "type": "string", "minLength": 1, "maxLength": 1000 }
+  }
+}

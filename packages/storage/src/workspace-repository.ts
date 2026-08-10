@@ -6,10 +6,12 @@ import {
 } from "../../domain/src/process-understanding.ts";
 import { ProcessCaptureRepository } from "./process-capture-repository.ts";
 import { OpportunityDiscoveryRepository } from "./opportunity-discovery-repository.ts";
+import { MemoryRepository } from "./memory-repository.ts";
 
 export class WorkspaceRepository {
   readonly processes: ProcessCaptureRepository;
   readonly opportunities: OpportunityDiscoveryRepository;
+  readonly memory: MemoryRepository;
 
   constructor(
     public root: string,
@@ -17,12 +19,14 @@ export class WorkspaceRepository {
   ) {
     this.processes = new ProcessCaptureRepository(root);
     this.opportunities = new OpportunityDiscoveryRepository(root);
+    this.memory = new MemoryRepository(root);
   }
 
   async ensure() {
     await Promise.all([
       mkdir(join(this.root, "process-captures"), { recursive: true }),
       mkdir(join(this.root, "trash", "process-captures"), { recursive: true }),
+      this.memory.ensure(),
     ]);
   }
 

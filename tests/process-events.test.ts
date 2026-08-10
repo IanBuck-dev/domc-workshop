@@ -3,6 +3,7 @@ import {
   subscribeProcessEvents,
   publishProcessEvent,
   publishProcessChanged,
+  lastMemoryConsolidationEvent,
   type ProcessEvent,
 } from "../apps/server/src/process-events.ts";
 import { enqueueProcessOperation } from "../apps/server/src/process-operation-manager.ts";
@@ -108,5 +109,27 @@ describe("process events", () => {
     unsubscribe();
     publishProcessChanged("PROC-0043");
     expect(seen).toEqual(["PROC-0042"]);
+  });
+
+  test("validiert und behält den letzten globalen Konsolidierungsstand", () => {
+    const event: ProcessEvent = {
+      type: "memory-consolidation",
+      operationId: crypto.randomUUID(),
+      state: "completed",
+      summary: {
+        mergedCount: 2,
+        deletedCount: 1,
+        movedCount: 0,
+        deletions: [{ fact: "Alt", reason: "Überholt" }],
+      },
+    };
+    publishProcessEvent(event);
+    expect(lastMemoryConsolidationEvent()).toEqual(event);
+    expect(() =>
+      publishProcessEvent({
+        type: "memory-consolidation",
+        state: "completed",
+      } as ProcessEvent),
+    ).toThrow();
   });
 });
