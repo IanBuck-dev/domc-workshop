@@ -1253,15 +1253,11 @@ export const processCaptureRecordSchema = z
         path: ["confirmedAt"],
         message: "Confirmation timestamp and process state must agree.",
       });
-    if (
-      record.interactionMode === "chat" &&
-      record.state === "confirmed" &&
-      record.confirmationQuality === null
-    )
+    if (record.state === "confirmed" && record.confirmationQuality === null)
       ctx.addIssue({
         code: "custom",
         path: ["confirmationQuality"],
-        message: "A confirmed chat capture requires a confirmation quality.",
+        message: "A confirmed process requires a confirmation quality.",
       });
     if (
       record.interactionMode === "chat" &&
@@ -1316,6 +1312,11 @@ export type PreviousQuestionReview = z.infer<
 export type ValidationRun = z.infer<typeof validationRunSchema>;
 export type ProcessUnderstanding = z.infer<typeof processUnderstandingSchema>;
 export type ProcessCaptureRecord = z.infer<typeof processCaptureRecordSchema>;
+
+/** Fachlicher Schlüssel für aktive Prozessaufnahmen. */
+export function normalizedProcessName(value: string) {
+  return value.trim().toLocaleLowerCase("de-DE").replace(/\s+/g, " ");
+}
 export type UploadRecord = z.infer<typeof uploadRecordSchema>;
 export type AiTrace = z.infer<typeof aiTraceSchema>;
 export type UnderstandingSection = z.infer<typeof understandingSectionSchema>;

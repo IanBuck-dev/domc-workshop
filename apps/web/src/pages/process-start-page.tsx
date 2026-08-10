@@ -1,8 +1,9 @@
 import { FormEvent, useEffect, useState } from "react";
-import { ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { api } from "../lib/api-client";
+import { ArrowRight, Lightbulb } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { api, ApiError } from "../lib/api-client";
 import { loadConfigOverride } from "../lib/local-config";
+import type { SimilarProcess } from "../lib/corpus-types";
 import type {
   ProcessCaptureConfig,
   ProcessCaptureRecord,
@@ -46,6 +47,8 @@ export function ProcessStartPage() {
     "chat",
   );
   const [error, setError] = useState("");
+  const [duplicateError, setDuplicateError] = useState("");
+  const [similar, setSimilar] = useState<SimilarProcess[]>([]);
   const fieldErrors = {
     department: cover.department.trim()
       ? ""
@@ -69,6 +72,35 @@ export function ProcessStartPage() {
       .then((defaults) => setConfig(loadConfigOverride() ?? defaults))
       .catch((e: Error) => setError(e.message));
   }, []);
+  /*
+   * Hinweis auf ähnliche Prozesse, während der Name getippt wird. Der
+   * Prozessname ist die fachliche Identität eines Prozesses — ein Duplikat
+   * würde die Dokumentation aufspalten. Der Abgleich läuft im Hintergrund und
+   * bekommt deshalb keine Ladeanzeige; scheitert er, bleibt der Hinweis
+   * einfach aus.
+   */
+  useEffect(() => {
+    const name = cover.processName.trim();
+    if (name.length < 3) {
+      setSimilar([]);
+      return;
+    }
+    let current = true;
+    const timer = setTimeout(() => {
+      api
+        .similarProcesses(name)
+        .then((treffer) => {
+          if (current) setSimilar(treffer);
+        })
+        .catch(() => {
+          if (current) setSimilar([]);
+        });
+    }, 300);
+    return () => {
+      current = false;
+      clearTimeout(timer);
+    };
+  }, [cover.processName]);
   async function submit(event: FormEvent) {
     event.preventDefault();
     setTouched({
@@ -80,6 +112,7 @@ export function ProcessStartPage() {
     if (!config || !coverIsValid) return;
     setBusy(true);
     setError("");
+    setDuplicateError("");
     try {
       const record = await api.createProcess({
         cover,
@@ -91,7 +124,11 @@ export function ProcessStartPage() {
         `/processes/${record.id}/${interactionMode === "chat" ? "chat" : "capture"}`,
       );
     } catch (e) {
-      setError((e as Error).message);
+      // Ein vergebener Prozessname ist ein Feldfehler, kein Formularfehler —
+      // er gehört unter das Namensfeld, nicht in den allgemeinen Fehlerkasten.
+      if (e instanceof ApiError && e.code === "duplicate_process_name")
+        setDuplicateError(e.message);
+      else setError((e as Error).message);
       setBusy(false);
     }
   }
@@ -105,6 +142,7 @@ export function ProcessStartPage() {
       processName: true,
     });
     setError("");
+    setDuplicateError("");
   }
   return (
     <section className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:py-16">
@@ -168,14 +206,16 @@ export function ProcessStartPage() {
                   name="processName"
                   placeholder="z. B. Schaden-Erstaufnahme"
                   value={cover.processName}
-                  onChange={(e) =>
-                    setCover({ ...cover, processName: e.target.value })
-                  }
+                  onChange={(e) => {
+                    setDuplicateError("");
+                    setCover({ ...cover, processName: e.target.value });
+                  }}
                   onBlur={() =>
                     setTouched((current) => ({ ...current, processName: true }))
                   }
                   aria-invalid={
-                    touched.processName && !!fieldErrors.processName
+                    !!duplicateError ||
+                    (touched.processName && !!fieldErrors.processName)
                   }
                   aria-describedby="process-name-message"
                   required
@@ -184,8 +224,39 @@ export function ProcessStartPage() {
                   id="process-name-message"
                   className="min-h-5 text-label text-destructive"
                 >
-                  {touched.processName ? fieldErrors.processName : ""}
+                  {duplicateError ||
+                    (touched.processName ? fieldErrors.processName : "")}
                 </p>
+                {similar.length > 0 && !duplicateError && (
+                  <div className="rounded-md border border-border bg-muted p-3 text-ui">
+                    <p className="flex items-center gap-2 text-label text-foreground">
+                      <Lightbulb className="size-4" aria-hidden="true" />
+                      Ähnliche Prozesse gibt es bereits
+                    </p>
+                    <ul className="mt-2 space-y-1">
+                      {similar.map((process) => (
+                        <li key={process.id}>
+                          <Link
+                            to={`/processes/${process.id}`}
+                            className="text-primary underline underline-offset-4"
+                          >
+                            {process.processName}
+                          </Link>
+                          {process.department && (
+                            <span className="text-muted-foreground">
+                              {" "}
+                              · {process.department}
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-2 text-muted-foreground">
+                      Ergänzen Sie besser den bestehenden Prozess, statt einen
+                      zweiten mit gleichem Inhalt anzulegen.
+                    </p>
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="participantName">Einreichende Person</Label>

@@ -334,7 +334,7 @@ describe("chat capture API", () => {
     expect(blocked.status).toBe(409);
     expect(ai.calls).toHaveLength(0);
     const formRecord = await processes.create(
-      cover,
+      { ...cover, processName: "Fiktiver Formularprozess" },
       await processConfig(),
       "form",
     );
@@ -719,7 +719,12 @@ describe("chat capture API", () => {
     expect((await confirmed.json()).memoryStart).toBe("started");
     expect(memoryStarts).toEqual([record.id]);
 
-    const second = await processes.create(cover, await processConfig(), "chat");
+    // Eigener Name: Prozessnamen sind seit der Dublettenprüfung eindeutig.
+    const second = await processes.create(
+      { ...cover, processName: `${cover.processName} (zweite Aufnahme)` },
+      await processConfig(),
+      "chat",
+    );
     memory.fail = true;
     await openGate(app, second.id);
     const secondTurn = await app.request(`/api/processes/${second.id}/chat`, {

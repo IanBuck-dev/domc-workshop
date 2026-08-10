@@ -1,6 +1,10 @@
 @import "@fontsource-variable/geist";
 @import "tailwindcss";
 @import "tw-animate-css";
+/* Basisstile der Diff-Ansicht im Dokumentations-Viewer. Die Bibliothek ist
+   vollständig variablengesteuert — die Farben werden unten auf die Palette der
+   Anwendung gezogen, statt die Klassen zu überschreiben. */
+@import "react-diff-view/style/index.css";
 
 @theme inline {
   /* Geist (OFL-1.1, Vercel). Chosen over Open Sans because it is ~5% narrower
@@ -146,6 +150,21 @@
   --input: #8f9b96;
   --ring: #2f9070;
   --radius: 0.625rem;
+
+  /* Diff-Ansicht (react-diff-view). Die Voreinstellungen der Bibliothek sind
+     kräftiger und blauer als diese Palette; hier stehen dieselben Grün- und
+     Rottöne wie in --secondary und --destructive, nur weit aufgehellt, damit
+     der Text darauf seine normale Lesbarkeit behält. Schrift bleibt die
+     Anwendungsschrift — Prozessdokumentation ist Fließtext, kein Quelltext. */
+  --diff-text-color: var(--foreground);
+  --diff-font-family: var(--font-sans);
+  --diff-code-insert-background-color: #e8f3ec;
+  --diff-gutter-insert-background-color: #d2e7d9;
+  --diff-code-delete-background-color: #fceff0;
+  --diff-gutter-delete-background-color: #f6dadc;
+  --diff-code-insert-edit-background-color: #b9dcc6;
+  --diff-code-delete-edit-background-color: #f3bec1;
+  --diff-selection-background-color: var(--accent);
 }
 
 @layer base {

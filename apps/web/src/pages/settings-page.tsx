@@ -2,6 +2,7 @@ import {
   ChevronDown,
   Download,
   Info,
+  RefreshCw,
   RotateCcw,
   Save,
   Upload,
@@ -22,7 +23,9 @@ import {
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Skeleton } from "../components/ui/skeleton";
+import { Spinner } from "../components/ui/spinner";
 import { Textarea } from "../components/ui/textarea";
+import type { CorpusReconcileReport } from "../lib/corpus-types";
 import { api } from "../lib/api-client";
 import {
   exportConfig,
@@ -423,6 +426,7 @@ export function SettingsPage() {
         <SettingsSection title="Gelerntes Firmenwissen">
           <CompanyKnowledgeSection />
         </SettingsSection>
+        <DocumentationSection />
       </div>
       <div className="flex justify-end pt-2">
         <Button onClick={save}>
@@ -438,6 +442,85 @@ export function SettingsPage() {
       />
     </section>
   );
+}
+
+/**
+ * Manueller Auslöser für den Abgleich des Dokumentationskorpus.
+ *
+ * Der Abgleich rendert alle bestätigten Prozesse neu, räumt Dokumente ohne
+ * Quelle ab und holt fehlgeschlagene Aktualisierungen nach. Er läuft
+ * normalerweise automatisch nach jeder Bestätigung; dieser Knopf ist die
+ * Handhabe, wenn dabei etwas liegengeblieben ist.
+ */
+function DocumentationSection() {
+  const [busy, setBusy] = useState(false);
+  const [report, setReport] = useState<CorpusReconcileReport | null>(null);
+  const [error, setError] = useState("");
+
+  async function reconcile() {
+    setBusy(true);
+    setError("");
+    setReport(null);
+    try {
+      setReport(await api.corpus.reconcile());
+    } catch (reason) {
+      setError((reason as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <SettingsSection title="Prozessdokumentation">
+      <p className="text-ui text-muted-foreground">
+        Die Prozessdokumentation entsteht automatisch aus den fachlich
+        bestätigten Prozessen. Der Abgleich stellt den Sollzustand wieder her,
+        falls eine Aktualisierung ausgefallen ist oder ein Prozess gelöscht
+        wurde.
+      </p>
+      <Button
+        type="button"
+        variant="secondary"
+        disabled={busy}
+        aria-busy={busy}
+        onClick={() => void reconcile()}
+      >
+        {busy ? (
+          <Spinner />
+        ) : (
+          <RefreshCw className="size-4" aria-hidden="true" />
+        )}
+        {busy ? "Wird abgeglichen …" : "Dokumentation abgleichen"}
+      </Button>
+      {report && (
+        <p
+          className="rounded-md border border-primary/20 bg-secondary p-3 text-label text-secondary-foreground"
+          role="status"
+        >
+          {reportSentence(report)}
+        </p>
+      )}
+      {error && (
+        <p
+          className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-label text-destructive"
+          role="alert"
+        >
+          {error}
+        </p>
+      )}
+    </SettingsSection>
+  );
+}
+
+function reportSentence(report: CorpusReconcileReport) {
+  const parts = [
+    `${report.aktualisiert} aktualisiert`,
+    `${report.entfernt} entfernt`,
+    `${report.unveraendert} unverändert`,
+  ];
+  const summary = `Abgleich abgeschlossen: ${parts.join(", ")}.`;
+  if (report.fehler === 0) return summary;
+  return `${summary} ${report.fehler === 1 ? "Ein Prozess konnte" : `${report.fehler} Prozesse konnten`} nicht abgeglichen werden.`;
 }
 
 function SettingsPageSkeleton() {

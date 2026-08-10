@@ -33,7 +33,12 @@ import {
   type UploadRecord,
   type ValidationInputSnapshot,
   type WorkCharacteristicAnswer,
+  normalizedProcessName,
 } from "../../domain/src/process-understanding.ts";
+import {
+  processHistoryEventNameSchema,
+  type ProcessHistoryEventName,
+} from "../../domain/src/process-events.ts";
 import { ChatCaptureRepository } from "./chat-capture-repository.ts";
 import { atomicWrite } from "./atomic-write.ts";
 import { audit } from "./audit-log.ts";
@@ -71,7 +76,7 @@ const followUpsFileSchema = z.object({
 });
 const auditEntrySchema = z.object({
   at: z.string().datetime(),
-  event: z.string().min(1),
+  event: processHistoryEventNameSchema,
   detail: z.unknown(),
 });
 const operationEntrySchema = z.object({
@@ -249,9 +254,31 @@ export class ProcessUploadIntegrityError extends Error {
     this.name = "ProcessUploadIntegrityError";
   }
 }
+export class DuplicateProcessNameError extends Error {
+  constructor() {
+    super("Ein aktiver Prozess mit diesem Namen existiert bereits.");
+    this.name = "DuplicateProcessNameError";
+  }
+}
 
 export class ProcessCaptureRepository {
+  private createTail: Promise<void> = Promise.resolve();
+
   constructor(public root: string) {}
+
+  private async withCreateMutex<T>(action: () => Promise<T>) {
+    const previous = this.createTail;
+    let release!: () => void;
+    this.createTail = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await previous.catch(() => undefined);
+    try {
+      return await action();
+    } finally {
+      release();
+    }
+  }
 
   private processRoot() {
     return join(this.root, "process-captures");
@@ -281,6 +308,42 @@ export class ProcessCaptureRepository {
     return records
       .filter((record): record is ProcessCaptureRecord => record !== null)
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  }
+
+  /** Für bounded Batch-Jobs darf eine beschädigte Aufnahme die übrigen nicht sperren. */
+  async listSettled() {
+    let names: string[];
+    try {
+      names = await readdir(this.processRoot());
+    } catch {
+      return { records: [] as ProcessCaptureRecord[], errors: [] as Error[] };
+    }
+    const values = await Promise.all(
+      names
+        .filter((name) => /^PROC-\d{4}$/.test(name))
+        .map(async (id) => {
+          try {
+            return { record: await this.get(id), error: null };
+          } catch (value) {
+            return {
+              record: null,
+              error:
+                value instanceof Error
+                  ? value
+                  : new Error("Die Prozessquelle konnte nicht gelesen werden."),
+            };
+          }
+        }),
+    );
+    return {
+      records: values
+        .map((value) => value.record)
+        .filter((record): record is ProcessCaptureRecord => record !== null)
+        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
+      errors: values
+        .map((value) => value.error)
+        .filter((error): error is Error => error !== null),
+    };
   }
 
   async get(id: string): Promise<ProcessCaptureRecord | null> {
@@ -382,6 +445,16 @@ export class ProcessCaptureRepository {
     configInput: unknown,
     interactionModeInput: unknown = "form",
   ) {
+    return this.withCreateMutex(() =>
+      this.createUnlocked(coverInput, configInput, interactionModeInput),
+    );
+  }
+
+  private async createUnlocked(
+    coverInput: unknown,
+    configInput: unknown,
+    interactionModeInput: unknown,
+  ) {
     const cover = coverSchema.parse(coverInput);
     const config = processCaptureConfigSchema.parse(configInput);
     const interactionMode = interactionModeSchema.parse(interactionModeInput);
@@ -389,6 +462,14 @@ export class ProcessCaptureRepository {
       throw new Error(
         "Neue Prozessaufnahmen benötigen die aktuelle Profilversion.",
       );
+    if (
+      (await this.list()).some(
+        (record) =>
+          normalizedProcessName(record.cover.processName) ===
+          normalizedProcessName(cover.processName),
+      )
+    )
+      throw new DuplicateProcessNameError();
     const [activeNames, historicalNames] = await Promise.all([
       readdir(this.processRoot()).catch(() => []),
       readdir(join(this.root, "trash", "process-captures")).catch(() => []),
@@ -743,16 +824,22 @@ export class ProcessCaptureRepository {
     if (record.state !== "review_required" || !record.understanding)
       throw new Error("Bitte prüfen Sie zuerst das Prozessbild.");
     const now = new Date().toISOString();
+    const confirmationQuality =
+      record.understanding.knowledgeGaps.length ||
+      record.understanding.conflicts.length
+        ? "with_gaps"
+        : "complete";
     await this.writeMetadata({
       ...record,
       state: "confirmed",
       confirmedAt: now,
+      confirmationQuality,
       updatedAt: now,
     });
     await audit(
       join(this.dir(id), "history.jsonl"),
       "understanding-confirmed",
-      { confirmedAt: now },
+      { confirmedAt: now, quality: confirmationQuality },
     );
     return this.required(id);
   }
@@ -925,7 +1012,11 @@ export class ProcessCaptureRepository {
       .reverse();
   }
 
-  async appendHistory(id: string, event: string, detail: unknown) {
+  async appendHistory(
+    id: string,
+    event: ProcessHistoryEventName,
+    detail: unknown,
+  ) {
     await this.required(id);
     await audit(join(this.dir(id), "history.jsonl"), event, detail);
   }
@@ -957,6 +1048,8 @@ export class ProcessCaptureRepository {
       ...record,
       state,
       confirmedAt,
+      confirmationQuality:
+        state === "confirmed" ? record.confirmationQuality : null,
       updatedAt: new Date().toISOString(),
     });
   }

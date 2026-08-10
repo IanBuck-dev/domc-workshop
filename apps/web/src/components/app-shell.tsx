@@ -1,4 +1,4 @@
-import { ListTree, LogOut, PlusCircle, Settings } from "lucide-react";
+import { BookText, ListTree, LogOut, PlusCircle, Settings } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { BrandLockup } from "./brand-mark";
 import { Button } from "./ui/button";
@@ -8,6 +8,7 @@ import { AiOperationQueue } from "./ai-operation-queue";
 const nav = [
   ["/", "Prozesse", ListTree],
   ["/processes/new", "Prozess erfassen", PlusCircle],
+  ["/dokumentation", "Prozessdokumentation", BookText],
   ["/settings", "Einstellungen", Settings],
 ] as const;
 export function AppShell({

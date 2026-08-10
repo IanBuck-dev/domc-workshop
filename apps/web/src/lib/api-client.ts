@@ -14,6 +14,12 @@ import type {
 } from "./opportunity-types";
 import type { PublicSiteInformation } from "./public-site-information";
 import type { MemoryOverviewDetail } from "../../../../packages/domain/src/memory";
+import type {
+  CorpusEntry,
+  CorpusLogEntry,
+  CorpusReconcileReport,
+  SimilarProcess,
+} from "./corpus-types";
 
 export class ApiError extends Error {
   constructor(
@@ -41,6 +47,40 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
       body,
     );
   return body as T;
+}
+
+/**
+ * Antworten des Korpus, die reinen Text liefern (Dateiinhalt, roher Diff). Der
+ * Server darf den Text auch in ein JSON-Feld verpacken; beide Formen sind hier
+ * erlaubt, damit die Oberfläche nicht an einer Transportentscheidung hängt.
+ */
+async function text(path: string): Promise<string> {
+  const response = await fetch(`/api${path}`);
+  const raw = await response.text();
+  if (!response.ok) {
+    let message = "Der Inhalt konnte nicht geladen werden.";
+    try {
+      message = (JSON.parse(raw) as { error?: string }).error ?? message;
+    } catch {
+      /* Kein JSON — die Standardmeldung bleibt. */
+    }
+    throw new ApiError(message, response.status);
+  }
+  if (!response.headers.get("content-type")?.includes("json")) return raw;
+  const body: unknown = JSON.parse(raw);
+  if (typeof body === "string") return body;
+  const wrapped = body as { inhalt?: string; content?: string; diff?: string };
+  return wrapped.inhalt ?? wrapped.content ?? wrapped.diff ?? "";
+}
+
+/**
+ * Listenantworten. Der Server darf die Liste blank oder unter `eintraege` bzw.
+ * `treffer` liefern.
+ */
+async function list<T>(path: string): Promise<T[]> {
+  const body = await req<T[] | { eintraege?: T[]; treffer?: T[] }>(path);
+  if (Array.isArray(body)) return body;
+  return body.eintraege ?? body.treffer ?? [];
 }
 
 async function uploadBlob(processId: string, uploadId: string) {
@@ -214,6 +254,41 @@ export const api = {
     }),
   demoSzenarien: () => req<{ szenarien: DemoSzenario[] }>("/demo/szenarien"),
   demoSzenarioDatei,
+  /** Ähnliche bestehende Prozessnamen — verhindert Dubletten bei der Anlage. */
+  similarProcesses: (name: string) =>
+    list<SimilarProcess>(`/processes/similar?name=${encodeURIComponent(name)}`),
+  corpus: {
+    tree: (path = "", rev = "HEAD") =>
+      list<CorpusEntry>(
+        `/corpus/tree?rev=${encodeURIComponent(rev)}&path=${encodeURIComponent(path)}`,
+      ),
+    file: (path: string, rev = "HEAD") =>
+      text(
+        `/corpus/file?rev=${encodeURIComponent(rev)}&path=${encodeURIComponent(path)}`,
+      ),
+    log: (options: { path?: string; limit?: number; skip?: number } = {}) => {
+      const query = new URLSearchParams({
+        limit: String(options.limit ?? 30),
+        skip: String(options.skip ?? 0),
+      });
+      if (options.path) query.set("path", options.path);
+      return list<CorpusLogEntry>(`/corpus/log?${query}`);
+    },
+    diff: (from: string, to: string, path?: string) => {
+      const query = new URLSearchParams({ from, to });
+      if (path) query.set("path", path);
+      return text(`/corpus/diff?${query}`);
+    },
+    reconcile: () =>
+      req<CorpusReconcileReport & { bericht?: CorpusReconcileReport }>(
+        "/corpus/reconcile",
+        { method: "POST" },
+      ).then((body) => body.bericht ?? body),
+    revert: (commit: string) =>
+      req<unknown>(`/corpus/revert/${encodeURIComponent(commit)}`, {
+        method: "POST",
+      }),
+  },
 };
 
 export type DemoSzenario = {

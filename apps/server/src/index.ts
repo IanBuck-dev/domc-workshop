@@ -31,6 +31,8 @@ import { MemoryConsolidationService } from "./memory-consolidation-service.ts";
 import { memoryRoutes } from "./routes/memory.ts";
 import { migrateProcessFlowStorage } from "../../../packages/storage/src/process-flow-migration.ts";
 import { requireSession } from "./session.ts";
+import { CorpusService } from "./corpus-service.ts";
+import { corpusRoutes } from "./routes/corpus.ts";
 import {
   workspacePath,
   hasWebDist,
@@ -68,6 +70,16 @@ const chatService = new ChatCaptureService(
   memoryRepo,
 );
 const chatTurnRunner = new ChatTurnRunner(chatService, processRepo);
+const corpusService = new CorpusService(processRepo, root);
+// Ein fehlendes Git darf den Serverstart nicht blockieren; die Operation meldet es später sichtbar.
+void corpusService
+  .initialize()
+  .catch((error) =>
+    console.error(
+      "[corpus] Repository konnte nicht initialisiert werden:",
+      error,
+    ),
+  );
 await opportunityRepo.recoverInterrupted();
 await memoryRepo.ensure();
 app.onError((error, c) => {
@@ -117,6 +129,7 @@ app.route(
       await chatTurnRunner.stop(id);
       await chatService.deleteSessions(id);
     },
+    corpusService,
   ),
 );
 app.route(
@@ -127,6 +140,7 @@ app.route(
     opportunityService,
     chatTurnRunner,
     memoryService,
+    corpusService,
   ),
 );
 app.route(
@@ -145,6 +159,7 @@ app.route(
   memoryRoutes(memoryConsolidationService, memoryRepo, processRepo),
 );
 app.route("/api/events", eventRoutes());
+app.route("/api/corpus", corpusRoutes(corpusService));
 app.all("/api/*", (c) =>
   c.json({ error: "API-Endpunkt nicht gefunden." }, 404),
 );
