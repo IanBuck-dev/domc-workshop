@@ -212,35 +212,134 @@ export function memoryTopicId(topic: MemoryTopic) {
   return topic.replace(/\.md$/u, "");
 }
 
-export const memoryOverviewSchema = z
-  .object({
-    topics: z
-      .array(
-        z
-          .object({
-            id: z.string().trim().min(1).max(60),
-            title: z.string().trim().min(1).max(120),
-            description: z.string().trim().min(1).max(300),
-            entryCount: z.number().int().nonnegative(),
-            lastLearnedAt: dateSchema.nullable(),
-            entries: z
-              .array(
-                z
-                  .object({ fact: memoryFactSchema, learnedAt: dateSchema })
-                  .strict(),
-              )
-              .max(10_000),
-          })
-          .strict(),
-      )
-      .length(memoryTopicNames.length),
-    entryCount: z.number().int().nonnegative(),
-    lastLearnedAt: dateSchema.nullable(),
-    isEmpty: z.boolean(),
-  })
+/** Rohe Herkunft eines Eintrags: nur die Prozess-Kennung aus dem Quellen-Tag. */
+export const memoryOverviewSourceSchema = z
+  .object({ processId: processIdSchema })
   .strict();
+
+/**
+ * Aufgelöste Herkunft für die Oberfläche. Eine gelöschte Prozessaufnahme bleibt
+ * als Kennung sichtbar, trägt aber keine Angaben mehr.
+ */
+export const memoryOverviewSourceDetailSchema = z
+  .object({
+    processId: processIdSchema,
+    exists: z.boolean(),
+    processName: z.string().trim().min(1).max(240).nullable(),
+    department: z.string().trim().min(1).max(120).nullable(),
+    participantName: z.string().trim().min(1).max(200).nullable(),
+  })
+  .strict()
+  .superRefine((value, ctx) => {
+    const filled =
+      value.processName !== null &&
+      value.department !== null &&
+      value.participantName !== null;
+    if (value.exists !== filled)
+      ctx.addIssue({
+        code: "custom",
+        message:
+          "Nur eine vorhandene Prozessaufnahme darf Angaben zur Herkunft tragen.",
+      });
+  });
+
+function buildOverviewSchema<Source extends z.ZodTypeAny>(source: Source) {
+  return z
+    .object({
+      topics: z
+        .array(
+          z
+            .object({
+              id: z.string().trim().min(1).max(60),
+              title: z.string().trim().min(1).max(120),
+              description: z.string().trim().min(1).max(300),
+              entryCount: z.number().int().nonnegative(),
+              lastLearnedAt: dateSchema.nullable(),
+              entries: z
+                .array(
+                  z
+                    .object({
+                      fact: memoryFactSchema,
+                      learnedAt: dateSchema,
+                      sources: z.array(source).min(1).max(1_000),
+                    })
+                    .strict(),
+                )
+                .max(10_000),
+            })
+            .strict(),
+        )
+        .length(memoryTopicNames.length),
+      entryCount: z.number().int().nonnegative(),
+      lastLearnedAt: dateSchema.nullable(),
+      isEmpty: z.boolean(),
+    })
+    .strict();
+}
+
+export const memoryOverviewSchema = buildOverviewSchema(
+  memoryOverviewSourceSchema,
+);
 export type MemoryOverview = z.infer<typeof memoryOverviewSchema>;
 export type MemoryTopicOverview = MemoryOverview["topics"][number];
+
+export const memoryOverviewDetailSchema = buildOverviewSchema(
+  memoryOverviewSourceDetailSchema,
+);
+export type MemoryOverviewDetail = z.infer<typeof memoryOverviewDetailSchema>;
+export type MemoryTopicOverviewDetail = MemoryOverviewDetail["topics"][number];
+export type MemoryOverviewSourceDetail = z.infer<
+  typeof memoryOverviewSourceDetailSchema
+>;
+
+/** Angaben, die eine vorhandene Prozessaufnahme zur Herkunft beisteuert. */
+export type MemoryProcessSource = {
+  processName: string;
+  department: string;
+  participantName: string;
+};
+
+/**
+ * Ergänzt jede Herkunft um die Angaben der Prozessaufnahme. Fehlt die Aufnahme,
+ * bleibt die Kennung mit `exists: false` erhalten.
+ */
+export function resolveMemoryOverviewSources(
+  overview: MemoryOverview,
+  lookup: (processId: string) => MemoryProcessSource | null,
+): MemoryOverviewDetail {
+  return memoryOverviewDetailSchema.parse({
+    ...overview,
+    topics: overview.topics.map((topic) => ({
+      ...topic,
+      entries: topic.entries.map((entry) => ({
+        ...entry,
+        sources: entry.sources.map((source) => {
+          const process = lookup(source.processId);
+          return {
+            processId: source.processId,
+            exists: Boolean(process),
+            processName: process?.processName ?? null,
+            department: process?.department ?? null,
+            participantName: process?.participantName ?? null,
+          };
+        }),
+      })),
+    })),
+  });
+}
+
+/** Alle Prozess-Kennungen, auf die sich die Übersicht beruft. */
+export function memoryOverviewProcessIds(overview: MemoryOverview) {
+  return [
+    ...new Set(
+      overview.topics.flatMap((topic) =>
+        topic.entries.flatMap((entry) =>
+          entry.sources.map((source) => source.processId),
+        ),
+      ),
+    ),
+  ];
+}
 
 /** Leseansicht der fünf Themen für die Einstellungen — ohne Dateinamen. */
 export function buildMemoryOverview(topics: MemoryTopics): MemoryOverview {
@@ -248,6 +347,7 @@ export function buildMemoryOverview(topics: MemoryTopics): MemoryOverview {
     const entries = topics[topic].map((entry) => ({
       fact: entry.fact,
       learnedAt: entry.source.confirmedAt,
+      sources: entry.source.processIds.map((processId) => ({ processId })),
     }));
     const definition = memoryTopicDefinitions[topic];
     return {

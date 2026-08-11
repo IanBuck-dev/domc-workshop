@@ -1,8 +1,9 @@
-import { Eraser, Sparkles } from "lucide-react";
+import { Eraser, Info, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import type {
-  MemoryOverview,
-  MemoryTopicOverview,
+  MemoryOverviewDetail,
+  MemoryTopicOverviewDetail,
 } from "../../../../packages/domain/src/memory";
 import type { MemoryConsolidationStatus } from "../../../../packages/domain/src/process-events";
 import { ApiError, api } from "../lib/api-client";
@@ -18,6 +19,7 @@ import {
   AlertDialogTitle,
 } from "./ui/alert-dialog";
 import { Button } from "./ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Skeleton } from "./ui/skeleton";
 import { Spinner } from "./ui/spinner";
 
@@ -54,7 +56,7 @@ export function summarySentence(
 
 export function CompanyKnowledgeSection() {
   const consolidation = useMemoryConsolidation();
-  const [overview, setOverview] = useState<MemoryOverview | null>(null);
+  const [overview, setOverview] = useState<MemoryOverviewDetail | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [forgetOpen, setForgetOpen] = useState(false);
@@ -298,7 +300,7 @@ function ConsolidationStatus({
   );
 }
 
-function KnowledgeTopic({ topic }: { topic: MemoryTopicOverview }) {
+function KnowledgeTopic({ topic }: { topic: MemoryTopicOverviewDetail }) {
   return (
     <section className="rounded-lg border border-border bg-muted p-4 sm:p-5">
       <h3 className="text-subheading">{topic.title}</h3>
@@ -314,9 +316,10 @@ function KnowledgeTopic({ topic }: { topic: MemoryTopicOverview }) {
           {topic.entries.map((entry) => (
             <li
               key={entry.fact}
-              className="rounded-md border border-border bg-card p-3 text-ui"
+              className="flex items-start justify-between gap-2 rounded-md border border-border bg-card p-3 text-ui"
             >
-              {entry.fact}
+              <span className="min-w-0">{entry.fact}</span>
+              <EntryOrigin entry={entry} />
             </li>
           ))}
         </ul>
@@ -326,6 +329,84 @@ function KnowledgeTopic({ topic }: { topic: MemoryTopicOverview }) {
         </p>
       )}
     </section>
+  );
+}
+
+/**
+ * Herkunft eines Eintrags auf Klick. Bewusst kein Hover: die Angaben sollen
+ * auch auf dem Tablet erreichbar bleiben.
+ */
+function EntryOrigin({
+  entry,
+}: {
+  entry: MemoryTopicOverviewDetail["entries"][number];
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          className="-my-1 shrink-0 text-muted-foreground hover:text-foreground"
+          aria-label="Woher stammt dieser Eintrag?"
+        >
+          <Info />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-80 space-y-3">
+        <p className="text-label text-muted-foreground">
+          Woher stammt dieser Eintrag?
+        </p>
+        {entry.sources.map((source, index) => (
+          <div
+            key={source.processId}
+            className={index > 0 ? "border-t border-border pt-3" : undefined}
+          >
+            <p className="text-label text-muted-foreground">Gelernt aus</p>
+            {source.exists ? (
+              <p className="text-ui">
+                <Link
+                  className="font-semibold text-foreground underline underline-offset-2 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                  to={`/processes/${source.processId}`}
+                >
+                  {source.processName}
+                </Link>{" "}
+                <span className="text-muted-foreground">
+                  ({source.processId})
+                </span>
+              </p>
+            ) : (
+              <p className="text-ui">
+                <span className="font-semibold">{source.processId}</span>{" "}
+                <span className="text-muted-foreground">
+                  — Prozessaufnahme wurde gelöscht.
+                </span>
+              </p>
+            )}
+            {source.department && (
+              <p className="mt-2 text-label text-muted-foreground">
+                Fachbereich
+              </p>
+            )}
+            {source.department && (
+              <p className="text-ui">{source.department}</p>
+            )}
+            {source.participantName && (
+              <p className="mt-2 text-label text-muted-foreground">
+                Eingereicht von
+              </p>
+            )}
+            {source.participantName && (
+              <p className="text-ui">{source.participantName}</p>
+            )}
+          </div>
+        ))}
+        <p className="border-t border-border pt-3 text-label text-muted-foreground">
+          Bestätigt am {formatLearnedAt(entry.learnedAt)}
+        </p>
+      </PopoverContent>
+    </Popover>
   );
 }
 

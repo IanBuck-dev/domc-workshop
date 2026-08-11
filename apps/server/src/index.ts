@@ -140,7 +140,10 @@ app.route(
   ),
 );
 app.route("/api/ai-operations", aiOperationRoutes());
-app.route("/api/memory", memoryRoutes(memoryConsolidationService, memoryRepo));
+app.route(
+  "/api/memory",
+  memoryRoutes(memoryConsolidationService, memoryRepo, processRepo),
+);
 app.route("/api/events", eventRoutes());
 app.all("/api/*", (c) =>
   c.json({ error: "API-Endpunkt nicht gefunden." }, 404),

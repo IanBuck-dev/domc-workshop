@@ -1,8 +1,13 @@
 import { describe, expect, test } from "bun:test";
 import {
   applyMemoryOperations,
+  buildMemoryOverview,
   emptyMemoryTopics,
   memoryOperationListSchema,
+  memoryOverviewDetailSchema,
+  memoryOverviewProcessIds,
+  memoryOverviewSchema,
+  resolveMemoryOverviewSources,
 } from "../packages/domain/src/memory.ts";
 
 describe("memory domain", () => {
@@ -94,5 +99,117 @@ describe("memory domain", () => {
           operations: [{ action: "add", topic: "muster.md", fact }],
         }),
       ).toThrow();
+  });
+});
+
+describe("memory overview sources", () => {
+  function topicsWithTwoSources() {
+    const first = applyMemoryOperations(
+      emptyMemoryTopics(),
+      {
+        operations: [
+          {
+            action: "add",
+            topic: "glossar.md",
+            fact: "Klausur ist die wöchentliche Abstimmung.",
+          },
+        ],
+      },
+      { processId: "PROC-0001", confirmedAt: "2026-08-01" },
+    );
+    return applyMemoryOperations(
+      first,
+      {
+        operations: [
+          {
+            action: "confirm",
+            topic: "glossar.md",
+            existingFact: "Klausur ist die wöchentliche Abstimmung.",
+          },
+        ],
+      },
+      { processId: "PROC-0002", confirmedAt: "2026-08-10" },
+    );
+  }
+
+  test("carries every process id of an entry into the overview", () => {
+    const overview = buildMemoryOverview(topicsWithTwoSources());
+    const entry = overview.topics[0]!.entries[0]!;
+    expect(entry).toMatchObject({
+      fact: "Klausur ist die wöchentliche Abstimmung.",
+      learnedAt: "2026-08-10",
+      sources: [{ processId: "PROC-0001" }, { processId: "PROC-0002" }],
+    });
+    expect(memoryOverviewProcessIds(overview)).toEqual([
+      "PROC-0001",
+      "PROC-0002",
+    ]);
+    // Runde durch das Wire-Schema zurück.
+    expect(
+      memoryOverviewSchema.parse(JSON.parse(JSON.stringify(overview))),
+    ).toEqual(overview);
+  });
+
+  test("resolves known processes and keeps deleted ones visible", () => {
+    const overview = buildMemoryOverview(topicsWithTwoSources());
+    const detail = resolveMemoryOverviewSources(overview, (processId) =>
+      processId === "PROC-0001"
+        ? {
+            processName: "Schadenmeldung erfassen",
+            department: "Schaden",
+            participantName: "Nina Berger",
+          }
+        : null,
+    );
+    expect(detail.topics[0]!.entries[0]!.sources).toEqual([
+      {
+        processId: "PROC-0001",
+        exists: true,
+        processName: "Schadenmeldung erfassen",
+        department: "Schaden",
+        participantName: "Nina Berger",
+      },
+      {
+        processId: "PROC-0002",
+        exists: false,
+        processName: null,
+        department: null,
+        participantName: null,
+      },
+    ]);
+    expect(memoryOverviewDetailSchema.parse(detail)).toEqual(detail);
+  });
+
+  test("rejects a missing process that still carries details", () => {
+    expect(() =>
+      memoryOverviewDetailSchema.parse({
+        ...buildMemoryOverview(emptyMemoryTopics()),
+        topics: buildMemoryOverview(emptyMemoryTopics()).topics.map(
+          (topic, index) =>
+            index === 0
+              ? {
+                  ...topic,
+                  entryCount: 1,
+                  lastLearnedAt: "2026-08-10",
+                  entries: [
+                    {
+                      fact: "Ein Fakt.",
+                      learnedAt: "2026-08-10",
+                      sources: [
+                        {
+                          processId: "PROC-0001",
+                          exists: false,
+                          processName: "Schadenmeldung erfassen",
+                          department: "Schaden",
+                          participantName: "Nina Berger",
+                        },
+                      ],
+                    },
+                  ],
+                }
+              : topic,
+        ),
+      }),
+    ).toThrow();
   });
 });

@@ -13,7 +13,7 @@ import type {
   OpportunityDiscoverySummary,
 } from "./opportunity-types";
 import type { PublicSiteInformation } from "./public-site-information";
-import type { MemoryOverview } from "../../../../packages/domain/src/memory";
+import type { MemoryOverviewDetail } from "../../../../packages/domain/src/memory";
 
 export class ApiError extends Error {
   constructor(
@@ -205,8 +205,9 @@ export const api = {
       `/opportunities/${processId}/retry`,
       { method: "POST" },
     ),
-  memory: () => req<MemoryOverview>("/memory"),
-  forgetMemory: () => req<MemoryOverview>("/memory", { method: "DELETE" }),
+  memory: () => req<MemoryOverviewDetail>("/memory"),
+  forgetMemory: () =>
+    req<MemoryOverviewDetail>("/memory", { method: "DELETE" }),
   consolidateMemory: () =>
     req<{ operationId: string; state: "queued" }>("/memory/consolidate", {
       method: "POST",

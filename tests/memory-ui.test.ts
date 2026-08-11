@@ -37,6 +37,22 @@ describe("settings UI for the learned company knowledge", () => {
     expect(source).not.toMatch(/Gedächtnis|Prompt|Modell|Token/u);
   });
 
+  test("opens the origin of an entry on click and shows the joined process data", async () => {
+    const source = await readFile(sectionPath, "utf8");
+    expect(source).toContain('from "./ui/popover"');
+    expect(source).toContain('aria-label="Woher stammt dieser Eintrag?"');
+    expect(source).toContain("Gelernt aus");
+    expect(source).toContain("Fachbereich");
+    expect(source).toContain("Eingereicht von");
+    expect(source).toContain("Bestätigt am");
+    expect(source).toContain("Prozessaufnahme wurde gelöscht.");
+    expect(source).toContain("to={`/processes/${source.processId}`}");
+    expect(source).toContain("entry.sources.map");
+    // Klick statt Hover: der Titel darf keine reine Tooltip-Attrappe sein.
+    expect(source).not.toContain("onMouseEnter");
+    expect(source).not.toContain("title=");
+  });
+
   test("keeps the skeleton vocabulary and light-mode-only styling", async () => {
     const source = await readFile(sectionPath, "utf8");
     expect(source).toContain('from "./ui/skeleton"');

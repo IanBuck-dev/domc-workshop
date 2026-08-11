@@ -25,9 +25,43 @@ async function memoryRepository() {
   return memory;
 }
 
-function appWith(memory: MemoryRepository, service: unknown = { start() {} }) {
+/** Nur die Prozessaufnahmen, die der Test kennt — alles andere gilt als gelöscht. */
+function processStore(
+  known: Record<
+    string,
+    {
+      processName: string;
+      department: string;
+      participantName: string;
+      participantEmail: string;
+    }
+  > = {
+    "PROC-0001": {
+      processName: "Schadenmeldung erfassen",
+      department: "Schaden",
+      participantName: "Nina Berger",
+      participantEmail: "nina.berger@lifecorp.example",
+    },
+  },
+) {
+  return {
+    async get(id: string) {
+      const cover = known[id];
+      return cover ? { id, cover } : null;
+    },
+  };
+}
+
+function appWith(
+  memory: MemoryRepository,
+  service: unknown = { start() {} },
+  processes: unknown = processStore(),
+) {
   const app = new Hono();
-  app.route("/api/memory", memoryRoutes(service as never, memory));
+  app.route(
+    "/api/memory",
+    memoryRoutes(service as never, memory, processes as never),
+  );
   return app;
 }
 
@@ -64,6 +98,60 @@ describe("memory API", () => {
     });
     // Keine Dateinamen oder Pfade an die Oberfläche.
     expect(JSON.stringify(body)).not.toContain(".md");
+  });
+
+  test("joins the process behind every entry without leaking contact data", async () => {
+    const memory = await memoryRepository();
+    await addFact(memory, "Klausur ist die wöchentliche Abstimmung.");
+    const body = await (await appWith(memory).request("/api/memory")).json();
+    expect(body.topics[0].entries[0].sources).toEqual([
+      {
+        processId: "PROC-0001",
+        exists: true,
+        processName: "Schadenmeldung erfassen",
+        department: "Schaden",
+        participantName: "Nina Berger",
+      },
+    ]);
+    expect(JSON.stringify(body)).not.toContain("@");
+  });
+
+  test("keeps working when the source process was deleted", async () => {
+    const memory = await memoryRepository();
+    await addFact(memory, "Klausur ist die wöchentliche Abstimmung.");
+    const response = await appWith(
+      memory,
+      { start() {} },
+      processStore({}),
+    ).request("/api/memory");
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.topics[0].entries[0].sources).toEqual([
+      {
+        processId: "PROC-0001",
+        exists: false,
+        processName: null,
+        department: null,
+        participantName: null,
+      },
+    ]);
+  });
+
+  test("treats an unreadable process capture as deleted", async () => {
+    const memory = await memoryRepository();
+    await addFact(memory, "Klausur ist die wöchentliche Abstimmung.");
+    const broken = {
+      get() {
+        return Promise.reject(new Error("Ungültige Prozessaufnahme."));
+      },
+    };
+    const response = await appWith(memory, { start() {} }, broken).request(
+      "/api/memory",
+    );
+    expect(response.status).toBe(200);
+    expect(
+      (await response.json()).topics[0].entries[0].sources[0],
+    ).toMatchObject({ processId: "PROC-0001", exists: false });
   });
 
   test("reports the empty state before anything was learned", async () => {
