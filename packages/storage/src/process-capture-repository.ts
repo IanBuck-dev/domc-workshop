@@ -61,6 +61,26 @@ const metadataSchema = z.object({
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
+/**
+ * Dieselbe Regel wie bei `confirm()`: Wissenslücken oder Widersprüche machen eine
+ * Bestätigung `with_gaps`, sonst ist sie `complete`. Ohne abgeleitetes
+ * Verständnis bleibt nur `with_gaps` als ehrliche Aussage.
+ */
+function confirmationQualityOf(
+  metadata: {
+    state: string;
+    confirmationQuality: "complete" | "with_gaps" | null;
+  },
+  understanding: { knowledgeGaps: unknown[]; conflicts: unknown[] } | null,
+) {
+  if (metadata.state !== "confirmed") return metadata.confirmationQuality;
+  if (metadata.confirmationQuality) return metadata.confirmationQuality;
+  if (!understanding) return "with_gaps";
+  return understanding.knowledgeGaps.length || understanding.conflicts.length
+    ? "with_gaps"
+    : "complete";
+}
+
 const answersFileSchema = z.object({
   mainAnswers: z.array(topicAnswerSchema).max(5),
   workCharacteristicAnswers: z
@@ -346,6 +366,12 @@ export class ProcessCaptureRepository {
     };
   }
 
+  /**
+   * Prozesse, die vor der Einführung der Bestätigungsqualität bestätigt wurden,
+   * haben das Feld nicht in ihrer `metadata.yaml`. Statt sie beim Lesen als
+   * ungültig abzuweisen, wird die Qualität nach derselben Regel wie bei einer
+   * frischen Bestätigung aus dem Prozessverständnis abgeleitet.
+   */
   async get(id: string): Promise<ProcessCaptureRecord | null> {
     if (!/^PROC-\d{4}$/.test(id)) return null;
     try {
@@ -404,6 +430,7 @@ export class ProcessCaptureRepository {
             .parse(JSON.parse(rawUnderstandingText));
       const record = processCaptureRecordSchema.parse({
         ...metadata,
+        confirmationQuality: confirmationQualityOf(metadata, understanding),
         cover,
         configSnapshot,
         ...answers,
