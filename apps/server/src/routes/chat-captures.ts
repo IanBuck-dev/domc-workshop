@@ -9,16 +9,33 @@ import type { ProcessCaptureRepository } from "../../../../packages/storage/src/
 import type { ChatCaptureService } from "../chat-capture-service.ts";
 import { ChatTurnRunner } from "../chat-turn-runner.ts";
 import type { OpportunityDiscoveryService } from "../opportunity-discovery-service.ts";
+import type { MemoryDistillationService } from "../memory-distillation-service.ts";
 import { publishProcessChanged } from "../process-events.ts";
 
 const confirmSchema = z.object({ override: z.boolean() }).strict();
 const skipSchema = z.object({ id: z.string().uuid() }).strict();
+
+async function appendBackgroundFailure(
+  processes: ProcessCaptureRepository,
+  processId: string,
+  event: string,
+  error: unknown,
+) {
+  try {
+    await processes.appendHistory(processId, event, {
+      message: error instanceof Error ? error.message : "Start fehlgeschlagen",
+    });
+  } catch (auditError) {
+    console.error(`[${event}] Audit failed for ${processId}:`, auditError);
+  }
+}
 
 export function chatCaptureRoutes(
   service: ChatCaptureService,
   processes: ProcessCaptureRepository,
   opportunities: OpportunityDiscoveryService,
   runner: ChatTurnRunner = new ChatTurnRunner(service, processes),
+  memory?: MemoryDistillationService,
 ) {
   const app = new Hono();
   app.get("/:id/chat", async (c) => {
@@ -208,17 +225,30 @@ export function chatCaptureRoutes(
         await opportunities.start(record.id);
       } catch (error) {
         opportunityStart = "failed";
-        await processes.appendHistory(
+        await appendBackgroundFailure(
+          processes,
           record.id,
           "opportunity-auto-start-failed",
-          {
-            message:
-              error instanceof Error ? error.message : "Start fehlgeschlagen",
-          },
+          error,
         );
       }
+      let memoryStart: "started" | "failed" | "disabled" = memory
+        ? "started"
+        : "disabled";
+      if (memory)
+        try {
+          memory.enqueue(record.id);
+        } catch (error) {
+          memoryStart = "failed";
+          await appendBackgroundFailure(
+            processes,
+            record.id,
+            "memory-distillation-failed",
+            error,
+          );
+        }
       publishProcessChanged(record.id);
-      return c.json({ record: next, opportunityStart });
+      return c.json({ record: next, opportunityStart, memoryStart });
     } catch (error) {
       return c.json(
         {

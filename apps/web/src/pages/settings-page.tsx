@@ -7,6 +7,7 @@ import {
   Upload,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { CompanyKnowledgeSection } from "../components/company-knowledge-section";
 import {
   InstructionPreviewDialog,
   type InstructionPreview,
@@ -225,17 +226,20 @@ export function SettingsPage() {
             Die fachliche Struktur bleibt fest. Namen, offene Fragen und
             Hilfetexte können für neue Testläufe angepasst werden.
           </p>
-          <div className="space-y-4">
+          <div className="divide-y divide-border">
             {[...config.topics]
               .sort((a, b) => a.displayOrder - b.displayOrder)
               .map((topic) => (
                 <fieldset
                   key={topic.id}
-                  className="space-y-4 rounded-lg border border-border bg-muted p-4 sm:p-5"
+                  className="space-y-4 py-6 first:pt-0 last:pb-0"
                 >
-                  <legend className="px-1 text-subheading">
+                  <legend className="sr-only">
                     {topic.displayOrder}. {topic.name}
                   </legend>
+                  <div className="text-subheading">
+                    {topic.displayOrder}. {topic.name}
+                  </div>
                   <FormField
                     label="Kurzbezeichnung"
                     htmlFor={`topic-${topic.id}-name`}
@@ -303,12 +307,15 @@ export function SettingsPage() {
                       .filter((item) => item.topicId === topic.id)
                       .map((characteristic) => (
                         <fieldset
-                          className="space-y-4 rounded-md border border-border bg-card p-4"
+                          className="space-y-4 pt-2"
                           key={characteristic.id}
                         >
-                          <legend className="px-1 text-label">
+                          <legend className="sr-only">
                             Verpflichtendes Arbeitsmerkmal
                           </legend>
+                          <div className="text-label">
+                            Verpflichtendes Arbeitsmerkmal
+                          </div>
                           <FormField
                             label="Frage"
                             htmlFor={`work-characteristic-${characteristic.id}-question`}
@@ -345,10 +352,8 @@ export function SettingsPage() {
                               }
                             />
                           </FormField>
-                          <div className="rounded-md bg-secondary p-3 text-ui">
-                            <b className="block text-secondary-foreground">
-                              Feste Antwortmöglichkeiten
-                            </b>
+                          <div className="text-ui">
+                            <b className="block">Feste Antwortmöglichkeiten</b>
                             <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
                               {characteristic.options.map((option) => (
                                 <li key={option.id}>{option.label}</li>
@@ -414,6 +419,9 @@ export function SettingsPage() {
               }
             />
           </FormField>
+        </SettingsSection>
+        <SettingsSection title="Gelerntes Firmenwissen">
+          <CompanyKnowledgeSection />
         </SettingsSection>
       </div>
       <div className="flex justify-end pt-2">

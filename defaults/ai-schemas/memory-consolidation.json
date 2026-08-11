@@ -1,0 +1,47 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["topicFiles", "summary"],
+  "properties": {
+    "topicFiles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "glossar.md",
+        "systeme.md",
+        "zustaendigkeiten.md",
+        "muster.md",
+        "offene-fragen.md"
+      ],
+      "properties": {
+        "glossar.md": { "type": "string" },
+        "systeme.md": { "type": "string" },
+        "zustaendigkeiten.md": { "type": "string" },
+        "muster.md": { "type": "string" },
+        "offene-fragen.md": { "type": "string" }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mergedCount", "deletedCount", "movedCount", "deletions"],
+      "properties": {
+        "mergedCount": { "type": "integer", "minimum": 0 },
+        "deletedCount": { "type": "integer", "minimum": 0 },
+        "movedCount": { "type": "integer", "minimum": 0 },
+        "deletions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["fact", "reason"],
+            "properties": {
+              "fact": { "type": "string" },
+              "reason": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

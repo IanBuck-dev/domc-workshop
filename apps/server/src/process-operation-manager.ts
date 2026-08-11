@@ -1,16 +1,29 @@
 import { publishProcessEvent } from "./process-events.ts";
 import type {
+  MemoryConsolidationStatus,
   ProcessOperationName,
   ProcessOperationStatus,
 } from "../../../packages/domain/src/process-events.ts";
+import type { MemoryConsolidationSummary } from "../../../packages/domain/src/memory.ts";
 
 interface ManagedOperation extends Omit<ProcessOperationStatus, "position"> {
   controller: AbortController;
   onQueuedCancel?: () => Promise<void>;
 }
+export interface EnqueueProcessOperationOptions {
+  /** Allows exactly one explicitly chained operation after an active process operation. */
+  allowSameProcessFollowup?: boolean;
+}
 
 const operations = new Map<string, ManagedOperation>();
 let queueTail: Promise<void> = Promise.resolve();
+let memoryConsolidation: MemoryConsolidationStatus = { state: "idle" };
+
+export class MemoryConsolidationConflictError extends Error {
+  constructor() {
+    super("Ein Lauf zum Aufräumen des Unternehmenswissens läuft bereits.");
+  }
+}
 
 function publicError(error: unknown) {
   if (error instanceof DOMException && error.name === "AbortError")
@@ -39,6 +52,49 @@ function publishOperations() {
     type: "operations",
     operations: listProcessOperations(),
   });
+}
+
+function publishMemoryConsolidation() {
+  publishProcessEvent({
+    type: "memory-consolidation",
+    ...memoryConsolidation,
+  });
+}
+
+export function memoryConsolidationStatus(): MemoryConsolidationStatus {
+  return structuredClone(memoryConsolidation);
+}
+
+export function enqueueMemoryConsolidation(
+  action: (signal: AbortSignal) => Promise<MemoryConsolidationSummary>,
+) {
+  if (["queued", "running"].includes(memoryConsolidation.state))
+    throw new MemoryConsolidationConflictError();
+  const controller = new AbortController();
+  const operationId = crypto.randomUUID();
+  memoryConsolidation = { operationId, state: "queued" };
+  publishMemoryConsolidation();
+  const previous = queueTail;
+  queueTail = (async () => {
+    await previous.catch(() => undefined);
+    memoryConsolidation = { operationId, state: "running" };
+    publishMemoryConsolidation();
+    try {
+      const summary = await action(controller.signal);
+      memoryConsolidation = { operationId, state: "completed", summary };
+      publishMemoryConsolidation();
+    } catch (error) {
+      console.error(`[memory-consolidation] ${operationId} failed:`, error);
+      memoryConsolidation = {
+        operationId,
+        state: "failed",
+        error:
+          "Das Unternehmenswissen konnte nicht aufgeräumt werden. Der vorherige Stand ist im Änderungsverlauf gesichert.",
+      };
+      publishMemoryConsolidation();
+    }
+  })();
+  return { operationId, state: "queued" as const };
 }
 
 export function hasActiveProcessOperation(processId: string) {
@@ -83,8 +139,16 @@ export function enqueueProcessOperation(
   operationName: ProcessOperationName,
   action: (signal: AbortSignal) => Promise<void>,
   onQueuedCancel?: () => Promise<void>,
+  options: EnqueueProcessOperationOptions = {},
 ) {
-  if (hasActiveProcessOperation(processId))
+  const activeForProcess = [...operations.values()].filter(
+    (operation) =>
+      operation.processId === processId && operation.state !== "failed",
+  );
+  if (
+    activeForProcess.length &&
+    (!options.allowSameProcessFollowup || activeForProcess.length > 1)
+  )
     throw new Error("Für diesen Prozess läuft bereits eine KI-Aktion.");
   for (const [id, operation] of operations)
     if (operation.processId === processId && operation.state === "failed")

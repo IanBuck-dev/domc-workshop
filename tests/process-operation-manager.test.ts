@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   cancelProcessOperation,
   dismissFailedProcessOperations,
+  enqueueMemoryConsolidation,
   enqueueProcessOperation,
   listProcessOperations,
 } from "../apps/server/src/process-operation-manager.ts";
@@ -128,5 +129,77 @@ describe("process operation manager", () => {
     expect(
       listProcessOperations().some((item) => item.processId === processId),
     ).toBe(false);
+  });
+
+  test("allows one explicitly chained operation for the same process", async () => {
+    const processId = `TEST-${crypto.randomUUID()}`;
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const first = enqueueProcessOperation(
+      processId,
+      "opportunity-discovery",
+      async () => gate,
+    );
+    await until(
+      () =>
+        listProcessOperations().find(
+          (item) => item.operationId === first.operationId,
+        )?.state === "running",
+    );
+    expect(() =>
+      enqueueProcessOperation(processId, "memory-distillation", async () => {}),
+    ).toThrow("bereits");
+    const chained = enqueueProcessOperation(
+      processId,
+      "memory-distillation",
+      async () => {},
+      undefined,
+      { allowSameProcessFollowup: true },
+    );
+    expect(() =>
+      enqueueProcessOperation(
+        processId,
+        "process-follow-ups",
+        async () => {},
+        undefined,
+        { allowSameProcessFollowup: true },
+      ),
+    ).toThrow("bereits");
+    release();
+    await until(
+      () =>
+        !listProcessOperations().some(
+          (item) => item.operationId === chained.operationId,
+        ),
+    );
+  });
+
+  test("runs a global consolidation through the same serial queue", async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const process = enqueueProcessOperation(
+      `TEST-${crypto.randomUUID()}`,
+      "process-follow-ups",
+      async () => gate,
+    );
+    await until(
+      () =>
+        listProcessOperations().find(
+          (item) => item.operationId === process.operationId,
+        )?.state === "running",
+    );
+    let started = false;
+    enqueueMemoryConsolidation(async () => {
+      started = true;
+      return { mergedCount: 0, deletedCount: 0, movedCount: 0, deletions: [] };
+    });
+    await Bun.sleep(5);
+    expect(started).toBe(false);
+    release();
+    await until(() => started);
   });
 });

@@ -10,7 +10,10 @@ import {
 import { ClaudeProcessAiAdapter } from "../../../packages/claude/src/process-ai-adapter.ts";
 import { ClaudeOpportunityAiAdapter } from "../../../packages/claude/src/opportunity-ai-adapter.ts";
 import { ClaudeChatCaptureAdapter } from "../../../packages/claude/src/chat-capture-adapter.ts";
+import { ClaudeMemoryDistillationAdapter } from "../../../packages/claude/src/memory-distillation-adapter.ts";
+import { ClaudeMemoryConsolidationAdapter } from "../../../packages/claude/src/memory-consolidation-adapter.ts";
 import { OpportunityDiscoveryRepository } from "../../../packages/storage/src/opportunity-discovery-repository.ts";
+import { MemoryRepository } from "../../../packages/storage/src/memory-repository.ts";
 import { processCaptureRoutes } from "./routes/process-captures.ts";
 import { authRoutes } from "./routes/auth.ts";
 import { configRoutes } from "./routes/config.ts";
@@ -23,6 +26,9 @@ import { chatCaptureRoutes } from "./routes/chat-captures.ts";
 import { ChatCaptureService } from "./chat-capture-service.ts";
 import { ChatTurnRunner } from "./chat-turn-runner.ts";
 import { OpportunityDiscoveryService } from "./opportunity-discovery-service.ts";
+import { MemoryDistillationService } from "./memory-distillation-service.ts";
+import { MemoryConsolidationService } from "./memory-consolidation-service.ts";
+import { memoryRoutes } from "./routes/memory.ts";
 import { migrateProcessFlowStorage } from "../../../packages/storage/src/process-flow-migration.ts";
 import { requireSession } from "./session.ts";
 import {
@@ -39,6 +45,7 @@ await acquireInstanceLock(root);
 await migrateProcessFlowStorage(root);
 const processRepo = new ProcessCaptureRepository(root),
   opportunityRepo = new OpportunityDiscoveryRepository(root),
+  memoryRepo = new MemoryRepository(root),
   app = new Hono();
 const opportunityAi = new ClaudeOpportunityAiAdapter();
 const opportunityService = new OpportunityDiscoveryService(
@@ -46,12 +53,23 @@ const opportunityService = new OpportunityDiscoveryService(
   opportunityRepo,
   opportunityAi,
 );
+const memoryService = new MemoryDistillationService(
+  processRepo,
+  memoryRepo,
+  new ClaudeMemoryDistillationAdapter(),
+);
+const memoryConsolidationService = new MemoryConsolidationService(
+  memoryRepo,
+  new ClaudeMemoryConsolidationAdapter(),
+);
 const chatService = new ChatCaptureService(
   processRepo,
   new ClaudeChatCaptureAdapter(),
+  memoryRepo,
 );
 const chatTurnRunner = new ChatTurnRunner(chatService, processRepo);
 await opportunityRepo.recoverInterrupted();
+await memoryRepo.ensure();
 app.onError((error, c) => {
   console.error(error);
   if (error instanceof ProcessCaptureNotFoundError)
@@ -108,6 +126,7 @@ app.route(
     processRepo,
     opportunityService,
     chatTurnRunner,
+    memoryService,
   ),
 );
 app.route(
@@ -121,6 +140,10 @@ app.route(
   ),
 );
 app.route("/api/ai-operations", aiOperationRoutes());
+app.route(
+  "/api/memory",
+  memoryRoutes(memoryConsolidationService, memoryRepo, processRepo),
+);
 app.route("/api/events", eventRoutes());
 app.all("/api/*", (c) =>
   c.json({ error: "API-Endpunkt nicht gefunden." }, 404),

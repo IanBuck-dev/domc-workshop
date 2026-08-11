@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import {
   subscribeProcessEvents,
+  lastMemoryConsolidationEvent,
   type ProcessEvent,
 } from "../process-events.ts";
 import { listProcessOperations } from "../process-operation-manager.ts";
@@ -36,6 +37,7 @@ export function eventRoutes() {
 
       // Erster Stand direkt nach dem Verbinden, auch nach einem Neuaufbau.
       send({ type: "operations", operations: listProcessOperations() });
+      send(lastMemoryConsolidationEvent());
 
       await new Promise<void>((resolve) => stream.onAbort(resolve));
       clearInterval(heartbeat);
