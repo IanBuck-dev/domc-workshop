@@ -226,13 +226,13 @@ export function SettingsPage() {
             Die fachliche Struktur bleibt fest. Namen, offene Fragen und
             Hilfetexte können für neue Testläufe angepasst werden.
           </p>
-          <div className="space-y-4">
+          <div className="divide-y divide-border">
             {[...config.topics]
               .sort((a, b) => a.displayOrder - b.displayOrder)
               .map((topic) => (
                 <fieldset
                   key={topic.id}
-                  className="space-y-4 rounded-lg border border-border bg-muted p-4 sm:p-5"
+                  className="space-y-4 py-6 first:pt-0 last:pb-0"
                 >
                   <legend className="sr-only">
                     {topic.displayOrder}. {topic.name}
@@ -307,7 +307,7 @@ export function SettingsPage() {
                       .filter((item) => item.topicId === topic.id)
                       .map((characteristic) => (
                         <fieldset
-                          className="space-y-4 rounded-md border border-border bg-card p-4"
+                          className="space-y-4 pt-2"
                           key={characteristic.id}
                         >
                           <legend className="sr-only">
@@ -352,10 +352,8 @@ export function SettingsPage() {
                               }
                             />
                           </FormField>
-                          <div className="rounded-md bg-secondary p-3 text-ui">
-                            <b className="block text-secondary-foreground">
-                              Feste Antwortmöglichkeiten
-                            </b>
+                          <div className="text-ui">
+                            <b className="block">Feste Antwortmöglichkeiten</b>
                             <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
                               {characteristic.options.map((option) => (
                                 <li key={option.id}>{option.label}</li>
