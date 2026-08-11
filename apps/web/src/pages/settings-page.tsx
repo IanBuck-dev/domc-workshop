@@ -234,9 +234,12 @@ export function SettingsPage() {
                   key={topic.id}
                   className="space-y-4 rounded-lg border border-border bg-muted p-4 sm:p-5"
                 >
-                  <legend className="px-1 text-subheading">
+                  <legend className="sr-only">
                     {topic.displayOrder}. {topic.name}
                   </legend>
+                  <div className="text-subheading">
+                    {topic.displayOrder}. {topic.name}
+                  </div>
                   <FormField
                     label="Kurzbezeichnung"
                     htmlFor={`topic-${topic.id}-name`}
@@ -307,9 +310,12 @@ export function SettingsPage() {
                           className="space-y-4 rounded-md border border-border bg-card p-4"
                           key={characteristic.id}
                         >
-                          <legend className="px-1 text-label">
+                          <legend className="sr-only">
                             Verpflichtendes Arbeitsmerkmal
                           </legend>
+                          <div className="text-label">
+                            Verpflichtendes Arbeitsmerkmal
+                          </div>
                           <FormField
                             label="Frage"
                             htmlFor={`work-characteristic-${characteristic.id}-question`}
