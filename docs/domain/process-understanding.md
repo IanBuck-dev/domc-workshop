@@ -33,13 +33,13 @@ carry a free-text `typeDetail`.
 
 Each narrative fact and each step carries the same five attributes (`factBase`):
 
-| Attribute | Meaning |
-| --- | --- |
-| `provenance` | one of `user_stated`, `file_evidence`, `ai_structured`, `ai_inferred`, `user_confirmed`, `unknown` |
-| `evidenceIds` | references into `evidence[]`; unknown ids fail validation |
-| `confidence` | 0–100, or `null` |
-| `assumptions` | what the statement rests on, up to 20 entries |
-| `confirmed` | whether a human has signed off on this specific fact |
+| Attribute     | Meaning                                                                                            |
+| ------------- | -------------------------------------------------------------------------------------------------- |
+| `provenance`  | one of `user_stated`, `file_evidence`, `ai_structured`, `ai_inferred`, `user_confirmed`, `unknown` |
+| `evidenceIds` | references into `evidence[]`; unknown ids fail validation                                          |
+| `confidence`  | 0–100, or `null`                                                                                   |
+| `assumptions` | what the statement rests on, up to 20 entries                                                      |
+| `confirmed`   | whether a human has signed off on this specific fact                                               |
 
 Evidence itself records `kind` (`main_answer`, `follow_up_answer`, `upload`,
 `human_correction`, `chat_message`), the `sourceId`, and a verbatim `excerpt`. The schema
@@ -93,14 +93,14 @@ half-written understanding on disk.
 
 ## Where it lives
 
-| Layer | Path |
-| --- | --- |
-| Domain | `packages/domain/src/process-understanding.ts`, `process-understanding-editing.ts`, `process-events.ts` |
-| Storage | `packages/storage/src/process-capture-repository.ts`, `atomic-write.ts`, `audit-log.ts` |
-| Claude | `packages/claude/src/process-synthesis-adapter.ts`, `process-response-schemas.ts`; schema `defaults/ai-schemas/process-understanding.json`; prompt `defaults/prompts/process-synthesis.md` |
-| Server | `apps/server/src/routes/process-captures.ts` |
-| Web | `apps/web/src/pages/process-detail-page.tsx`; components `process-brief.tsx`, `process-step-card.tsx`, `process-step-information.tsx`, `process-step-decisions.tsx`, `process-step-details.tsx`, `process-unknowns.tsx`, `process-confirmation-actions.tsx`, `process-tracker.tsx`; `apps/web/src/lib/process-provenance.ts` |
-| Tests | `tests/process-domain.test.ts`, `process-api.test.ts`, `process-storage.test.ts`, `process-events.test.ts`, `process-navigation-model.test.ts` |
+| Layer   | Path                                                                                                                                                                                                                                                                                                                         |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Domain  | `packages/domain/src/process-understanding.ts`, `process-understanding-editing.ts`, `process-events.ts`                                                                                                                                                                                                                      |
+| Storage | `packages/storage/src/process-capture-repository.ts`, `atomic-write.ts`, `audit-log.ts`                                                                                                                                                                                                                                      |
+| Claude  | `packages/claude/src/process-synthesis-adapter.ts`, `process-response-schemas.ts`; schema `defaults/ai-schemas/process-understanding.json`; prompt `defaults/prompts/process-synthesis.md`                                                                                                                                   |
+| Server  | `apps/server/src/routes/process-captures.ts`                                                                                                                                                                                                                                                                                 |
+| Web     | `apps/web/src/pages/process-detail-page.tsx`; components `process-brief.tsx`, `process-step-card.tsx`, `process-step-information.tsx`, `process-step-decisions.tsx`, `process-step-details.tsx`, `process-unknowns.tsx`, `process-confirmation-actions.tsx`, `process-tracker.tsx`; `apps/web/src/lib/process-provenance.ts` |
+| Tests   | `tests/process-domain.test.ts`, `process-api.test.ts`, `process-storage.test.ts`, `process-events.test.ts`, `process-navigation-model.test.ts`                                                                                                                                                                               |
 
 ## Implementation status
 

@@ -42,11 +42,11 @@ there are never two copies to drift apart.
 
 ### The three capture scenarios
 
-| Slug | Department | The case it exercises |
-| --- | --- | --- |
-| `kfz-glasschaden` | Schaden | the clean case — clear flow, three complementary documents. Baseline: steps, roles, systems recognised, `documentCoverage: complete` |
-| `beitragsanpassung` | Vertrag | the contradictory case — two documents disagree. Does the assistant notice and ask, or silently pick one? |
-| `provisionsabrechnung` | Vertrieb | the document-free case — conversation only, no textual crutch |
+| Slug                   | Department | The case it exercises                                                                                                                |
+| ---------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `kfz-glasschaden`      | Schaden    | the clean case — clear flow, three complementary documents. Baseline: steps, roles, systems recognised, `documentCoverage: complete` |
+| `beitragsanpassung`    | Vertrag    | the contradictory case — two documents disagree. Does the assistant notice and ask, or silently pick one?                            |
+| `provisionsabrechnung` | Vertrieb   | the document-free case — conversation only, no textual crutch                                                                        |
 
 ### Running a tuning round
 
@@ -86,13 +86,13 @@ application produces. Nothing is written into `workspace/docs/` by hand.
 
 ## Where it lives
 
-| Layer | Path |
-| --- | --- |
-| Fixtures | `demo-data/UNTERNEHMEN.md`, `demo-data/szenarien/`, `demo-data/dokumentation/` |
-| Server | `apps/server/src/demo-scenarios.ts`, `routes/demo.ts` (`GET /api/demo/szenarien`, `…/dateien/:zielname`) |
-| Web | `apps/web/src/components/demo-sidecar.tsx` |
-| Scripts | `scripts/seed-demo-process.ts` (`bun run seed`), `scripts/seed-documentation.ts` (`bun run seed:docs`), `scripts/documentation-fixtures.ts`, `scripts/reset-workspace.ts` |
-| Tests | `tests/demo-data.test.ts`, `documentation-seed.test.ts` |
+| Layer    | Path                                                                                                                                                                      |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fixtures | `demo-data/UNTERNEHMEN.md`, `demo-data/szenarien/`, `demo-data/dokumentation/`                                                                                            |
+| Server   | `apps/server/src/demo-scenarios.ts`, `routes/demo.ts` (`GET /api/demo/szenarien`, `…/dateien/:zielname`)                                                                  |
+| Web      | `apps/web/src/components/demo-sidecar.tsx`                                                                                                                                |
+| Scripts  | `scripts/seed-demo-process.ts` (`bun run seed`), `scripts/seed-documentation.ts` (`bun run seed:docs`), `scripts/documentation-fixtures.ts`, `scripts/reset-workspace.ts` |
+| Tests    | `tests/demo-data.test.ts`, `documentation-seed.test.ts`                                                                                                                   |
 
 ## Implementation status
 

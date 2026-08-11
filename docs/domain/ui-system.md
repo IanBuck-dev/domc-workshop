@@ -34,13 +34,13 @@ brand green.
 
 The **surface contract**, applied consistently:
 
-| Token | Use |
-| --- | --- |
-| `--background` | page canvas only, never an object |
-| `--card` | object surfaces; always paired with a border, never a shadow |
-| `--muted` | recessed panel inside an object, and row hover |
-| `--secondary` | selected / active interactive state |
-| `--accent` | hover on an interactive element |
+| Token          | Use                                                          |
+| -------------- | ------------------------------------------------------------ |
+| `--background` | page canvas only, never an object                            |
+| `--card`       | object surfaces; always paired with a border, never a shadow |
+| `--muted`      | recessed panel inside an object, and row hover               |
+| `--secondary`  | selected / active interactive state                          |
+| `--accent`     | hover on an interactive element                              |
 
 Used solid. No ad-hoc `/15 /20 /30` opacity steps — on a white canvas they compute to
 near-white and read as nothing.
@@ -76,8 +76,8 @@ it in.
 
 ### Loading states
 
-The pattern is *skeletons where layout is known, delayed reveal where the wait is usually
-invisible*. `AppBootScreen` fades in only after 200 ms, so a fast session check shows
+The pattern is _skeletons where layout is known, delayed reveal where the wait is usually
+invisible_. `AppBootScreen` fades in only after 200 ms, so a fast session check shows
 nothing at all rather than a flash that reads as a fault. Eighteen components and pages use
 `Skeleton`; `Spinner` is reserved for in-place action feedback.
 
@@ -95,7 +95,7 @@ whole. There is no table rule, because the viewer cannot render tables.
 
 German UI copy throughout, addressed to a department lead. Never shown in the interface:
 raw JSON, terminal commands, prompt text, stack traces, model or provider terminology, or
-Git vocabulary (the documentation viewer says *Änderungsverlauf*, *Fassung*, *Rücknahme*).
+Git vocabulary (the documentation viewer says _Änderungsverlauf_, _Fassung_, _Rücknahme_).
 
 ### Testing
 
@@ -104,13 +104,13 @@ asserting on the output string. Roughly a third of the 41 test files are UI test
 
 ## Where it lives
 
-| Layer | Path |
-| --- | --- |
-| Tokens and base | `apps/web/src/styles.css` |
-| Primitives | `apps/web/src/components/ui/` (23 files) |
-| Shell | `apps/web/src/components/app-shell.tsx`, `app-boot-screen.tsx`, `brand-mark.tsx`, `public-page-layout.tsx`, `public-footer.tsx` |
-| Pages | `apps/web/src/pages/` (12 files) |
-| Tests | `tests/*-ui.test.ts`, `brand-mark.test.ts` |
+| Layer           | Path                                                                                                                            |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Tokens and base | `apps/web/src/styles.css`                                                                                                       |
+| Primitives      | `apps/web/src/components/ui/` (23 files)                                                                                        |
+| Shell           | `apps/web/src/components/app-shell.tsx`, `app-boot-screen.tsx`, `brand-mark.tsx`, `public-page-layout.tsx`, `public-footer.tsx` |
+| Pages           | `apps/web/src/pages/` (12 files)                                                                                                |
+| Tests           | `tests/*-ui.test.ts`, `brand-mark.test.ts`                                                                                      |
 
 ## Implementation status
 

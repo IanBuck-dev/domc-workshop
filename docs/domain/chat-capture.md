@@ -45,7 +45,7 @@ filesystem tools. The server polls that file while a turn runs
 - invalid → the **last valid** snapshot stays on screen, the UI shows an updating state,
   and confirmation is disabled until a new valid snapshot arrives.
 
-So the diagram updates *during* a turn, while the assistant's reply only appears once the
+So the diagram updates _during_ a turn, while the assistant's reply only appears once the
 turn has completed and been persisted.
 
 ### What reaches the browser
@@ -64,7 +64,7 @@ stay server-side.
 ### Document gate
 
 The conversation starts blocked. A fixed upload card collects files; the lead then
-explicitly chooses *Unterlagen auswerten* or *Ohne Unterlagen fortfahren*
+explicitly chooses _Unterlagen auswerten_ or _Ohne Unterlagen fortfahren_
 (`POST /:id/chat/skip-documents`). `chatDocumentGateSchema` carries that state. Coverage
 of the uploaded documents is shown separately
 (`apps/web/src/components/document-coverage.tsx`).
@@ -79,7 +79,7 @@ correction is tied to a specific part of the process rather than described in pr
 ### Layout and tutorial
 
 Desktop and tablet landscape use a roughly 42/58 chat/diagram split. Narrow screens fall
-back to *Gespräch* and *Prozessbild* tabs with update indicators, switching automatically
+back to _Gespräch_ and _Prozessbild_ tabs with update indicators, switching automatically
 when a mention is inserted. A three-step tutorial (documents, everyday professional
 language, diagram review) runs once; completion and skip are remembered in browser
 storage (`apps/web/src/lib/chat-tutorial-preference.ts`) and can be reset from Settings.
@@ -116,15 +116,15 @@ workspace/process-captures/<id>/
 
 ## Where it lives
 
-| Layer | Path |
-| --- | --- |
-| Domain | `packages/domain/src/chat-capture.ts` |
-| Storage | `packages/storage/src/chat-capture-repository.ts` |
-| Claude | `packages/claude/src/chat-capture-adapter.ts`, `chat-capture-contracts.ts`, `chat-sandbox-spawn.ts` |
-| Prompt | `defaults/prompts/process-chat.md`; schema `defaults/ai-schemas/process-understanding.json` |
-| Server | `apps/server/src/chat-capture-service.ts`, `chat-turn-runner.ts`, `routes/chat-captures.ts` |
-| Web | `apps/web/src/pages/process-chat-page.tsx`; components `process-chat-transcript.tsx`, `process-chat-composer.tsx`, `process-chat-milestone-card.tsx`, `chat-document-gate.tsx`, `chat-capture-tutorial.tsx`, `chat-mention.tsx`, `document-coverage.tsx`, `document-attachment-list.tsx` |
-| Tests | `tests/chat-domain.test.ts`, `chat-storage.test.ts`, `chat-api.test.ts`, `chat-ai-contract.test.ts`, `chat-ui.test.ts`, `chat-presentation.test.ts` |
+| Layer   | Path                                                                                                                                                                                                                                                                                     |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Domain  | `packages/domain/src/chat-capture.ts`                                                                                                                                                                                                                                                    |
+| Storage | `packages/storage/src/chat-capture-repository.ts`                                                                                                                                                                                                                                        |
+| Claude  | `packages/claude/src/chat-capture-adapter.ts`, `chat-capture-contracts.ts`, `chat-sandbox-spawn.ts`                                                                                                                                                                                      |
+| Prompt  | `defaults/prompts/process-chat.md`; schema `defaults/ai-schemas/process-understanding.json`                                                                                                                                                                                              |
+| Server  | `apps/server/src/chat-capture-service.ts`, `chat-turn-runner.ts`, `routes/chat-captures.ts`                                                                                                                                                                                              |
+| Web     | `apps/web/src/pages/process-chat-page.tsx`; components `process-chat-transcript.tsx`, `process-chat-composer.tsx`, `process-chat-milestone-card.tsx`, `chat-document-gate.tsx`, `chat-capture-tutorial.tsx`, `chat-mention.tsx`, `document-coverage.tsx`, `document-attachment-list.tsx` |
+| Tests   | `tests/chat-domain.test.ts`, `chat-storage.test.ts`, `chat-api.test.ts`, `chat-ai-contract.test.ts`, `chat-ui.test.ts`, `chat-presentation.test.ts`                                                                                                                                      |
 
 ## Implementation status
 

@@ -15,12 +15,12 @@ mentioned into the chat instead of described.
 (`processFlowSchema`, `packages/domain/src/process-understanding.ts:489`) allows 3–64
 nodes and 2–128 edges over four node kinds:
 
-| Kind | Id pattern | Carries |
-| --- | --- | --- |
-| `startEvent` | `start` | — |
-| `step` | `step-<n>` | `stepId`, referencing an entry in `steps[]` |
-| `gateway` | `xor-<n>` | `question` and a `mode` (`rule_based`, `professional_judgement`, `mixed`, `unknown`) |
-| `endEvent` | `end` | — |
+| Kind         | Id pattern | Carries                                                                              |
+| ------------ | ---------- | ------------------------------------------------------------------------------------ |
+| `startEvent` | `start`    | —                                                                                    |
+| `step`       | `step-<n>` | `stepId`, referencing an entry in `steps[]`                                          |
+| `gateway`    | `xor-<n>`  | `question` and a `mode` (`rule_based`, `professional_judgement`, `mixed`, `unknown`) |
+| `endEvent`   | `end`      | —                                                                                    |
 
 Edges are `edge-<n>` and may carry a `label`, plus `determination` and `consequence` —
 the latter two only on gateway branches.
@@ -31,7 +31,7 @@ the latter two only on gateway branches.
 never reach storage. It enforces:
 
 - exactly one start event and exactly one end event;
-- unique ids across nodes *and* edges, with each id matching its node kind;
+- unique ids across nodes _and_ edges, with each id matching its node kind;
 - the start event has no incoming and exactly one outgoing edge, leading to a step;
 - a step has exactly one outgoing edge, leading to a step, a gateway, or the end event;
 - a gateway has exactly one incoming edge from a step and **at least two** outgoing
@@ -70,20 +70,20 @@ Pan, zoom, focus, and mention targeting are enabled; manual graph editing is not
 detail opens in a dialog rather than on the node
 (`apps/web/src/components/process-step-details.tsx`).
 
-Before the first valid understanding exists, a data-free placeholder shows the *shape* of
+Before the first valid understanding exists, a data-free placeholder shows the _shape_ of
 a possible diagram (`process-flow-placeholder.tsx`) — it is hidden from screen readers
 because it contains no process information.
 
 ## Where it lives
 
-| Layer | Path |
-| --- | --- |
-| Domain | `packages/domain/src/process-understanding.ts` (`processFlowSchema`, `validateProcessFlow`), `process-understanding-editing.ts` (keeps the graph consistent when steps move) |
-| Storage | `packages/storage/src/process-flow-migration.ts` |
-| Server | `apps/server/src/process-flow-verification.ts` |
-| Web | `apps/web/src/components/process-flow-diagram.tsx`, `process-flow-placeholder.tsx`, `process-step-details.tsx`, `chat-mention.tsx`; form-mode strip in `process-map.tsx` |
-| Script | `scripts/migrate-process-flow-storage.ts` |
-| Tests | `tests/process-flow-migration.test.ts`, `process-flow-verification.test.ts`, `process-domain.test.ts` |
+| Layer   | Path                                                                                                                                                                         |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Domain  | `packages/domain/src/process-understanding.ts` (`processFlowSchema`, `validateProcessFlow`), `process-understanding-editing.ts` (keeps the graph consistent when steps move) |
+| Storage | `packages/storage/src/process-flow-migration.ts`                                                                                                                             |
+| Server  | `apps/server/src/process-flow-verification.ts`                                                                                                                               |
+| Web     | `apps/web/src/components/process-flow-diagram.tsx`, `process-flow-placeholder.tsx`, `process-step-details.tsx`, `chat-mention.tsx`; form-mode strip in `process-map.tsx`     |
+| Script  | `scripts/migrate-process-flow-storage.ts`                                                                                                                                    |
+| Tests   | `tests/process-flow-migration.test.ts`, `process-flow-verification.test.ts`, `process-domain.test.ts`                                                                        |
 
 ## Implementation status
 

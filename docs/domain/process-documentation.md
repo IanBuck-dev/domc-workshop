@@ -20,8 +20,8 @@ never written by hand and never contains free AI text — the renderer
 Because of that, `documentation-sync` and corpus reconciliation are deterministic bounded
 operations **without** a Claude session; the AI operation rules do not apply to them.
 
-Git is an implementation detail. The UI speaks of *Änderungsverlauf*, *Fassung*, and
-*Rücknahme* — never of commits, branches, or reverts.
+Git is an implementation detail. The UI speaks of _Änderungsverlauf_, _Fassung_, and
+_Rücknahme_ — never of commits, branches, or reverts.
 
 ### Layout
 
@@ -55,11 +55,11 @@ an older renderer stay readable; new output always writes the current `rendererV
 
 ### Operations
 
-| Operation | Trigger | Effect |
-| --- | --- | --- |
-| `syncProcess(id)` | every confirmation, form and chat | renders one process and commits it |
-| `reconcileCorpus()` | Settings, manual | re-renders everything, catching up anything a failed enqueue missed |
-| `revert(commit)` | *Rücknahme* in the viewer | undoes one publication as a new revision |
+| Operation           | Trigger                           | Effect                                                              |
+| ------------------- | --------------------------------- | ------------------------------------------------------------------- |
+| `syncProcess(id)`   | every confirmation, form and chat | renders one process and commits it                                  |
+| `reconcileCorpus()` | Settings, manual                  | re-renders everything, catching up anything a failed enqueue missed |
+| `revert(commit)`    | _Rücknahme_ in the viewer         | undoes one publication as a new revision                            |
 
 All writes go through `withCorpusMutex`, so two operations can never interleave in the
 repository. If a sync fails to enqueue, the confirmation still stands and the failure is
@@ -78,25 +78,25 @@ The viewer at `/dokumentation` is read-only apart from the revert action:
 - inline search over titles **and** full text, loading document bodies once on the first
   keystroke — no server-side search endpoint; hits are counted per document and marked in
   the open text with `<mark>`. The frontmatter is never searched;
-- *Kopieren*, writing both `text/html` and `text/plain` so Word and Outlook keep headings
+- _Kopieren_, writing both `text/html` and `text/plain` so Word and Outlook keep headings
   and lists;
-- *Als PDF exportieren*, which is `window.print()` against a print stylesheet in
+- _Als PDF exportieren_, which is `window.print()` against a print stylesheet in
   `apps/web/src/styles.css`;
-- an *Änderungsverlauf* tab with a side-by-side diff (`react-diff-view`) and the revert
+- an _Änderungsverlauf_ tab with a side-by-side diff (`react-diff-view`) and the revert
   dialog.
 
 Markdown is rendered by `react-markdown` with `skipHtml` and **without** `remark-gfm`.
 
 ## Where it lives
 
-| Layer | Path |
-| --- | --- |
-| Renderer | `packages/corpus/src/index.ts` (pure) |
-| Storage | `packages/storage/src/corpus-git.ts`, `workspace-repository.ts` |
-| Server | `apps/server/src/corpus-service.ts`, `routes/corpus.ts` |
-| Web | `apps/web/src/pages/documentation-page.tsx`; components `corpus-tree.tsx`, `corpus-document.tsx`, `corpus-history.tsx`, `corpus-diff.tsx`, `corpus-revert-dialog.tsx`; libs `corpus-types.ts`, `corpus-tree.ts`, `corpus-search.ts`, `corpus-export.ts`, `corpus-tree-preference.ts` |
-| Seed | `scripts/seed-documentation.ts` / `bun run seed:docs`, fixtures in `demo-data/dokumentation/` |
-| Tests | `tests/corpus.test.ts`, `corpus-ui.test.ts`, `documentation-seed.test.ts` |
+| Layer    | Path                                                                                                                                                                                                                                                                                 |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Renderer | `packages/corpus/src/index.ts` (pure)                                                                                                                                                                                                                                                |
+| Storage  | `packages/storage/src/corpus-git.ts`, `workspace-repository.ts`                                                                                                                                                                                                                      |
+| Server   | `apps/server/src/corpus-service.ts`, `routes/corpus.ts`                                                                                                                                                                                                                              |
+| Web      | `apps/web/src/pages/documentation-page.tsx`; components `corpus-tree.tsx`, `corpus-document.tsx`, `corpus-history.tsx`, `corpus-diff.tsx`, `corpus-revert-dialog.tsx`; libs `corpus-types.ts`, `corpus-tree.ts`, `corpus-search.ts`, `corpus-export.ts`, `corpus-tree-preference.ts` |
+| Seed     | `scripts/seed-documentation.ts` / `bun run seed:docs`, fixtures in `demo-data/dokumentation/`                                                                                                                                                                                        |
+| Tests    | `tests/corpus.test.ts`, `corpus-ui.test.ts`, `documentation-seed.test.ts`                                                                                                                                                                                                            |
 
 ## Implementation status
 
@@ -114,7 +114,7 @@ Three divergences from the UI guardrails are known and recorded in
 [`../BACKLOG.md`](../BACKLOG.md): `katalog.json` and the index appear as browsable
 documents in the manager-facing tree; tree labels come from transliterated file paths
 ("It", "Stoerungsannahme im anwendersupport") rather than the document's own H1; and the
-rendered document ends with a *Provenienz-Zählwerte* section that prints the raw
+rendered document ends with a _Provenienz-Zählwerte_ section that prints the raw
 provenance enum keys. Tables can never render, because `remark-gfm` is absent.
 
 ## Constraints
@@ -122,7 +122,7 @@ provenance enum keys. Tables can never render, because `remark-gfm` is absent.
 - The corpus is derived. Never edit it by hand, never let AI text into it directly.
 - Rendering is deterministic and pure: same source, same bytes.
 - No Git vocabulary, no raw frontmatter, and no JSON in the viewer.
-- The viewer is read-only; *Rücknahme* is the single write action.
+- The viewer is read-only; _Rücknahme_ is the single write action.
 - All repository writes go through the corpus mutex.
 
 ## Open items

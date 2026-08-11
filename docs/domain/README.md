@@ -49,32 +49,32 @@ no financial values, no scoring, no prioritisation, no handover, no project mana
 
 ## Documents
 
-| Document | Feature |
-| --- | --- |
-| [process-capture.md](process-capture.md) | Intake: the five topics, the mandatory work characteristics, iterative validation, uploads, the process list |
-| [chat-capture.md](chat-capture.md) | Conversational intake and the one resumable Claude session |
-| [process-understanding.md](process-understanding.md) | The canonical understanding, provenance, editing, and confirmation |
-| [process-diagram.md](process-diagram.md) | The typed process flow graph (Prozessbild) |
-| [opportunity-discovery.md](opportunity-discovery.md) | AI-potential hypotheses and the three human-oversight scenarios |
-| [agent-memory.md](agent-memory.md) | The agent brain: one company-wide memory that grows with every confirmation |
-| [process-documentation.md](process-documentation.md) | The living documentation corpus and its viewer |
-| [ai-runtime.md](ai-runtime.md) | How Claude is called: bounded operations, versioned prompts, validation, sandbox, progress events |
-| [demo-data.md](demo-data.md) | The LifeCorp fixtures and the two seed scripts |
-| [access-and-public-pages.md](access-and-public-pages.md) | Login gate, session, demo-data warning, public pages |
-| [ui-system.md](ui-system.md) | Light-mode palette, surface contract, type scale, loading states |
+| Document                                                 | Feature                                                                                                      |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| [process-capture.md](process-capture.md)                 | Intake: the five topics, the mandatory work characteristics, iterative validation, uploads, the process list |
+| [chat-capture.md](chat-capture.md)                       | Conversational intake and the one resumable Claude session                                                   |
+| [process-understanding.md](process-understanding.md)     | The canonical understanding, provenance, editing, and confirmation                                           |
+| [process-diagram.md](process-diagram.md)                 | The typed process flow graph (Prozessbild)                                                                   |
+| [opportunity-discovery.md](opportunity-discovery.md)     | AI-potential hypotheses and the three human-oversight scenarios                                              |
+| [agent-memory.md](agent-memory.md)                       | The agent brain: one company-wide memory that grows with every confirmation                                  |
+| [process-documentation.md](process-documentation.md)     | The living documentation corpus and its viewer                                                               |
+| [ai-runtime.md](ai-runtime.md)                           | How Claude is called: bounded operations, versioned prompts, validation, sandbox, progress events            |
+| [demo-data.md](demo-data.md)                             | The LifeCorp fixtures and the two seed scripts                                                               |
+| [access-and-public-pages.md](access-and-public-pages.md) | Login gate, session, demo-data warning, public pages                                                         |
+| [ui-system.md](ui-system.md)                             | Light-mode palette, surface contract, type scale, loading states                                             |
 
 ## Architecture
 
 Six layers, in dependency order. Domain logic never imports React or the Claude adapter.
 
-| Layer | Path | Responsibility |
-| --- | --- | --- |
-| Domain | `packages/domain/src` | Zod schemas and pure rules — the single definition of every structure the system stores or receives |
-| Corpus renderer | `packages/corpus/src` | Deterministic process → Markdown rendering; pure, no I/O |
-| Storage | `packages/storage/src` | Repositories over `workspace/`, atomic writes, append-only audit, the embedded git repo |
-| Claude adapter | `packages/claude/src` | Prompt and schema loading, one bounded call per operation, response validation, sandbox |
-| Server | `apps/server/src` | Hono API, services, operation queue, server-sent events |
-| Web | `apps/web/src` | React 19 + Vite UI |
+| Layer           | Path                   | Responsibility                                                                                      |
+| --------------- | ---------------------- | --------------------------------------------------------------------------------------------------- |
+| Domain          | `packages/domain/src`  | Zod schemas and pure rules — the single definition of every structure the system stores or receives |
+| Corpus renderer | `packages/corpus/src`  | Deterministic process → Markdown rendering; pure, no I/O                                            |
+| Storage         | `packages/storage/src` | Repositories over `workspace/`, atomic writes, append-only audit, the embedded git repo             |
+| Claude adapter  | `packages/claude/src`  | Prompt and schema loading, one bounded call per operation, response validation, sandbox             |
+| Server          | `apps/server/src`      | Hono API, services, operation queue, server-sent events                                             |
+| Web             | `apps/web/src`         | React 19 + Vite UI                                                                                  |
 
 Two directories carry configuration rather than code:
 

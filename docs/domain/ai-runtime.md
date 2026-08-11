@@ -15,13 +15,13 @@ The locally authenticated `claude` CLI is the only AI provider.
 There are exactly five operation names (`processOperationNames`,
 `packages/domain/src/process-events.ts:37`):
 
-| Operation | Uses Claude | Triggered by |
-| --- | --- | --- |
-| `process-follow-ups` | yes | the lead pressing validate |
-| `process-synthesis` | yes | the lead pressing synthesise |
-| `opportunity-discovery` | yes — one hypothesis call, then at most one scenario call | job start |
-| `memory-distillation` | yes | chat confirmation |
-| `documentation-sync` | **no** — deterministic rendering | any confirmation |
+| Operation               | Uses Claude                                               | Triggered by                 |
+| ----------------------- | --------------------------------------------------------- | ---------------------------- |
+| `process-follow-ups`    | yes                                                       | the lead pressing validate   |
+| `process-synthesis`     | yes                                                       | the lead pressing synthesise |
+| `opportunity-discovery` | yes — one hypothesis call, then at most one scenario call | job start                    |
+| `memory-distillation`   | yes                                                       | chat confirmation            |
+| `documentation-sync`    | **no** — deterministic rendering                          | any confirmation             |
 
 The rules that hold across all of them:
 
@@ -113,8 +113,8 @@ Linux-only mechanism.
 ### Error handling
 
 `apps/server/src/index.ts` maps internal failures — syntax errors, Claude/sandbox/schema
-messages, `ENOENT`, `EACCES` — onto one German sentence: *"Die Aktion konnte nicht
-abgeschlossen werden. Ihre bisherigen Angaben bleiben erhalten."* Stack traces and
+messages, `ENOENT`, `EACCES` — onto one German sentence: _"Die Aktion konnte nicht
+abgeschlossen werden. Ihre bisherigen Angaben bleiben erhalten."_ Stack traces and
 provider messages never reach the browser.
 
 ### Audit
@@ -127,15 +127,15 @@ happened to a process, including the AI-adjacent ones: `validation-run-completed
 
 ## Where it lives
 
-| Layer | Path |
-| --- | --- |
-| Contracts | `packages/claude/src/ai-runtime-contracts.ts`, `process-ai-contracts.ts`, `opportunity-ai-contracts.ts`, `chat-capture-contracts.ts`, `memory-*-contracts.ts` |
-| Adapters | `packages/claude/src/*-adapter.ts` |
-| Sandbox | `packages/claude/src/sandbox-runner.ts`, `chat-sandbox-spawn.ts` |
-| Queue and events | `apps/server/src/process-operation-manager.ts`, `process-events.ts`, `routes/events.ts`, `routes/ai-operations.ts`, `routes/config.ts` |
-| Web | `apps/web/src/lib/process-events.tsx`, `components/ai-operation-queue.tsx`, `instruction-preview-dialog.tsx` |
-| Config | `defaults/prompts/`, `defaults/ai-schemas/`, `defaults/*.json` |
-| Tests | `tests/process-ai-contract.test.ts`, `opportunity-ai-contract.test.ts`, `chat-ai-contract.test.ts`, `memory-ai-contract.test.ts`, `process-operation-manager.test.ts`, `process-events.test.ts`, `config-api.test.ts` |
+| Layer            | Path                                                                                                                                                                                                                  |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Contracts        | `packages/claude/src/ai-runtime-contracts.ts`, `process-ai-contracts.ts`, `opportunity-ai-contracts.ts`, `chat-capture-contracts.ts`, `memory-*-contracts.ts`                                                         |
+| Adapters         | `packages/claude/src/*-adapter.ts`                                                                                                                                                                                    |
+| Sandbox          | `packages/claude/src/sandbox-runner.ts`, `chat-sandbox-spawn.ts`                                                                                                                                                      |
+| Queue and events | `apps/server/src/process-operation-manager.ts`, `process-events.ts`, `routes/events.ts`, `routes/ai-operations.ts`, `routes/config.ts`                                                                                |
+| Web              | `apps/web/src/lib/process-events.tsx`, `components/ai-operation-queue.tsx`, `instruction-preview-dialog.tsx`                                                                                                          |
+| Config           | `defaults/prompts/`, `defaults/ai-schemas/`, `defaults/*.json`                                                                                                                                                        |
+| Tests            | `tests/process-ai-contract.test.ts`, `opportunity-ai-contract.test.ts`, `chat-ai-contract.test.ts`, `memory-ai-contract.test.ts`, `process-operation-manager.test.ts`, `process-events.test.ts`, `config-api.test.ts` |
 
 ## Implementation status
 

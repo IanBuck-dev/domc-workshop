@@ -82,13 +82,13 @@ which is what makes prompt tuning rounds reproducible.
 
 ### API
 
-| Endpoint | Purpose |
-| --- | --- |
-| `GET /api/opportunities` | all discovery records |
-| `GET /api/opportunities/:processId` | one record |
-| `GET /api/opportunities/:processId/history` | its audit trail |
-| `POST /api/opportunities/:processId` | start the job |
-| `POST /api/opportunities/:processId/retry` | retry the failed phase |
+| Endpoint                                    | Purpose                |
+| ------------------------------------------- | ---------------------- |
+| `GET /api/opportunities`                    | all discovery records  |
+| `GET /api/opportunities/:processId`         | one record             |
+| `GET /api/opportunities/:processId/history` | its audit trail        |
+| `POST /api/opportunities/:processId`        | start the job          |
+| `POST /api/opportunities/:processId/retry`  | retry the failed phase |
 
 Chat-mode confirmation calls `start` automatically; form mode is started explicitly from
 the process detail page.
@@ -104,16 +104,16 @@ plus the AI budget: model, reasoning effort, a 300 s timeout, 12 000 output toke
 
 ## Where it lives
 
-| Layer | Path |
-| --- | --- |
-| Domain | `packages/domain/src/opportunity-discovery.ts` |
-| Storage | `packages/storage/src/opportunity-discovery-repository.ts` |
-| Claude | `packages/claude/src/opportunity-hypothesis-adapter.ts`, `opportunity-scenario-adapter.ts`, `opportunity-ai-adapter.ts`, `opportunity-ai-contracts.ts`, `opportunity-response-schemas.ts` |
-| Prompts | `defaults/prompts/opportunity-base.md`, `opportunity-hypotheses.md`, `opportunity-scenarios.md`; schemas `defaults/ai-schemas/opportunity-hypotheses.json`, `opportunity-scenarios.json` |
-| Server | `apps/server/src/opportunity-discovery-service.ts`, `opportunity-defaults.ts`, `routes/opportunities.ts` |
-| Web | `apps/web/src/pages/opportunity-discovery-page.tsx`; components `opportunity-hypotheses-view.tsx`, `opportunity-scenarios-view.tsx`, `opportunity-progress.tsx`; `apps/web/src/lib/opportunity-types.ts` |
-| Routes | `/processes/:id/opportunities/hypotheses`, `/processes/:id/opportunities/scenarios` |
-| Tests | `tests/opportunity-domain.test.ts`, `opportunity-api.test.ts`, `opportunity-storage.test.ts`, `opportunity-ai-contract.test.ts`, `opportunity-fixtures.ts` |
+| Layer   | Path                                                                                                                                                                                                     |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Domain  | `packages/domain/src/opportunity-discovery.ts`                                                                                                                                                           |
+| Storage | `packages/storage/src/opportunity-discovery-repository.ts`                                                                                                                                               |
+| Claude  | `packages/claude/src/opportunity-hypothesis-adapter.ts`, `opportunity-scenario-adapter.ts`, `opportunity-ai-adapter.ts`, `opportunity-ai-contracts.ts`, `opportunity-response-schemas.ts`                |
+| Prompts | `defaults/prompts/opportunity-base.md`, `opportunity-hypotheses.md`, `opportunity-scenarios.md`; schemas `defaults/ai-schemas/opportunity-hypotheses.json`, `opportunity-scenarios.json`                 |
+| Server  | `apps/server/src/opportunity-discovery-service.ts`, `opportunity-defaults.ts`, `routes/opportunities.ts`                                                                                                 |
+| Web     | `apps/web/src/pages/opportunity-discovery-page.tsx`; components `opportunity-hypotheses-view.tsx`, `opportunity-scenarios-view.tsx`, `opportunity-progress.tsx`; `apps/web/src/lib/opportunity-types.ts` |
+| Routes  | `/processes/:id/opportunities/hypotheses`, `/processes/:id/opportunities/scenarios`                                                                                                                      |
+| Tests   | `tests/opportunity-domain.test.ts`, `opportunity-api.test.ts`, `opportunity-storage.test.ts`, `opportunity-ai-contract.test.ts`, `opportunity-fixtures.ts`                                               |
 
 ## Implementation status
 

@@ -10,8 +10,8 @@ the properties an AI-potential assessment later depends on.
 Two interaction modes produce the same output: **form capture** (this document) and
 **chat capture** ([chat-capture.md](chat-capture.md)). The mode is fixed per process at
 creation time (`interactionMode: "chat" | "form"`) and every route refuses work in the
-wrong mode — `POST /api/processes/:id/analyze` answers *"Dieser Prozess wird im Chat
-erfasst."* with 409.
+wrong mode — `POST /api/processes/:id/analyze` answers _"Dieser Prozess wird im Chat
+erfasst."_ with 409.
 
 ## How it works
 
@@ -20,13 +20,13 @@ erfasst."* with 409.
 Fixed identifiers, defined in `packages/domain/src/process-understanding.ts` and given
 their German wording in `defaults/process-capture-config.json`:
 
-| Topic id | Question (abridged) |
-| --- | --- |
-| `purpose-scope` | What triggers the process, what result should it deliver, where does it start and end? |
-| `flow-roles` | Which main steps in which order, and which roles or teams are involved? |
-| `information-systems` | Which information and documents are needed, and in which visible applications? |
+| Topic id                      | Question (abridged)                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------------------------ |
+| `purpose-scope`               | What triggers the process, what result should it deliver, where does it start and end?     |
+| `flow-roles`                  | Which main steps in which order, and which roles or teams are involved?                    |
+| `information-systems`         | Which information and documents are needed, and in which visible applications?             |
 | `decisions-controls-handoffs` | Which decisions, approvals, or controls exist, and where does responsibility change hands? |
-| `effort-pain-goals` | What costs time, repeats, causes errors, or should get better? |
+| `effort-pain-goals`           | What costs time, repeats, causes errors, or should get better?                             |
 
 Exactly five answers are required — `assertExactlyFiveAnswers` enforces it in the domain
 layer, not the UI.
@@ -36,12 +36,12 @@ layer, not the UI.
 Short, mandatory, closed questions that the open text cannot be relied on to answer. Each
 one hangs off a topic and is answered on the same page as that topic:
 
-| Characteristic | Attached to | Selection |
-| --- | --- | --- |
-| `combined-information-sources` | `information-systems` | single (`yes` / `no` / `unsure`) |
-| `content-types` | `information-systems` | multiple — free text, speech/audio, images/scans, video, other free-form files, none, unsure |
-| `case-specific-recognition` | `flow-roles` | multiple — unusual cases, recurring connections, per-case flow adaptation, none, unsure |
-| `uncertain-decisions` | `decisions-controls-handoffs` | multiple — estimating future outcomes/risks, deciding under incomplete rules, none, unsure |
+| Characteristic                 | Attached to                   | Selection                                                                                    |
+| ------------------------------ | ----------------------------- | -------------------------------------------------------------------------------------------- |
+| `combined-information-sources` | `information-systems`         | single (`yes` / `no` / `unsure`)                                                             |
+| `content-types`                | `information-systems`         | multiple — free text, speech/audio, images/scans, video, other free-form files, none, unsure |
+| `case-specific-recognition`    | `flow-roles`                  | multiple — unusual cases, recurring connections, per-case flow adaptation, none, unsure      |
+| `uncertain-decisions`          | `decisions-controls-handoffs` | multiple — estimating future outcomes/risks, deciding under incomplete rules, none, unsure   |
 
 The option sets are frozen in `workCharacteristicContracts`
 (`packages/domain/src/process-understanding.ts:19`) and validated by
@@ -58,7 +58,7 @@ Finanzen, IT, Personal, Sonstiger Fachbereich.
 ### Uploads
 
 Documents can be attached per process (`POST /api/processes/:id/uploads`), previewed,
-selected or deselected for AI use (`selectedUploadIds`), and deleted. Only *selected*
+selected or deselected for AI use (`selectedUploadIds`), and deleted. Only _selected_
 uploads are passed to Claude — see `selectedUploads()` in
 `apps/server/src/routes/process-captures.ts`. Nothing else from the repository is ever
 sent.
@@ -103,16 +103,16 @@ Near-duplicate names are caught at creation: `GET /api/processes/similar` compar
 
 ## Where it lives
 
-| Layer | Path |
-| --- | --- |
-| Domain | `packages/domain/src/process-understanding.ts` (topics, characteristics, states, records) |
-| Storage | `packages/storage/src/process-capture-repository.ts` |
-| Claude | `packages/claude/src/process-follow-up-adapter.ts`, `process-ai-contracts.ts`, `process-ai-utils.ts` |
-| Prompts | `defaults/prompts/process-base.md`, `defaults/prompts/process-follow-ups.md`; schema `defaults/ai-schemas/process-follow-ups.json` |
-| Server | `apps/server/src/routes/process-captures.ts`, `apps/server/src/process-operation-manager.ts` |
-| Web | `apps/web/src/pages/process-start-page.tsx`, `process-capture-page.tsx`, `process-list-page.tsx`; components `process-topic-card.tsx`, `process-validation-comment.tsx`, `process-upload-picker.tsx`, `document-preview-dialog.tsx`, `process-list-table.tsx` |
-| Config | `defaults/process-capture-config.json` |
-| Tests | `tests/process-domain.test.ts`, `process-api.test.ts`, `process-storage.test.ts`, `process-ai-contract.test.ts`, `process-list-model.test.ts`, `process-list-ui.test.ts`, `process-operation-manager.test.ts` |
+| Layer   | Path                                                                                                                                                                                                                                                          |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Domain  | `packages/domain/src/process-understanding.ts` (topics, characteristics, states, records)                                                                                                                                                                     |
+| Storage | `packages/storage/src/process-capture-repository.ts`                                                                                                                                                                                                          |
+| Claude  | `packages/claude/src/process-follow-up-adapter.ts`, `process-ai-contracts.ts`, `process-ai-utils.ts`                                                                                                                                                          |
+| Prompts | `defaults/prompts/process-base.md`, `defaults/prompts/process-follow-ups.md`; schema `defaults/ai-schemas/process-follow-ups.json`                                                                                                                            |
+| Server  | `apps/server/src/routes/process-captures.ts`, `apps/server/src/process-operation-manager.ts`                                                                                                                                                                  |
+| Web     | `apps/web/src/pages/process-start-page.tsx`, `process-capture-page.tsx`, `process-list-page.tsx`; components `process-topic-card.tsx`, `process-validation-comment.tsx`, `process-upload-picker.tsx`, `document-preview-dialog.tsx`, `process-list-table.tsx` |
+| Config  | `defaults/process-capture-config.json`                                                                                                                                                                                                                        |
+| Tests   | `tests/process-domain.test.ts`, `process-api.test.ts`, `process-storage.test.ts`, `process-ai-contract.test.ts`, `process-list-model.test.ts`, `process-list-ui.test.ts`, `process-operation-manager.test.ts`                                                 |
 
 ## Implementation status
 

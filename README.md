@@ -22,7 +22,7 @@ bun run dev
 
 Open `http://127.0.0.1:5173`. Never enter real claim, customer, contract, health, employee, or other confidential production data.
 
-The process flow is specified in [docs/PRODUCT-FLOW-KI-POTENTIAL.md](docs/PRODUCT-FLOW-KI-POTENTIAL.md); the downstream module and its acceptance criteria are specified in [docs/PLAN-KI-POTENTIAL-SCENARIOS.md](docs/PLAN-KI-POTENTIAL-SCENARIOS.md).
+Every feature is documented in [docs/domain/](docs/domain/README.md) — what it does, where its code lives, and whether it is built. Known gaps are listed in [docs/BACKLOG.md](docs/BACKLOG.md); the superseded specifications that still bind the acceptance criteria are kept in [docs/archive/](docs/archive/README.md).
 
 ## Validate and package
 
@@ -34,4 +34,4 @@ The process flow is specified in [docs/PRODUCT-FLOW-KI-POTENTIAL.md](docs/PRODUC
 
 Release outputs are written to `dist/`, including the Linux ARM64 target for the Raspberry Pi. Claude CLI and Anthropic Sandbox Runtime must be installed separately on the deployment host. Production startup intentionally fails AI workspace operations when sandboxing is unavailable.
 
-See [operator instructions](docs/OPERATOR_GUIDE.de.md), the [Raspberry Pi deployment runbook](docs/PI-DEPLOYMENT.md), and [data notice](docs/PRIVACY_NOTICE.de.md).
+See [operator instructions](docs/operations/OPERATOR_GUIDE.de.md), the [Raspberry Pi deployment runbook](docs/operations/PI-DEPLOYMENT.md), and [data notice](docs/operations/PRIVACY_NOTICE.de.md).

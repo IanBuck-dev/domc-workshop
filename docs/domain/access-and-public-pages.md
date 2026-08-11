@@ -32,7 +32,7 @@ compared with `timingSafeEqual`. Cookie flags: `httpOnly`, `sameSite: "Strict"`,
 server-side session store — the cookie is self-contained and simply expires.
 
 `requireSession` sits in front of every `/api/*` route and answers 401 with
-*"Bitte melden Sie sich an."* `GET /api/auth/session` is what the browser calls on boot;
+_"Bitte melden Sie sich an."_ `GET /api/auth/session` is what the browser calls on boot;
 `POST /api/auth/logout` clears the cookie.
 
 Single user, single tenant. There are no roles, no user management, no registration.
@@ -47,7 +47,7 @@ shadow-free surface contract, because it is the only object on an empty canvas.
 
 ### The demo-data warning
 
-Every authenticated page carries `DemoDataWarning`: *"Nur Demo-Daten verwenden."* — no
+Every authenticated page carries `DemoDataWarning`: _"Nur Demo-Daten verwenden."_ — no
 real claim, customer, contract, health, or employee data, and a note that content is
 stored locally and passed to the configured AI service. It is dismissible per browser
 (`claims-ai.demo-data-warning…`), never per account.
@@ -57,11 +57,11 @@ stored locally and passed to the configured AI service. It is dismissible per br
 Three routes render **without** the session gate, resolved before the authenticated router
 in `App.tsx`:
 
-| Route | Page |
-| --- | --- |
-| `/impressum` | operator details, plus the Geist font attribution |
-| `/datenschutz` | privacy notice |
-| `/nutzungshinweise` | usage notice |
+| Route               | Page                                              |
+| ------------------- | ------------------------------------------------- |
+| `/impressum`        | operator details, plus the Geist font attribution |
+| `/datenschutz`      | privacy notice                                    |
+| `/nutzungshinweise` | usage notice                                      |
 
 `PublicFooter` links all three from both the public and the authenticated shell.
 
@@ -83,13 +83,13 @@ The reader-facing German artefacts belong to this domain too:
 
 ## Where it lives
 
-| Layer | Path |
-| --- | --- |
-| Server | `apps/server/src/session.ts`, `routes/auth.ts`, `public-site-information.ts`, `index.ts` (mounting `requireSession`) |
-| Web | `apps/web/src/App.tsx`, `pages/login-page.tsx`, `imprint-page.tsx`, `privacy-page.tsx`, `usage-notice-page.tsx`; `components/app-boot-screen.tsx`, `demo-data-warning.tsx`, `public-footer.tsx`, `public-page-layout.tsx` |
-| Config | `.local/public-site-information.json` (gitignored), env `APP_AUTH_USERNAME`, `APP_AUTH_PASSWORD_HASH`, `APP_SESSION_SECRET` (≥32 chars) |
-| Scripts | `scripts/check-public-site-information.ts`, `scripts/check-environment.ts` |
-| Tests | `tests/auth.test.ts`, `login-ui.test.ts`, `public-pages-ui.test.ts`, `public-site-information.test.ts`, `demo-data-warning.test.ts` |
+| Layer   | Path                                                                                                                                                                                                                      |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Server  | `apps/server/src/session.ts`, `routes/auth.ts`, `public-site-information.ts`, `index.ts` (mounting `requireSession`)                                                                                                      |
+| Web     | `apps/web/src/App.tsx`, `pages/login-page.tsx`, `imprint-page.tsx`, `privacy-page.tsx`, `usage-notice-page.tsx`; `components/app-boot-screen.tsx`, `demo-data-warning.tsx`, `public-footer.tsx`, `public-page-layout.tsx` |
+| Config  | `.local/public-site-information.json` (gitignored), env `APP_AUTH_USERNAME`, `APP_AUTH_PASSWORD_HASH`, `APP_SESSION_SECRET` (≥32 chars)                                                                                   |
+| Scripts | `scripts/check-public-site-information.ts`, `scripts/check-environment.ts`                                                                                                                                                |
+| Tests   | `tests/auth.test.ts`, `login-ui.test.ts`, `public-pages-ui.test.ts`, `public-site-information.test.ts`, `demo-data-warning.test.ts`                                                                                       |
 
 ## Implementation status
 

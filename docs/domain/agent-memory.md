@@ -79,23 +79,23 @@ alone exceeds the budget is skipped rather than truncated.
 readable process name, department, and participant. A deleted or unreadable process never
 makes the view fail — the entry simply loses its resolved name.
 
-`DELETE /api/memory` resets everything and records the reason *"manueller Reset"* in the
+`DELETE /api/memory` resets everything and records the reason _"manueller Reset"_ in the
 audit as a human correction.
 
-Settings shows all of this under *Gelerntes Firmenwissen*
+Settings shows all of this under _Gelerntes Firmenwissen_
 (`apps/web/src/components/company-knowledge-section.tsx`).
 
 ## Where it lives
 
-| Layer | Path |
-| --- | --- |
-| Domain | `packages/domain/src/memory.ts` |
-| Storage | `packages/storage/src/memory-repository.ts` |
-| Claude | `packages/claude/src/memory-distillation-adapter.ts`, `memory-distillation-contracts.ts`, `memory-consolidation-adapter.ts`, `memory-consolidation-contracts.ts` |
-| Prompts | `defaults/prompts/memory-distillation.md`, `memory-consolidation.md`; schemas `defaults/ai-schemas/memory-distillation.json`, `memory-consolidation.json` |
-| Server | `apps/server/src/memory-distillation-service.ts`, `memory-distillation-defaults.ts`, `memory-consolidation-service.ts`, `memory-consolidation-defaults.ts`, `routes/memory.ts`; prompt assembly in `chat-capture-service.ts:30-150` |
-| Web | `apps/web/src/components/company-knowledge-section.tsx`, `apps/web/src/pages/settings-page.tsx` |
-| Tests | `tests/memory-domain.test.ts`, `memory-storage.test.ts`, `memory-api.test.ts`, `memory-ai-contract.test.ts`, `memory-consolidation-service.test.ts`, `memory-ui.test.ts` |
+| Layer   | Path                                                                                                                                                                                                                                |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Domain  | `packages/domain/src/memory.ts`                                                                                                                                                                                                     |
+| Storage | `packages/storage/src/memory-repository.ts`                                                                                                                                                                                         |
+| Claude  | `packages/claude/src/memory-distillation-adapter.ts`, `memory-distillation-contracts.ts`, `memory-consolidation-adapter.ts`, `memory-consolidation-contracts.ts`                                                                    |
+| Prompts | `defaults/prompts/memory-distillation.md`, `memory-consolidation.md`; schemas `defaults/ai-schemas/memory-distillation.json`, `memory-consolidation.json`                                                                           |
+| Server  | `apps/server/src/memory-distillation-service.ts`, `memory-distillation-defaults.ts`, `memory-consolidation-service.ts`, `memory-consolidation-defaults.ts`, `routes/memory.ts`; prompt assembly in `chat-capture-service.ts:30-150` |
+| Web     | `apps/web/src/components/company-knowledge-section.tsx`, `apps/web/src/pages/settings-page.tsx`                                                                                                                                     |
+| Tests   | `tests/memory-domain.test.ts`, `memory-storage.test.ts`, `memory-api.test.ts`, `memory-ai-contract.test.ts`, `memory-consolidation-service.test.ts`, `memory-ui.test.ts`                                                            |
 
 ## Implementation status
 
@@ -106,7 +106,7 @@ origins, and reset. Six test files cover it.
 
 **Partial** overall — the brain only learns from **chat** captures.
 `MemoryDistillationService.distill` rejects anything else outright
-(*"Nur ein bestätigter Chat-Prozess kann destilliert werden."*,
+(_"Nur ein bestätigter Chat-Prozess kann destilliert werden."_,
 `apps/server/src/memory-distillation-service.ts:57`), and the form-mode confirm route at
 `apps/server/src/routes/process-captures.ts:416` never enqueues it. This is structural —
 distillation reads the chat transcript, which form captures do not have — but `AGENTS.md`

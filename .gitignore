@@ -6,6 +6,7 @@ dist/
 # Local workshop data and agent validation artifacts
 workspace/
 .local/
+.scratch/
 *.log
 demo-data/.cache/
 

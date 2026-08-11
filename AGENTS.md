@@ -79,5 +79,8 @@ Before considering an implementation task complete, run `./scripts/qa all` and t
 
 ## Planning source
 
-Follow `docs/PRODUCT-FLOW-KI-POTENTIAL.md` for process capture and `docs/PLAN-KI-POTENTIAL-SCENARIOS.md` for opportunity discovery. Preserve their domain states and acceptance criteria unless the user explicitly changes them.
-Follow `docs/PLAN-LEBENDE-PROZESSDOKU.md` for the living process documentation corpus.
+Start at `docs/domain/README.md`. It documents every feature — what it does, where its code lives, and its verified implementation status — and is the entry point for both humans and agents.
+
+The superseded specifications in `docs/archive/` remain binding for detail: `PRODUCT-FLOW-KI-POTENTIAL.md` for process capture, `PLAN-KI-POTENTIAL-SCENARIOS.md` and `DISCOVERY-KI-POTENTIAL-SCENARIOS.md` for opportunity discovery, `PLAN-LEBENDE-PROZESSDOKU.md` for the living process documentation corpus. Preserve their domain states and acceptance criteria unless the user explicitly changes them.
+
+Known gaps and guardrail divergences are recorded in `docs/BACKLOG.md`. Architecture decisions are in `docs/decisions/`, operator-facing German material in `docs/operations/`.
