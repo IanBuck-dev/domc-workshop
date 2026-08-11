@@ -1,0 +1,238 @@
+{
+  "slug": "bewerbermanagement-ausbildungsjahrgang",
+  "titel": "Bewerbermanagement für den Ausbildungsjahrgang",
+  "fachbereich": "Personal",
+  "gespraechspartner": {
+    "name": "Edda Brandt",
+    "email": "edda.brandt@lifecorp.example"
+  },
+  "erstelltAm": "2026-06-09T08:05:00.000Z",
+  "bestaetigtAm": "2026-06-16T15:20:00.000Z",
+  "belege": [
+    {
+      "id": "b1",
+      "text": "Einmal im Jahr besetzen wir den Ausbildungsjahrgang. Die Fachbereiche melden im Herbst ihren Bedarf, und daraus mach ich die Ausschreibung."
+    },
+    {
+      "id": "b2",
+      "text": "Die Bewerbungen kommen ans Bewerbungspostfach. Ich leg für jede Bewerbung einen Ordner an und schau erst mal, ob die formalen Sachen passen - Schulabschluss, Zeugnisse, Anschreiben."
+    },
+    {
+      "id": "b3",
+      "text": "Wer durchkommt, geht in die Vorauswahl mit dem Fachbereich. Wir sitzen zusammen und sortieren auf die Zahl der Plätze runter, mal drei für die Einladungen."
+    },
+    {
+      "id": "b4",
+      "text": "Dann kommt der Auswahltag: Gruppenaufgabe am Vormittag, Einzelgespräche am Nachmittag. Jeder aus der Auswahlkommission füllt einen Bewertungsbogen aus, und danach entscheiden wir gemeinsam."
+    },
+    {
+      "id": "b5",
+      "text": "Zusagen mach ich telefonisch, danach kommt der Vertrag. Absagen gehen schriftlich raus, und die Unterlagen halte ich sechs Monate, wegen der Fristen."
+    },
+    {
+      "id": "b6",
+      "text": "Wir kriegen so zweihundertfünfzig Bewerbungen auf zwölf Plätze. Von der Ausschreibung bis zur letzten Zusage sind es gut fünf Monate."
+    },
+    {
+      "id": "b7",
+      "text": "Ein eigenes Bewerberwerkzeug haben wir nicht. Das läuft alles über Outlook und eine Übersichtstabelle, in der ich den Stand jeder Bewerbung führe."
+    }
+  ],
+  "zweck": {
+    "wert": "Besetzung der jährlich ausgeschriebenen Ausbildungsplätze der LifeCorp von der Bedarfsmeldung der Fachbereiche über Vorauswahl und Auswahltag bis zur unterschriebenen Ausbildungszusage.",
+    "belege": ["b1", "b5"]
+  },
+  "ausloeser": {
+    "wert": "Die im Herbst eingehenden Bedarfsmeldungen der Fachbereiche für den Ausbildungsjahrgang des Folgejahres.",
+    "belege": ["b1"]
+  },
+  "ergebnis": {
+    "wert": "Ein vollständig besetzter Ausbildungsjahrgang mit unterschriebenen Ausbildungsverträgen, versandten Absagen und fristgerecht abgelegten Bewerbungsunterlagen.",
+    "belege": ["b5"]
+  },
+  "abgrenzung": {
+    "wert": "Der Prozess endet mit der Unterschrift unter dem Ausbildungsvertrag. Die Einführungswoche, die Ausbildungsplanung und die Betreuung während der Ausbildung gehören nicht dazu, ebenso wenig die Besetzung regulärer Stellen.",
+    "belege": ["b1", "b5"]
+  },
+  "beteiligte": {
+    "wert": [
+      "Personalreferat Ausbildung — steuert den gesamten Ablauf",
+      "Fachbereiche — melden den Bedarf und stellen die Vorauswahl mit",
+      "Auswahlkommission — bewertet am Auswahltag und entscheidet gemeinsam",
+      "Bewerberinnen und Bewerber — reichen Unterlagen ein und nehmen am Auswahltag teil",
+      "Jugend- und Auszubildendenvertretung — begleitet den Auswahltag"
+    ],
+    "belege": ["b1", "b3", "b4"]
+  },
+  "informationsquellen": {
+    "wert": [
+      "Bedarfsmeldungen der Fachbereiche",
+      "Bewerbungsunterlagen aus dem Bewerbungspostfach",
+      "Schulzeugnisse und Praktikumsnachweise",
+      "Bewertungsbögen der Auswahlkommission",
+      "Übersichtstabelle mit dem Stand jeder Bewerbung"
+    ],
+    "belege": ["b1", "b2", "b4", "b7"]
+  },
+  "systeme": {
+    "wert": ["Outlook", "AKTE"],
+    "belege": ["b2", "b7"]
+  },
+  "kontrollen": {
+    "wert": [
+      "Formale Vollständigkeitsprüfung jeder Bewerbung vor der Vorauswahl",
+      "Vorauswahl stets gemeinsam mit dem anfordernden Fachbereich",
+      "Ein Bewertungsbogen je Mitglied der Auswahlkommission und Bewerbung",
+      "Gemeinsame Entscheidung der Kommission statt Einzelentscheidung",
+      "Aufbewahrung der Bewerbungsunterlagen für sechs Monate nach Abschluss"
+    ],
+    "belege": ["b2", "b3", "b4", "b5"]
+  },
+  "uebergaben": {
+    "wert": [
+      "Fachbereiche an Personalreferat mit der Bedarfsmeldung",
+      "Personalreferat an Fachbereich zur gemeinsamen Vorauswahl",
+      "Personalreferat an Auswahlkommission mit den Einladungen und Unterlagen",
+      "Personalreferat an Bewerberin oder Bewerber mit Zusage und Vertrag"
+    ],
+    "belege": ["b1", "b3", "b4", "b5"]
+  },
+  "mengenUndZeiten": {
+    "wert": [
+      "Rund 250 Bewerbungen auf 12 Ausbildungsplätze je Jahrgang",
+      "Einladungen in dreifacher Zahl der Plätze",
+      "Durchlaufzeit von der Ausschreibung bis zur letzten Zusage etwa fünf Monate",
+      "Aufbewahrungsfrist der Unterlagen sechs Monate"
+    ],
+    "belege": ["b3", "b5", "b6"]
+  },
+  "schwachstellen": {
+    "wert": [
+      "Es gibt kein Bewerberwerkzeug; der Stand jeder Bewerbung wird in einer Tabelle von Hand geführt",
+      "Bewerbungen werden einzeln aus dem Postfach in Ordner übertragen",
+      "Die Bewertungsbögen liegen auf Papier vor und müssen für die Entscheidung zusammengetragen werden",
+      "Absagen gehen erst nach der letzten Zusage heraus, was zu langen Wartezeiten für Bewerber führt"
+    ],
+    "belege": ["b2", "b4", "b5", "b7"]
+  },
+  "verbesserungsziele": {
+    "wert": [
+      "Ein gemeinsamer Überblick über den Stand aller Bewerbungen ohne persönliche Tabelle",
+      "Digitale Bewertungsbögen mit automatischer Zusammenführung",
+      "Frühere Rückmeldung an nicht berücksichtigte Bewerber",
+      "Durchlaufzeit von fünf auf vier Monate senken"
+    ],
+    "belege": ["b4", "b5", "b6", "b7"]
+  },
+  "wissensluecken": [
+    "Ob die Aufbewahrungsfrist von sechs Monaten aus einer internen Regelung oder aus gesetzlichen Vorgaben folgt, konnte nicht abschließend benannt werden.",
+    "Wie die Bedarfsmeldungen der Fachbereiche zustande kommen und wer sie freigibt, wurde im Gespräch nicht geklärt."
+  ],
+  "widersprueche": [],
+  "schritte": [
+    {
+      "name": "Bedarf erheben und ausschreiben",
+      "taetigkeit": "Die Bedarfsmeldungen der Fachbereiche zusammenführen, die Zahl der Ausbildungsplätze je Beruf festlegen und die Ausschreibung veröffentlichen.",
+      "eingaben": ["Bedarfsmeldungen der Fachbereiche"],
+      "ausgaben": [
+        "Veröffentlichte Ausschreibung",
+        "Festgelegte Platzzahl je Ausbildungsberuf"
+      ],
+      "hinweis": null,
+      "informationen": [
+        {
+          "name": "Platzzahl je Fachbereich",
+          "quelle": "Bedarfsmeldung",
+          "typ": "spreadsheet"
+        }
+      ],
+      "belege": ["b1"]
+    },
+    {
+      "name": "Bewerbungen erfassen und formal prüfen",
+      "taetigkeit": "Eingehende Bewerbungen aus dem Bewerbungspostfach in einen Bewerbungsordner überführen, Schulabschluss, Zeugnisse und Anschreiben auf Vollständigkeit prüfen und den Stand in der Übersichtstabelle festhalten.",
+      "eingaben": ["Bewerbungsunterlagen aus dem Bewerbungspostfach"],
+      "ausgaben": [
+        "Erfasste Bewerbung mit Stand in der Übersichtstabelle",
+        "Formal geprüfte Bewerbungen"
+      ],
+      "hinweis": "Die Übertragung aus dem Postfach erfolgt für jede Bewerbung einzeln von Hand.",
+      "informationen": [
+        {
+          "name": "Schulabschluss und Notenbild",
+          "quelle": "Schulzeugnis",
+          "typ": "image_or_scan"
+        },
+        {
+          "name": "Eingangsdatum der Bewerbung",
+          "quelle": "Outlook",
+          "typ": "email"
+        }
+      ],
+      "belege": ["b2", "b7"]
+    },
+    {
+      "name": "Vorauswahl mit dem Fachbereich treffen",
+      "taetigkeit": "Die formal geprüften Bewerbungen gemeinsam mit dem anfordernden Fachbereich durchgehen und auf die dreifache Zahl der Plätze eingrenzen.",
+      "eingaben": [
+        "Formal geprüfte Bewerbungen",
+        "Festgelegte Platzzahl je Ausbildungsberuf"
+      ],
+      "ausgaben": ["Einzuladende Bewerberinnen und Bewerber"],
+      "hinweis": "Die Vorauswahl findet stets gemeinsam statt, nie allein im Personalreferat.",
+      "informationen": [
+        {
+          "name": "Fachliche Einschätzung des Fachbereichs",
+          "quelle": "Fachbereich",
+          "typ": "free_text"
+        }
+      ],
+      "belege": ["b3"]
+    },
+    {
+      "name": "Auswahltag durchführen",
+      "taetigkeit": "Zum Auswahltag einladen, die Gruppenaufgabe am Vormittag und die Einzelgespräche am Nachmittag durchführen und die Bewertungsbögen der Kommission einsammeln.",
+      "eingaben": ["Einzuladende Bewerberinnen und Bewerber"],
+      "ausgaben": ["Ausgefüllte Bewertungsbögen der Auswahlkommission"],
+      "hinweis": null,
+      "informationen": [
+        {
+          "name": "Bewertung je Bewerbung und Kommissionsmitglied",
+          "quelle": "Bewertungsbogen",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Auswahlentscheidung treffen",
+      "taetigkeit": "Die Bewertungsbögen zusammentragen, die Kandidaten in der Kommission gemeinsam besprechen und die Besetzung der Plätze samt Nachrückerliste festlegen.",
+      "eingaben": ["Ausgefüllte Bewertungsbögen der Auswahlkommission"],
+      "ausgaben": ["Besetzungsvorschlag mit Nachrückerliste"],
+      "hinweis": "Die Bögen liegen auf Papier vor und werden für die Besprechung von Hand zusammengeführt.",
+      "informationen": [],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Zusagen, Absagen und Verträge abwickeln",
+      "taetigkeit": "Zusagen telefonisch aussprechen und die Ausbildungsverträge versenden, Absagen schriftlich versenden und die Bewerbungsunterlagen für die Aufbewahrungsfrist ablegen.",
+      "eingaben": ["Besetzungsvorschlag mit Nachrückerliste"],
+      "ausgaben": [
+        "Unterschriebene Ausbildungsverträge",
+        "Versandte Absagen",
+        "Abgelegte Bewerbungsunterlagen in der AKTE"
+      ],
+      "hinweis": "Absagen gehen erst heraus, wenn alle Plätze zugesagt sind.",
+      "informationen": [
+        {
+          "name": "Aufbewahrungsfrist der Unterlagen",
+          "quelle": "Personalreferat",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b5"]
+    }
+  ],
+  "verzweigung": null,
+  "revisionen": []
+}

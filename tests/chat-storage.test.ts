@@ -311,4 +311,52 @@ describe("chat capture storage", () => {
     expect(finalized.overrideRequired).toBe(false);
     if (!finalized.overrideRequired) expect(finalized.quality).toBe("complete");
   });
+
+  test("übernimmt eine fachliche Korrektur an einer bestätigten Chat-Aufnahme", async () => {
+    const { processes, record, chats } = await fixture();
+    const messageId = crypto.randomUUID();
+    await chats.append(record.id, {
+      schemaVersion: 2,
+      id: messageId,
+      turnId: messageId,
+      at: new Date().toISOString(),
+      role: "user",
+      status: "complete",
+      text: "Vollständige fachliche Beschreibung",
+      mentions: [],
+      action: "message",
+    });
+    const value = understanding();
+    value.knowledgeGaps = [];
+    value.conflicts = [];
+    for (const evidence of value.evidence) {
+      evidence.kind = "chat_message";
+      evidence.sourceId = messageId;
+    }
+    await processes.finalizeChatCapture(record.id, value, "complete");
+
+    const korrigiert = structuredClone(value);
+    korrigiert.purpose.value = "Fachlich geschärfter Zweck";
+    const nachKorrektur = await processes.correctUnderstanding(
+      record.id,
+      korrigiert,
+      "Zweck im Fachbereich nachgeschärft",
+    );
+    // Ohne veröffentlichten Korrekturstand läse `get` für eine Chat-Aufnahme in
+    // Prüfung weiter den Stand vor der Korrektur — und die Bestätigung fände
+    // gar kein Prozessbild vor.
+    expect(nachKorrektur.state).toBe("review_required");
+    expect(nachKorrektur.understanding?.purpose.value).toBe(
+      "Fachlich geschärfter Zweck",
+    );
+    expect(nachKorrektur.understanding?.purpose.provenance).toBe(
+      "user_confirmed",
+    );
+
+    const bestaetigt = await processes.confirm(record.id);
+    expect(bestaetigt.state).toBe("confirmed");
+    expect(bestaetigt.understanding?.purpose.value).toBe(
+      "Fachlich geschärfter Zweck",
+    );
+  });
 });

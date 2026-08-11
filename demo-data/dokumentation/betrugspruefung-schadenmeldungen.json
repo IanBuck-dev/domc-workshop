@@ -1,0 +1,264 @@
+{
+  "slug": "betrugspruefung-schadenmeldungen",
+  "titel": "Betrugsprüfung auffälliger Schadenmeldungen",
+  "fachbereich": "Schaden",
+  "gespraechspartner": {
+    "name": "Edda Brandt",
+    "email": "edda.brandt@lifecorp.example"
+  },
+  "erstelltAm": "2026-01-12T08:40:00.000Z",
+  "bestaetigtAm": "2026-01-19T14:05:00.000Z",
+  "belege": [
+    {
+      "id": "b1",
+      "text": "Ich sitz in der Betrugsprüfung, aber ich such mir die Fälle nicht selber. Die kommen aus der Regulierung rüber, wenn da einer ein komisches Gefühl hat, oder KOMPASS setzt selber ein Kennzeichen, weil irgendwas nicht passt - viele Schäden in kurzer Zeit, Schaden kurz nach Vertragsbeginn, sowas."
+    },
+    {
+      "id": "b2",
+      "text": "Zuerst guck ich mir den Vorgang in KOMPASS an, komplett, mit allem was dranhängt. Dann schau ich in die Schadenhistorie vom Kunden, ob da schon was war. Das ist der Teil, der am längsten dauert, weil ich die alten Fälle einzeln aufmachen muss."
+    },
+    {
+      "id": "b3",
+      "text": "Dann gleich ich Vertrag und Partner ab, also VERA und PARTO. Ob die Bankverbindung erst kürzlich geändert wurde, ob dieselbe Adresse schon bei anderen Schäden aufgetaucht ist. Wenn sich da nichts erhärtet, geb ich den Fall zurück an die Regulierung und vermerk das."
+    },
+    {
+      "id": "b4",
+      "text": "Wenn was übrigbleibt, ruf ich beim Sachbearbeiter an oder schreib den Versicherungsnehmer an. Da hab ich vierzehn Tage Frist drauf, danach entscheid ich mit dem, was ich hab."
+    },
+    {
+      "id": "b5",
+      "text": "Meine Bewertung schreib ich in ein Formular, das legen wir in der AKTE ab. Bei begründetem Verdacht geht der Fall an die Spezialeinheit Betrug, sonst zurück in die normale Regulierung. Ablehnen tu ich selber nichts."
+    },
+    {
+      "id": "b6",
+      "text": "So zwanzig bis dreißig Fälle im Monat, würd ich sagen. Ein einzelner Fall zieht sich schnell über drei Wochen, weil ich auf Antworten warte. Bestätigt wird am Ende vielleicht jeder fünfte."
+    }
+  ],
+  "zweck": {
+    "wert": "Prüfung von Schadenmeldungen, die in der Regulierung oder durch die Auffälligkeitskennzeichen in KOMPASS als betrugsverdächtig markiert wurden, mit dem Ziel einer belastbaren fachlichen Bewertung vor der Regulierungsentscheidung.",
+    "belege": ["b1"]
+  },
+  "ausloeser": {
+    "wert": "Ein Regulierungssachbearbeiter meldet einen Verdacht, oder KOMPASS setzt automatisch ein Auffälligkeitskennzeichen — etwa bei mehreren Schäden in kurzer Zeit oder bei einem Schaden kurz nach Vertragsbeginn.",
+    "belege": ["b1"]
+  },
+  "ergebnis": {
+    "wert": "Eine dokumentierte Bewertung in der AKTE mit einer von zwei Folgen: Rückgabe an die Regulierung ohne erhärteten Verdacht oder Übergabe an die Spezialeinheit Betrug zur weiteren Verfolgung.",
+    "belege": ["b5"]
+  },
+  "abgrenzung": {
+    "wert": "Die Prüfung endet mit der Bewertung. Die Leistungsentscheidung selbst, eine Ablehnung gegenüber dem Versicherungsnehmer und jede Strafanzeige liegen außerhalb dieses Prozesses.",
+    "belege": ["b5"]
+  },
+  "beteiligte": {
+    "wert": [
+      "Betrugsprüfung Schaden — führt die Prüfung durch und verantwortet die Bewertung",
+      "Regulierungssachbearbeiter — meldet Verdachtsfälle und übernimmt unauffällige Fälle zurück",
+      "Spezialeinheit Betrug — übernimmt Fälle mit erhärtetem Verdacht",
+      "Versicherungsnehmer — beantwortet Rückfragen zum Schadenhergang"
+    ],
+    "belege": ["b1", "b4", "b5"]
+  },
+  "informationsquellen": {
+    "wert": [
+      "Schadenakte des laufenden Vorgangs in KOMPASS",
+      "Schadenhistorie des Kunden über alle Sparten",
+      "Vertragsdaten und Vertragsbeginn aus VERA",
+      "Partner-, Adress- und Bankdaten aus PARTO",
+      "Antwortschreiben und Telefonnotizen zur Rückfrage"
+    ],
+    "belege": ["b2", "b3", "b4"]
+  },
+  "systeme": {
+    "wert": ["KOMPASS", "VERA", "PARTO", "AKTE", "Outlook"],
+    "belege": ["b2", "b3", "b5"]
+  },
+  "kontrollen": {
+    "wert": [
+      "Vier-Augen-Prinzip bei jeder Übergabe an die Spezialeinheit Betrug",
+      "Rückfragefrist von vierzehn Tagen; danach wird auf Basis der vorliegenden Unterlagen entschieden",
+      "Jede Bewertung wird als Formular in der AKTE abgelegt und ist dem Vorgang fest zugeordnet"
+    ],
+    "belege": ["b4", "b5"]
+  },
+  "uebergaben": {
+    "wert": [
+      "Regulierung an Betrugsprüfung bei Verdachtsmeldung",
+      "Betrugsprüfung an Regulierung bei nicht erhärtetem Verdacht",
+      "Betrugsprüfung an Spezialeinheit Betrug bei begründetem Verdacht"
+    ],
+    "belege": ["b1", "b3", "b5"]
+  },
+  "mengenUndZeiten": {
+    "wert": [
+      "20 bis 30 Fälle im Monat",
+      "Durchlaufzeit häufig drei Wochen, überwiegend Wartezeit auf Rückfragen",
+      "Rund ein Fünftel der Fälle bestätigt sich"
+    ],
+    "belege": ["b6"]
+  },
+  "schwachstellen": {
+    "wert": [
+      "Die Schadenhistorie muss Fall für Fall einzeln geöffnet werden; eine zusammenfassende Sicht fehlt",
+      "Die Auffälligkeitskennzeichen aus KOMPASS liefern keine Begründung, die Prüfung beginnt jedes Mal bei null",
+      "Rückfragen an Versicherungsnehmer bleiben häufig unbeantwortet und verlängern die Durchlaufzeit"
+    ],
+    "belege": ["b2", "b4"]
+  },
+  "verbesserungsziele": {
+    "wert": [
+      "Eine verdichtete Kundensicht über alle Schäden statt Einzelaufrufe",
+      "Nachvollziehbare Begründung zu jedem automatisch gesetzten Auffälligkeitskennzeichen",
+      "Kürzere Durchlaufzeit durch strukturierte, nachverfolgte Rückfragen"
+    ],
+    "belege": ["b2", "b4"]
+  },
+  "wissensluecken": [
+    "Nach welchen Regeln KOMPASS die Auffälligkeitskennzeichen setzt, ist im Fachbereich nicht bekannt.",
+    "Ob die Rückfragefrist von vierzehn Tagen schriftlich geregelt oder eingespielte Praxis ist, blieb offen."
+  ],
+  "widersprueche": [],
+  "schritte": [
+    {
+      "name": "Verdachtsfall übernehmen",
+      "taetigkeit": "Den gemeldeten oder automatisch gekennzeichneten Vorgang in die Arbeitsliste der Betrugsprüfung übernehmen und den Anlass der Auffälligkeit festhalten.",
+      "eingaben": [
+        "Verdachtsmeldung aus der Regulierung",
+        "Auffälligkeitskennzeichen aus KOMPASS"
+      ],
+      "ausgaben": ["Übernommener Prüfvorgang in der Arbeitsliste"],
+      "hinweis": "Das automatisch gesetzte Kennzeichen nennt keinen Grund; der Anlass wird beim Übernehmen aus dem Vorgang erschlossen.",
+      "informationen": [
+        {
+          "name": "Anlass der Auffälligkeit",
+          "quelle": "KOMPASS",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b1"]
+    },
+    {
+      "name": "Schadenakte und Historie sichten",
+      "taetigkeit": "Den laufenden Vorgang vollständig in KOMPASS lesen und anschließend die Schadenhistorie des Kunden über alle Sparten hinweg Fall für Fall öffnen.",
+      "eingaben": ["Schadenakte in KOMPASS", "Schadenhistorie des Kunden"],
+      "ausgaben": ["Notierte Auffälligkeiten aus Akte und Historie"],
+      "hinweis": "Der zeitaufwendigste Schritt, weil jeder Altfall einzeln geöffnet werden muss.",
+      "informationen": [
+        {
+          "name": "Frühere Schäden desselben Kunden",
+          "quelle": "KOMPASS",
+          "typ": "database_or_report"
+        }
+      ],
+      "belege": ["b2"]
+    },
+    {
+      "name": "Vertrags- und Partnerdaten abgleichen",
+      "taetigkeit": "Vertragsbeginn und Deckung in VERA sowie Adress- und Bankverbindungsänderungen in PARTO gegen die Angaben der Schadenmeldung prüfen.",
+      "eingaben": ["Vertragsdaten aus VERA", "Partnerdaten aus PARTO"],
+      "ausgaben": ["Abgleichergebnis zu Vertrag, Adresse und Bankverbindung"],
+      "hinweis": null,
+      "informationen": [
+        {
+          "name": "Datum der letzten Bankverbindungsänderung",
+          "quelle": "PARTO",
+          "typ": "system_field"
+        },
+        {
+          "name": "Vertragsbeginn und Deckungsumfang",
+          "quelle": "VERA",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b3"]
+    },
+    {
+      "name": "Rückfrage stellen",
+      "taetigkeit": "Offene Punkte telefonisch mit dem Regulierungssachbearbeiter klären oder den Versicherungsnehmer schriftlich zum Schadenhergang befragen.",
+      "eingaben": ["Offene Punkte aus Sichtung und Abgleich"],
+      "ausgaben": [
+        "Antwort des Sachbearbeiters oder des Versicherungsnehmers",
+        "Telefonnotiz oder Schriftwechsel"
+      ],
+      "hinweis": "Auf die schriftliche Rückfrage läuft eine Frist. Bleibt sie unbeantwortet, wird ohne die Antwort entschieden.",
+      "informationen": [
+        {
+          "name": "Schilderung des Schadenhergangs",
+          "quelle": "Versicherungsnehmer",
+          "typ": "free_text"
+        }
+      ],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Bewertung dokumentieren",
+      "taetigkeit": "Die Prüfergebnisse in das Bewertungsformular eintragen, die Einschätzung begründen und das Formular in der AKTE zum Vorgang ablegen.",
+      "eingaben": [
+        "Notierte Auffälligkeiten",
+        "Abgleichergebnis",
+        "Antworten aus der Rückfrage"
+      ],
+      "ausgaben": ["Bewertungsformular in der AKTE"],
+      "hinweis": null,
+      "informationen": [
+        {
+          "name": "Begründete Einschätzung zum Verdacht",
+          "quelle": "Betrugsprüfung",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b5"]
+    },
+    {
+      "name": "Fall übergeben",
+      "taetigkeit": "Den Vorgang je nach Bewertung an die Spezialeinheit Betrug übergeben oder mit Vermerk an die Regulierung zurückgeben und das Kennzeichen in KOMPASS entsprechend setzen.",
+      "eingaben": ["Bewertungsformular in der AKTE"],
+      "ausgaben": [
+        "Übergebener Vorgang mit gesetztem Kennzeichen in KOMPASS",
+        "Vermerk für die weiterbearbeitende Stelle"
+      ],
+      "hinweis": "Die Übergabe an die Spezialeinheit erfolgt im Vier-Augen-Prinzip.",
+      "informationen": [],
+      "belege": ["b5"]
+    }
+  ],
+  "verzweigung": {
+    "nachSchritt": 3,
+    "frage": "Bleibt die Auffälligkeit nach dem Abgleich von Vertrags- und Partnerdaten bestehen?",
+    "modus": "professional_judgement",
+    "zweige": [
+      {
+        "label": "Ja, offene Punkte bleiben",
+        "ziel": 4,
+        "ermittlung": "Fachliche Einschätzung aus Aktensichtung und Datenabgleich.",
+        "folge": "Der Fall geht in die Rückfrage."
+      },
+      {
+        "label": "Nein, nichts erhärtet sich",
+        "ziel": "ende",
+        "ermittlung": "Kein Widerspruch zwischen Schadenmeldung, Vertrag und Partnerdaten.",
+        "folge": "Der Vorgang geht mit Vermerk zurück an die Regulierung."
+      }
+    ]
+  },
+  "revisionen": [
+    {
+      "bestaetigtAm": "2026-04-22T10:30:00.000Z",
+      "notiz": "Die Rückfragefrist ist inzwischen in der Arbeitsanweisung geregelt und wurde auf zehn Arbeitstage verkürzt; die offene Frage dazu entfällt.",
+      "zurueckgenommenAm": null,
+      "aenderung": {
+        "kontrollen": {
+          "wert": [
+            "Vier-Augen-Prinzip bei jeder Übergabe an die Spezialeinheit Betrug",
+            "Rückfragefrist von zehn Arbeitstagen gemäß Arbeitsanweisung SCH-14; danach wird auf Basis der vorliegenden Unterlagen entschieden",
+            "Jede Bewertung wird als Formular in der AKTE abgelegt und ist dem Vorgang fest zugeordnet"
+          ],
+          "belege": ["b4", "b5"]
+        },
+        "wissensluecken": [
+          "Nach welchen Regeln KOMPASS die Auffälligkeitskennzeichen setzt, ist im Fachbereich nicht bekannt."
+        ]
+      }
+    }
+  ]
+}

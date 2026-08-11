@@ -752,6 +752,21 @@ export class ProcessCaptureRepository {
     return this.required(id);
   }
 
+  /**
+   * Bei Chat-Aufnahmen stützt sich Evidenz auf Nachrichten des Anwenders. Ohne
+   * deren Kennungen verwirft `assertUnderstandingReferences` jede Chat-Evidenz,
+   * eine Korrektur an einem im Chat aufgenommenen Prozess wäre also unmöglich.
+   */
+  private async userChatMessageIds(record: ProcessCaptureRecord) {
+    if (record.interactionMode !== "chat") return undefined;
+    const transcript = await new ChatCaptureRepository(this.root).transcript(
+      record.id,
+    );
+    return new Set(
+      transcript.filter((item) => item.role === "user").map((item) => item.id),
+    );
+  }
+
   async correctUnderstanding(id: string, input: unknown, note: string) {
     const record = await this.required(id);
     if (
@@ -775,8 +790,10 @@ export class ProcessCaptureRepository {
       throw new Error(
         "Korrektur-Evidenz wird ausschließlich vom System aufgezeichnet.",
       );
+    const chatMessageIds = await this.userChatMessageIds(record);
     assertUnderstandingReferences(record, next, {
       allowHumanCorrections: true,
+      chatMessageIds,
     });
     const correctionId = crypto.randomUUID();
     globalFactNames.forEach((name) =>
@@ -801,8 +818,11 @@ export class ProcessCaptureRepository {
     const value = processUnderstandingSchema.parse(next);
     assertUnderstandingReferences(record, value, {
       allowHumanCorrections: true,
+      chatMessageIds,
     });
     await this.writeJson(id, "process-understanding.json", value);
+    if (record.interactionMode === "chat")
+      await new ChatCaptureRepository(this.root).publishCorrection(id, value);
     await this.touch(record, "review_required", null);
     await audit(
       join(this.dir(id), "history.jsonl"),

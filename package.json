@@ -18,6 +18,7 @@
     "test": "bun test",
     "icons": "bun run scripts/generate-icons.ts",
     "seed": "bun run scripts/seed-demo-process.ts",
+    "seed:docs": "bun run scripts/seed-documentation.ts",
     "migrate:process-flow": "bun run scripts/migrate-process-flow-storage.ts"
   },
   "dependencies": {

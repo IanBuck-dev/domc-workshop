@@ -1,0 +1,247 @@
+{
+  "slug": "rueckversicherungsabrechnung-quartal",
+  "titel": "Quartalsabrechnung Rückversicherung",
+  "fachbereich": "Finanzen",
+  "gespraechspartner": {
+    "name": "Edda Brandt",
+    "email": "edda.brandt@lifecorp.example"
+  },
+  "erstelltAm": "2026-04-07T07:40:00.000Z",
+  "bestaetigtAm": "2026-04-14T14:30:00.000Z",
+  "belege": [
+    {
+      "id": "b1",
+      "text": "Jedes Quartal rechnen wir mit den Rückversicherern ab. Was wir an Beiträgen abgeben und was wir an Schadenanteilen zurückbekommen, muss auf beiden Seiten dasselbe ergeben."
+    },
+    {
+      "id": "b2",
+      "text": "Ich zieh mir die abgegebenen Anteile aus VERA und die Schadenanteile aus KOMPASS. Das kommt als Rohliste, und die muss ich je Vertragsgruppe auf die Rückversicherungsverträge umlegen."
+    },
+    {
+      "id": "b3",
+      "text": "Das Umlegen läuft bei mir in einer Tabelle, die ich seit Jahren pflege. In SAP FI kommt am Ende nur noch der fertige Buchungsstapel rein."
+    },
+    {
+      "id": "b4",
+      "text": "Dann kommt die Abstimmung mit dem Rückversicherer. Kleine Differenzen laufen wir auf, bei größeren muss ich einzeln nachvollziehen, woher die Abweichung kommt - das ist Erfahrungssache, dafür gibt es keine feste Regel."
+    },
+    {
+      "id": "b5",
+      "text": "Wenn beide Seiten die Abrechnung bestätigt haben, buche ich in SAP FI und leg die unterschriebene Abrechnung in der AKTE ab."
+    },
+    {
+      "id": "b6",
+      "text": "Wir haben elf aktive Rückversicherungsverträge. Vom Quartalsende bis zur Buchung sind es normalerweise fünf bis sechs Wochen, bei Streitfällen auch mal ein ganzes Quartal."
+    }
+  ],
+  "zweck": {
+    "wert": "Quartalsweise Abrechnung der zedierten Beitragsanteile und der erstattungsfähigen Schadenanteile mit den Rückversicherern der LifeCorp, bis zur beiderseitig bestätigten und in SAP FI gebuchten Abrechnung.",
+    "belege": ["b1"]
+  },
+  "ausloeser": {
+    "wert": "Der Abschluss des Quartals in der Finanzbuchhaltung und die Freigabe der Bestands- und Schadendaten für den Abrechnungsstichtag.",
+    "belege": ["b1", "b2"]
+  },
+  "ergebnis": {
+    "wert": "Eine von beiden Seiten bestätigte Quartalsabrechnung je Rückversicherungsvertrag, gebucht in SAP FI und mit dem unterschriebenen Abrechnungsdokument in der AKTE abgelegt.",
+    "belege": ["b5"]
+  },
+  "abgrenzung": {
+    "wert": "Verhandlung und Abschluss der Rückversicherungsverträge liegen beim Risikomanagement und gehören nicht dazu. Der Zahlungsverkehr nach der Buchung sowie die Schadenregulierung gegenüber dem Versicherungsnehmer laufen getrennt.",
+    "belege": ["b1"]
+  },
+  "beteiligte": {
+    "wert": [
+      "Rückversicherungsbuchhaltung — erstellt, stimmt ab und bucht die Abrechnung",
+      "Rückversicherer — prüft die Abrechnung und bestätigt oder widerspricht",
+      "Schadenabteilung — liefert Erläuterungen zu einzelnen Großschäden",
+      "Hauptbuchhaltung — nimmt den Buchungsstapel ab",
+      "Risikomanagement — verantwortet die Rückversicherungsverträge und deren Konditionen"
+    ],
+    "belege": ["b1", "b2", "b4", "b5"]
+  },
+  "informationsquellen": {
+    "wert": [
+      "Abgegebene Beitragsanteile aus VERA zum Abrechnungsstichtag",
+      "Schadenanteile und Reserven aus KOMPASS",
+      "Vertragskonditionen der Rückversicherungsverträge",
+      "Abstimmungsschreiben und Rückmeldungen der Rückversicherer",
+      "Vorquartalsabrechnung als Vergleichsgröße"
+    ],
+    "belege": ["b2", "b4"]
+  },
+  "systeme": {
+    "wert": ["VERA", "KOMPASS", "SAP FI", "AKTE", "Outlook"],
+    "belege": ["b2", "b3", "b5"]
+  },
+  "kontrollen": {
+    "wert": [
+      "Abgleich der Summen aus VERA und KOMPASS gegen die Vorquartalswerte vor der Umlage",
+      "Vier-Augen-Prüfung des Buchungsstapels vor der Übernahme nach SAP FI",
+      "Buchung erst nach schriftlicher Bestätigung durch den Rückversicherer",
+      "Ablage der unterschriebenen Abrechnung in der AKTE je Rückversicherungsvertrag"
+    ],
+    "belege": ["b3", "b5"]
+  },
+  "uebergaben": {
+    "wert": [
+      "Bestandsführung und Schadenabteilung an die Rückversicherungsbuchhaltung mit den Quartalsdaten",
+      "Rückversicherungsbuchhaltung an den Rückversicherer mit der Abrechnung",
+      "Rückversicherungsbuchhaltung an die Hauptbuchhaltung mit dem Buchungsstapel"
+    ],
+    "belege": ["b2", "b4", "b5"]
+  },
+  "mengenUndZeiten": {
+    "wert": [
+      "11 aktive Rückversicherungsverträge je Quartal",
+      "Durchlaufzeit vom Quartalsende bis zur Buchung fünf bis sechs Wochen",
+      "Bei strittigen Positionen bis zu einem vollen Quartal"
+    ],
+    "belege": ["b6"]
+  },
+  "schwachstellen": {
+    "wert": [
+      "Die Umlage auf die Rückversicherungsverträge läuft über eine selbstgepflegte Tabelle außerhalb der Systeme",
+      "Rohlisten aus VERA und KOMPASS müssen von Hand zusammengeführt werden",
+      "Die Abstimmung mit den Rückversicherern läuft ausschließlich über E-Mail ohne nachvollziehbaren Stand"
+    ],
+    "belege": ["b2", "b3", "b4"]
+  },
+  "verbesserungsziele": {
+    "wert": [
+      "Umlage der Anteile in einem geprüften Werkzeug statt in einer persönlichen Tabelle",
+      "Gemeinsamer Extrakt aus VERA und KOMPASS ohne manuelle Zusammenführung",
+      "Nachvollziehbarer Abstimmungsstand je Rückversicherungsvertrag"
+    ],
+    "belege": ["b2", "b3", "b4"]
+  },
+  "wissensluecken": [
+    "Nach welchen Kriterien eine Differenz als klein und damit auflaufend eingestuft wird, konnte nicht als feste Grenze benannt werden.",
+    "Wie die Vertretung bei Abwesenheit die selbstgepflegte Umlagetabelle bedient, blieb offen."
+  ],
+  "widersprueche": [],
+  "schritte": [
+    {
+      "name": "Abrechnungsdaten anfordern",
+      "taetigkeit": "Den Abrechnungsstichtag festlegen und die abgegebenen Beitragsanteile aus VERA sowie die Schadenanteile und Reserven aus KOMPASS als Rohlisten anfordern.",
+      "eingaben": ["Quartalsabschluss der Finanzbuchhaltung"],
+      "ausgaben": [
+        "Rohliste abgegebener Beitragsanteile",
+        "Rohliste der Schadenanteile und Reserven"
+      ],
+      "hinweis": null,
+      "informationen": [
+        {
+          "name": "Abrechnungsstichtag",
+          "quelle": "Finanzbuchhaltung",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b2"]
+    },
+    {
+      "name": "Anteile auf die Rückversicherungsverträge umlegen",
+      "taetigkeit": "Die Rohlisten je Vertragsgruppe auf die aktiven Rückversicherungsverträge umlegen und die Summen gegen die Vorquartalswerte plausibilisieren.",
+      "eingaben": [
+        "Rohliste abgegebener Beitragsanteile",
+        "Rohliste der Schadenanteile und Reserven",
+        "Vertragskonditionen der Rückversicherungsverträge"
+      ],
+      "ausgaben": ["Umgelegte Anteile je Rückversicherungsvertrag"],
+      "hinweis": "Die Umlage erfolgt in einer außerhalb der Systeme gepflegten Tabelle.",
+      "informationen": [
+        {
+          "name": "Quote und Selbstbehalt je Vertrag",
+          "quelle": "Rückversicherungsvertrag",
+          "typ": "document"
+        },
+        {
+          "name": "Vorquartalssummen",
+          "quelle": "SAP FI",
+          "typ": "database_or_report"
+        }
+      ],
+      "belege": ["b2", "b3"]
+    },
+    {
+      "name": "Abrechnung erstellen und versenden",
+      "taetigkeit": "Je Rückversicherungsvertrag die Quartalsabrechnung erstellen, im Vier-Augen-Prinzip prüfen lassen und an den Rückversicherer versenden.",
+      "eingaben": ["Umgelegte Anteile je Rückversicherungsvertrag"],
+      "ausgaben": ["Versandte Quartalsabrechnung je Rückversicherungsvertrag"],
+      "hinweis": null,
+      "informationen": [],
+      "belege": ["b1", "b4"]
+    },
+    {
+      "name": "Rückmeldung des Rückversicherers auswerten",
+      "taetigkeit": "Die Rückmeldung entgegennehmen, die genannten Abweichungen den Einzelpositionen zuordnen und die Höhe der Differenz einordnen.",
+      "eingaben": [
+        "Versandte Quartalsabrechnung",
+        "Rückmeldung des Rückversicherers"
+      ],
+      "ausgaben": ["Zugeordnete Abweichungen mit Einordnung"],
+      "hinweis": "Die Einordnung der Differenz erfolgt nach Erfahrung; eine festgeschriebene Wertgrenze konnte nicht benannt werden.",
+      "informationen": [
+        {
+          "name": "Beanstandete Einzelpositionen",
+          "quelle": "Rückversicherer",
+          "typ": "email"
+        }
+      ],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Abweichungen klären",
+      "taetigkeit": "Strittige Positionen einzeln nachvollziehen, bei Großschäden Erläuterungen der Schadenabteilung einholen und eine korrigierte Abrechnung abstimmen.",
+      "eingaben": ["Zugeordnete Abweichungen mit Einordnung"],
+      "ausgaben": [
+        "Abgestimmte Abrechnung",
+        "Bestätigung des Rückversicherers"
+      ],
+      "hinweis": null,
+      "informationen": [
+        {
+          "name": "Erläuterung zu Großschäden",
+          "quelle": "Schadenabteilung",
+          "typ": "free_text"
+        }
+      ],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Buchen und ablegen",
+      "taetigkeit": "Den Buchungsstapel nach SAP FI übernehmen, die Übernahme durch die Hauptbuchhaltung bestätigen lassen und die unterschriebene Abrechnung in der AKTE ablegen.",
+      "eingaben": [
+        "Abgestimmte Abrechnung",
+        "Bestätigung des Rückversicherers"
+      ],
+      "ausgaben": [
+        "Gebuchte Quartalsabrechnung in SAP FI",
+        "Abgelegte Abrechnung in der AKTE"
+      ],
+      "hinweis": "Ohne schriftliche Bestätigung des Rückversicherers wird nicht gebucht.",
+      "informationen": [],
+      "belege": ["b5"]
+    }
+  ],
+  "verzweigung": {
+    "nachSchritt": 4,
+    "frage": "Ist die gemeldete Abweichung so groß, dass sie einzeln geklärt werden muss?",
+    "modus": "professional_judgement",
+    "zweige": [
+      {
+        "label": "Ja, Einzelklärung erforderlich",
+        "ziel": 5,
+        "ermittlung": "Erfahrungsbasierte Einordnung der Differenzhöhe durch die Rückversicherungsbuchhaltung.",
+        "folge": "Die strittigen Positionen werden mit dem Rückversicherer geklärt."
+      },
+      {
+        "label": "Nein, Differenz läuft auf",
+        "ziel": 6,
+        "ermittlung": "Die Abweichung liegt im Rahmen der üblichen Rundungs- und Stichtagsdifferenzen.",
+        "folge": "Die Differenz wird ins Folgequartal übernommen und die Abrechnung gebucht."
+      }
+    ]
+  },
+  "revisionen": []
+}

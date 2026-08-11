@@ -1,0 +1,269 @@
+{
+  "slug": "vermittler-onboarding",
+  "titel": "Onboarding neuer Vermittler im Außendienst",
+  "fachbereich": "Vertrieb",
+  "gespraechspartner": {
+    "name": "Edda Brandt",
+    "email": "edda.brandt@lifecorp.example"
+  },
+  "erstelltAm": "2026-03-23T08:20:00.000Z",
+  "bestaetigtAm": "2026-03-30T13:40:00.000Z",
+  "belege": [
+    {
+      "id": "b1",
+      "text": "Wenn die Vertriebsdirektion einen neuen Vermittler gewinnt, kommt der Antrag zu uns. Wir machen daraus einen arbeitsfähigen Partner - Nummer, Zugänge, Provisionsvereinbarung."
+    },
+    {
+      "id": "b2",
+      "text": "Zuerst prüf ich die Unterlagen: Gewerbeerlaubnis nach Paragraf 34d, Registereintrag, Vermögensschadenhaftpflicht, Führungszeugnis. Fehlt was, fordere ich es an, und da hängt es dann meistens."
+    },
+    {
+      "id": "b3",
+      "text": "Passt alles, leg ich den Partner in PARTO an und vergeb die Vermittlernummer. Danach kommt die Provisionsvereinbarung in PROVISO, mit Courtagesatz und Stornohaftungszeit."
+    },
+    {
+      "id": "b4",
+      "text": "Die Zugänge zum Vermittlerportal beantrage ich bei der IT. Das dauert regelmäßig ein paar Tage, und ich seh nicht, wo der Antrag gerade steht."
+    },
+    {
+      "id": "b5",
+      "text": "Zum Schluss krieg ich vom Vermittler die Bestätigung, dass er die Erstschulung gemacht hat. Erst dann setz ich ihn in PARTO auf aktiv, vorher darf er nicht vermitteln."
+    },
+    {
+      "id": "b6",
+      "text": "Wir machen zwischen fünfzehn und zwanzig Onboardings im Monat. Von der ersten Unterlage bis aktiv sind es im Schnitt drei Wochen."
+    }
+  ],
+  "zweck": {
+    "wert": "Aufnahme neu gewonnener Außendienstvermittler in die Systeme der LifeCorp bis zur Vermittlungsfähigkeit — Prüfung der Zulassungsunterlagen, Anlage als Partner, Provisionsvereinbarung, Portalzugang und Freischaltung.",
+    "belege": ["b1"]
+  },
+  "ausloeser": {
+    "wert": "Ein von der Vertriebsdirektion eingereichter Aufnahmeantrag für einen neuen Vermittler.",
+    "belege": ["b1"]
+  },
+  "ergebnis": {
+    "wert": "Ein in PARTO aktiv gesetzter Vermittler mit Vermittlernummer, hinterlegter Provisionsvereinbarung in PROVISO und funktionierendem Zugang zum Vermittlerportal.",
+    "belege": ["b3", "b5"]
+  },
+  "abgrenzung": {
+    "wert": "Die Gewinnung und Auswahl des Vermittlers liegt bei der Vertriebsdirektion. Laufende Betreuung, Zielvereinbarungen und die Beendigung der Zusammenarbeit sind nicht Teil dieses Prozesses.",
+    "belege": ["b1"]
+  },
+  "beteiligte": {
+    "wert": [
+      "Vermittlerbetreuung — führt das Onboarding durch",
+      "Vertriebsdirektion — gewinnt den Vermittler und reicht den Antrag ein",
+      "IT-Support — richtet den Portalzugang ein",
+      "Neuer Vermittler — reicht Unterlagen ein und absolviert die Erstschulung"
+    ],
+    "belege": ["b1", "b4", "b5"]
+  },
+  "informationsquellen": {
+    "wert": [
+      "Aufnahmeantrag der Vertriebsdirektion",
+      "Gewerbeerlaubnis nach § 34d GewO und Registereintrag",
+      "Nachweis der Vermögensschadenhaftpflicht",
+      "Polizeiliches Führungszeugnis",
+      "Schulungsbestätigung des Vermittlers"
+    ],
+    "belege": ["b2", "b5"]
+  },
+  "systeme": {
+    "wert": ["PARTO", "PROVISO", "AKTE", "Outlook"],
+    "belege": ["b3", "b4"]
+  },
+  "kontrollen": {
+    "wert": [
+      "Vollständigkeitsprüfung aller Zulassungsunterlagen vor der Partneranlage",
+      "Vier-Augen-Prinzip bei der Festlegung des Courtagesatzes",
+      "Freischaltung in PARTO erst nach vorliegender Schulungsbestätigung",
+      "Ablage aller Nachweise in der AKTE unter der Vermittlernummer"
+    ],
+    "belege": ["b2", "b3", "b5"]
+  },
+  "uebergaben": {
+    "wert": [
+      "Vertriebsdirektion an Vermittlerbetreuung mit dem Aufnahmeantrag",
+      "Vermittlerbetreuung an IT-Support zur Einrichtung des Portalzugangs",
+      "Vermittlerbetreuung an Vertriebsdirektion nach erfolgter Freischaltung"
+    ],
+    "belege": ["b1", "b4"]
+  },
+  "mengenUndZeiten": {
+    "wert": [
+      "15 bis 20 Onboardings im Monat",
+      "Durchlaufzeit im Schnitt drei Wochen",
+      "Einrichtung des Portalzugangs mehrere Tage"
+    ],
+    "belege": ["b4", "b6"]
+  },
+  "schwachstellen": {
+    "wert": [
+      "Unterlagen kommen unvollständig herein; das Nachfordern bestimmt die Durchlaufzeit",
+      "Der Stand des Zugangsantrags bei der IT ist für die Vermittlerbetreuung nicht sichtbar",
+      "Die Schulungsbestätigung kommt formlos per E-Mail und wird von Hand nachgehalten"
+    ],
+    "belege": ["b2", "b4", "b5"]
+  },
+  "verbesserungsziele": {
+    "wert": [
+      "Vollständige Unterlagen bereits mit dem Aufnahmeantrag",
+      "Sichtbarer Bearbeitungsstand des Zugangsantrags",
+      "Durchlaufzeit von drei auf zwei Wochen senken"
+    ],
+    "belege": ["b2", "b4", "b6"]
+  },
+  "wissensluecken": [
+    "Ob und wie die Zulassungsnachweise nach dem Onboarding turnusmäßig auf Gültigkeit geprüft werden, blieb offen."
+  ],
+  "widersprueche": [],
+  "schritte": [
+    {
+      "name": "Aufnahmeantrag entgegennehmen",
+      "taetigkeit": "Den Antrag der Vertriebsdirektion erfassen, die vorgesehene Vertriebsregion und den Betreuer festhalten und den Vorgang in der Arbeitsliste anlegen.",
+      "eingaben": ["Aufnahmeantrag der Vertriebsdirektion"],
+      "ausgaben": ["Angelegter Onboarding-Vorgang"],
+      "hinweis": null,
+      "informationen": [
+        {
+          "name": "Vertriebsregion und zuständiger Betreuer",
+          "quelle": "Aufnahmeantrag",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b1"]
+    },
+    {
+      "name": "Zulassungsunterlagen prüfen",
+      "taetigkeit": "Gewerbeerlaubnis, Registereintrag, Vermögensschadenhaftpflicht und Führungszeugnis auf Vollständigkeit und Gültigkeit prüfen und fehlende Nachweise beim Vermittler anfordern.",
+      "eingaben": [
+        "Gewerbeerlaubnis nach § 34d GewO und Registereintrag",
+        "Nachweis der Vermögensschadenhaftpflicht",
+        "Polizeiliches Führungszeugnis"
+      ],
+      "ausgaben": [
+        "Geprüfte und vollständige Unterlagen",
+        "Nachforderungen an den Vermittler"
+      ],
+      "hinweis": "Das Nachfordern fehlender Nachweise bestimmt die Durchlaufzeit des gesamten Onboardings.",
+      "informationen": [
+        {
+          "name": "Gültigkeitsdatum der Nachweise",
+          "quelle": "Zulassungsunterlagen",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b2"]
+    },
+    {
+      "name": "Partner anlegen",
+      "taetigkeit": "Den Vermittler in PARTO als Partner anlegen, die Vermittlernummer vergeben und alle Nachweise in der AKTE unter dieser Nummer ablegen.",
+      "eingaben": ["Geprüfte und vollständige Unterlagen"],
+      "ausgaben": [
+        "Angelegter Partner in PARTO mit Vermittlernummer",
+        "Abgelegte Nachweise in der AKTE"
+      ],
+      "hinweis": null,
+      "informationen": [
+        {
+          "name": "Vermittlernummer",
+          "quelle": "PARTO",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b3"]
+    },
+    {
+      "name": "Provisionsvereinbarung hinterlegen",
+      "taetigkeit": "Courtagesatz und Stornohaftungszeit im Vier-Augen-Prinzip festlegen und die Vereinbarung in PROVISO zur Vermittlernummer hinterlegen.",
+      "eingaben": [
+        "Angelegter Partner in PARTO",
+        "Aufnahmeantrag der Vertriebsdirektion"
+      ],
+      "ausgaben": ["Hinterlegte Provisionsvereinbarung in PROVISO"],
+      "hinweis": null,
+      "informationen": [
+        {
+          "name": "Courtagesatz und Stornohaftungszeit",
+          "quelle": "PROVISO",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b3"]
+    },
+    {
+      "name": "Portalzugang beantragen",
+      "taetigkeit": "Den Zugang zum Vermittlerportal beim IT-Support beantragen und den Eingang der Zugangsdaten beim Vermittler nachhalten.",
+      "eingaben": ["Angelegter Partner in PARTO mit Vermittlernummer"],
+      "ausgaben": ["Eingerichteter Portalzugang"],
+      "hinweis": "Der Antrag läuft über den IT-Support.",
+      "informationen": [],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Freischalten",
+      "taetigkeit": "Die Schulungsbestätigung entgegennehmen, den Vermittler in PARTO auf aktiv setzen und die Vertriebsdirektion über die Vermittlungsfähigkeit informieren.",
+      "eingaben": [
+        "Schulungsbestätigung des Vermittlers",
+        "Eingerichteter Portalzugang"
+      ],
+      "ausgaben": [
+        "Aktiv gesetzter Vermittler in PARTO",
+        "Nachricht an die Vertriebsdirektion"
+      ],
+      "hinweis": "Ohne Schulungsbestätigung darf nicht freigeschaltet werden.",
+      "informationen": [
+        {
+          "name": "Bestätigung der Erstschulung",
+          "quelle": "Vermittler",
+          "typ": "email"
+        }
+      ],
+      "belege": ["b5"]
+    }
+  ],
+  "verzweigung": {
+    "nachSchritt": 2,
+    "frage": "Liegen alle Zulassungsnachweise gültig vor?",
+    "modus": "rule_based",
+    "zweige": [
+      {
+        "label": "Ja, Unterlagen vollständig",
+        "ziel": 3,
+        "ermittlung": "Alle vier Nachweise liegen gültig vor.",
+        "folge": "Der Partner wird angelegt."
+      },
+      {
+        "label": "Nein, Nachweise fehlen",
+        "ziel": "ende",
+        "ermittlung": "Mindestens ein Nachweis fehlt oder ist abgelaufen.",
+        "folge": "Der Vorgang ruht bis zum Eingang der Nachforderung."
+      }
+    ]
+  },
+  "revisionen": [
+    {
+      "bestaetigtAm": "2026-06-08T10:15:00.000Z",
+      "notiz": "Der IT-Support meldet den Bearbeitungsstand des Zugangsantrags seit Juni aktiv zurück; die entsprechende Schwachstelle und das zugehörige Ziel sind entfallen.",
+      "zurueckgenommenAm": null,
+      "aenderung": {
+        "schwachstellen": {
+          "wert": [
+            "Unterlagen kommen unvollständig herein; das Nachfordern bestimmt die Durchlaufzeit",
+            "Die Schulungsbestätigung kommt formlos per E-Mail und wird von Hand nachgehalten"
+          ],
+          "belege": ["b2", "b5"]
+        },
+        "verbesserungsziele": {
+          "wert": [
+            "Vollständige Unterlagen bereits mit dem Aufnahmeantrag",
+            "Strukturierte Erfassung der Schulungsbestätigung statt formloser E-Mail",
+            "Durchlaufzeit von drei auf zwei Wochen senken"
+          ],
+          "belege": ["b2", "b5", "b6"]
+        }
+      }
+    }
+  ]
+}

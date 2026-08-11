@@ -1,0 +1,244 @@
+{
+  "slug": "beitragsanpassung-wohngebaeude",
+  "titel": "Turnusmäßige Beitragsanpassung Wohngebäude",
+  "fachbereich": "Vertrag",
+  "gespraechspartner": {
+    "name": "Edda Brandt",
+    "email": "edda.brandt@lifecorp.example"
+  },
+  "erstelltAm": "2026-02-16T08:00:00.000Z",
+  "bestaetigtAm": "2026-02-24T15:45:00.000Z",
+  "belege": [
+    {
+      "id": "b1",
+      "text": "Die Beitragsanpassung machen wir einmal im Jahr für den ganzen Wohngebäudebestand. Der Anstoß kommt vom Aktuariat, die geben uns den Anpassungsfaktor und den Stichtag."
+    },
+    {
+      "id": "b2",
+      "text": "Die IT fährt den Lauf in VERA. Danach krieg ich eine Liste mit den Verträgen, die durchgefallen sind - falsche Wohnfläche, gesperrter Vertrag, sowas. Die arbeite ich von Hand ab."
+    },
+    {
+      "id": "b3",
+      "text": "Für alles, was durchläuft, erzeugt VERA die Anschreiben. Die gehen in den Druckdienstleister und werden gleichzeitig in der AKTE abgelegt."
+    },
+    {
+      "id": "b4",
+      "text": "Wenn ein Kunde widerspricht oder kündigt, kommt das bei uns rein und muss innerhalb eines Monats bearbeitet sein. Das ist der Teil, der uns jedes Jahr die Zeit frisst."
+    },
+    {
+      "id": "b5",
+      "text": "Ungefähr achtzigtausend Verträge, davon fallen um die zwölfhundert raus. Der ganze Zyklus zieht sich von September bis Januar."
+    }
+  ],
+  "zweck": {
+    "wert": "Jährliche Anpassung der Beiträge im Wohngebäudebestand an den vom Aktuariat vorgegebenen Anpassungsfaktor, einschließlich Kundenanschreiben und Bearbeitung der Reaktionen.",
+    "belege": ["b1"]
+  },
+  "ausloeser": {
+    "wert": "Die Freigabe des Anpassungsfaktors und des Stichtags durch das Aktuariat, üblicherweise im September für das Folgejahr.",
+    "belege": ["b1", "b5"]
+  },
+  "ergebnis": {
+    "wert": "Ein vollständig angepasster Wohngebäudebestand in VERA, versandte und in der AKTE abgelegte Kundenanschreiben sowie abschließend bearbeitete Widersprüche und Kündigungen.",
+    "belege": ["b3", "b4"]
+  },
+  "abgrenzung": {
+    "wert": "Die Ermittlung des Anpassungsfaktors liegt beim Aktuariat und gehört nicht zu diesem Prozess. Anpassungen außerhalb des Turnus, etwa nach einer Vertragsänderung durch den Kunden, laufen getrennt.",
+    "belege": ["b1"]
+  },
+  "beteiligte": {
+    "wert": [
+      "Vertragsverwaltung Sach — arbeitet die Ausnahmeliste ab und bearbeitet Reaktionen",
+      "Aktuariat — gibt Anpassungsfaktor und Stichtag frei",
+      "IT-Betrieb — startet und überwacht den Anpassungslauf in VERA",
+      "Druckdienstleister — versendet die Kundenanschreiben",
+      "Betreuender Vermittler — beantwortet Kundenrückfragen zur Anpassung"
+    ],
+    "belege": ["b1", "b2", "b3", "b4"]
+  },
+  "informationsquellen": {
+    "wert": [
+      "Freigabeschreiben des Aktuariats mit Anpassungsfaktor und Stichtag",
+      "Vertragsbestand Wohngebäude in VERA",
+      "Ausnahmeliste des Anpassungslaufs",
+      "Eingehende Widersprüche und Kündigungen aus Post und Outlook"
+    ],
+    "belege": ["b1", "b2", "b4"]
+  },
+  "systeme": {
+    "wert": ["VERA", "AKTE", "PARTO", "Outlook"],
+    "belege": ["b2", "b3"]
+  },
+  "kontrollen": {
+    "wert": [
+      "Vier-Augen-Freigabe des Anpassungsfaktors zwischen Aktuariat und Vertragsverwaltung vor dem Lauf",
+      "Stichprobe von 50 angepassten Verträgen nach Abschluss des Laufs",
+      "Frist von einem Monat für die Bearbeitung von Widersprüchen und Kündigungen",
+      "Abgleich der versandten Anschreiben zwischen Druckdienstleister und AKTE"
+    ],
+    "belege": ["b3", "b4"]
+  },
+  "uebergaben": {
+    "wert": [
+      "Aktuariat an Vertragsverwaltung mit der Freigabe des Anpassungsfaktors",
+      "Vertragsverwaltung an IT-Betrieb zum Start des Anpassungslaufs",
+      "VERA an Druckdienstleister zum Versand der Anschreiben",
+      "Vertragsverwaltung an Vermittler bei Kundenrückfragen"
+    ],
+    "belege": ["b1", "b2", "b3"]
+  },
+  "mengenUndZeiten": {
+    "wert": [
+      "Rund 80.000 Wohngebäudeverträge je Anpassungsrunde",
+      "Etwa 1.200 Verträge auf der Ausnahmeliste",
+      "Zykluslänge von September bis Januar"
+    ],
+    "belege": ["b5"]
+  },
+  "schwachstellen": {
+    "wert": [
+      "Die Ausnahmeliste nennt nur einen Fehlerschlüssel, nicht den fachlichen Grund",
+      "Widersprüche kommen über Post und Outlook herein und werden ohne Werkzeugunterstützung nachverfolgt",
+      "Die Monatsfrist wird in Spitzenzeiten nur mit Überstunden gehalten"
+    ],
+    "belege": ["b2", "b4"]
+  },
+  "verbesserungsziele": {
+    "wert": [
+      "Klartextbegründung zu jedem Eintrag der Ausnahmeliste",
+      "Digitale Erfassung und Nachverfolgung eingehender Widersprüche",
+      "Gleichmäßigere Auslastung über den Zyklus statt Spitzen im Dezember"
+    ],
+    "belege": ["b2", "b4"]
+  },
+  "wissensluecken": [
+    "Wie der Anpassungsfaktor im Aktuariat ermittelt wird, ist der Vertragsverwaltung nicht bekannt.",
+    "Ob die Monatsfrist für Widersprüche vertraglich oder aufsichtsrechtlich vorgegeben ist, blieb offen."
+  ],
+  "widersprueche": [],
+  "schritte": [
+    {
+      "name": "Anpassungsfaktor übernehmen",
+      "taetigkeit": "Das Freigabeschreiben des Aktuariats entgegennehmen, Anpassungsfaktor und Stichtag gegenzeichnen und in den Parametern des Anpassungslaufs hinterlegen.",
+      "eingaben": ["Freigabeschreiben des Aktuariats"],
+      "ausgaben": ["Hinterlegte Laufparameter in VERA"],
+      "hinweis": "Die Gegenzeichnung ist die Vier-Augen-Freigabe vor dem Lauf.",
+      "informationen": [
+        {
+          "name": "Anpassungsfaktor und Stichtag",
+          "quelle": "Aktuariat",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b1"]
+    },
+    {
+      "name": "Anpassungslauf starten",
+      "taetigkeit": "Den Anpassungslauf über den IT-Betrieb in VERA starten und den Fortschritt bis zum Abschluss verfolgen.",
+      "eingaben": [
+        "Hinterlegte Laufparameter in VERA",
+        "Vertragsbestand Wohngebäude"
+      ],
+      "ausgaben": ["Angepasste Verträge in VERA", "Ausnahmeliste des Laufs"],
+      "hinweis": null,
+      "informationen": [
+        {
+          "name": "Laufprotokoll mit Trefferzahlen",
+          "quelle": "VERA",
+          "typ": "database_or_report"
+        }
+      ],
+      "belege": ["b2"]
+    },
+    {
+      "name": "Ausnahmeliste abarbeiten",
+      "taetigkeit": "Jeden Vertrag der Ausnahmeliste einzeln aufrufen, die Ursache klären — etwa fehlende Wohnfläche oder gesperrter Vertrag — und die Anpassung manuell nachziehen oder begründet aussetzen.",
+      "eingaben": ["Ausnahmeliste des Laufs"],
+      "ausgaben": [
+        "Manuell angepasste Verträge",
+        "Begründet ausgesetzte Verträge mit Vermerk"
+      ],
+      "hinweis": "Die Liste nennt nur einen Fehlerschlüssel; der fachliche Grund wird am Vertrag selbst ermittelt.",
+      "informationen": [
+        {
+          "name": "Fehlerschlüssel je Vertrag",
+          "quelle": "VERA",
+          "typ": "system_field"
+        },
+        {
+          "name": "Wohnfläche und Vertragssperren",
+          "quelle": "VERA",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b2"]
+    },
+    {
+      "name": "Kundenanschreiben versenden",
+      "taetigkeit": "Die von VERA erzeugten Anschreiben an den Druckdienstleister übergeben, den Versand bestätigen lassen und den Abgleich mit der Ablage in der AKTE durchführen.",
+      "eingaben": ["Angepasste Verträge in VERA"],
+      "ausgaben": [
+        "Versandte Kundenanschreiben",
+        "Abgelegte Anschreiben in der AKTE"
+      ],
+      "hinweis": null,
+      "informationen": [
+        {
+          "name": "Versandbestätigung",
+          "quelle": "Druckdienstleister",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b3"]
+    },
+    {
+      "name": "Reaktionen bearbeiten",
+      "taetigkeit": "Eingehende Widersprüche und Kündigungen erfassen, fachlich prüfen, beantworten und den Vertrag entsprechend in VERA fortschreiben.",
+      "eingaben": ["Eingehende Widersprüche und Kündigungen"],
+      "ausgaben": [
+        "Beantwortete Widersprüche",
+        "Beendete oder unveränderte Verträge in VERA"
+      ],
+      "hinweis": "Die Bearbeitung muss innerhalb eines Monats nach Eingang abgeschlossen sein.",
+      "informationen": [
+        {
+          "name": "Begründung des Kunden",
+          "quelle": "Widerspruchsschreiben",
+          "typ": "free_text"
+        }
+      ],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Runde abschließen",
+      "taetigkeit": "Die vorgesehene Stichprobe angepasster Verträge prüfen, das Ergebnis dokumentieren und die Anpassungsrunde gegenüber dem Aktuariat abschließen.",
+      "eingaben": ["Angepasste Verträge in VERA", "Beantwortete Widersprüche"],
+      "ausgaben": [
+        "Dokumentiertes Stichprobenergebnis",
+        "Abgeschlossene Anpassungsrunde"
+      ],
+      "hinweis": null,
+      "informationen": [],
+      "belege": ["b3"]
+    }
+  ],
+  "verzweigung": null,
+  "revisionen": [
+    {
+      "bestaetigtAm": "2026-05-13T09:10:00.000Z",
+      "notiz": "Die Stichprobe wurde nach dem Prüfbericht der Innenrevision von 50 auf 200 Verträge erhöht und um eine Zweitprüfung ergänzt.",
+      "zurueckgenommenAm": "2026-07-02T13:25:00.000Z",
+      "aenderung": {
+        "kontrollen": {
+          "wert": [
+            "Vier-Augen-Freigabe des Anpassungsfaktors zwischen Aktuariat und Vertragsverwaltung vor dem Lauf",
+            "Stichprobe von 200 angepassten Verträgen nach Abschluss des Laufs, davon 50 in Zweitprüfung durch die Innenrevision",
+            "Frist von einem Monat für die Bearbeitung von Widersprüchen und Kündigungen",
+            "Abgleich der versandten Anschreiben zwischen Druckdienstleister und AKTE"
+          ],
+          "belege": ["b3", "b4"]
+        }
+      }
+    }
+  ]
+}

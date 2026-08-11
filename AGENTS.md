@@ -57,6 +57,13 @@ The prototype's login is gated. Credentials live in the user's 1Password in the 
   Fachbereiche, Formularfelder.
 - Systemnamen und Personas kommen aus `demo-data/UNTERNEHMEN.md` und müssen über alle
   Szenarien hinweg konsistent bleiben.
+- `bun run seed:docs [--list]` füllt die lebende Prozessdokumentation aus
+  `demo-data/dokumentation/` — acht Prozesse über sechs Fachbereiche samt Revisionen und
+  einer Rücknahme. Der Seed ist additiv, überspringt vorhandene Prozesstitel und erzeugt
+  jeden Archiveintrag über die produktiven Pfade (`finalizeChatCapture`,
+  `correctUnderstanding`/`confirm`, `syncProcess`, `revert`); in `workspace/docs` wird
+  nichts von Hand geschrieben. Format und erzählte Geschichte stehen in
+  `demo-data/dokumentation/README.md`, geprüft von `tests/documentation-seed.test.ts`.
 
 ## UX rules
 

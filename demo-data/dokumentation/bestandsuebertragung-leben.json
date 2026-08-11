@@ -1,0 +1,237 @@
+{
+  "slug": "bestandsuebertragung-leben",
+  "titel": "Bestandsübertragung Leben von LEBUS nach VERA",
+  "fachbereich": "Vertrag",
+  "gespraechspartner": {
+    "name": "Edda Brandt",
+    "email": "edda.brandt@lifecorp.example"
+  },
+  "erstelltAm": "2026-03-02T07:50:00.000Z",
+  "bestaetigtAm": "2026-03-10T16:00:00.000Z",
+  "belege": [
+    {
+      "id": "b1",
+      "text": "Wir holen die alten Lebenverträge stückweise vom Host rüber. Immer ein Paket im Monat, so zweitausend Verträge, sortiert nach Tarifgeneration."
+    },
+    {
+      "id": "b2",
+      "text": "Die IT zieht den Extrakt aus LEBUS und spielt ihn in VERA ein. Was nicht sauber durchgeht, landet in einer Klärliste, und die kriegen wir."
+    },
+    {
+      "id": "b3",
+      "text": "Bei den Altverträgen fehlen oft die Bezugsrechte oder sie stehen nur als Freitext drin. Dann muss ich in die Papierakte, und wenn die auch nichts hergibt, schreiben wir den Kunden an."
+    },
+    {
+      "id": "b4",
+      "text": "Vor der Freigabe rechnen wir die Deckungsrückstellung nach. Die muss auf den Cent stimmen, sonst geht das Paket nicht durch."
+    },
+    {
+      "id": "b5",
+      "text": "Der Kollege aus der Mathematik sagt, die Nachrechnung läuft automatisch. Bei mir läuft die nach wie vor über eine Excel-Tabelle, die ich selber pflege."
+    },
+    {
+      "id": "b6",
+      "text": "Ein Paket dauert vier bis sechs Wochen. Zwischen fünf und acht Prozent landen in der Klärliste, das ist über die Pakete ziemlich stabil."
+    }
+  ],
+  "zweck": {
+    "wert": "Paketweise Übernahme von Lebensversicherungsverträgen aus dem Altsystem LEBUS in die Bestandsführung VERA, einschließlich Klärung der Datenfehler und Freigabe des übertragenen Pakets.",
+    "belege": ["b1", "b2"]
+  },
+  "ausloeser": {
+    "wert": "Die Freigabe des nächsten Migrationspakets durch die Programmleitung, üblicherweise monatlich und nach Tarifgeneration geschnitten.",
+    "belege": ["b1"]
+  },
+  "ergebnis": {
+    "wert": "Ein in VERA geführtes, fachlich freigegebenes Vertragspaket mit nachgerechneter Deckungsrückstellung; die Verträge sind in LEBUS stillgelegt.",
+    "belege": ["b4"]
+  },
+  "abgrenzung": {
+    "wert": "Der Prozess umfasst die Übertragung des Bestands. Die technische Migration der Schnittstellen, die Anpassung der Tarifwerke und die Kundenkommunikation zum Systemwechsel gehören nicht dazu.",
+    "belege": ["b2"]
+  },
+  "beteiligte": {
+    "wert": [
+      "Vertragsverwaltung Leben — klärt Datenfehler und gibt das Paket frei",
+      "IT-Betrieb — erstellt den Extrakt aus LEBUS und spielt ihn in VERA ein",
+      "Versicherungsmathematik — verantwortet die Nachrechnung der Deckungsrückstellung",
+      "Programmleitung Bestandsmigration — schneidet und terminiert die Pakete",
+      "Versicherungsnehmer — bestätigt fehlende Bezugsrechte auf Anfrage"
+    ],
+    "belege": ["b1", "b2", "b3", "b4"]
+  },
+  "informationsquellen": {
+    "wert": [
+      "Vertragsextrakt aus LEBUS",
+      "Klärliste des Einspielvorgangs",
+      "Papierakten der Altverträge",
+      "Antwortschreiben der Versicherungsnehmer zu Bezugsrechten",
+      "Nachrechnung der Deckungsrückstellung"
+    ],
+    "belege": ["b2", "b3", "b4"]
+  },
+  "systeme": {
+    "wert": ["LEBUS", "VERA", "AKTE", "PARTO", "Outlook"],
+    "belege": ["b2", "b3"]
+  },
+  "kontrollen": {
+    "wert": [
+      "Abgleich der Vertragsanzahl zwischen Extrakt und eingespieltem Paket",
+      "Nachrechnung der Deckungsrückstellung auf den Cent vor der Freigabe",
+      "Vier-Augen-Freigabe des Pakets durch Vertragsverwaltung und Versicherungsmathematik",
+      "Stilllegung in LEBUS erst nach erteilter Freigabe"
+    ],
+    "belege": ["b4"]
+  },
+  "uebergaben": {
+    "wert": [
+      "Programmleitung an IT-Betrieb mit dem Paketschnitt",
+      "IT-Betrieb an Vertragsverwaltung mit der Klärliste",
+      "Vertragsverwaltung an Versicherungsmathematik zur Nachrechnung",
+      "Vertragsverwaltung an IT-Betrieb zur Stilllegung in LEBUS"
+    ],
+    "belege": ["b1", "b2", "b4"]
+  },
+  "mengenUndZeiten": {
+    "wert": [
+      "Etwa 2.000 Verträge je Paket, ein Paket im Monat",
+      "Durchlaufzeit je Paket vier bis sechs Wochen",
+      "5 bis 8 Prozent der Verträge landen auf der Klärliste"
+    ],
+    "belege": ["b1", "b6"]
+  },
+  "schwachstellen": {
+    "wert": [
+      "Bezugsrechte liegen in Altverträgen häufig nur als Freitext oder gar nicht strukturiert vor",
+      "Die Klärung erfordert den Griff zur Papierakte und im Zweifel eine Kundenanfrage",
+      "Die Nachrechnung der Deckungsrückstellung läuft im Fachbereich über eine selbstgepflegte Tabelle"
+    ],
+    "belege": ["b3", "b5"]
+  },
+  "verbesserungsziele": {
+    "wert": [
+      "Strukturierte Erfassung der Bezugsrechte bereits beim Extrakt",
+      "Digitalisierte Altakten statt Papierrecherche",
+      "Nachrechnung der Deckungsrückstellung in einem geprüften Werkzeug statt in einer Tabelle"
+    ],
+    "belege": ["b3", "b5"]
+  },
+  "wissensluecken": [
+    "Nach welchen Kriterien die Programmleitung die Pakete nach Tarifgeneration schneidet, wurde im Gespräch nicht klar.",
+    "Wie lange die Papierakten nach der Übertragung aufbewahrt werden müssen, konnte nicht beantwortet werden."
+  ],
+  "widersprueche": [
+    "Zur Nachrechnung der Deckungsrückstellung liegen zwei Darstellungen vor: die Versicherungsmathematik beschreibt sie als automatisierten Lauf, die Vertragsverwaltung führt sie über eine selbstgepflegte Tabelle durch."
+  ],
+  "schritte": [
+    {
+      "name": "Paket übernehmen",
+      "taetigkeit": "Den freigegebenen Paketschnitt der Programmleitung entgegennehmen, Umfang und Tarifgeneration prüfen und den Extrakt beim IT-Betrieb beauftragen.",
+      "eingaben": ["Paketfreigabe der Programmleitung"],
+      "ausgaben": ["Beauftragter Extrakt aus LEBUS"],
+      "hinweis": null,
+      "informationen": [
+        {
+          "name": "Tarifgeneration und Vertragsanzahl",
+          "quelle": "Programmleitung",
+          "typ": "spreadsheet"
+        }
+      ],
+      "belege": ["b1"]
+    },
+    {
+      "name": "Extrakt einspielen",
+      "taetigkeit": "Den Extrakt in VERA einspielen lassen, die Vertragsanzahl gegen den Extrakt abgleichen und die Klärliste entgegennehmen.",
+      "eingaben": ["Vertragsextrakt aus LEBUS"],
+      "ausgaben": [
+        "Eingespieltes Vertragspaket in VERA",
+        "Klärliste des Einspielvorgangs"
+      ],
+      "hinweis": null,
+      "informationen": [
+        {
+          "name": "Abweichung zwischen Extrakt und Einspielung",
+          "quelle": "VERA",
+          "typ": "database_or_report"
+        }
+      ],
+      "belege": ["b2"]
+    },
+    {
+      "name": "Klärfälle bearbeiten",
+      "taetigkeit": "Die Einträge der Klärliste einzeln bearbeiten, fehlende Angaben aus der Papierakte ergänzen und bei ungeklärten Bezugsrechten den Versicherungsnehmer anschreiben.",
+      "eingaben": [
+        "Klärliste des Einspielvorgangs",
+        "Papierakten der Altverträge"
+      ],
+      "ausgaben": [
+        "Vervollständigte Verträge in VERA",
+        "Offene Kundenanfragen zu Bezugsrechten"
+      ],
+      "hinweis": "Bezugsrechte stehen in Altverträgen häufig nur als Freitext oder fehlen ganz.",
+      "informationen": [
+        {
+          "name": "Bezugsrechtsangaben",
+          "quelle": "Papierakte",
+          "typ": "image_or_scan"
+        },
+        {
+          "name": "Fehlerschlüssel der Klärliste",
+          "quelle": "VERA",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b3"]
+    },
+    {
+      "name": "Deckungsrückstellung nachrechnen",
+      "taetigkeit": "Die Deckungsrückstellung des Pakets nachrechnen und das Ergebnis gegen die Werte aus LEBUS stellen; Abweichungen werden vor der Freigabe geklärt.",
+      "eingaben": ["Eingespieltes Vertragspaket in VERA", "Werte aus LEBUS"],
+      "ausgaben": ["Nachrechnungsergebnis mit Abweichungsnachweis"],
+      "hinweis": "Zur Durchführung liegen zwei unterschiedliche Darstellungen vor; siehe die vermerkten Widersprüche.",
+      "informationen": [
+        {
+          "name": "Deckungsrückstellung je Vertrag",
+          "quelle": "LEBUS",
+          "typ": "database_or_report"
+        }
+      ],
+      "belege": ["b4", "b5"]
+    },
+    {
+      "name": "Paket freigeben und stilllegen",
+      "taetigkeit": "Das Paket gemeinsam mit der Versicherungsmathematik freigeben und anschließend die Stilllegung der übertragenen Verträge in LEBUS beauftragen.",
+      "eingaben": [
+        "Nachrechnungsergebnis",
+        "Vervollständigte Verträge in VERA"
+      ],
+      "ausgaben": [
+        "Freigegebenes Vertragspaket in VERA",
+        "Stillgelegte Verträge in LEBUS"
+      ],
+      "hinweis": "Die Stilllegung erfolgt erst nach erteilter Freigabe.",
+      "informationen": [],
+      "belege": ["b4"]
+    }
+  ],
+  "verzweigung": {
+    "nachSchritt": 3,
+    "frage": "Sind alle Klärfälle des Pakets abschließend geklärt?",
+    "modus": "mixed",
+    "zweige": [
+      {
+        "label": "Ja, alle Klärfälle sind erledigt",
+        "ziel": 4,
+        "ermittlung": "Leere Klärliste nach Bearbeitung.",
+        "folge": "Die Deckungsrückstellung wird nachgerechnet."
+      },
+      {
+        "label": "Nein, Kundenantworten stehen aus",
+        "ziel": "ende",
+        "ermittlung": "Offene Anfragen zu Bezugsrechten ohne Rückmeldung.",
+        "folge": "Die betroffenen Verträge werden aus dem Paket herausgenommen und dem nächsten Paket zugeordnet."
+      }
+    ]
+  },
+  "revisionen": []
+}
