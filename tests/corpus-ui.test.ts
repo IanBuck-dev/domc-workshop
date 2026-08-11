@@ -7,10 +7,23 @@ import { CorpusDocument } from "../apps/web/src/components/corpus-document.tsx";
 import { CorpusHistory } from "../apps/web/src/components/corpus-history.tsx";
 import { CorpusDiff } from "../apps/web/src/components/corpus-diff.tsx";
 import {
+  ancestorPaths,
   buildCorpusTree,
   directoryPaths,
   firstDocument,
 } from "../apps/web/src/lib/corpus-tree.ts";
+import {
+  filterCorpusTree,
+  documentPaths,
+  splitOnMatches,
+} from "../apps/web/src/lib/corpus-search.ts";
+import { copyPayload } from "../apps/web/src/lib/corpus-export.ts";
+import {
+  corpusTreeCollapsedStorageKey,
+  loadCollapsedFolders,
+  saveCollapsedFolders,
+  type CorpusTreeStorage,
+} from "../apps/web/src/lib/corpus-tree-preference.ts";
 import {
   anlassLabel,
   documentTitle,
@@ -85,12 +98,152 @@ describe("Korpus-Baum", () => {
         nodes: buildCorpusTree(entries),
         selectedPath: "prozesse/betrieb/beitragsinkasso.md",
         onSelect: () => {},
+        collapsed: new Set<string>(),
+        onToggleFolder: () => {},
       }),
     );
 
     expect(markup).toContain("Beitragsinkasso");
     expect(markup).not.toContain(".md");
     expect(markup).toContain('aria-current="true"');
+  });
+
+  test("verbirgt die Kinder eines zugeklappten Ordners", () => {
+    const nodes = buildCorpusTree(entries);
+    const render = (collapsed: Set<string>) =>
+      renderToStaticMarkup(
+        createElement(CorpusTree, {
+          nodes,
+          selectedPath: "",
+          onSelect: () => {},
+          collapsed,
+          onToggleFolder: () => {},
+        }),
+      );
+
+    const offen = render(new Set());
+    expect(offen).toContain("Beitragsinkasso");
+    expect(offen).toContain('aria-expanded="true"');
+
+    const zu = render(new Set(["prozesse"]));
+    expect(zu).not.toContain("Beitragsinkasso");
+    expect(zu).not.toContain("Betrieb");
+    expect(zu).toContain("Prozesse");
+    expect(zu).toContain('aria-expanded="false"');
+  });
+
+  test("nennt die Elternordner eines Dokuments", () => {
+    expect(ancestorPaths("prozesse/betrieb/beitragsinkasso.md")).toEqual([
+      "prozesse",
+      "prozesse/betrieb",
+    ]);
+    expect(ancestorPaths("index.md")).toEqual([]);
+  });
+});
+
+describe("Klappzustand im Browserspeicher", () => {
+  function createStorage(
+    values: Record<string, string> = {},
+  ): CorpusTreeStorage {
+    const data = new Map(Object.entries(values));
+    return {
+      getItem: (key) => data.get(key) ?? null,
+      setItem: (key, value) => data.set(key, value),
+    };
+  }
+
+  test("behält die eingeklappten Ordner über einen Neuaufbau", () => {
+    const storage = createStorage();
+    saveCollapsedFolders(["prozesse/betrieb", "prozesse"], storage);
+    expect(loadCollapsedFolders(storage)).toEqual([
+      "prozesse",
+      "prozesse/betrieb",
+    ]);
+  });
+
+  test("startet aufgeklappt, wenn nichts oder Unlesbares gespeichert ist", () => {
+    expect(loadCollapsedFolders(createStorage())).toEqual([]);
+    expect(
+      loadCollapsedFolders(
+        createStorage({ [corpusTreeCollapsedStorageKey]: "{kaputt" }),
+      ),
+    ).toEqual([]);
+    expect(
+      loadCollapsedFolders(
+        createStorage({ [corpusTreeCollapsedStorageKey]: '{"a":1}' }),
+      ),
+    ).toEqual([]);
+  });
+});
+
+describe("Suche in der Dokumentation", () => {
+  const nodes = buildCorpusTree(entries);
+  const contents = new Map([
+    [
+      "prozesse/betrieb/beitragsinkasso.md",
+      "---\nid: PROC-0002\nquell_revision: 4f2b91c\n---\n\n# Beitragsinkasso\n\nEine Rücklastschrift wird geprüft. Die Rücklastschrift geht an den Vertrieb.\n",
+    ],
+    ["prozesse/schaden-leistung/schaden-erstaufnahme.md", document],
+  ]);
+
+  test("findet ein Dokument über seinen Titel, auch ohne geladenen Inhalt", () => {
+    const result = filterCorpusTree(nodes, "erstaufnahme", new Map());
+
+    expect(result.gefunden).toBe(1);
+    expect(result.gesamt).toBe(3);
+    expect(result.nodes.map((node) => node.name)).toEqual(["prozesse"]);
+    expect(result.nodes[0]!.children.map((node) => node.name)).toEqual([
+      "schaden-leistung",
+    ]);
+  });
+
+  test("findet einen Begriff, der nur im Fließtext steht, und zählt die Stellen", () => {
+    const result = filterCorpusTree(nodes, "Rücklastschrift", contents);
+
+    expect(result.gefunden).toBe(1);
+    expect(result.treffer.get("prozesse/betrieb/beitragsinkasso.md")).toBe(2);
+  });
+
+  test("sucht nie im Frontmatter", () => {
+    expect(filterCorpusTree(nodes, "quell_revision", contents).gefunden).toBe(
+      0,
+    );
+    expect(filterCorpusTree(nodes, "4f2b91c", contents).gefunden).toBe(0);
+  });
+
+  test("achtet nicht auf Groß- und Kleinschreibung", () => {
+    expect(filterCorpusTree(nodes, "SCHÄDEN", contents).gefunden).toBe(1);
+    expect(filterCorpusTree(nodes, "  ", contents).gefunden).toBe(3);
+  });
+
+  test("liefert alle Dateipfade für den Volltextindex", () => {
+    expect(documentPaths(nodes)).toEqual([
+      "prozesse/betrieb/beitragsinkasso.md",
+      "prozesse/schaden-leistung/schaden-erstaufnahme.md",
+      "index.md",
+    ]);
+  });
+
+  test("zerlegt einen Text an den Fundstellen", () => {
+    expect(splitOnMatches("Die Rücklastschrift", "rück")).toEqual([
+      "Die ",
+      "Rück",
+      "lastschrift",
+    ]);
+    expect(splitOnMatches("Ohne Treffer", "")).toEqual(["Ohne Treffer"]);
+  });
+});
+
+describe("Herausnehmen eines Dokuments", () => {
+  test("entfernt die Suchmarkierungen aus der Zwischenablage", () => {
+    const { html, text } = copyPayload(
+      '<p>Die <mark class="rounded">Rücklastschrift</mark> wird geprüft.</p>',
+      "  Die Rücklastschrift wird geprüft.  ",
+    );
+
+    expect(html).toBe("<p>Die Rücklastschrift wird geprüft.</p>");
+    expect(html).not.toContain("mark");
+    expect(text).toBe("Die Rücklastschrift wird geprüft.");
   });
 });
 
@@ -112,6 +265,23 @@ describe("Korpus-Dokument", () => {
     // Quellrevision und Rendererversion sind Maschinenmetadaten.
     expect(markup).not.toContain("4f2b91c");
     expect(markup).not.toContain("quell_revision");
+  });
+
+  test("hebt die Fundstellen der Suche hervor, ohne Metadaten zu zeigen", () => {
+    const markup = renderToStaticMarkup(
+      createElement(
+        MemoryRouter,
+        null,
+        createElement(CorpusDocument, { source: document, query: "schäden" }),
+      ),
+    );
+
+    expect(markup).toContain("<mark>Schäden</mark>");
+    expect(markup).toContain("Der Prozess nimmt gemeldete");
+    expect(markup).not.toContain("quell_revision");
+    // Der Baumknoten von react-markdown darf nicht als Attribut im Markup
+    // landen; sonst steht er auch im kopierten HTML.
+    expect(markup).not.toContain("node=");
   });
 
   test("trennt Frontmatter und Fließtext", () => {

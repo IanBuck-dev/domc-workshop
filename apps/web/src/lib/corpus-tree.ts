@@ -65,3 +65,14 @@ export function directoryPaths(nodes: CorpusNode[]): string[] {
     node.type === "tree" ? [node.path, ...directoryPaths(node.children)] : [],
   );
 }
+
+/**
+ * Alle Elternordner eines Pfades, von außen nach innen. Wird gebraucht, damit
+ * das ausgewählte Dokument nie hinter einem zugeklappten Ordner verschwindet.
+ */
+export function ancestorPaths(path: string): string[] {
+  const segments = path.split("/").filter(Boolean);
+  return segments
+    .slice(0, -1)
+    .map((_, index) => segments.slice(0, index + 1).join("/"));
+}

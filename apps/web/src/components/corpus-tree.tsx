@@ -1,4 +1,4 @@
-import { FileText, Folder } from "lucide-react";
+import { ChevronDown, FileText, Folder } from "lucide-react";
 import type { CorpusNode } from "../lib/corpus-tree";
 import { entryLabel } from "../lib/corpus-types";
 import { cn } from "../lib/utils";
@@ -6,15 +6,26 @@ import { cn } from "../lib/utils";
 /**
  * Ordnerbaum des Dokumentationskorpus. Reine Navigation — die Dokumente sind
  * ausschließlich lesbar, es gibt keine Anlege-, Umbenenn- oder Löschaktion.
+ *
+ * Der Klappzustand liegt außerhalb: die Seite hält ihn, weil er im
+ * Browserspeicher überdauert und die Schaltflächen „Alle aufklappen" und
+ * „Alle zuklappen" ihn gemeinsam mit dem Baum verändern.
  */
 export function CorpusTree({
   nodes,
   selectedPath,
   onSelect,
+  collapsed,
+  onToggleFolder,
+  treffer,
 }: {
   nodes: CorpusNode[];
   selectedPath: string;
   onSelect: (path: string) => void;
+  collapsed: ReadonlySet<string>;
+  onToggleFolder: (path: string) => void;
+  /** Fundstellen je Dokument, wenn eine Suche aktiv ist. */
+  treffer?: ReadonlyMap<string, number>;
 }) {
   return (
     <nav aria-label="Dokumentenübersicht">
@@ -26,6 +37,9 @@ export function CorpusTree({
             depth={0}
             selectedPath={selectedPath}
             onSelect={onSelect}
+            collapsed={collapsed}
+            onToggleFolder={onToggleFolder}
+            treffer={treffer}
           />
         ))}
       </ul>
@@ -38,37 +52,63 @@ function CorpusTreeNode({
   depth,
   selectedPath,
   onSelect,
+  collapsed,
+  onToggleFolder,
+  treffer,
 }: {
   node: CorpusNode;
   depth: number;
   selectedPath: string;
   onSelect: (path: string) => void;
+  collapsed: ReadonlySet<string>;
+  onToggleFolder: (path: string) => void;
+  treffer?: ReadonlyMap<string, number>;
 }) {
-  if (node.type === "tree")
+  const indent = { paddingLeft: `${depth * 0.75 + 0.5}rem` };
+
+  if (node.type === "tree") {
+    const open = !collapsed.has(node.path);
     return (
       <li>
-        <p
-          className="flex items-center gap-2 px-2 py-1.5 text-label text-muted-foreground"
-          style={{ paddingLeft: `${depth * 0.75 + 0.5}rem` }}
+        <button
+          type="button"
+          onClick={() => onToggleFolder(node.path)}
+          aria-expanded={open}
+          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-label text-muted-foreground transition-colors hover:bg-muted"
+          style={indent}
         >
+          <ChevronDown
+            className={cn(
+              "size-4 shrink-0 transition-transform",
+              open ? undefined : "-rotate-90",
+            )}
+            aria-hidden="true"
+          />
           <Folder className="size-4 shrink-0" aria-hidden="true" />
-          {entryLabel(node.name)}
-        </p>
-        <ul className="space-y-1">
-          {node.children.map((child) => (
-            <CorpusTreeNode
-              key={child.path}
-              node={child}
-              depth={depth + 1}
-              selectedPath={selectedPath}
-              onSelect={onSelect}
-            />
-          ))}
-        </ul>
+          <span className="truncate">{entryLabel(node.name)}</span>
+        </button>
+        {open && (
+          <ul className="space-y-1">
+            {node.children.map((child) => (
+              <CorpusTreeNode
+                key={child.path}
+                node={child}
+                depth={depth + 1}
+                selectedPath={selectedPath}
+                onSelect={onSelect}
+                collapsed={collapsed}
+                onToggleFolder={onToggleFolder}
+                treffer={treffer}
+              />
+            ))}
+          </ul>
+        )}
       </li>
     );
+  }
 
   const selected = node.path === selectedPath;
+  const fundstellen = treffer?.get(node.path) ?? 0;
   return (
     <li>
       <button
@@ -81,13 +121,18 @@ function CorpusTreeNode({
             ? "bg-secondary text-secondary-foreground"
             : "text-foreground",
         )}
-        style={{ paddingLeft: `${depth * 0.75 + 0.5}rem` }}
+        style={indent}
       >
         <FileText
           className="size-4 shrink-0 text-muted-foreground"
           aria-hidden="true"
         />
         <span className="truncate">{entryLabel(node.name)}</span>
+        {fundstellen > 0 && (
+          <span className="ml-auto shrink-0 text-caption text-muted-foreground">
+            {fundstellen === 1 ? "1 Stelle" : `${fundstellen} Stellen`}
+          </span>
+        )}
       </button>
     </li>
   );
