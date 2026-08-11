@@ -11,6 +11,9 @@ import { ChatTurnRunner } from "../chat-turn-runner.ts";
 import type { OpportunityDiscoveryService } from "../opportunity-discovery-service.ts";
 import type { MemoryDistillationService } from "../memory-distillation-service.ts";
 import { publishProcessChanged } from "../process-events.ts";
+import type { ProcessHistoryEventName } from "../../../../packages/domain/src/process-events.ts";
+import { enqueueProcessOperation } from "../process-operation-manager.ts";
+import type { CorpusService } from "../corpus-service.ts";
 
 const confirmSchema = z.object({ override: z.boolean() }).strict();
 const skipSchema = z.object({ id: z.string().uuid() }).strict();
@@ -18,7 +21,7 @@ const skipSchema = z.object({ id: z.string().uuid() }).strict();
 async function appendBackgroundFailure(
   processes: ProcessCaptureRepository,
   processId: string,
-  event: string,
+  event: ProcessHistoryEventName,
   error: unknown,
 ) {
   try {
@@ -36,6 +39,7 @@ export function chatCaptureRoutes(
   opportunities: OpportunityDiscoveryService,
   runner: ChatTurnRunner = new ChatTurnRunner(service, processes),
   memory?: MemoryDistillationService,
+  corpus?: CorpusService,
 ) {
   const app = new Hono();
   app.get("/:id/chat", async (c) => {
@@ -246,6 +250,31 @@ export function chatCaptureRoutes(
             "memory-distillation-failed",
             error,
           );
+        }
+      // Schlägt die Einreihung fehl, bleibt die Bestätigung trotzdem gültig —
+      // der Abgleich in den Einstellungen holt das Dokument später nach.
+      if (corpus)
+        try {
+          enqueueProcessOperation(record.id, "documentation-sync", async () => {
+            const outcome = await corpus.syncProcess(record.id);
+            if (outcome.result === "error") throw new Error(outcome.error);
+          });
+        } catch (error) {
+          try {
+            await processes.appendHistory(record.id, "documentation-synced", {
+              result: "error",
+              commit: null,
+              error:
+                error instanceof Error
+                  ? error.message
+                  : "Einreihung fehlgeschlagen",
+            });
+          } catch (auditError) {
+            console.error(
+              `[documentation-synced] Audit failed for ${record.id}:`,
+              auditError,
+            );
+          }
         }
       publishProcessChanged(record.id);
       return c.json({ record: next, opportunityStart, memoryStart });

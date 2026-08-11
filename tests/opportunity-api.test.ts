@@ -177,7 +177,10 @@ describe("opportunity discovery API", () => {
 
   test("rejects an unconfirmed process without creating opportunity files", async () => {
     const { app, processes, opportunities } = await fixture();
-    const draft = await processes.create(cover, await processConfig());
+    const draft = await processes.create(
+      { ...cover, processName: "Unbestätigter Entwurfsprozess" },
+      await processConfig(),
+    );
     expect(
       (await app.request(`/api/opportunities/${draft.id}`, { method: "POST" }))
         .status,

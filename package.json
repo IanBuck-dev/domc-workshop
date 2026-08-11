@@ -18,6 +18,7 @@
     "test": "bun test",
     "icons": "bun run scripts/generate-icons.ts",
     "seed": "bun run scripts/seed-demo-process.ts",
+    "seed:docs": "bun run scripts/seed-documentation.ts",
     "migrate:process-flow": "bun run scripts/migrate-process-flow-storage.ts"
   },
   "dependencies": {
@@ -42,6 +43,7 @@
     "lucide-react": "^0.545.0",
     "radix-ui": "^1.6.7",
     "react": "^19.1.1",
+    "react-diff-view": "^3.3.3",
     "react-dom": "^19.1.1",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.9.3",

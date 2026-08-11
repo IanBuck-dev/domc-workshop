@@ -346,6 +346,44 @@ describe("process capture repository", () => {
     expect(await stat(repo.dir(record.id)).catch(() => null)).toBeNull();
   });
 
+  test("liest eine vor der Bestätigungsqualität bestätigte Aufnahme weiter", async () => {
+    const { repo, config } = await fixture();
+    let record = await repo.create(cover, config);
+    record = await repo.saveMainAnswers(
+      record.id,
+      answers(),
+      workCharacteristicAnswers(),
+      [],
+    );
+    record = await repo.saveValidationRun(
+      record.id,
+      validationInputSnapshot(
+        record.mainAnswers,
+        record.workCharacteristicAnswers,
+      ),
+      [],
+      [],
+      trace(),
+    );
+    record = await repo.saveUnderstanding(record.id, understanding(), trace());
+    record = await repo.confirm(record.id);
+    expect(record.confirmationQuality).toBe("with_gaps");
+
+    // Stand vor der Einführung des Feldes: bestätigt, aber ohne Qualität.
+    const metadataPath = join(repo.dir(record.id), "metadata.yaml");
+    await writeFile(
+      metadataPath,
+      (await readFile(metadataPath, "utf8"))
+        .split("\n")
+        .filter((line) => !line.startsWith("confirmationQuality:"))
+        .join("\n"),
+    );
+
+    const legacy = await repo.required(record.id);
+    expect(legacy.state).toBe("confirmed");
+    expect(legacy.confirmationQuality).toBe("with_gaps");
+  });
+
   test("reads uploads byte-identically and rejects tampered files", async () => {
     const { repo, config } = await fixture();
     const record = await repo.create(cover, config);

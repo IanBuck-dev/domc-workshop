@@ -33,7 +33,12 @@ import {
   type UploadRecord,
   type ValidationInputSnapshot,
   type WorkCharacteristicAnswer,
+  normalizedProcessName,
 } from "../../domain/src/process-understanding.ts";
+import {
+  processHistoryEventNameSchema,
+  type ProcessHistoryEventName,
+} from "../../domain/src/process-events.ts";
 import { ChatCaptureRepository } from "./chat-capture-repository.ts";
 import { atomicWrite } from "./atomic-write.ts";
 import { audit } from "./audit-log.ts";
@@ -56,6 +61,26 @@ const metadataSchema = z.object({
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
+/**
+ * Dieselbe Regel wie bei `confirm()`: Wissenslücken oder Widersprüche machen eine
+ * Bestätigung `with_gaps`, sonst ist sie `complete`. Ohne abgeleitetes
+ * Verständnis bleibt nur `with_gaps` als ehrliche Aussage.
+ */
+function confirmationQualityOf(
+  metadata: {
+    state: string;
+    confirmationQuality: "complete" | "with_gaps" | null;
+  },
+  understanding: { knowledgeGaps: unknown[]; conflicts: unknown[] } | null,
+) {
+  if (metadata.state !== "confirmed") return metadata.confirmationQuality;
+  if (metadata.confirmationQuality) return metadata.confirmationQuality;
+  if (!understanding) return "with_gaps";
+  return understanding.knowledgeGaps.length || understanding.conflicts.length
+    ? "with_gaps"
+    : "complete";
+}
+
 const answersFileSchema = z.object({
   mainAnswers: z.array(topicAnswerSchema).max(5),
   workCharacteristicAnswers: z
@@ -71,7 +96,7 @@ const followUpsFileSchema = z.object({
 });
 const auditEntrySchema = z.object({
   at: z.string().datetime(),
-  event: z.string().min(1),
+  event: processHistoryEventNameSchema,
   detail: z.unknown(),
 });
 const operationEntrySchema = z.object({
@@ -249,9 +274,31 @@ export class ProcessUploadIntegrityError extends Error {
     this.name = "ProcessUploadIntegrityError";
   }
 }
+export class DuplicateProcessNameError extends Error {
+  constructor() {
+    super("Ein aktiver Prozess mit diesem Namen existiert bereits.");
+    this.name = "DuplicateProcessNameError";
+  }
+}
 
 export class ProcessCaptureRepository {
+  private createTail: Promise<void> = Promise.resolve();
+
   constructor(public root: string) {}
+
+  private async withCreateMutex<T>(action: () => Promise<T>) {
+    const previous = this.createTail;
+    let release!: () => void;
+    this.createTail = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await previous.catch(() => undefined);
+    try {
+      return await action();
+    } finally {
+      release();
+    }
+  }
 
   private processRoot() {
     return join(this.root, "process-captures");
@@ -283,6 +330,48 @@ export class ProcessCaptureRepository {
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   }
 
+  /** Für bounded Batch-Jobs darf eine beschädigte Aufnahme die übrigen nicht sperren. */
+  async listSettled() {
+    let names: string[];
+    try {
+      names = await readdir(this.processRoot());
+    } catch {
+      return { records: [] as ProcessCaptureRecord[], errors: [] as Error[] };
+    }
+    const values = await Promise.all(
+      names
+        .filter((name) => /^PROC-\d{4}$/.test(name))
+        .map(async (id) => {
+          try {
+            return { record: await this.get(id), error: null };
+          } catch (value) {
+            return {
+              record: null,
+              error:
+                value instanceof Error
+                  ? value
+                  : new Error("Die Prozessquelle konnte nicht gelesen werden."),
+            };
+          }
+        }),
+    );
+    return {
+      records: values
+        .map((value) => value.record)
+        .filter((record): record is ProcessCaptureRecord => record !== null)
+        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
+      errors: values
+        .map((value) => value.error)
+        .filter((error): error is Error => error !== null),
+    };
+  }
+
+  /**
+   * Prozesse, die vor der Einführung der Bestätigungsqualität bestätigt wurden,
+   * haben das Feld nicht in ihrer `metadata.yaml`. Statt sie beim Lesen als
+   * ungültig abzuweisen, wird die Qualität nach derselben Regel wie bei einer
+   * frischen Bestätigung aus dem Prozessverständnis abgeleitet.
+   */
   async get(id: string): Promise<ProcessCaptureRecord | null> {
     if (!/^PROC-\d{4}$/.test(id)) return null;
     try {
@@ -341,6 +430,7 @@ export class ProcessCaptureRepository {
             .parse(JSON.parse(rawUnderstandingText));
       const record = processCaptureRecordSchema.parse({
         ...metadata,
+        confirmationQuality: confirmationQualityOf(metadata, understanding),
         cover,
         configSnapshot,
         ...answers,
@@ -382,6 +472,16 @@ export class ProcessCaptureRepository {
     configInput: unknown,
     interactionModeInput: unknown = "form",
   ) {
+    return this.withCreateMutex(() =>
+      this.createUnlocked(coverInput, configInput, interactionModeInput),
+    );
+  }
+
+  private async createUnlocked(
+    coverInput: unknown,
+    configInput: unknown,
+    interactionModeInput: unknown,
+  ) {
     const cover = coverSchema.parse(coverInput);
     const config = processCaptureConfigSchema.parse(configInput);
     const interactionMode = interactionModeSchema.parse(interactionModeInput);
@@ -389,6 +489,14 @@ export class ProcessCaptureRepository {
       throw new Error(
         "Neue Prozessaufnahmen benötigen die aktuelle Profilversion.",
       );
+    if (
+      (await this.list()).some(
+        (record) =>
+          normalizedProcessName(record.cover.processName) ===
+          normalizedProcessName(cover.processName),
+      )
+    )
+      throw new DuplicateProcessNameError();
     const [activeNames, historicalNames] = await Promise.all([
       readdir(this.processRoot()).catch(() => []),
       readdir(join(this.root, "trash", "process-captures")).catch(() => []),
@@ -644,6 +752,21 @@ export class ProcessCaptureRepository {
     return this.required(id);
   }
 
+  /**
+   * Bei Chat-Aufnahmen stützt sich Evidenz auf Nachrichten des Anwenders. Ohne
+   * deren Kennungen verwirft `assertUnderstandingReferences` jede Chat-Evidenz,
+   * eine Korrektur an einem im Chat aufgenommenen Prozess wäre also unmöglich.
+   */
+  private async userChatMessageIds(record: ProcessCaptureRecord) {
+    if (record.interactionMode !== "chat") return undefined;
+    const transcript = await new ChatCaptureRepository(this.root).transcript(
+      record.id,
+    );
+    return new Set(
+      transcript.filter((item) => item.role === "user").map((item) => item.id),
+    );
+  }
+
   async correctUnderstanding(id: string, input: unknown, note: string) {
     const record = await this.required(id);
     if (
@@ -667,8 +790,10 @@ export class ProcessCaptureRepository {
       throw new Error(
         "Korrektur-Evidenz wird ausschließlich vom System aufgezeichnet.",
       );
+    const chatMessageIds = await this.userChatMessageIds(record);
     assertUnderstandingReferences(record, next, {
       allowHumanCorrections: true,
+      chatMessageIds,
     });
     const correctionId = crypto.randomUUID();
     globalFactNames.forEach((name) =>
@@ -693,8 +818,11 @@ export class ProcessCaptureRepository {
     const value = processUnderstandingSchema.parse(next);
     assertUnderstandingReferences(record, value, {
       allowHumanCorrections: true,
+      chatMessageIds,
     });
     await this.writeJson(id, "process-understanding.json", value);
+    if (record.interactionMode === "chat")
+      await new ChatCaptureRepository(this.root).publishCorrection(id, value);
     await this.touch(record, "review_required", null);
     await audit(
       join(this.dir(id), "history.jsonl"),
@@ -743,16 +871,22 @@ export class ProcessCaptureRepository {
     if (record.state !== "review_required" || !record.understanding)
       throw new Error("Bitte prüfen Sie zuerst das Prozessbild.");
     const now = new Date().toISOString();
+    const confirmationQuality =
+      record.understanding.knowledgeGaps.length ||
+      record.understanding.conflicts.length
+        ? "with_gaps"
+        : "complete";
     await this.writeMetadata({
       ...record,
       state: "confirmed",
       confirmedAt: now,
+      confirmationQuality,
       updatedAt: now,
     });
     await audit(
       join(this.dir(id), "history.jsonl"),
       "understanding-confirmed",
-      { confirmedAt: now },
+      { confirmedAt: now, quality: confirmationQuality },
     );
     return this.required(id);
   }
@@ -925,7 +1059,11 @@ export class ProcessCaptureRepository {
       .reverse();
   }
 
-  async appendHistory(id: string, event: string, detail: unknown) {
+  async appendHistory(
+    id: string,
+    event: ProcessHistoryEventName,
+    detail: unknown,
+  ) {
     await this.required(id);
     await audit(join(this.dir(id), "history.jsonl"), event, detail);
   }
@@ -957,6 +1095,8 @@ export class ProcessCaptureRepository {
       ...record,
       state,
       confirmedAt,
+      confirmationQuality:
+        state === "confirmed" ? record.confirmationQuality : null,
       updatedAt: new Date().toISOString(),
     });
   }

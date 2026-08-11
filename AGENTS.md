@@ -32,6 +32,8 @@ The prototype's login is gated. Credentials live in the user's 1Password in the 
 - Do not resume Claude sessions. Every follow-up, synthesis, hypothesis, and scenario operation uses a fresh session; autonomous follow-up loops remain prohibited.
 - Chat Capture is the sole explicit exception: one persisted Claude session may be resumed only by a later user-initiated chat turn for the same process. Page loads never resume it.
 - Keep editable product behavior in `defaults/process-capture-config.json` and versioned prompts and schemas; do not bury workshop policy in React components.
+- Das Dokumentationskorpus unter `workspace/docs/` ist ein abgeleitetes Read Model in einem app-verwalteten Git-Repo. Es wird ausschließlich deterministisch aus bestätigten Prozessverständnissen gerendert und nie von Hand oder durch KI-Text direkt bearbeitet.
+- `documentation-sync` und Korpus-Reconciliation sind deterministische bounded Operationen ohne Claude-Session; sie fallen nicht unter die KI-Operationsregeln.
 - Keep automated testing lean for this prototype: cover domain rules, file/reset safety, and the Claude process contract.
 - Keep the demo-data warning visible globally and at intake. Do not weaken the per-session confirmation without explicit user approval.
 - Preserve `user_stated`, `file_evidence`, `ai_structured`, `ai_inferred`, `user_confirmed`, and `unknown` provenance in storage and UI.
@@ -55,6 +57,13 @@ The prototype's login is gated. Credentials live in the user's 1Password in the 
   Fachbereiche, Formularfelder.
 - Systemnamen und Personas kommen aus `demo-data/UNTERNEHMEN.md` und müssen über alle
   Szenarien hinweg konsistent bleiben.
+- `bun run seed:docs [--list]` füllt die lebende Prozessdokumentation aus
+  `demo-data/dokumentation/` — acht Prozesse über sechs Fachbereiche samt Revisionen und
+  einer Rücknahme. Der Seed ist additiv, überspringt vorhandene Prozesstitel und erzeugt
+  jeden Archiveintrag über die produktiven Pfade (`finalizeChatCapture`,
+  `correctUnderstanding`/`confirm`, `syncProcess`, `revert`); in `workspace/docs` wird
+  nichts von Hand geschrieben. Format und erzählte Geschichte stehen in
+  `demo-data/dokumentation/README.md`, geprüft von `tests/documentation-seed.test.ts`.
 
 ## UX rules
 
@@ -71,3 +80,4 @@ Before considering an implementation task complete, run `./scripts/qa all` and t
 ## Planning source
 
 Follow `docs/PRODUCT-FLOW-KI-POTENTIAL.md` for process capture and `docs/PLAN-KI-POTENTIAL-SCENARIOS.md` for opportunity discovery. Preserve their domain states and acceptance criteria unless the user explicitly changes them.
+Follow `docs/PLAN-LEBENDE-PROZESSDOKU.md` for the living process documentation corpus.

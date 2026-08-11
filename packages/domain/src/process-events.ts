@@ -1,11 +1,45 @@
 import { z } from "zod";
 import { memoryConsolidationSummarySchema } from "./memory.ts";
 
+/** Append-only events in a process capture's history.jsonl. */
+export const processHistoryEventNames = [
+  "process-created",
+  "main-answers-saved",
+  "validation-input-updated",
+  "validation-run-completed",
+  "open-validation-questions-accepted",
+  "understanding-synthesized",
+  "understanding-corrected",
+  "work-characteristics-corrected",
+  "understanding-confirmed",
+  "chat-understanding-confirmed",
+  "chat-understanding-published",
+  "chat-understanding-step-identities-changed",
+  "file-uploaded",
+  "file-removed",
+  "opportunity-auto-start-failed",
+  "documentation-synced",
+  "memory-distilled",
+  "memory-distillation-failed",
+  "memory-prompt-truncated",
+  "memory-prompt-skipped",
+  "process-flow-migrated",
+  "chat-transcript-flow-migrated",
+  "chat-state-flow-migrated",
+  "opportunity-snapshot-flow-migrated",
+  "chat-contract-flow-migrated",
+] as const;
+export const processHistoryEventNameSchema = z.enum(processHistoryEventNames);
+export type ProcessHistoryEventName = z.infer<
+  typeof processHistoryEventNameSchema
+>;
+
 export const processOperationNames = [
   "process-follow-ups",
   "process-synthesis",
   "opportunity-discovery",
   "memory-distillation",
+  "documentation-sync",
 ] as const;
 
 export const processOperationStatusSchema = z

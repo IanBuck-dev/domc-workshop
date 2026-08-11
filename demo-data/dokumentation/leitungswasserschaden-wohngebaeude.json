@@ -1,0 +1,244 @@
+{
+  "slug": "leitungswasserschaden-wohngebaeude",
+  "titel": "Leitungswasserschaden Wohngebäude regulieren",
+  "fachbereich": "Schaden",
+  "gespraechspartner": {
+    "name": "Edda Brandt",
+    "email": "edda.brandt@lifecorp.example"
+  },
+  "erstelltAm": "2026-02-02T09:15:00.000Z",
+  "bestaetigtAm": "2026-02-09T11:20:00.000Z",
+  "belege": [
+    {
+      "id": "b1",
+      "text": "Bei mir landen die Leitungswasserschäden im Wohngebäude. Meistens ruft der Kunde an oder es kommt was übers Portal rein, gelegentlich auch über den Vermittler."
+    },
+    {
+      "id": "b2",
+      "text": "Ich leg den Schaden in KOMPASS an und guck in VERA, ob Leitungswasser überhaupt eingeschlossen ist und der Vertrag am Schadentag lief. Das ist eigentlich immer der erste Blick."
+    },
+    {
+      "id": "b3",
+      "text": "Bis fünftausend Euro reguliere ich nach Kostenvoranschlag, darüber schick ich einen Sachverständigen raus. Das ist die Grenze, die bei uns gilt."
+    },
+    {
+      "id": "b4",
+      "text": "Wenn der Kostenvoranschlag oder das Gutachten da ist, prüf ich die Positionen, kürz was nicht dazugehört, und dann geht die Zahlung über SAP FI raus. Der Kunde kriegt ein Abrechnungsschreiben."
+    },
+    {
+      "id": "b5",
+      "text": "Alles was reinkommt und rausgeht, kommt in die AKTE. Am Schluss setz ich den Vorgang in KOMPASS auf erledigt."
+    },
+    {
+      "id": "b6",
+      "text": "So hundertzwanzig Fälle im Monat in der Gruppe. Ein einfacher Fall ist in zwei Wochen durch, mit Gutachten dauert es sechs bis acht."
+    }
+  ],
+  "zweck": {
+    "wert": "Regulierung gemeldeter Leitungswasserschäden in der Wohngebäudeversicherung von der Schadenannahme bis zur Auszahlung an den Versicherungsnehmer oder das beauftragte Handwerksunternehmen.",
+    "belege": ["b1"]
+  },
+  "ausloeser": {
+    "wert": "Eine Schadenmeldung des Versicherungsnehmers per Telefon, über das Kundenportal oder über den betreuenden Vermittler.",
+    "belege": ["b1"]
+  },
+  "ergebnis": {
+    "wert": "Ein abgerechneter und in KOMPASS als erledigt gesetzter Schadenvorgang mit ausgezahlter Entschädigung und vollständig in der AKTE abgelegtem Schriftwechsel.",
+    "belege": ["b4", "b5"]
+  },
+  "abgrenzung": {
+    "wert": "Der Prozess umfasst ausschließlich Leitungswasserschäden im Wohngebäude. Hausratschäden aus demselben Ereignis werden getrennt bearbeitet, ebenso Rückgriffe gegen Dritte und die Betrugsprüfung.",
+    "belege": ["b1"]
+  },
+  "beteiligte": {
+    "wert": [
+      "Schadensachbearbeiter Sach — führt die Regulierung durch",
+      "Versicherungsnehmer — meldet den Schaden und reicht Belege ein",
+      "Betreuender Vermittler — nimmt Meldungen entgegen und unterstützt bei Rückfragen",
+      "Externer Sachverständiger — begutachtet Schäden oberhalb der Wertgrenze",
+      "Handwerksunternehmen — erstellt Kostenvoranschlag und führt die Instandsetzung aus"
+    ],
+    "belege": ["b1", "b3", "b4"]
+  },
+  "informationsquellen": {
+    "wert": [
+      "Schadenmeldung aus Telefonat, Kundenportal oder Vermittlermeldung",
+      "Vertrags- und Deckungsdaten aus VERA",
+      "Kostenvoranschlag des Handwerksunternehmens",
+      "Sachverständigengutachten bei Schäden über der Wertgrenze",
+      "Rechnungen und Zahlungsnachweise des Versicherungsnehmers"
+    ],
+    "belege": ["b1", "b2", "b3", "b4"]
+  },
+  "systeme": {
+    "wert": ["KOMPASS", "VERA", "AKTE", "SAP FI", "Outlook"],
+    "belege": ["b2", "b4", "b5"]
+  },
+  "kontrollen": {
+    "wert": [
+      "Deckungsprüfung in VERA vor jeder Leistungszusage",
+      "Wertgrenze von 5.000 Euro: darüber ist ein Sachverständigengutachten verpflichtend",
+      "Rechnerische Prüfung jeder Position des Kostenvoranschlags vor der Zahlungsfreigabe",
+      "Vollständige Ablage des Schriftwechsels in der AKTE vor dem Schließen des Vorgangs"
+    ],
+    "belege": ["b2", "b3", "b4", "b5"]
+  },
+  "uebergaben": {
+    "wert": [
+      "Schadenannahme an Schadensachbearbeiter Sach nach Anlage des Vorgangs",
+      "Schadensachbearbeiter an externen Sachverständigen bei Überschreiten der Wertgrenze",
+      "Schadensachbearbeiter an SAP FI zur Auszahlung"
+    ],
+    "belege": ["b3", "b4"]
+  },
+  "mengenUndZeiten": {
+    "wert": [
+      "Rund 120 Fälle im Monat in der Bearbeitungsgruppe",
+      "Durchlaufzeit ohne Gutachten etwa zwei Wochen",
+      "Durchlaufzeit mit Gutachten sechs bis acht Wochen"
+    ],
+    "belege": ["b6"]
+  },
+  "schwachstellen": {
+    "wert": [
+      "Kostenvoranschläge kommen als PDF oder Papier und werden von Hand in die Prüfung übertragen",
+      "Die Beauftragung des Sachverständigen läuft über E-Mail ohne Rückmeldung zum Bearbeitungsstand",
+      "Nachforderungen von Belegen verlängern die Durchlaufzeit, ohne im System sichtbar zu sein"
+    ],
+    "belege": ["b4", "b6"]
+  },
+  "verbesserungsziele": {
+    "wert": [
+      "Positionen aus Kostenvoranschlägen automatisch auslesen und vorprüfen",
+      "Sichtbarer Status der Gutachtenbeauftragung im Schadenvorgang",
+      "Weniger Rückfragen durch vollständige Erstmeldung im Kundenportal"
+    ],
+    "belege": ["b4", "b6"]
+  },
+  "wissensluecken": [],
+  "widersprueche": [],
+  "schritte": [
+    {
+      "name": "Schadenmeldung aufnehmen",
+      "taetigkeit": "Die Meldung entgegennehmen und unter einer neuen Schadennummer in KOMPASS mit Schadendatum, Schadenort, Schadenhergang und Erreichbarkeit des Versicherungsnehmers erfassen.",
+      "eingaben": [
+        "Schadenmeldung aus Telefonat, Kundenportal oder Vermittlermeldung"
+      ],
+      "ausgaben": ["Angelegter Schadenvorgang in KOMPASS"],
+      "hinweis": null,
+      "informationen": [
+        {
+          "name": "Schadendatum, Schadenort und Hergang",
+          "quelle": "Schadenmeldung",
+          "typ": "free_text"
+        }
+      ],
+      "belege": ["b1"]
+    },
+    {
+      "name": "Deckung prüfen",
+      "taetigkeit": "In VERA prüfen, ob der Wohngebäudevertrag am Schadentag aktiv war und Leitungswasser eingeschlossen ist, und das Ergebnis im Schadenvorgang vermerken.",
+      "eingaben": [
+        "Angelegter Schadenvorgang in KOMPASS",
+        "Vertragsdaten aus VERA"
+      ],
+      "ausgaben": ["Dokumentiertes Deckungsergebnis"],
+      "hinweis": "Ohne Einschluss oder ohne aktiven Vertrag endet die Bearbeitung mit einer Ablehnung.",
+      "informationen": [
+        {
+          "name": "Vertragsstatus am Schadentag",
+          "quelle": "VERA",
+          "typ": "system_field"
+        },
+        {
+          "name": "Einschluss Leitungswasser",
+          "quelle": "VERA",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b2"]
+    },
+    {
+      "name": "Schadenhöhe ermitteln",
+      "taetigkeit": "Kostenvoranschlag des Handwerksunternehmens anfordern und bei einer erwarteten Schadenhöhe über 5.000 Euro zusätzlich einen externen Sachverständigen beauftragen.",
+      "eingaben": ["Dokumentiertes Deckungsergebnis"],
+      "ausgaben": [
+        "Kostenvoranschlag",
+        "Sachverständigengutachten bei Schäden über der Wertgrenze"
+      ],
+      "hinweis": "Die Beauftragung des Sachverständigen läuft per E-Mail; ein Bearbeitungsstand ist im System nicht sichtbar.",
+      "informationen": [
+        {
+          "name": "Positionen und Summe des Kostenvoranschlags",
+          "quelle": "Handwerksunternehmen",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b3"]
+    },
+    {
+      "name": "Entschädigung berechnen",
+      "taetigkeit": "Die Positionen aus Kostenvoranschlag oder Gutachten rechnerisch prüfen, nicht gedeckte Positionen kürzen und die Entschädigungssumme im Vorgang festhalten.",
+      "eingaben": ["Kostenvoranschlag", "Sachverständigengutachten"],
+      "ausgaben": [
+        "Festgelegte Entschädigungssumme mit Begründung der Kürzungen"
+      ],
+      "hinweis": null,
+      "informationen": [
+        {
+          "name": "Geprüfte Einzelpositionen",
+          "quelle": "Kostenvoranschlag",
+          "typ": "spreadsheet"
+        }
+      ],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Zahlung anstoßen und abrechnen",
+      "taetigkeit": "Die Zahlung über SAP FI auslösen und dem Versicherungsnehmer ein Abrechnungsschreiben mit den geprüften Positionen zusenden.",
+      "eingaben": ["Festgelegte Entschädigungssumme"],
+      "ausgaben": ["Ausgelöste Zahlung in SAP FI", "Abrechnungsschreiben"],
+      "hinweis": null,
+      "informationen": [
+        {
+          "name": "Zahlungsempfänger und Bankverbindung",
+          "quelle": "PARTO",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Vorgang schließen",
+      "taetigkeit": "Den gesamten Schriftwechsel in der AKTE ablegen und den Schadenvorgang in KOMPASS auf erledigt setzen.",
+      "eingaben": ["Abrechnungsschreiben", "Eingegangener Schriftwechsel"],
+      "ausgaben": [
+        "Vollständige Schadenakte in der AKTE",
+        "Erledigter Vorgang in KOMPASS"
+      ],
+      "hinweis": null,
+      "informationen": [],
+      "belege": ["b5"]
+    }
+  ],
+  "verzweigung": {
+    "nachSchritt": 2,
+    "frage": "Besteht am Schadentag Deckung für Leitungswasser?",
+    "modus": "rule_based",
+    "zweige": [
+      {
+        "label": "Ja, Deckung besteht",
+        "ziel": 3,
+        "ermittlung": "Vertragsstatus und Einschluss Leitungswasser in VERA.",
+        "folge": "Die Schadenhöhe wird ermittelt."
+      },
+      {
+        "label": "Nein, keine Deckung",
+        "ziel": "ende",
+        "ermittlung": "Vertrag am Schadentag nicht aktiv oder Leitungswasser nicht eingeschlossen.",
+        "folge": "Der Schaden wird abgelehnt und der Vorgang geschlossen."
+      }
+    ]
+  },
+  "revisionen": []
+}

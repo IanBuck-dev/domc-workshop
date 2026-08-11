@@ -12,7 +12,7 @@ STATE_DIR="/var/lib/claims-ai"
 ENV_FILE="/etc/claims-ai-portfolio.env"
 
 apt-get update
-apt-get install -y --no-install-recommends bubblewrap socat ripgrep rsync ca-certificates curl openssl python3-minimal unzip zsh
+apt-get install -y --no-install-recommends bubblewrap socat ripgrep rsync ca-certificates curl openssl python3-minimal unzip zsh git
 
 if ! id claims-ai >/dev/null 2>&1; then
   useradd --system --create-home --home-dir "${STATE_DIR}" --shell /usr/sbin/nologin claims-ai

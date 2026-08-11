@@ -147,6 +147,28 @@ async function waitForValidationRuns(
 }
 
 describe("process capture API", () => {
+  test("lehnt normalisierte Namensdubletten mit stabilem Fehlercode ab", async () => {
+    const { app, config } = await fixture();
+    const create = (processName: string) =>
+      app.request("/api/processes", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          cover: { ...cover, processName },
+          config,
+          demoDataConfirmed: true,
+          interactionMode: "form",
+        }),
+      });
+    expect((await create("Fiktiver   Prozess")).status).toBe(201);
+    const duplicate = await create("  fiktiver prozess  ");
+    expect(duplicate.status).toBe(409);
+    expect(await duplicate.json()).toEqual({
+      code: "duplicate_process_name",
+      error: "Ein aktiver Prozess mit diesem Namen existiert bereits.",
+    });
+  });
+
   test("requires an explicit mode and blocks Form mutations for Chat Capture", async () => {
     const { app, config } = await fixture();
     const missingMode = await app.request("/api/processes", {
@@ -477,7 +499,10 @@ describe("process capture API", () => {
         )
       ).status,
     ).toBe(404);
-    const second = await repo.create(cover, config);
+    const second = await repo.create(
+      { ...cover, processName: "Zweiter fiktiver Prozess" },
+      config,
+    );
     expect(
       (
         await app.request(

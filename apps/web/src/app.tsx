@@ -10,6 +10,7 @@ import { ProcessStartPage } from "./pages/process-start-page";
 import { ProcessCapturePage } from "./pages/process-capture-page";
 import { ProcessChatPage } from "./pages/process-chat-page";
 import { SettingsPage } from "./pages/settings-page";
+import { DocumentationPage } from "./pages/documentation-page";
 import { OpportunityDiscoveryPage } from "./pages/opportunity-discovery-page";
 import { ProcessEventsProvider } from "./lib/process-events";
 import { ImprintPage } from "./pages/imprint-page";
@@ -72,6 +73,7 @@ export function App() {
               element={<OpportunityDiscoveryPage phase="scenarios" />}
             />
           </Route>
+          <Route path="/dokumentation" element={<DocumentationPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

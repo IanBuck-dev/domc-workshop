@@ -176,6 +176,25 @@ export class ChatCaptureRepository {
     );
   }
   /**
+   * Übernimmt einen fachlich korrigierten Stand als letzten gültigen Stand.
+   * Anders als bei `reconcile` stammt er nicht aus einem KI-Zug, sondern aus
+   * einer bereits geprüften Korrektur; er wird deshalb unmittelbar
+   * veröffentlicht. Ohne diesen Schritt läse `ProcessCaptureRepository.get`
+   * für eine Chat-Aufnahme in Prüfung weiterhin den Stand vor der Korrektur.
+   */
+  async publishCorrection(id: string, understanding: ProcessUnderstanding) {
+    await atomicWrite(
+      this.path(id, "last-valid-process-understanding.json"),
+      JSON.stringify(understanding, null, 2) + "\n",
+    );
+    await this.updateState(id, {
+      lastValidRevision: createHash("sha256")
+        .update(JSON.stringify(understanding))
+        .digest("hex"),
+      lastValidAt: new Date().toISOString(),
+    });
+  }
+  /**
    * Liest den Arbeitsstand; nur ein vom Capture-Agenten verifizierter Zug darf
    * ihn veröffentlichen. Dadurch bleibt der letzte gültige Stand stabil.
    */

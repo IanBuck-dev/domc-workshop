@@ -1,0 +1,238 @@
+{
+  "slug": "stoerungsannahme-anwendersupport",
+  "titel": "Störungsannahme im Anwendersupport",
+  "fachbereich": "IT",
+  "gespraechspartner": {
+    "name": "Edda Brandt",
+    "email": "edda.brandt@lifecorp.example"
+  },
+  "erstelltAm": "2026-04-28T06:55:00.000Z",
+  "bestaetigtAm": "2026-05-05T12:10:00.000Z",
+  "belege": [
+    {
+      "id": "b1",
+      "text": "Bei uns landen alle Störungsmeldungen der Fachbereiche. Entweder ruft jemand an oder schreibt ans Sammelpostfach - ein eigenes Ticketwerkzeug haben wir nicht."
+    },
+    {
+      "id": "b2",
+      "text": "Ich trag jede Meldung in unsere Störungsliste ein: wer meldet, welches System, was genau nicht geht, seit wann. Ohne das kann ich hinterher nicht auswerten."
+    },
+    {
+      "id": "b3",
+      "text": "Dann grenz ich ein. Betrifft es nur den einen Anwender oder die ganze Abteilung? Danach richtet sich die Priorität. Wenn VERA oder KOMPASS für alle steht, ist das Prio eins und geht sofort an den Betrieb."
+    },
+    {
+      "id": "b4",
+      "text": "Das meiste kriegen wir selber hin - Berechtigungen, hängende Sitzungen, Druckprobleme. Was tiefer geht, geben wir an die Fachgruppe ab, und dann sind wir raus."
+    },
+    {
+      "id": "b5",
+      "text": "Zum Schluss ruf ich den Melder zurück und lass mir bestätigen, dass es wieder läuft. Erst dann setz ich den Eintrag auf erledigt."
+    },
+    {
+      "id": "b6",
+      "text": "Einmal im Monat schau ich mir die Liste im Ganzen an. Wenn dieselbe Störung immer wiederkommt, melde ich das der Anwendungsbetreuung."
+    },
+    {
+      "id": "b7",
+      "text": "Wir haben so vierhundert Meldungen im Monat, ungefähr drei Viertel lösen wir im First Level. Prio eins soll innerhalb von vier Stunden laufen."
+    }
+  ],
+  "zweck": {
+    "wert": "Annahme, Einordnung und Erstlösung von Störungsmeldungen der Fachbereiche zu den Kernsystemen der LifeCorp, damit Anwender schnell wieder arbeitsfähig sind und wiederkehrende Störungen sichtbar werden.",
+    "belege": ["b1", "b6"]
+  },
+  "ausloeser": {
+    "wert": "Eine Störungsmeldung eines Anwenders per Telefon oder an das Sammelpostfach des Anwendersupports.",
+    "belege": ["b1"]
+  },
+  "ergebnis": {
+    "wert": "Eine im First Level gelöste und vom Melder bestätigte Störung oder eine dokumentiert an die zuständige Fachgruppe übergebene Meldung; in beiden Fällen ein vollständiger Eintrag in der Störungsliste.",
+    "belege": ["b4", "b5"]
+  },
+  "abgrenzung": {
+    "wert": "Der Prozess endet mit der Lösung im First Level oder der Übergabe an die Fachgruppe. Die Bearbeitung im Second Level, Änderungsanforderungen an die Kernsysteme und geplante Wartungsarbeiten gehören nicht dazu.",
+    "belege": ["b4"]
+  },
+  "beteiligte": {
+    "wert": [
+      "Anwendersupport First Level — nimmt an, grenzt ein und löst",
+      "Meldender Anwender — beschreibt die Störung und bestätigt die Lösung",
+      "IT-Betrieb — übernimmt Störungen mit Betriebsauswirkung",
+      "Anwendungsbetreuung — bearbeitet fachlich tiefer liegende Störungen",
+      "Berechtigungsverwaltung — setzt Rechteänderungen um"
+    ],
+    "belege": ["b1", "b3", "b4", "b6"]
+  },
+  "informationsquellen": {
+    "wert": [
+      "Telefonat oder E-Mail des meldenden Anwenders",
+      "Störungsliste des Anwendersupports",
+      "Fehlermeldungen und Bildschirmfotos der Anwender",
+      "Betriebsmeldungen zu laufenden Systemstörungen"
+    ],
+    "belege": ["b1", "b2", "b3"]
+  },
+  "systeme": {
+    "wert": ["VERA", "KOMPASS", "PARTO", "AKTE", "LEBUS", "Outlook"],
+    "belege": ["b1", "b3"]
+  },
+  "kontrollen": {
+    "wert": [
+      "Jede Meldung wird vor der Bearbeitung in der Störungsliste erfasst",
+      "Störungen mit Betriebsauswirkung gehen unmittelbar an den IT-Betrieb",
+      "Zielzeit von vier Stunden für Meldungen der Priorität eins",
+      "Abschluss erst nach Bestätigung der Lösung durch den Melder",
+      "Monatliche Auswertung der Störungsliste auf wiederkehrende Störungen"
+    ],
+    "belege": ["b2", "b3", "b5", "b6", "b7"]
+  },
+  "uebergaben": {
+    "wert": [
+      "Anwender an Anwendersupport mit der Störungsmeldung",
+      "Anwendersupport an IT-Betrieb bei Störungen mit Betriebsauswirkung",
+      "Anwendersupport an Anwendungsbetreuung bei fachlich tiefer liegenden Störungen",
+      "Anwendersupport an Anwendungsbetreuung mit der monatlichen Auswertung"
+    ],
+    "belege": ["b3", "b4", "b6"]
+  },
+  "mengenUndZeiten": {
+    "wert": [
+      "Rund 400 Störungsmeldungen im Monat",
+      "Etwa drei Viertel werden im First Level gelöst",
+      "Zielzeit vier Stunden für Priorität eins"
+    ],
+    "belege": ["b7"]
+  },
+  "schwachstellen": {
+    "wert": [
+      "Es gibt kein Ticketwerkzeug; die Störungsliste wird von Hand geführt",
+      "Meldungen aus Telefon und Sammelpostfach laufen nicht zusammen und werden doppelt erfasst",
+      "Der Bearbeitungsstand einer abgegebenen Störung ist für den First Level nicht sichtbar",
+      "Die Auswertung wiederkehrender Störungen hängt an einer einzelnen Person"
+    ],
+    "belege": ["b1", "b2", "b4", "b6"]
+  },
+  "verbesserungsziele": {
+    "wert": [
+      "Eine gemeinsame Erfassung für telefonische und schriftliche Meldungen",
+      "Sichtbarer Bearbeitungsstand über die Übergabe an die Fachgruppe hinweg",
+      "Regelmäßige Auswertung wiederkehrender Störungen ohne persönliche Abhängigkeit"
+    ],
+    "belege": ["b1", "b4", "b6"]
+  },
+  "wissensluecken": [
+    "Ob die Zielzeit von vier Stunden für Priorität eins schriftlich vereinbart ist oder eine eingespielte Übung darstellt, konnte nicht beantwortet werden."
+  ],
+  "widersprueche": [],
+  "schritte": [
+    {
+      "name": "Störungsmeldung aufnehmen",
+      "taetigkeit": "Die Meldung aus Telefonat oder Sammelpostfach entgegennehmen und mit Melder, betroffenem System, Fehlerbild und Zeitpunkt in der Störungsliste erfassen.",
+      "eingaben": ["Telefonat oder E-Mail des meldenden Anwenders"],
+      "ausgaben": ["Erfasster Eintrag in der Störungsliste"],
+      "hinweis": "Ohne Eintrag in der Störungsliste ist die spätere Auswertung nicht möglich.",
+      "informationen": [
+        {
+          "name": "Betroffenes System und Fehlerbild",
+          "quelle": "Meldender Anwender",
+          "typ": "free_text"
+        },
+        {
+          "name": "Zeitpunkt des ersten Auftretens",
+          "quelle": "Meldender Anwender",
+          "typ": "free_text"
+        }
+      ],
+      "belege": ["b1", "b2"]
+    },
+    {
+      "name": "Störung eingrenzen und Priorität festlegen",
+      "taetigkeit": "Klären, ob nur ein einzelner Anwender oder ein ganzer Bereich betroffen ist, und daraus die Priorität ableiten; Störungen mit Betriebsauswirkung gehen unmittelbar an den IT-Betrieb.",
+      "eingaben": ["Erfasster Eintrag in der Störungsliste"],
+      "ausgaben": [
+        "Eingegrenzte Störung mit festgelegter Priorität",
+        "Meldung an den IT-Betrieb bei Betriebsauswirkung"
+      ],
+      "hinweis": "Steht ein Kernsystem für einen ganzen Bereich, gilt Priorität eins mit einer Zielzeit von vier Stunden.",
+      "informationen": [
+        {
+          "name": "Anzahl betroffener Anwender",
+          "quelle": "Anwendersupport",
+          "typ": "system_field"
+        },
+        {
+          "name": "Laufende Betriebsmeldungen",
+          "quelle": "IT-Betrieb",
+          "typ": "email"
+        }
+      ],
+      "belege": ["b3"]
+    },
+    {
+      "name": "Störung im First Level beheben",
+      "taetigkeit": "Die Störung mit den Mitteln des First Level beheben — etwa Berechtigungen anpassen, hängende Sitzungen beenden oder Druckeinstellungen korrigieren — und den Lösungsweg im Eintrag festhalten.",
+      "eingaben": ["Eingegrenzte Störung mit festgelegter Priorität"],
+      "ausgaben": ["Behobene Störung mit dokumentiertem Lösungsweg"],
+      "hinweis": null,
+      "informationen": [
+        {
+          "name": "Berechtigungen des Anwenders",
+          "quelle": "Berechtigungsverwaltung",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Rückmeldung einholen und abschließen",
+      "taetigkeit": "Den Melder zurückrufen, sich die Behebung bestätigen lassen und den Eintrag in der Störungsliste auf erledigt setzen.",
+      "eingaben": ["Behobene Störung mit dokumentiertem Lösungsweg"],
+      "ausgaben": [
+        "Bestätigte Lösung",
+        "Erledigter Eintrag in der Störungsliste"
+      ],
+      "hinweis": "Ohne Bestätigung des Melders wird nicht abgeschlossen.",
+      "informationen": [],
+      "belege": ["b5"]
+    },
+    {
+      "name": "Störungsliste auswerten",
+      "taetigkeit": "Die Störungsliste monatlich auf wiederkehrende Fehlerbilder durchsehen und Häufungen an die Anwendungsbetreuung melden.",
+      "eingaben": ["Erledigte Einträge der Störungsliste"],
+      "ausgaben": [
+        "Monatliche Auswertung",
+        "Meldung wiederkehrender Störungen"
+      ],
+      "hinweis": "Die Auswertung wird derzeit von einer einzelnen Person durchgeführt.",
+      "informationen": [
+        {
+          "name": "Häufigkeit je Fehlerbild",
+          "quelle": "Störungsliste",
+          "typ": "spreadsheet"
+        }
+      ],
+      "belege": ["b6"]
+    }
+  ],
+  "verzweigung": {
+    "nachSchritt": 2,
+    "frage": "Lässt sich die Störung mit den Mitteln des First Level beheben?",
+    "modus": "rule_based",
+    "zweige": [
+      {
+        "label": "Ja, Lösung im First Level",
+        "ziel": 3,
+        "ermittlung": "Das Fehlerbild gehört zu den im First Level lösbaren Fällen wie Berechtigungen, Sitzungen oder Druck.",
+        "folge": "Die Störung wird unmittelbar behoben."
+      },
+      {
+        "label": "Nein, Abgabe an die Fachgruppe",
+        "ziel": "ende",
+        "ermittlung": "Die Störung liegt tiefer in der Anwendung oder im Betrieb.",
+        "folge": "Die Meldung wird an die zuständige Fachgruppe übergeben; die weitere Bearbeitung liegt außerhalb dieses Prozesses."
+      }
+    ]
+  },
+  "revisionen": []
+}

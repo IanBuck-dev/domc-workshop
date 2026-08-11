@@ -25,7 +25,11 @@ export class MemoryConsolidationConflictError extends Error {
   }
 }
 
-function publicError(error: unknown) {
+function publicError(error: unknown, operationName: ProcessOperationName) {
+  if (operationName === "documentation-sync")
+    return error instanceof DOMException && error.name === "AbortError"
+      ? "Die Dokumentationsaktualisierung wurde abgebrochen. Sie kann erneut gestartet werden."
+      : "Die Dokumentation konnte nicht aktualisiert werden. Die Bestätigung bleibt erhalten und der nächste Abgleich holt die Änderung nach.";
   if (error instanceof DOMException && error.name === "AbortError")
     return "Die KI-Aktion wurde abgebrochen. Sie können sie erneut starten.";
   return "Die KI-Aktion konnte nicht abgeschlossen werden. Ihre Angaben bleiben erhalten und die Aktion kann erneut gestartet werden.";
@@ -100,6 +104,16 @@ export function enqueueMemoryConsolidation(
 export function hasActiveProcessOperation(processId: string) {
   return [...operations.values()].some(
     (operation) =>
+      operation.processId === processId &&
+      operation.state !== "failed" &&
+      operation.operationName !== "documentation-sync",
+  );
+}
+
+/** Löschen muss auch den deterministischen Dokumentationsschreibjob abwarten. */
+export function hasActiveWriteOperation(processId: string) {
+  return [...operations.values()].some(
+    (operation) =>
       operation.processId === processId && operation.state !== "failed",
   );
 }
@@ -141,17 +155,29 @@ export function enqueueProcessOperation(
   onQueuedCancel?: () => Promise<void>,
   options: EnqueueProcessOperationOptions = {},
 ) {
-  const activeForProcess = [...operations.values()].filter(
-    (operation) =>
-      operation.processId === processId && operation.state !== "failed",
-  );
+  // Die Dokumentationssynchronisation ist deterministisch und braucht keine
+  // Claude-Session. Sie konkurriert deshalb in keiner Richtung mit den
+  // KI-Aktionen eines Prozesses — weder blockiert sie, noch wird sie blockiert.
+  const activeForProcess =
+    operationName === "documentation-sync"
+      ? []
+      : [...operations.values()].filter(
+          (operation) =>
+            operation.processId === processId &&
+            operation.state !== "failed" &&
+            operation.operationName !== "documentation-sync",
+        );
   if (
     activeForProcess.length &&
     (!options.allowSameProcessFollowup || activeForProcess.length > 1)
   )
     throw new Error("Für diesen Prozess läuft bereits eine KI-Aktion.");
   for (const [id, operation] of operations)
-    if (operation.processId === processId && operation.state === "failed")
+    if (
+      operation.processId === processId &&
+      operation.state === "failed" &&
+      operation.operationName === operationName
+    )
       operations.delete(id);
   const operationId = crypto.randomUUID();
   const controller = new AbortController();
@@ -191,9 +217,29 @@ export function enqueueProcessOperation(
         error,
       );
       operation.state = "failed";
-      operation.error = publicError(error);
+      operation.error = publicError(error, operation.operationName);
       publishOperations();
     }
   })();
   return { operationId, state: "queued" as const };
+}
+
+/**
+ * Deterministische globale Jobs teilen dieselbe Reihenfolge, erscheinen aber nicht
+ * als künstlicher Prozess im Operations-Panel.
+ */
+export function runGlobalOperation<T>(
+  action: (signal: AbortSignal) => Promise<T>,
+) {
+  const controller = new AbortController();
+  const previous = queueTail;
+  const result = (async () => {
+    await previous.catch(() => undefined);
+    return action(controller.signal);
+  })();
+  queueTail = result.then(
+    () => undefined,
+    () => undefined,
+  );
+  return result;
 }

@@ -13,6 +13,7 @@ import {
 } from "../../../../packages/domain/src/process-understanding.ts";
 import {
   ProcessCaptureNotFoundError,
+  DuplicateProcessNameError,
   ProcessUploadIntegrityError,
   ProcessUploadNotFoundError,
   type ProcessCaptureRepository,
@@ -26,8 +27,10 @@ import {
   dismissFailedProcessOperations,
   enqueueProcessOperation,
   hasActiveProcessOperation,
+  hasActiveWriteOperation,
 } from "../process-operation-manager.ts";
 import { publishProcessChanged } from "../process-events.ts";
+import type { CorpusService } from "../corpus-service.ts";
 
 const createSchema = z.object({
   cover: z.unknown(),
@@ -132,15 +135,33 @@ export function processCaptureRoutes(
   repo: ProcessCaptureRepository,
   ai: ProcessAiAdapter,
   beforeDelete?: (id: string) => Promise<void>,
+  corpus?: CorpusService,
 ) {
   const app = new Hono();
   app.get("/", async (c) => c.json(await repo.list()));
+  app.get("/similar", async (c) => {
+    const name = z
+      .string()
+      .trim()
+      .max(240)
+      .parse(c.req.query("name") ?? "");
+    return c.json(corpus ? await corpus.similarProcesses(name) : []);
+  });
   app.post("/", async (c) => {
     const body = createSchema.parse(await c.req.json());
-    return c.json(
-      await repo.create(body.cover, body.config, body.interactionMode),
-      201,
-    );
+    try {
+      return c.json(
+        await repo.create(body.cover, body.config, body.interactionMode),
+        201,
+      );
+    } catch (value) {
+      if (value instanceof DuplicateProcessNameError)
+        return c.json(
+          { error: value.message, code: "duplicate_process_name" },
+          409,
+        );
+      throw value;
+    }
   });
   app.get("/:id", async (c) => {
     const record = await repo.get(c.req.param("id"));
@@ -396,7 +417,29 @@ export function processCaptureRoutes(
     if ((await repo.required(c.req.param("id"))).interactionMode !== "form")
       return c.json({ error: "Dieser Prozess wird im Chat bestätigt." }, 409);
     try {
-      return c.json(await repo.confirm(c.req.param("id")));
+      const confirmed = await repo.confirm(c.req.param("id"));
+      if (corpus)
+        try {
+          enqueueProcessOperation(
+            confirmed.id,
+            "documentation-sync",
+            async () => {
+              const outcome = await corpus.syncProcess(confirmed.id);
+              if (outcome.result === "error") throw new Error(outcome.error);
+            },
+          );
+        } catch (enqueueError) {
+          await repo.appendHistory(confirmed.id, "documentation-synced", {
+            result: "error",
+            commit: null,
+            error:
+              enqueueError instanceof Error
+                ? enqueueError.message
+                : "Die Dokumentation konnte nicht eingereiht werden.",
+          });
+          publishProcessChanged(confirmed.id);
+        }
+      return c.json(confirmed);
     } catch (error) {
       return repositoryError(c, error);
     }
@@ -405,10 +448,7 @@ export function processCaptureRoutes(
     try {
       const id = c.req.param("id");
       if (beforeDelete) await beforeDelete(id);
-      const result = await repo.deleteCapture(
-        id,
-        hasActiveProcessOperation(id),
-      );
+      const result = await repo.deleteCapture(id, hasActiveWriteOperation(id));
       dismissFailedProcessOperations(id);
       return c.json(result);
     } catch (error) {

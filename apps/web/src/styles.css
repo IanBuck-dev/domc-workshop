@@ -1,6 +1,10 @@
 @import "@fontsource-variable/geist";
 @import "tailwindcss";
 @import "tw-animate-css";
+/* Basisstile der Diff-Ansicht im Dokumentations-Viewer. Die Bibliothek ist
+   vollständig variablengesteuert — die Farben werden unten auf die Palette der
+   Anwendung gezogen, statt die Klassen zu überschreiben. */
+@import "react-diff-view/style/index.css";
 
 @theme inline {
   /* Geist (OFL-1.1, Vercel). Chosen over Open Sans because it is ~5% narrower
@@ -146,6 +150,21 @@
   --input: #8f9b96;
   --ring: #2f9070;
   --radius: 0.625rem;
+
+  /* Diff-Ansicht (react-diff-view). Die Voreinstellungen der Bibliothek sind
+     kräftiger und blauer als diese Palette; hier stehen dieselben Grün- und
+     Rottöne wie in --secondary und --destructive, nur weit aufgehellt, damit
+     der Text darauf seine normale Lesbarkeit behält. Schrift bleibt die
+     Anwendungsschrift — Prozessdokumentation ist Fließtext, kein Quelltext. */
+  --diff-text-color: var(--foreground);
+  --diff-font-family: var(--font-sans);
+  --diff-code-insert-background-color: #e8f3ec;
+  --diff-gutter-insert-background-color: #d2e7d9;
+  --diff-code-delete-background-color: #fceff0;
+  --diff-gutter-delete-background-color: #f6dadc;
+  --diff-code-insert-edit-background-color: #b9dcc6;
+  --diff-code-delete-edit-background-color: #f3bec1;
+  --diff-selection-background-color: var(--accent);
 }
 
 @layer base {
@@ -179,5 +198,75 @@
   select,
   textarea {
     font: inherit;
+  }
+}
+
+/* Der Seitenrand gehört hierher und nirgendwo sonst: er wiederholt sich auf
+   jeder Seite und ist oben und unten der Platz für Kopf- und Fußzeile des
+   Druckdialogs. Die Regel steht außerhalb von `@media print` und außerhalb
+   jeder `@layer` — sie gilt ohnehin nur für Seitenmedien, und als einzige
+   ungeschichtete Deklaration kann sie mit nichts um den Vorrang streiten.
+
+   Wichtig für die Fehlersuche: Die Randeinstellung des Druckdialogs steht über
+   dieser Regel. Nur „Standard" übernimmt die Werte hier; „ohne" erzwingt 0 und
+   „benutzerdefiniert" die gezogenen Werte — dann ändert kein CSS mehr etwas. */
+@page {
+  margin: 15mm 8mm;
+}
+
+/* Druckansicht des Dokumentations-Viewers. „Als PDF exportieren" ruft nur
+   `window.print()` — die Seite selbst entscheidet hier, was auf das Papier
+   kommt: das gerenderte Dokument, ohne Navigation, Seitenkopf, Dateibaum,
+   Suchfeld, Reiterleiste und Schaltflächen. */
+@media print {
+  /* Der Farbverlauf des Seitenhintergrunds ist die einzige Fläche, die im Druck
+     Farbe kosten würde — der weiße Grund von `html` druckt sich ohnehin nicht. */
+  body {
+    background: none;
+  }
+
+  [data-print-hide] {
+    display: none !important;
+  }
+
+  /* Innenabstand und Breitenbegrenzung der Seite sind Bildschirmgestaltung.
+     Der Abstand verdoppelte seitlich den Seitenrand und ließe die erste Seite
+     tiefer beginnen als alle folgenden. Die Begrenzung auf 1280px greift auf
+     Papier nur bei verkleinertem Maßstab — das Blatt wird dann breiter als
+     1280px — und ließe den Text in einer schmalen Spalte stehen. */
+  main section {
+    max-width: none;
+    padding: 0;
+  }
+
+  /* Die Reiterleiste ist auf Papier ausgeblendet; der Abstand, den der
+     Reiterinhalt zu ihr hält, bliebe sonst als Leerraum am Seitenanfang. */
+  main [role="tabpanel"] {
+    padding-top: 0 !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    break-after: avoid;
+  }
+
+  /* Nur Listenpunkte: Tabellen kann der Viewer nicht darstellen — react-markdown
+     läuft ohne remark-gfm, GFM-Tabellen bleiben also Fließtext. */
+  li {
+    break-inside: avoid;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  mark {
+    background: none;
+    color: inherit;
+    /* Ohne Innenabstand bleibt das Wort im Druck zusammenhängend. */
+    padding: 0;
   }
 }
