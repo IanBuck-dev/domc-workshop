@@ -2,7 +2,7 @@
 
 ## Product boundary
 
-Build a local prototype that captures and confirms how a department process works today and, in a separate downstream module, discovers evidence-backed KI-potential hypotheses and three read-only human-oversight scenarios for confirmed processes. Do not add solution assessment, financial values, scoring, prioritization, handover, or general project-management features to the active flow.
+Build a local prototype that captures and confirms how a department process works today and, in separate downstream modules, discovers evidence-backed KI-potential hypotheses with three read-only human-oversight scenarios and creates read-only PDD Excel exports for confirmed processes. Do not add solution assessment, financial values, scoring, prioritization, handover, or general project-management features to the active flow.
 
 ## Runtime
 
@@ -15,7 +15,7 @@ Build a local prototype that captures and confirms how a department process work
 
 ## Local credentials
 
-The prototype's login is gated. Credentials live in the user's 1Password in the item named **claims demo account** — never in the repository, environment files, or commit messages. Agents must not read, request, or type the password: ask the user to sign in themselves in the browser, then continue from the authenticated session.
+The prototype's login is gated. Real or reusable credentials live in the user's password manager and must never be read, requested, entered, stored, logged, or committed by an agent. For browser E2E against the local prototype only, an agent may enter credentials for an explicitly identified synthetic demo account when the user supplies them directly for that test. Use them only in the browser login form, never persist them in repository files, environment files, shell commands, test output, or commit messages, and recommend rotation if they appear in conversation history.
 
 ## Implementation rules
 

@@ -1,9 +1,18 @@
 import type { OpportunityDiscoverySummary } from "./opportunity-types";
 import type { ProcessCaptureRecord } from "./process-types";
 
-type ProcessInput = Pick<ProcessCaptureRecord, "state"> & {
-  profile: Pick<ProcessCaptureRecord["profile"], "version">;
-};
+type ProcessInput = Pick<ProcessCaptureRecord, "state"> &
+  Partial<
+    Pick<
+      ProcessCaptureRecord,
+      | "confirmationQuality"
+      | "confirmedAt"
+      | "understanding"
+      | "currentStateDetails"
+    >
+  > & {
+    profile: Pick<ProcessCaptureRecord["profile"], "version">;
+  };
 
 export type NavigationTone =
   "neutral" | "info" | "success" | "warning" | "danger";
@@ -12,7 +21,8 @@ export interface ModuleNavigationState {
   status: string;
   tone: NavigationTone;
   actionLabel: string | null;
-  action: "capture" | "start_opportunity" | "view_opportunity" | null;
+  action:
+    "capture" | "start_opportunity" | "view_opportunity" | "export_pdd" | null;
   /**
    * Steht nur bei gesperrten Modulen: der Satz nennt, was fehlt. Ein Etikett
    * wie „Nach Bestätigung“ allein sagt nicht, was zu tun ist.
@@ -23,6 +33,7 @@ export interface ModuleNavigationState {
 export interface ProcessNavigationModel {
   capture: ModuleNavigationState;
   opportunity: ModuleNavigationState;
+  pdd: ModuleNavigationState;
 }
 
 export function opportunityEntryPhase(
@@ -83,6 +94,47 @@ export function processNavigationModel(
   return {
     capture,
     opportunity: opportunityState,
+    pdd: pddModuleState(process),
+  };
+}
+
+function pddModuleState(process: ProcessInput): ModuleNavigationState {
+  if (
+    process.state !== "confirmed" ||
+    !process.understanding ||
+    !process.confirmedAt
+  )
+    return {
+      status: "Nach Bestätigung",
+      tone: "neutral",
+      actionLabel: null,
+      action: null,
+      blockedReason:
+        "Zuerst die Prozessaufnahme abschließen und das Prozessbild fachlich bestätigen.",
+    };
+  if (process.profile.version !== 3 || !process.currentStateDetails)
+    return {
+      status: "Nicht verfügbar",
+      tone: "neutral",
+      actionLabel: null,
+      action: null,
+      blockedReason:
+        "Dieser Prozess wurde ohne die erforderlichen PDD-Ist-Angaben erfasst.",
+    };
+  if (process.confirmationQuality === "with_gaps")
+    return {
+      status: "Offene Punkte enthalten",
+      tone: "warning",
+      actionLabel: "Excel erstellen",
+      action: "export_pdd",
+      blockedReason: null,
+    };
+  return {
+    status: "Bereit",
+    tone: "success",
+    actionLabel: "Excel erstellen",
+    action: "export_pdd",
+    blockedReason: null,
   };
 }
 
@@ -99,7 +151,7 @@ function opportunityModuleState(
       blockedReason:
         "Zuerst die Prozessaufnahme abschließen und das Prozessbild fachlich bestätigen.",
     };
-  if (process.profile.version !== 2)
+  if (![2, 3].includes(process.profile.version))
     return {
       status: "Nicht verfügbar",
       tone: "neutral",

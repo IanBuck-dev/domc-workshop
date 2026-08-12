@@ -2,6 +2,7 @@ export type {
   ProcessCaptureConfig,
   ProcessCaptureRecord,
   ProcessUnderstanding,
+  CurrentStateDetails,
   TopicAnswer,
   WorkCharacteristicAnswer,
   WorkCharacteristicDefinition,

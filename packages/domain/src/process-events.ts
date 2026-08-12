@@ -28,6 +28,7 @@ export const processHistoryEventNames = [
   "chat-state-flow-migrated",
   "opportunity-snapshot-flow-migrated",
   "chat-contract-flow-migrated",
+  "pdd-exported",
 ] as const;
 export const processHistoryEventNameSchema = z.enum(processHistoryEventNames);
 export type ProcessHistoryEventName = z.infer<

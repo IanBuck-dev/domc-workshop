@@ -33,6 +33,8 @@ import { migrateProcessFlowStorage } from "../../../packages/storage/src/process
 import { requireSession } from "./session.ts";
 import { CorpusService } from "./corpus-service.ts";
 import { corpusRoutes } from "./routes/corpus.ts";
+import { pddExportRoutes } from "./routes/pdd-exports.ts";
+import { PddExportRepository } from "../../../packages/storage/src/pdd-export-repository.ts";
 import {
   workspacePath,
   hasWebDist,
@@ -131,6 +133,10 @@ app.route(
     },
     corpusService,
   ),
+);
+app.route(
+  "/api/processes",
+  pddExportRoutes(processRepo, new PddExportRepository(root)),
 );
 app.route(
   "/api/processes",

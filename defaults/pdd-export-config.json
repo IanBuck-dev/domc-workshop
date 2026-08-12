@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 2,
+  "enabled": true,
+  "template": {
+    "id": "pdd-draft-current-state",
+    "version": "current-state.v1",
+    "title": "Process Definition Document",
+    "asset": "pdd/PDD_Draft.current-state.v1.xlsx",
+    "sha256": "611d673b446285d9e10707bf6c02a14b2aa9adc0eb8fb0dbef31f0716a0d50bd",
+    "mappingVersion": 1
+  },
+  "sheets": [
+    "Deckblatt",
+    "01_Prozessdefinition",
+    "02_Prozessschritte",
+    "01 Projektsteckbrief",
+    "03 Prozess",
+    "02 Business Case",
+    "06 Architektur Betrieb",
+    "04 KI Use Case",
+    "05 Daten Compliance",
+    "07 RACI Governance",
+    "08 Meilensteine",
+    "09 Risiken Entscheidungen",
+    "10 Abnahme Tests",
+    "11 Change Kommunikation",
+    "12 Entscheidungsvorlage",
+    "13 Glossar Quellen",
+    "Dashboard"
+  ],
+  "mapping": {
+    "cover": {
+      "B5": "processName",
+      "B6": "processId",
+      "B7": "Prozessdokumentation – Ist-Zustand",
+      "B8": "version",
+      "B9": "exportedAt",
+      "B10": "participantName",
+      "B11": "processOwnerDepartment",
+      "B12": "scope",
+      "B13": "status",
+      "B14": "scope",
+      "B15": "confidentiality"
+    },
+    "definition": {
+      "B6": "processName",
+      "G6": "processOwner",
+      "K6": "version",
+      "B7": "summary",
+      "K7": "actors",
+      "B8": "painPoints",
+      "K8": "scope",
+      "B9": "outcome",
+      "K9": "boundaries",
+      "B12": "trigger",
+      "G12": "outcome",
+      "K12": "volume",
+      "B13": "inputs",
+      "G13": "outputs",
+      "K13": "variations",
+      "B14": "actors",
+      "G14": "systems",
+      "K14": "mediaBreaks",
+      "B17": "scope",
+      "K17": "scope",
+      "B18": "painPoints",
+      "K18": "scope",
+      "B21": "systems",
+      "G21": "handoffs",
+      "K21": "operationAndSupport",
+      "B22": "accessAndProtection",
+      "G22": "monitoringAndTraceability",
+      "K22": "constraints"
+    },
+    "stepRows": [7, 8, 9, 10, 11, 12, 13, 14],
+    "scopeNotice": "Nicht Bestandteil dieser Ausbaustufe – Fokus auf Ist-Zustand."
+  },
+  "filenamePrefix": "PDD",
+  "labels": {
+    "unknown": "Nicht bekannt",
+    "notCaptured": "Nicht erfasst",
+    "provenance": {
+      "user_stated": "Vom Fachbereich angegeben",
+      "file_evidence": "Aus Unterlage belegt",
+      "ai_structured": "KI-strukturiert",
+      "ai_inferred": "KI-abgeleitet",
+      "user_confirmed": "Fachlich bestätigt",
+      "unknown": "Unbekannt"
+    },
+    "informationTypes": {
+      "system_field": "Systemfeld",
+      "email": "E-Mail",
+      "spreadsheet": "Tabelle",
+      "document": "Dokument",
+      "image_or_scan": "Bild oder Scan",
+      "free_text": "Freitext",
+      "database_or_report": "Datenbank oder Bericht",
+      "other": "Sonstiges",
+      "unknown": "Unbekannt"
+    },
+    "decisionModes": {
+      "rule_based": "Regelbasiert",
+      "professional_judgement": "Fachliches Ermessen",
+      "mixed": "Gemischt",
+      "unknown": "Unbekannt"
+    },
+    "confirmationQuality": {
+      "complete": "Vollständig bestätigt",
+      "with_gaps": "Mit offenen Punkten bestätigt"
+    }
+  }
+}

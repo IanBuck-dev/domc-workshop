@@ -6,8 +6,12 @@ import {
 } from "../apps/web/src/lib/process-navigation-model.ts";
 import type { ProcessCaptureRecord } from "../apps/web/src/lib/process-types.ts";
 
-function process(state: ProcessCaptureRecord["state"], version = 2) {
-  return { state, profile: { version } } as Pick<
+function process(
+  state: ProcessCaptureRecord["state"],
+  version = 2,
+  overrides: Partial<ProcessCaptureRecord> = {},
+) {
+  return { state, profile: { version }, ...overrides } as Pick<
     ProcessCaptureRecord,
     "state" | "profile"
   >;
@@ -112,6 +116,27 @@ describe("process navigation model", () => {
     });
   });
 
+  test("offers the real PDD only for confirmed profile-3 definitions", () => {
+    const confirmed = {
+      confirmedAt: "2026-08-12T10:00:00.000Z",
+      understanding: {},
+    } as Partial<ProcessCaptureRecord>;
+    expect(
+      processNavigationModel(process("confirmed", 2, confirmed)).pdd,
+    ).toMatchObject({ status: "Nicht verfügbar", action: null });
+    expect(
+      processNavigationModel(
+        process("confirmed", 3, {
+          ...confirmed,
+          currentStateDetails: {},
+        } as Partial<ProcessCaptureRecord>),
+      ).pdd,
+    ).toMatchObject({ action: "export_pdd" });
+    expect(
+      processNavigationModel(process("confirmed", 3, confirmed)).pdd,
+    ).toMatchObject({ status: "Nicht verfügbar", action: null });
+  });
+
   test("nennt bei jedem gesperrten Modul einen Grund und sonst keinen", () => {
     const states: Parameters<typeof process>[0][] = [
       "capture_in_progress",
@@ -128,7 +153,7 @@ describe("process navigation model", () => {
       opportunity("completed"),
       opportunity("completed", { isStale: true }),
     ];
-    for (const version of [1, 2])
+    for (const version of [1, 2, 3])
       for (const state of states)
         for (const analysis of analyses)
           for (const module of Object.values(

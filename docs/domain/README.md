@@ -20,6 +20,8 @@ process documentation corpus**.
 
 The product boundary is deliberate and enforced in `AGENTS.md`: no solution assessment,
 no financial values, no scoring, no prioritisation, no handover, no project management.
+Confirmed processes can also produce a read-only PDD Excel workbook; it is a downstream
+artifact, not a second canonical process record.
 
 ## The flow
 
@@ -58,6 +60,7 @@ no financial values, no scoring, no prioritisation, no handover, no project mana
 | [opportunity-discovery.md](opportunity-discovery.md)     | AI-potential hypotheses and the three human-oversight scenarios                                              |
 | [agent-memory.md](agent-memory.md)                       | The agent brain: one company-wide memory that grows with every confirmation                                  |
 | [process-documentation.md](process-documentation.md)     | The living documentation corpus and its viewer                                                               |
+| [pdd-export.md](pdd-export.md)                           | The deterministic current-state PDD Excel export using the versioned 17-sheet template                       |
 | [ai-runtime.md](ai-runtime.md)                           | How Claude is called: bounded operations, versioned prompts, validation, sandbox, progress events            |
 | [demo-data.md](demo-data.md)                             | The LifeCorp fixtures and the two seed scripts                                                               |
 | [access-and-public-pages.md](access-and-public-pages.md) | Login gate, session, demo-data warning, public pages                                                         |

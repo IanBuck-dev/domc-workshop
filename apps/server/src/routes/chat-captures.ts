@@ -212,6 +212,7 @@ export function chatCaptureRoutes(
         record.id,
         finalized.understanding,
         finalized.quality,
+        finalized.definition,
       );
       await service.chats.append(record.id, {
         schemaVersion: 2,

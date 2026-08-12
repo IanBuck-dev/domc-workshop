@@ -72,6 +72,11 @@ export function ProcessMap({
             <small className="font-semibold text-muted-foreground">
               Schritt {step.order}
             </small>
+            {!!step.exceptionRefs?.length && (
+              <span className="w-fit rounded-full bg-amber-100 px-2 py-1 text-label text-amber-950">
+                {step.exceptionRefs.length} Ausnahmen
+              </span>
+            )}
             {isEditMode ? (
               <label
                 className={cn(

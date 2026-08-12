@@ -126,7 +126,7 @@ export class OpportunityDiscoveryService {
       throw new Error(
         "Bitte bestätigen Sie zuerst das vollständige Prozessbild.",
       );
-    if (process.profile.version !== 2)
+    if (process.profile.version === 1)
       throw new Error(
         "Diese ältere Prozessaufnahme enthält noch nicht die erforderlichen Arbeitsmerkmale.",
       );

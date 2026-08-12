@@ -6,6 +6,7 @@ import { ChatCaptureRepository } from "../packages/storage/src/chat-capture-repo
 import { ProcessCaptureRepository } from "../packages/storage/src/process-capture-repository.ts";
 import { cover, processConfig, understanding } from "./process-fixtures.ts";
 import { createOpportunityProcessSnapshot } from "../packages/domain/src/opportunity-discovery.ts";
+import { verifyProcessDefinitionFile } from "../apps/server/src/process-flow-verification.ts";
 
 const roots: string[] = [];
 afterEach(async () => {
@@ -22,7 +23,89 @@ async function fixture() {
   return { root, processes, record, chats: new ChatCaptureRepository(root) };
 }
 
+async function writeWorkingDefinition(
+  processes: ProcessCaptureRepository,
+  record: Awaited<ReturnType<ProcessCaptureRepository["create"]>>,
+  value: ReturnType<typeof understanding>,
+) {
+  await writeFile(
+    join(processes.dir(record.id), "process-definition.json"),
+    JSON.stringify({
+      schemaVersion: 1,
+      understanding: value,
+      currentStateDetails: record.currentStateDetails!,
+    }),
+  );
+}
+
 describe("chat capture storage", () => {
+  test("publishes one verified profile-3 process definition and both projections", async () => {
+    const root = await mkdtemp(join(tmpdir(), "chat-storage-pdd-"));
+    roots.push(root);
+    const processes = new ProcessCaptureRepository(root);
+    const record = await processes.create(cover, await processConfig(), "chat");
+    const chats = new ChatCaptureRepository(root);
+    const messageId = crypto.randomUUID();
+    await chats.append(record.id, {
+      schemaVersion: 2,
+      id: messageId,
+      turnId: messageId,
+      at: new Date().toISOString(),
+      role: "user",
+      status: "complete",
+      text: "Fachliche Beschreibung",
+      mentions: [],
+      action: "message",
+    });
+    const value = understanding();
+    value.evidence.forEach((evidence) => {
+      evidence.kind = "chat_message";
+      evidence.sourceId = messageId;
+    });
+    const definition = {
+      schemaVersion: 1 as const,
+      understanding: value,
+      currentStateDetails: record.currentStateDetails!,
+    };
+    const working = join(processes.dir(record.id), "process-definition.json");
+    await writeFile(working, JSON.stringify(definition));
+    expect(await verifyProcessDefinitionFile(working)).toMatchObject({
+      ok: true,
+    });
+    const reconciled = await chats.reconcile(
+      await processes.required(record.id),
+      true,
+    );
+    expect(reconciled.status).toBe("valid");
+    expect("definition" in reconciled && reconciled.definition).toEqual(
+      definition,
+    );
+    expect(
+      JSON.parse(
+        await readFile(
+          join(
+            processes.dir(record.id),
+            "chat",
+            "last-valid-process-definition.json",
+          ),
+          "utf8",
+        ),
+      ),
+    ).toEqual(definition);
+    expect(
+      JSON.parse(
+        await readFile(
+          join(processes.dir(record.id), "process-understanding.json"),
+          "utf8",
+        ),
+      ),
+    ).toEqual(value);
+    await writeFile(working, "{ broken");
+    const fallback = await chats.reconcile(await processes.required(record.id));
+    expect(fallback.status).toBe("invalid");
+    expect("definition" in fallback && fallback.definition).toEqual(definition);
+  });
+
   test("creates isolated chat artifacts and an append-only transcript", async () => {
     const { processes, record, chats } = await fixture();
     expect(
@@ -30,6 +113,7 @@ describe("chat capture storage", () => {
     ).toEqual([
       "contract-manifest.json",
       "contracts",
+      "last-valid-process-definition.json",
       "last-valid-process-understanding.json",
       "session.json",
       "state.json",
@@ -43,7 +127,7 @@ describe("chat capture storage", () => {
       "utf8",
     );
     expect(frozenPrompt.length).toBeGreaterThan(100);
-    expect(frozenPrompt).toContain("Beim Aufteilen");
+    expect(frozenPrompt).toContain("PDD-Ist-Zustand");
     expect(
       JSON.parse(
         await readFile(
@@ -92,10 +176,7 @@ describe("chat capture storage", () => {
       evidence.kind = "chat_message";
       evidence.sourceId = messageId;
     }
-    await writeFile(
-      join(processes.dir(record.id), "process-understanding.json"),
-      JSON.stringify(value),
-    );
+    await writeWorkingDefinition(processes, record, value);
     const valid = await chats.reconcile(
       await processes.required(record.id),
       true,
@@ -120,10 +201,7 @@ describe("chat capture storage", () => {
     expect(
       (await processes.required(record.id)).understanding?.steps,
     ).toHaveLength(5);
-    const working = join(
-      processes.dir(record.id),
-      "process-understanding.json",
-    );
+    const working = join(processes.dir(record.id), "process-definition.json");
     for (const invalidWorkingFile of [
       "{ partial",
       JSON.stringify({ ...value, steps: [] }),
@@ -156,7 +234,7 @@ describe("chat capture storage", () => {
     }
     const nextValue = structuredClone(value);
     nextValue.steps[0]!.name = "Neu belegter erster Schritt";
-    await writeFile(working, JSON.stringify(nextValue));
+    await writeWorkingDefinition(processes, record, nextValue);
     const reloadedProcesses = new ProcessCaptureRepository(root);
     const reloadedChats = new ChatCaptureRepository(root);
     const recovered = await reloadedChats.reconcile(
@@ -207,7 +285,7 @@ describe("chat capture storage", () => {
     );
     if (!firstNode) throw new Error("Der erste Schrittknoten fehlt.");
     firstNode.stepId = "new-first-step";
-    await writeFile(working, JSON.stringify(identityChanged));
+    await writeWorkingDefinition(processes, record, identityChanged);
     const identityRevision = await chats.reconcile(
       await processes.required(record.id),
       true,
@@ -247,10 +325,7 @@ describe("chat capture storage", () => {
       evidence.kind = "chat_message";
       evidence.sourceId = messageId;
     }
-    await writeFile(
-      join(processes.dir(record.id), "process-understanding.json"),
-      JSON.stringify(value),
-    );
+    await writeWorkingDefinition(processes, record, value);
     const blocked = await chats.finalize(
       await processes.required(record.id),
       false,
@@ -267,6 +342,7 @@ describe("chat capture storage", () => {
         record.id,
         finalized.understanding,
         finalized.quality,
+        "definition" in finalized ? finalized.definition : undefined,
       );
       const snapshot = createOpportunityProcessSnapshot(confirmed);
       expect(snapshot.confirmationQuality).toBe("with_gaps");
@@ -299,10 +375,7 @@ describe("chat capture storage", () => {
       evidence.kind = "chat_message";
       evidence.sourceId = messageId;
     }
-    await writeFile(
-      join(processes.dir(record.id), "process-understanding.json"),
-      JSON.stringify(value),
-    );
+    await writeWorkingDefinition(processes, record, value);
 
     const finalized = await chats.finalize(
       await processes.required(record.id),
@@ -333,7 +406,11 @@ describe("chat capture storage", () => {
       evidence.kind = "chat_message";
       evidence.sourceId = messageId;
     }
-    await processes.finalizeChatCapture(record.id, value, "complete");
+    await processes.finalizeChatCapture(record.id, value, "complete", {
+      schemaVersion: 1,
+      understanding: value,
+      currentStateDetails: record.currentStateDetails!,
+    });
 
     const korrigiert = structuredClone(value);
     korrigiert.purpose.value = "Fachlich geschärfter Zweck";

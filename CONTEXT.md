@@ -24,8 +24,12 @@ _Avoid_: Chain of thought, reasoning log, tool log
 The alternative Interaction Mode in which a person supplies process information through structured fields before reviewing the Process Understanding.
 _Avoid_: Classic mode, manual mode
 
+**Process Record**:
+The single domain aggregate for one captured process. It owns the raw capture material, the Process Understanding, the Process Diagram, fixed PDD fields, provenance, confirmation, and validation state. These parts may be persisted in multiple atomic files but form one process object in the domain.
+_Avoid_: PDD Definition as a separate record, Excel as process storage
+
 **Process Understanding**:
-The structured, evidence-aware description of the current process that a person ultimately confirms. It includes the ordered process steps and the known inputs, outputs, information, decisions, assumptions, and gaps.
+The structured, evidence-aware current-state description within a Process Record that a person ultimately confirms. It includes the ordered process steps and the known inputs, outputs, information, decisions, assumptions, and gaps.
 _Avoid_: AI result, assessment result
 
 **Process Diagram**:
@@ -40,8 +44,16 @@ _Avoid_: Sidebar, mini diagram, second Process Diagram
 One ordered activity in the current process. A Process Step is the primary visible element of the initial Process Diagram.
 _Avoid_: Form section, criterion
 
+**Process Actor**:
+A department, role, or external party involved in a Process Step, together with how it participates. Process Actors identify organizational responsibility without naming individual people.
+_Avoid_: Workshop participant, user account
+
+**Process Variation**:
+A confirmed difference in current handling. A Flow Branch represents a variation that changes the path, step order, or outcome; a Step Exception represents a smaller variation that leaves the main sequence intact and is attached to the affected Process Steps.
+_Avoid_: Optimization idea, future scenario
+
 **Transition**:
-The connection from one Process Step to the next in the current process. In the initial linear Process Diagram, every Transition connects two adjacent Process Steps.
+The connection from one Process Step to the next in the current process. A Transition may describe a confirmed responsibility or information handoff, including its channel and whether a media break occurs.
 _Avoid_: Vertex, workflow branch
 
 **Process Confirmation**:
@@ -55,3 +67,7 @@ _Avoid_: Forced completion, ignored warning
 **Opportunity Discovery**:
 The downstream analysis that derives evidence-backed KI-potential hypotheses and three human-oversight scenarios from a confirmed Process Understanding.
 _Avoid_: Process Capture, solution assessment, project scoring
+
+**PDD Export**:
+A deterministic, read-only Excel Process Definition Document derived from the confirmed fields of one Process Record. It preserves the confirmed source revision, provenance, assumptions, open points, and evidence; it is never imported back.
+_Avoid_: Editable process document, template editor, process assessment

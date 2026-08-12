@@ -227,8 +227,11 @@ export class ChatTurnRunner {
             : undefined;
         if (
           typeof target === "string" &&
-          resolve(this.processes.dir(id), target) ===
-            resolve(this.processes.dir(id), "process-understanding.json")
+          ["process-understanding.json", "process-definition.json"].some(
+            (name) =>
+              resolve(this.processes.dir(id), target) ===
+              resolve(this.processes.dir(id), name),
+          )
         )
           activity("updating_diagram");
       }

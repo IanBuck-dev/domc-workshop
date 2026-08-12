@@ -18,7 +18,10 @@ import {
 import { ChatCaptureRepository } from "../../../packages/storage/src/chat-capture-repository.ts";
 import type { MemoryRepository } from "../../../packages/storage/src/memory-repository.ts";
 import { ProcessCaptureRepository } from "../../../packages/storage/src/process-capture-repository.ts";
-import { verifyProcessFlowFile } from "./process-flow-verification.ts";
+import {
+  verifyProcessDefinitionFile,
+  verifyProcessFlowFile,
+} from "./process-flow-verification.ts";
 
 export type { ChatUnderstandingEvent } from "../../../packages/domain/src/chat-capture.ts";
 
@@ -281,7 +284,7 @@ export class ChatCaptureService {
 
     record = await this.processes.required(id);
     const session = await this.chats.session(id);
-    const contracts = await this.freezeContracts(id);
+    const contracts = await this.freezeContracts(id, record.profile.version);
     if (
       request.action === "message" &&
       request.selectedUploadIds.some(
@@ -339,9 +342,13 @@ export class ChatCaptureService {
       maxBudgetUsd: record.configSnapshot.ai.maxBudgetUsd,
       signal,
       verifyProcessFlow: () =>
-        verifyProcessFlowFile(
-          join(this.processes.dir(id), "process-understanding.json"),
-        ),
+        record.profile.version === 3
+          ? verifyProcessDefinitionFile(
+              join(this.processes.dir(id), "process-definition.json"),
+            )
+          : verifyProcessFlowFile(
+              join(this.processes.dir(id), "process-understanding.json"),
+            ),
     });
     return {
       duplicate: false,
@@ -364,9 +371,17 @@ export class ChatCaptureService {
     if (finishReason !== "stop")
       throw new Error(`Chat turn did not finish cleanly: ${finishReason}`);
     const verification = turn.verification();
-    const current = await verifyProcessFlowFile(
-      join(this.processes.dir(turn.record.id), "process-understanding.json"),
-    );
+    const current =
+      turn.record.profile.version === 3
+        ? await verifyProcessDefinitionFile(
+            join(this.processes.dir(turn.record.id), "process-definition.json"),
+          )
+        : await verifyProcessFlowFile(
+            join(
+              this.processes.dir(turn.record.id),
+              "process-understanding.json",
+            ),
+          );
     if (
       !verification.ok ||
       !current.ok ||
@@ -452,11 +467,15 @@ export class ChatCaptureService {
     }
   }
 
-  private async freezeContracts(id: string) {
+  private async freezeContracts(id: string, profileVersion: number) {
     const chatDir = join(this.processes.dir(id), "chat");
     const contractsDir = join(chatDir, "contracts");
     const promptPath = join(contractsDir, "process-chat.md");
-    const schemaPath = join(contractsDir, "process-understanding.schema.json");
+    const definitionMode = profileVersion === 3;
+    const schemaPath = join(
+      contractsDir,
+      `${definitionMode ? "process-definition" : "process-understanding"}.schema.json`,
+    );
     const manifestPath = join(chatDir, "contract-manifest.json");
     await mkdir(contractsDir, { recursive: true });
     const existingManifest = await readFile(manifestPath, "utf8").catch(
@@ -465,11 +484,21 @@ export class ChatCaptureService {
     if (!existingManifest.trim() || existingManifest.trim() === "{}") {
       await Promise.all([
         copyFile(
-          join(process.cwd(), "defaults/prompts/process-chat.md"),
+          join(
+            process.cwd(),
+            "defaults/prompts",
+            definitionMode ? "process-chat-v3.md" : "process-chat.md",
+          ),
           promptPath,
         ),
         copyFile(
-          join(process.cwd(), "defaults/ai-schemas/process-understanding.json"),
+          join(
+            process.cwd(),
+            "defaults/ai-schemas",
+            definitionMode
+              ? "process-definition.json"
+              : "process-understanding.json",
+          ),
           schemaPath,
         ),
       ]);
@@ -507,7 +536,11 @@ export class ChatCaptureService {
 
   private async recoveryContext(id: string) {
     const transcript = await this.chats.transcript(id);
-    const lastValid = await this.chats.lastValid(id).catch(() => null);
+    const record = await this.processes.required(id);
+    const lastValid =
+      record.profile.version === 3
+        ? await this.chats.lastValidDefinition(id).catch(() => null)
+        : await this.chats.lastValid(id).catch(() => null);
     return `Wiederherstellung einer unterbrochenen Sitzung. Nutzen Sie ausschließlich den folgenden anwendungseigenen Stand, bevor Sie die neue Nachricht verarbeiten.\n\nBisheriger Chat:\n${transcript
       .map((event) => `${event.role}: ${event.text}`)
       .join(

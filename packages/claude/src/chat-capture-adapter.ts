@@ -22,7 +22,7 @@ export class ClaudeChatCaptureAdapter implements ChatCaptureClaudeAdapter {
     const processTools = {
       verify_process_flow: tool({
         description:
-          "Prüft die bereits geschriebene process-understanding.json vollständig. Nach jedem Write und vor dem Abschluss aufrufen; Fehler korrigieren und erneut prüfen.",
+          "Prüft den bereits geschriebenen vollständigen Prozessstand. Nach jedem Write und vor dem Abschluss aufrufen; Fehler korrigieren und erneut prüfen.",
         inputSchema: z.object({}),
         execute: async () => {
           const verification = await request.verifyProcessFlow();

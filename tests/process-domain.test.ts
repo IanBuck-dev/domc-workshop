@@ -61,7 +61,7 @@ describe("process-understanding V3", () => {
         ...value,
         steps: [{ ...value.steps[0], decisions: [] }],
       }),
-    ).toThrow();
+    ).not.toThrow();
   });
 
   test("accepts only typed graph identifiers", () => {

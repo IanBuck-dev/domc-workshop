@@ -11,7 +11,9 @@ import {
 } from "../../domain/src/chat-capture.ts";
 import {
   processUnderstandingSchema,
+  processDefinitionDraftSchema,
   type ProcessCaptureRecord,
+  type ProcessDefinitionDraft,
   type ProcessUnderstanding,
   assertUnderstandingReferences,
 } from "../../domain/src/process-understanding.ts";
@@ -34,16 +36,30 @@ export class ChatCaptureRepository {
     return join(this.dir(id), name);
   }
 
-  async initialize(id: string) {
+  async initialize(id: string, profileVersion = 2) {
     const now = new Date().toISOString();
     await mkdir(join(this.dir(id), "contracts"), { recursive: true });
     await mkdir(join(this.dir(id), "tmp"), { recursive: true });
     const defaultsRoot =
       process.env.CLAIMS_AI_DEFAULTS_DIR ?? resolve(process.cwd(), "defaults");
+    const definitionMode = profileVersion === 3;
     const [prompt, schemaText] = await Promise.all([
-      readFile(join(defaultsRoot, "prompts", "process-chat.md"), "utf8"),
       readFile(
-        join(defaultsRoot, "ai-schemas", "process-understanding.json"),
+        join(
+          defaultsRoot,
+          "prompts",
+          definitionMode ? "process-chat-v3.md" : "process-chat.md",
+        ),
+        "utf8",
+      ),
+      readFile(
+        join(
+          defaultsRoot,
+          "ai-schemas",
+          definitionMode
+            ? "process-definition.json"
+            : "process-understanding.json",
+        ),
         "utf8",
       ),
     ]);
@@ -82,13 +98,25 @@ export class ChatCaptureRepository {
         this.path(id, "last-valid-process-understanding.json"),
         "null\n",
       ),
-      atomicWrite(
-        join(this.processDir(id), "process-understanding.json"),
-        "null\n",
-      ),
+      ...(definitionMode
+        ? [
+            atomicWrite(
+              this.path(id, "last-valid-process-definition.json"),
+              "null\n",
+            ),
+          ]
+        : [
+            atomicWrite(
+              join(this.processDir(id), "process-understanding.json"),
+              "null\n",
+            ),
+          ]),
       atomicWrite(this.path(id, "contracts/process-chat.md"), prompt),
       atomicWrite(
-        this.path(id, "contracts/process-understanding.schema.json"),
+        this.path(
+          id,
+          `contracts/${definitionMode ? "process-definition" : "process-understanding"}.schema.json`,
+        ),
         schemaText,
       ),
       atomicWrite(
@@ -175,6 +203,17 @@ export class ChatCaptureRepository {
       ),
     );
   }
+  async lastValidDefinition(
+    id: string,
+  ): Promise<ProcessDefinitionDraft | null> {
+    const value = JSON.parse(
+      await readFile(
+        this.path(id, "last-valid-process-definition.json"),
+        "utf8",
+      ),
+    );
+    return value === null ? null : processDefinitionDraftSchema.parse(value);
+  }
   /**
    * Übernimmt einen fachlich korrigierten Stand als letzten gültigen Stand.
    * Anders als bei `reconcile` stammt er nicht aus einem KI-Zug, sondern aus
@@ -182,14 +221,35 @@ export class ChatCaptureRepository {
    * veröffentlicht. Ohne diesen Schritt läse `ProcessCaptureRepository.get`
    * für eine Chat-Aufnahme in Prüfung weiterhin den Stand vor der Korrektur.
    */
-  async publishCorrection(id: string, understanding: ProcessUnderstanding) {
-    await atomicWrite(
-      this.path(id, "last-valid-process-understanding.json"),
-      JSON.stringify(understanding, null, 2) + "\n",
-    );
+  async publishCorrection(
+    id: string,
+    understanding: ProcessUnderstanding,
+    definition?: ProcessDefinitionDraft,
+  ) {
+    if (
+      definition &&
+      JSON.stringify(definition.understanding) !== JSON.stringify(understanding)
+    )
+      throw new Error(
+        "Die Korrekturdefinition stimmt nicht mit dem Prozessverständnis überein.",
+      );
+    await Promise.all([
+      atomicWrite(
+        this.path(id, "last-valid-process-understanding.json"),
+        JSON.stringify(understanding, null, 2) + "\n",
+      ),
+      ...(definition
+        ? [
+            atomicWrite(
+              this.path(id, "last-valid-process-definition.json"),
+              JSON.stringify(definition, null, 2) + "\n",
+            ),
+          ]
+        : []),
+    ]);
     await this.updateState(id, {
       lastValidRevision: createHash("sha256")
-        .update(JSON.stringify(understanding))
+        .update(JSON.stringify(definition ?? understanding))
         .digest("hex"),
       lastValidAt: new Date().toISOString(),
     });
@@ -199,6 +259,8 @@ export class ChatCaptureRepository {
    * ihn veröffentlichen. Dadurch bleibt der letzte gültige Stand stabil.
    */
   async reconcile(record: ProcessCaptureRecord, publish = false) {
+    if (record.profile.version === 3)
+      return this.reconcileDefinition(record, publish);
     const file = join(this.processDir(record.id), "process-understanding.json");
     let raw: string;
     try {
@@ -296,9 +358,12 @@ export class ChatCaptureRepository {
       join(this.processDir(record.id), "process-understanding.json"),
       JSON.stringify(reconciled.understanding, null, 2) + "\n",
     );
+    const definition =
+      "definition" in reconciled ? reconciled.definition : undefined;
     return {
       overrideRequired: false as const,
       understanding: reconciled.understanding,
+      ...(definition ? { definition } : {}),
       quality: hasOpen ? ("with_gaps" as const) : ("complete" as const),
     };
   }
@@ -316,6 +381,117 @@ export class ChatCaptureRepository {
   }
   async remove(id: string) {
     await rm(this.dir(id), { recursive: true, force: true });
+  }
+  private async reconcileDefinition(
+    record: ProcessCaptureRecord,
+    publish: boolean,
+  ) {
+    const fallback = () =>
+      this.lastValidDefinition(record.id).catch(() => null);
+    const file = join(this.processDir(record.id), "process-definition.json");
+    let raw: string;
+    try {
+      raw = await readFile(file, "utf8");
+    } catch {
+      const definition = await fallback();
+      return {
+        status: "missing" as const,
+        understanding: definition?.understanding ?? null,
+        definition,
+      };
+    }
+    if (
+      Buffer.byteLength(raw) > MAX_WORKING_BYTES ||
+      !raw.trim() ||
+      raw.trim() === "null"
+    ) {
+      const definition = await fallback();
+      return {
+        status:
+          raw.trim() === "null" ? ("missing" as const) : ("invalid" as const),
+        understanding: definition?.understanding ?? null,
+        definition,
+      };
+    }
+    let definition: ProcessDefinitionDraft;
+    try {
+      definition = processDefinitionDraftSchema.parse(JSON.parse(raw));
+      const messages = new Set(
+        (await this.transcript(record.id))
+          .filter((item) => item.role === "user")
+          .map((item) => item.id),
+      );
+      assertUnderstandingReferences(record, definition.understanding, {
+        chatMessageIds: messages,
+      });
+    } catch {
+      const lastValid = await fallback();
+      return {
+        status: "invalid" as const,
+        understanding: lastValid?.understanding ?? null,
+        definition: lastValid,
+      };
+    }
+    const revision = createHash("sha256").update(raw).digest("hex");
+    const state = await this.state(record.id);
+    if (publish && state.lastValidRevision !== revision) {
+      const prior = await this.lastValidDefinition(record.id).catch(() => null);
+      const priorIds = new Set(
+        prior?.understanding.steps.map((step) => step.id) ?? [],
+      );
+      const currentIds = new Set(
+        definition.understanding.steps.map((step) => step.id),
+      );
+      const retained = [...currentIds].filter((stepId) => priorIds.has(stepId));
+      const added = [...currentIds].filter((stepId) => !priorIds.has(stepId));
+      const removed = [...priorIds].filter((stepId) => !currentIds.has(stepId));
+      await Promise.all([
+        atomicWrite(
+          this.path(record.id, "last-valid-process-definition.json"),
+          JSON.stringify(definition, null, 2) + "\n",
+        ),
+        atomicWrite(
+          this.path(record.id, "last-valid-process-understanding.json"),
+          JSON.stringify(definition.understanding, null, 2) + "\n",
+        ),
+        atomicWrite(
+          join(this.processDir(record.id), "process-understanding.json"),
+          JSON.stringify(definition.understanding, null, 2) + "\n",
+        ),
+      ]);
+      await this.updateState(record.id, {
+        lastValidRevision: revision,
+        lastValidAt: new Date().toISOString(),
+      });
+      await audit(
+        join(this.processDir(record.id), "history.jsonl"),
+        "chat-understanding-published",
+        {
+          revision,
+          evidence: definition.understanding.evidence.map((item) => item.id),
+          gapCount: definition.understanding.knowledgeGaps.length,
+          conflictCount: definition.understanding.conflicts.length,
+        },
+      );
+      if (prior && (added.length || removed.length))
+        await audit(
+          join(this.processDir(record.id), "history.jsonl"),
+          "chat-understanding-step-identities-changed",
+          {
+            priorRevision: state.lastValidRevision,
+            currentRevision: revision,
+            retainedStepIds: retained.slice(0, 8),
+            addedStepIds: added.slice(0, 8),
+            removedStepIds: removed.slice(0, 8),
+          },
+        );
+    }
+    return {
+      status: "valid" as const,
+      revision,
+      understanding: definition.understanding,
+      definition,
+    };
   }
   private async writeState(id: string, value: ChatCaptureState) {
     await atomicWrite(

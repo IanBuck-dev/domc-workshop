@@ -180,7 +180,7 @@ export function opportunityRoutes(
         { error: "Bitte bestätigen Sie zuerst das vollständige Prozessbild." },
         409,
       );
-    if (process.profile.version !== 2)
+    if (process.profile.version === 1)
       return c.json(
         {
           error:

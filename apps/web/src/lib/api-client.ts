@@ -97,6 +97,43 @@ async function uploadBlob(processId: string, uploadId: string) {
   return response.blob();
 }
 
+function downloadFilename(contentDisposition: string | null, fallback: string) {
+  const extended = contentDisposition?.match(/filename\*=UTF-8''([^;]+)/i)?.[1];
+  if (extended) {
+    try {
+      return decodeURIComponent(extended);
+    } catch {
+      // The server fallback below remains safe if a proxy damages this header.
+    }
+  }
+  return contentDisposition?.match(/filename="?([^";]+)"?/i)?.[1] ?? fallback;
+}
+
+async function exportPdd(processId: string) {
+  const response = await fetch(
+    `/api/processes/${encodeURIComponent(processId)}/pdd-export`,
+    { method: "POST" },
+  );
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new ApiError(
+      (body as { error?: string }).error ??
+        "Die Excel-Arbeitsmappe konnte nicht erstellt werden.",
+      response.status,
+      (body as { code?: string }).code,
+      body,
+    );
+  }
+  return {
+    blob: await response.blob(),
+    filename: downloadFilename(
+      response.headers.get("content-disposition"),
+      "PDD.xlsx",
+    ),
+    sourceRevision: response.headers.get("x-pdd-source-revision"),
+  };
+}
+
 async function demoSzenarioDatei(slug: string, zielname: string) {
   const response = await fetch(
     `/api/demo/szenarien/${encodeURIComponent(slug)}/dateien/${encodeURIComponent(zielname)}`,
@@ -170,6 +207,7 @@ export const api = {
       method: "DELETE",
     }),
   uploadBlob,
+  exportPdd,
   uploadDownloadUrl: (id: string, uploadId: string) =>
     `/api/processes/${encodeURIComponent(id)}/uploads/${encodeURIComponent(uploadId)}?download=1`,
   analyze: (id: string) =>
