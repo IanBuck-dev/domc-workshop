@@ -3,6 +3,7 @@ import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { DemoSidecar } from "../components/demo-sidecar";
 import { ProcessBrief } from "../components/process-brief";
+import { ProcessCurrentStateDetails } from "../components/process-current-state-details";
 import { ProcessValidationComment } from "../components/process-validation-comment";
 import {
   ProcessTopicCard,
@@ -433,38 +434,41 @@ export function ProcessCapturePage() {
 
       {(record.state === "review_required" || record.state === "confirmed") &&
         record.understanding && (
-          <ProcessBrief
-            processId={record.id}
-            understanding={record.understanding}
-            uploads={record.uploads}
-            confirmed={record.state === "confirmed"}
-            saving={busy}
-            onSave={async (understanding, note) => {
-              setBusy(true);
-              setError("");
-              try {
-                setRecord(
-                  await api.correct(record.id, "flow", understanding, note),
-                );
-              } catch (reason) {
-                setError((reason as Error).message);
-                throw reason;
-              } finally {
-                setBusy(false);
-              }
-            }}
-            onConfirm={async () => {
-              setBusy(true);
-              setError("");
-              try {
-                setRecord(await api.confirm(record.id));
-              } catch (reason) {
-                setError((reason as Error).message);
-              } finally {
-                setBusy(false);
-              }
-            }}
-          />
+          <>
+            <ProcessCurrentStateDetails details={record.currentStateDetails} />
+            <ProcessBrief
+              processId={record.id}
+              understanding={record.understanding}
+              uploads={record.uploads}
+              confirmed={record.state === "confirmed"}
+              saving={busy}
+              onSave={async (understanding, note) => {
+                setBusy(true);
+                setError("");
+                try {
+                  setRecord(
+                    await api.correct(record.id, "flow", understanding, note),
+                  );
+                } catch (reason) {
+                  setError((reason as Error).message);
+                  throw reason;
+                } finally {
+                  setBusy(false);
+                }
+              }}
+              onConfirm={async () => {
+                setBusy(true);
+                setError("");
+                try {
+                  setRecord(await api.confirm(record.id));
+                } catch (reason) {
+                  setError((reason as Error).message);
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            />
+          </>
         )}
     </section>
   );

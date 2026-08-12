@@ -47,6 +47,7 @@ export async function prepareChatSandboxSpawn(
     join(options.cwd, "chat", "contracts"),
     join(options.cwd, "chat", "tmp"),
     join(options.cwd, "process-understanding.json"),
+    join(options.cwd, "process-definition.json"),
     claudeConfig,
     claudeState,
     claudeExecutable,
@@ -54,6 +55,7 @@ export async function prepareChatSandboxSpawn(
   ].filter((value): value is string => Boolean(value));
   const allowedWrite = [
     join(options.cwd, "process-understanding.json"),
+    join(options.cwd, "process-definition.json"),
     join(options.cwd, "chat", "tmp"),
     claudeConfig,
     claudeState,

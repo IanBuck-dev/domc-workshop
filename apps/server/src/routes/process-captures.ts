@@ -265,7 +265,7 @@ export function processCaptureRoutes(
         "synthesis_ready",
       ].includes(record.state) ||
       record.mainAnswers.length !== 5 ||
-      (record.profile.version === 2 &&
+      (record.profile.version !== 1 &&
         !workCharacteristicAnswersSchema.safeParse(
           record.workCharacteristicAnswers,
         ).success)

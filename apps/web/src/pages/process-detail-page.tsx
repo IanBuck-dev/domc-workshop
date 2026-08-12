@@ -2,6 +2,7 @@ import {
   ArrowLeft,
   ArrowRight,
   EllipsisVertical,
+  FileSpreadsheet,
   Sparkles,
   Trash2,
   Workflow,
@@ -36,6 +37,7 @@ export function ProcessDetailPage() {
   const [opportunity, setOpportunity] = useState<OpportunityDiscoverySummary>();
   const [opportunityLoaded, setOpportunityLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -150,7 +152,7 @@ export function ProcessDetailPage() {
           {error}
         </p>
       )}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {process && navigation ? (
           <ProcessModuleCard
             title="Prozessaufnahme"
@@ -165,6 +167,17 @@ export function ProcessDetailPage() {
                 {navigation.capture.actionLabel} <ArrowRight />
               </Link>
             }
+          />
+        ) : (
+          <ProcessModuleCardSkeleton />
+        )}
+        {process && navigation ? (
+          <ProcessModuleCard
+            title="PDD-Export"
+            description="Eine schreibgeschützte Excel-Arbeitsmappe aus dem bestätigten Prozessbild."
+            icon={<FileSpreadsheet />}
+            state={navigation.pdd}
+            action={pddAction(navigation.pdd)}
           />
         ) : (
           <ProcessModuleCardSkeleton />
@@ -257,6 +270,46 @@ export function ProcessDetailPage() {
         </Link>
       );
     return null;
+  }
+
+  function pddAction(state: ModuleNavigationState) {
+    if (state.action !== "export_pdd") return null;
+    return (
+      <Button
+        disabled={exporting}
+        aria-busy={exporting}
+        onClick={async () => {
+          setExporting(true);
+          setError("");
+          try {
+            const result = await api.exportPdd(id);
+            const url = URL.createObjectURL(result.blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = result.filename;
+            link.style.display = "none";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.setTimeout(() => URL.revokeObjectURL(url), 0);
+          } catch (reason) {
+            setError((reason as Error).message);
+          } finally {
+            setExporting(false);
+          }
+        }}
+      >
+        {exporting ? (
+          <>
+            <Spinner /> Wird erstellt …
+          </>
+        ) : (
+          <>
+            {state.actionLabel} <FileSpreadsheet />
+          </>
+        )}
+      </Button>
+    );
   }
 }
 

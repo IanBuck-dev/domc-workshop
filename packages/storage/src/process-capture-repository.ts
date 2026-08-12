@@ -19,6 +19,7 @@ import {
   processStateSchema,
   processUnderstandingStorageSchema,
   processUnderstandingSchema,
+  processDefinitionDraftSchema,
   topicAnswerSchema,
   uploadRecordSchema,
   validationInputSnapshotSchema,
@@ -30,6 +31,7 @@ import {
   type ProcessCaptureConfig,
   type ProcessCaptureRecord,
   type ProcessUnderstanding,
+  type ProcessDefinitionDraft,
   type UploadRecord,
   type ValidationInputSnapshot,
   type WorkCharacteristicAnswer,
@@ -39,6 +41,8 @@ import {
   processHistoryEventNameSchema,
   type ProcessHistoryEventName,
 } from "../../domain/src/process-events.ts";
+import { pddExportAuditDetailSchema } from "../../domain/src/pdd-export.ts";
+import { derivePddCoverage } from "../../domain/src/pdd-export.ts";
 import { ChatCaptureRepository } from "./chat-capture-repository.ts";
 import { atomicWrite } from "./atomic-write.ts";
 import { audit } from "./audit-log.ts";
@@ -49,7 +53,7 @@ const metadataSchema = z.object({
   state: processStateSchema,
   profile: z.object({
     id: z.literal("compact-v1"),
-    version: z.union([z.literal(1), z.literal(2)]),
+    version: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   }),
   configHash: z.string().regex(/^[a-f0-9]{64}$/),
   interactionMode: interactionModeSchema.default("form"),
@@ -419,15 +423,33 @@ export class ProcessCaptureRepository {
           ? new ChatCaptureRepository(this.root)
           : null;
       const chatState = chat ? await chat.state(id) : null;
+      const chatDefinition =
+        chat &&
+        configSnapshot.profile.version === 3 &&
+        metadata.state !== "confirmed"
+          ? await chat.lastValidDefinition(id).catch(() => null)
+          : null;
       const understanding = chat
         ? metadata.state === "confirmed"
           ? z
               .union([processUnderstandingStorageSchema, z.null()])
               .parse(JSON.parse(rawUnderstandingText))
-          : await chat.lastValid(id)
+          : (chatDefinition?.understanding ?? (await chat.lastValid(id)))
         : z
             .union([processUnderstandingStorageSchema, z.null()])
             .parse(JSON.parse(rawUnderstandingText));
+      const currentStateDetails =
+        configSnapshot.profile.version === 3
+          ? chat && metadata.state !== "confirmed"
+            ? (chatDefinition?.currentStateDetails ?? null)
+            : ((
+                (await Bun.file(join(dir, "process-definition.json"))
+                  .json()
+                  .catch(() => null)) as {
+                  currentStateDetails?: unknown;
+                } | null
+              )?.currentStateDetails ?? null)
+          : null;
       const record = processCaptureRecordSchema.parse({
         ...metadata,
         confirmationQuality: confirmationQualityOf(metadata, understanding),
@@ -437,6 +459,7 @@ export class ProcessCaptureRepository {
         selectedUploadIds:
           chatState?.selectedUploadIds ?? answers.selectedUploadIds,
         workCharacteristicAnswers: answers.workCharacteristicAnswers ?? [],
+        currentStateDetails,
         followUps: followUps.questions,
         followUpAnswers: followUps.answers,
         validationRuns: followUps.validationRuns,
@@ -485,7 +508,7 @@ export class ProcessCaptureRepository {
     const cover = coverSchema.parse(coverInput);
     const config = processCaptureConfigSchema.parse(configInput);
     const interactionMode = interactionModeSchema.parse(interactionModeInput);
-    if (config.profile.version !== 2)
+    if (config.profile.version !== 3)
       throw new Error(
         "Neue Prozessaufnahmen benötigen die aktuelle Profilversion.",
       );
@@ -526,6 +549,117 @@ export class ProcessCaptureRepository {
       validationRuns: [],
       selectedUploadIds: [],
       understanding: null,
+      currentStateDetails:
+        config.profile.version === 3
+          ? {
+              schemaVersion: 1,
+              currentStateSummary: {
+                state: "unknown",
+                value: null,
+                reason:
+                  "Kurzbeschreibung wurde noch nicht aus dem Prozessmaterial abgeleitet.",
+                provenance: "unknown",
+                evidenceIds: [],
+                confidence: null,
+                assumptions: [],
+                confirmed: false,
+              },
+              processOwner: {
+                state: "unknown",
+                value: null,
+                reason: "Prozesseigner ist noch nicht erfasst.",
+                provenance: "unknown",
+                evidenceIds: [],
+                confidence: null,
+                assumptions: [],
+                confirmed: false,
+              },
+              confidentiality: {
+                state: "known",
+                value: "internal",
+                reason: null,
+                provenance: "user_stated",
+                evidenceIds: [],
+                confidence: null,
+                assumptions: [],
+                confirmed: false,
+              },
+              systems: {
+                state: "unknown",
+                value: null,
+                reason: "Systemkatalog ist noch nicht erfasst.",
+                provenance: "unknown",
+                evidenceIds: [],
+                confidence: null,
+                assumptions: [],
+                confirmed: false,
+              },
+              painPoints: {
+                state: "unknown",
+                value: null,
+                reason: "Pain Points sind noch nicht erfasst.",
+                provenance: "unknown",
+                evidenceIds: [],
+                confidence: null,
+                assumptions: [],
+                confirmed: false,
+              },
+              variations: {
+                state: "unknown",
+                value: null,
+                reason: "Varianten und Ausnahmen sind noch nicht erfasst.",
+                provenance: "unknown",
+                evidenceIds: [],
+                confidence: null,
+                assumptions: [],
+                confirmed: false,
+              },
+              operationalContext: {
+                operationAndSupport: {
+                  state: "unknown",
+                  value: null,
+                  reason: "Betrieb und Support sind noch nicht erfasst.",
+                  provenance: "unknown",
+                  evidenceIds: [],
+                  confidence: null,
+                  assumptions: [],
+                  confirmed: false,
+                },
+                accessAndProtection: {
+                  state: "unknown",
+                  value: null,
+                  reason:
+                    "Berechtigung und Schutzbedarf sind noch nicht erfasst.",
+                  provenance: "unknown",
+                  evidenceIds: [],
+                  confidence: null,
+                  assumptions: [],
+                  confirmed: false,
+                },
+                monitoringAndTraceability: {
+                  state: "unknown",
+                  value: null,
+                  reason:
+                    "Monitoring und Nachvollziehbarkeit sind noch nicht erfasst.",
+                  provenance: "unknown",
+                  evidenceIds: [],
+                  confidence: null,
+                  assumptions: [],
+                  confirmed: false,
+                },
+                constraintsAndOpenQuestions: {
+                  state: "unknown",
+                  value: null,
+                  reason: "Offene Leitplanken sind noch nicht erfasst.",
+                  provenance: "unknown",
+                  evidenceIds: [],
+                  confidence: null,
+                  assumptions: [],
+                  confirmed: false,
+                },
+              },
+            }
+          : null,
       uploads: [],
       confirmedAt: null,
       createdAt: now,
@@ -535,7 +669,10 @@ export class ProcessCaptureRepository {
     try {
       await this.writeRecord(record);
       if (interactionMode === "chat")
-        await new ChatCaptureRepository(this.root).initialize(id);
+        await new ChatCaptureRepository(this.root).initialize(
+          id,
+          record.profile.version,
+        );
       await atomicWrite(join(this.dir(id), "operations.jsonl"), "");
       await audit(join(this.dir(id), "history.jsonl"), "process-created", {
         profile: record.profile,
@@ -742,6 +879,103 @@ export class ProcessCaptureRepository {
       }),
     );
     await this.writeJson(id, "process-understanding.json", understanding);
+    if (record.profile.version === 3) {
+      const summary = [
+        understanding.purpose.value,
+        understanding.trigger.value,
+        understanding.outcome.value,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+      const qualifiedCatalog = <T>(
+        fact:
+          ProcessUnderstanding["systems"] | ProcessUnderstanding["painPoints"],
+        values: T[] | null,
+        reason: string,
+      ) =>
+        values === null
+          ? {
+              state: "unknown" as const,
+              value: null,
+              reason,
+              provenance: "unknown" as const,
+              evidenceIds: [],
+              confidence: null,
+              assumptions: [],
+              confirmed: false,
+            }
+          : {
+              state: "known" as const,
+              value: values,
+              reason: null,
+              provenance: fact.provenance,
+              evidenceIds: fact.evidenceIds,
+              confidence: fact.confidence,
+              assumptions: fact.assumptions,
+              confirmed: false,
+            };
+      const systems =
+        understanding.systems.value?.map((name, index) => ({
+          id: `system-${index + 1}`,
+          name,
+          kind: "other" as const,
+        })) ?? null;
+      const painPoints =
+        understanding.painPoints.value?.map((description, index) => ({
+          id: `pain-${index + 1}`,
+          description,
+        })) ?? null;
+      const currentStateDetails = record.currentStateDetails
+        ? {
+            ...record.currentStateDetails,
+            currentStateSummary: {
+              state: summary ? ("known" as const) : ("unknown" as const),
+              value: summary || null,
+              reason: summary
+                ? null
+                : "Die Kurzbeschreibung lässt sich aus den vorliegenden Angaben noch nicht belastbar erzeugen.",
+              provenance: summary
+                ? ("ai_structured" as const)
+                : ("unknown" as const),
+              evidenceIds: [
+                ...new Set([
+                  ...understanding.purpose.evidenceIds,
+                  ...understanding.trigger.evidenceIds,
+                  ...understanding.outcome.evidenceIds,
+                ]),
+              ],
+              confidence:
+                Math.min(
+                  understanding.purpose.confidence ?? 0,
+                  understanding.trigger.confidence ?? 0,
+                  understanding.outcome.confidence ?? 0,
+                ) || null,
+              assumptions: [],
+              confirmed: false,
+            },
+            systems: qualifiedCatalog(
+              understanding.systems,
+              systems,
+              "Der Systemkatalog lässt sich aus den vorliegenden Angaben noch nicht belastbar erzeugen.",
+            ),
+            painPoints: qualifiedCatalog(
+              understanding.painPoints,
+              painPoints,
+              "Die aktuellen Pain Points lassen sich aus den vorliegenden Angaben noch nicht belastbar erzeugen.",
+            ),
+          }
+        : null;
+      await this.writeJson(id, "process-definition.json", {
+        schemaVersion: 1,
+        understanding,
+        currentStateDetails,
+      });
+      await this.writeMetadata({
+        ...record,
+        currentStateDetails,
+      } as ProcessCaptureRecord);
+    }
     await this.touch(record, "review_required");
     await this.recordAiOperation(id, "process-synthesis", "completed", trace);
     await audit(
@@ -821,8 +1055,22 @@ export class ProcessCaptureRepository {
       chatMessageIds,
     });
     await this.writeJson(id, "process-understanding.json", value);
+    const correctionDefinition =
+      record.profile.version === 3 && record.currentStateDetails
+        ? processDefinitionDraftSchema.parse({
+            schemaVersion: 1,
+            understanding: value,
+            currentStateDetails: record.currentStateDetails,
+          })
+        : undefined;
+    if (correctionDefinition)
+      await this.writeJson(id, "process-definition.json", correctionDefinition);
     if (record.interactionMode === "chat")
-      await new ChatCaptureRepository(this.root).publishCorrection(id, value);
+      await new ChatCaptureRepository(this.root).publishCorrection(
+        id,
+        value,
+        correctionDefinition,
+      );
     await this.touch(record, "review_required", null);
     await audit(
       join(this.dir(id), "history.jsonl"),
@@ -839,7 +1087,7 @@ export class ProcessCaptureRepository {
   ) {
     const record = await this.required(id);
     if (
-      record.profile.version !== 2 ||
+      record.profile.version === 1 ||
       !["review_required", "confirmed"].includes(record.state)
     )
       throw new Error("Die Arbeitsmerkmale können hier nicht geändert werden.");
@@ -870,8 +1118,13 @@ export class ProcessCaptureRepository {
     const record = await this.required(id);
     if (record.state !== "review_required" || !record.understanding)
       throw new Error("Bitte prüfen Sie zuerst das Prozessbild.");
+    const readiness =
+      record.profile.version === 3 ? derivePddCoverage(record) : null;
+    if (readiness && !readiness.valid)
+      throw new Error(readiness.errors.join(" "));
     const now = new Date().toISOString();
     const confirmationQuality =
+      readiness?.quality === "with_gaps" ||
       record.understanding.knowledgeGaps.length ||
       record.understanding.conflicts.length
         ? "with_gaps"
@@ -895,6 +1148,7 @@ export class ProcessCaptureRepository {
     id: string,
     understanding: ProcessUnderstanding,
     quality: "complete" | "with_gaps",
+    definition?: ProcessDefinitionDraft,
   ) {
     const record = await this.required(id);
     if (
@@ -902,19 +1156,53 @@ export class ProcessCaptureRepository {
       record.state !== "capture_in_progress"
     )
       throw new Error("Dieser Chat kann nicht bestätigt werden.");
+    const parsedDefinition =
+      record.profile.version === 3
+        ? processDefinitionDraftSchema.parse(definition)
+        : undefined;
+    if (
+      parsedDefinition &&
+      JSON.stringify(parsedDefinition.understanding) !==
+        JSON.stringify(understanding)
+    )
+      throw new Error(
+        "Die Prozessdefinition stimmt nicht mit dem Prozessverständnis überein.",
+      );
+    const pddRecord = parsedDefinition
+      ? processCaptureRecordSchema.parse({
+          ...record,
+          understanding,
+          currentStateDetails: parsedDefinition.currentStateDetails,
+        })
+      : record;
+    const readiness =
+      pddRecord.profile.version === 3 ? derivePddCoverage(pddRecord) : null;
+    if (readiness && !readiness.valid)
+      throw new Error(readiness.errors.join(" "));
+    const finalQuality =
+      readiness?.quality === "with_gaps" ||
+      understanding.knowledgeGaps.length ||
+      understanding.conflicts.length
+        ? "with_gaps"
+        : quality;
     const now = new Date().toISOString();
-    await this.writeJson(id, "process-understanding.json", understanding);
+    await Promise.all([
+      this.writeJson(id, "process-understanding.json", understanding),
+      ...(parsedDefinition
+        ? [this.writeJson(id, "process-definition.json", parsedDefinition)]
+        : []),
+    ]);
     await this.writeMetadata({
       ...record,
       state: "confirmed",
       confirmedAt: now,
-      confirmationQuality: quality,
+      confirmationQuality: finalQuality,
       updatedAt: now,
     });
     await audit(
       join(this.dir(id), "history.jsonl"),
       "chat-understanding-confirmed",
-      { confirmedAt: now, quality },
+      { confirmedAt: now, quality: finalQuality },
     );
     return this.required(id);
   }
@@ -1065,6 +1353,7 @@ export class ProcessCaptureRepository {
     detail: unknown,
   ) {
     await this.required(id);
+    if (event === "pdd-exported") pddExportAuditDetailSchema.parse(detail);
     await audit(join(this.dir(id), "history.jsonl"), event, detail);
   }
 
@@ -1123,6 +1412,15 @@ export class ProcessCaptureRepository {
         "process-understanding.json",
         record.understanding,
       ),
+      ...(record.profile.version === 3
+        ? [
+            this.writeJson(record.id, "process-definition.json", {
+              schemaVersion: 1,
+              understanding: record.understanding,
+              currentStateDetails: record.currentStateDetails,
+            }),
+          ]
+        : []),
     ]);
   }
   private validationInputSnapshot(

@@ -53,9 +53,16 @@ class FakeChatAdapter implements ChatCaptureClaudeAdapter {
       evidence.kind = "chat_message";
       evidence.sourceId = messageId;
     }
+    const initialDefinition = JSON.parse(
+      await readFile(join(request.cwd, "process-definition.json"), "utf8"),
+    ) as { currentStateDetails: unknown };
     await writeFile(
-      join(request.cwd, "process-understanding.json"),
-      JSON.stringify(value),
+      join(request.cwd, "process-definition.json"),
+      JSON.stringify({
+        schemaVersion: 1,
+        understanding: value,
+        currentStateDetails: initialDefinition.currentStateDetails,
+      }),
     );
     const flowVerification = this.skipFlowVerification
       ? null
@@ -77,7 +84,7 @@ class FakeChatAdapter implements ChatCaptureClaudeAdapter {
         type: "tool-call",
         toolCallId: "write-1",
         toolName: "Write",
-        input: { file_path: "process-understanding.json" },
+        input: { file_path: "process-definition.json" },
       };
       if (adapter.streamError) throw new Error("provider failed");
       if (adapter.hold)
@@ -566,7 +573,7 @@ describe("chat capture API", () => {
     expect(confirmed.status).toBe(200);
     expect((await confirmed.json()).opportunityStart).toBe("started");
     expect((await processes.required(record.id)).confirmationQuality).toBe(
-      "complete",
+      "with_gaps",
     );
     expect(opportunityStarts).toEqual([record.id]);
   });

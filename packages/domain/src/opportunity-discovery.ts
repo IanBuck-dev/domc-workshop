@@ -172,7 +172,7 @@ export function createOpportunityProcessSnapshot(input: unknown) {
       "Nur ein fachlich bestätigter Prozess kann analysiert werden.",
     );
   if (
-    record.profile.version !== 2 ||
+    record.profile.version === 1 ||
     !("workCharacteristics" in record.configSnapshot)
   )
     throw new Error(

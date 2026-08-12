@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Process definition draft",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "understanding", "currentStateDetails"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "understanding": { "type": "object" },
+    "currentStateDetails": { "type": "object" }
+  }
+}

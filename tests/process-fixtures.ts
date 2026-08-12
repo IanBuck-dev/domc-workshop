@@ -12,7 +12,7 @@ import {
 } from "../packages/domain/src/process-understanding.ts";
 
 export async function processConfig(): Promise<
-  Extract<ProcessCaptureConfig, { profile: { version: 2 } }>
+  Extract<ProcessCaptureConfig, { profile: { version: 2 | 3 } }>
 > {
   const config = processCaptureConfigSchema.parse(
     JSON.parse(
@@ -22,8 +22,8 @@ export async function processConfig(): Promise<
       ),
     ),
   );
-  if (config.profile.version !== 2 || !("workCharacteristics" in config))
-    throw new Error("The active test config must use profile version 2.");
+  if (config.profile.version === 1 || !("workCharacteristics" in config))
+    throw new Error("The active test config must use work characteristics.");
   return config;
 }
 

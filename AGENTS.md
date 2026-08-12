@@ -2,7 +2,7 @@
 
 ## Product boundary
 
-Build a local prototype that captures and confirms how a department process works today and, in a separate downstream module, discovers evidence-backed KI-potential hypotheses and three read-only human-oversight scenarios for confirmed processes. Do not add solution assessment, financial values, scoring, prioritization, handover, or general project-management features to the active flow.
+Build a local prototype that captures and confirms how a department process works today and, in separate downstream modules, discovers evidence-backed KI-potential hypotheses with three read-only human-oversight scenarios and creates read-only PDD Excel exports for confirmed processes. Do not add solution assessment, financial values, scoring, prioritization, handover, or general project-management features to the active flow.
 
 ## Runtime
 
@@ -15,7 +15,7 @@ Build a local prototype that captures and confirms how a department process work
 
 ## Local credentials
 
-The prototype's login is gated. Credentials live in the user's 1Password in the item named **claims demo account** — never in the repository, environment files, or commit messages. Agents must not read, request, or type the password: ask the user to sign in themselves in the browser, then continue from the authenticated session.
+The prototype's login is gated. Real or reusable credentials live in the user's password manager and must never be read, requested, entered, stored, logged, or committed by an agent. For browser E2E against the local prototype only, an agent may enter credentials for an explicitly identified synthetic demo account when the user supplies them directly for that test. Use them only in the browser login form, never persist them in repository files, environment files, shell commands, test output, or commit messages, and recommend rotation if they appear in conversation history.
 
 ## Implementation rules
 
@@ -79,5 +79,8 @@ Before considering an implementation task complete, run `./scripts/qa all` and t
 
 ## Planning source
 
-Follow `docs/PRODUCT-FLOW-KI-POTENTIAL.md` for process capture and `docs/PLAN-KI-POTENTIAL-SCENARIOS.md` for opportunity discovery. Preserve their domain states and acceptance criteria unless the user explicitly changes them.
-Follow `docs/PLAN-LEBENDE-PROZESSDOKU.md` for the living process documentation corpus.
+Start at `docs/domain/README.md`. It documents every feature — what it does, where its code lives, and its verified implementation status — and is the entry point for both humans and agents.
+
+The superseded specifications in `docs/archive/` remain binding for detail: `PRODUCT-FLOW-KI-POTENTIAL.md` for process capture, `PLAN-KI-POTENTIAL-SCENARIOS.md` and `DISCOVERY-KI-POTENTIAL-SCENARIOS.md` for opportunity discovery, `PLAN-LEBENDE-PROZESSDOKU.md` for the living process documentation corpus. Preserve their domain states and acceptance criteria unless the user explicitly changes them.
+
+Known gaps and guardrail divergences are recorded in `docs/BACKLOG.md`. Architecture decisions are in `docs/decisions/`, operator-facing German material in `docs/operations/`.

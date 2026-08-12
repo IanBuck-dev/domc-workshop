@@ -206,9 +206,18 @@ const processCaptureConfigV2Schema = z.object({
   profile: z.object({ id: z.literal("compact-v1"), version: z.literal(2) }),
   workCharacteristics: z.array(workCharacteristicDefinitionSchema).length(4),
 });
+const processCaptureConfigV3Schema = z.object({
+  ...processCaptureConfigBase,
+  profile: z.object({ id: z.literal("compact-v1"), version: z.literal(3) }),
+  workCharacteristics: z.array(workCharacteristicDefinitionSchema).length(4),
+});
 
 export const processCaptureConfigSchema = z
-  .union([processCaptureConfigV1Schema, processCaptureConfigV2Schema])
+  .union([
+    processCaptureConfigV1Schema,
+    processCaptureConfigV2Schema,
+    processCaptureConfigV3Schema,
+  ])
   .superRefine((config, ctx) => {
     const ids = config.topics.map((topic) => topic.id);
     const orders = config.topics.map((topic) => topic.displayOrder);
@@ -359,6 +368,149 @@ const factBase = {
   assumptions: z.array(z.string().trim().min(1).max(1_000)).max(20),
   confirmed: z.boolean(),
 };
+export const coverageStateSchema = z.enum([
+  "known",
+  "unknown",
+  "not_applicable",
+]);
+export function qualifiedCurrentStateValueSchema<T extends z.ZodType>(
+  value: T,
+) {
+  return z
+    .object({
+      state: coverageStateSchema,
+      value: value.nullable(),
+      reason: z.string().trim().min(1).max(2_000).nullable(),
+      ...factBase,
+    })
+    .strict()
+    .superRefine((item, ctx) => {
+      const currentValue = (item as unknown as { value: unknown }).value;
+      if (item.state === "known" && currentValue === null)
+        ctx.addIssue({
+          code: "custom",
+          path: ["value"],
+          message: "Bekannte Angaben benötigen einen Wert.",
+        });
+      if (item.state !== "known" && !item.reason)
+        ctx.addIssue({
+          code: "custom",
+          path: ["reason"],
+          message:
+            "Unbekannte oder nicht zutreffende Angaben benötigen eine Begründung.",
+        });
+      if (item.state === "known" && item.reason !== null)
+        ctx.addIssue({
+          code: "custom",
+          path: ["reason"],
+          message: "Bekannte Angaben dürfen keine Lückenbegründung enthalten.",
+        });
+      if (item.state === "unknown" && item.provenance !== "unknown")
+        ctx.addIssue({
+          code: "custom",
+          path: ["provenance"],
+          message: "Unbekannte Angaben haben die Provenienz unbekannt.",
+        });
+    });
+}
+export const processActorSchema = z
+  .object({
+    id: identifierSchema,
+    kind: z.enum(["department", "role", "external_party"]),
+    name: z.string().trim().min(1).max(240),
+    involvement: z.enum([
+      "performs",
+      "decides",
+      "approves",
+      "receives",
+      "supplies",
+    ]),
+  })
+  .strict();
+export const processSystemSchema = z
+  .object({
+    id: identifierSchema,
+    name: z.string().trim().min(1).max(240),
+    kind: z.enum([
+      "application",
+      "repository",
+      "communication",
+      "manual_tool",
+      "other",
+    ]),
+  })
+  .strict();
+export const processPainPointSchema = z
+  .object({
+    id: identifierSchema,
+    description: z.string().trim().min(1).max(2_000),
+  })
+  .strict();
+export const processVariationSchema = z
+  .object({
+    id: identifierSchema,
+    name: z.string().trim().min(1).max(240),
+    kind: z.enum(["flow_branch", "step_exception"]),
+    trigger: z.string().trim().min(1).max(2_000),
+    currentHandling: z.string().trim().min(1).max(2_000),
+    affectedStepIds: z.array(identifierSchema).max(8),
+    gatewayId: identifierSchema.nullable(),
+  })
+  .strict();
+export const processHandoffSchema = z
+  .object({
+    fromActorRef: identifierSchema,
+    toActorRef: identifierSchema,
+    transferredInformationIds: z.array(identifierSchema).max(40),
+    channel: z.string().trim().min(1).max(1_000),
+    mediaBreak: z.enum(["yes", "no", "unknown"]),
+    note: z.string().trim().min(1).max(2_000).nullable(),
+  })
+  .strict();
+export const currentStateDetailsSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    currentStateSummary: qualifiedCurrentStateValueSchema(
+      z.string().trim().min(1).max(4_000),
+    ),
+    processOwner: qualifiedCurrentStateValueSchema(
+      z
+        .object({
+          department: z.string().trim().min(1).max(120),
+          role: z.string().trim().min(1).max(240),
+        })
+        .strict(),
+    ),
+    confidentiality: qualifiedCurrentStateValueSchema(
+      z.enum(["internal", "confidential", "strictly_confidential"]),
+    ),
+    systems: qualifiedCurrentStateValueSchema(
+      z.array(processSystemSchema).max(40),
+    ),
+    painPoints: qualifiedCurrentStateValueSchema(
+      z.array(processPainPointSchema).max(40),
+    ),
+    variations: qualifiedCurrentStateValueSchema(
+      z.array(processVariationSchema).max(40),
+    ),
+    operationalContext: z
+      .object({
+        operationAndSupport: qualifiedCurrentStateValueSchema(
+          z.string().trim().min(1).max(4_000),
+        ),
+        accessAndProtection: qualifiedCurrentStateValueSchema(
+          z.string().trim().min(1).max(4_000),
+        ),
+        monitoringAndTraceability: qualifiedCurrentStateValueSchema(
+          z.string().trim().min(1).max(4_000),
+        ),
+        constraintsAndOpenQuestions: qualifiedCurrentStateValueSchema(
+          z.array(z.string().trim().min(1).max(2_000)).max(40),
+        ),
+      })
+      .strict(),
+  })
+  .strict();
 export const stringFactSchema = z
   .object({
     value: z.string().trim().min(1).max(12_000).nullable(),
@@ -465,6 +617,12 @@ export const processFlowGatewayNodeSchema = z
     kind: z.literal("gateway"),
     question: flowTextSchema(2_000),
     mode: processDecisionModeSchema,
+    variationRef: identifierSchema.nullable().optional(),
+    humanInvolvement: z
+      .enum(["yes", "partial", "no", "unknown"])
+      .nullable()
+      .optional(),
+    ownerActorRef: identifierSchema.nullable().optional(),
   })
   .strict();
 export const processFlowEndEventNodeSchema = z
@@ -484,6 +642,9 @@ export const processFlowEdgeSchema = z
     label: flowTextSchema(1_000).optional(),
     determination: flowTextSchema(2_000).optional(),
     consequence: flowTextSchema(2_000).optional(),
+    handoff: qualifiedCurrentStateValueSchema(processHandoffSchema)
+      .nullable()
+      .optional(),
   })
   .strict();
 export const processFlowSchema = z
@@ -503,6 +664,32 @@ export const processStepSchema = z
     outputs: uniqueStepTextArray(30),
     informationItems: z.array(processInformationItemSchema).max(40),
     miscellaneous: z.string().trim().min(1).max(4_000).nullable(),
+    actors: z.array(processActorSchema).max(20).optional(),
+    systemRefs: z.array(identifierSchema).max(40).optional(),
+    painPoints: z
+      .array(
+        z
+          .object({
+            painPointRef: identifierSchema,
+            cause: z.string().trim().min(1).max(2_000).nullable(),
+          })
+          .strict(),
+      )
+      .max(40)
+      .optional(),
+    decisions: z
+      .array(
+        z
+          .object({
+            description: z.string().trim().min(1).max(2_000),
+            humanInvolvement: z.enum(["yes", "partial", "no", "unknown"]),
+            decisionOwnerActorRef: identifierSchema.nullable(),
+          })
+          .strict(),
+      )
+      .max(20)
+      .optional(),
+    exceptionRefs: z.array(identifierSchema).max(20).optional(),
     ...factBase,
   })
   .strict();
@@ -1028,7 +1215,7 @@ export const processCaptureRecordSchema = z
     state: processStateSchema,
     profile: z.object({
       id: z.literal("compact-v1"),
-      version: z.union([z.literal(1), z.literal(2)]),
+      version: z.union([z.literal(1), z.literal(2), z.literal(3)]),
     }),
     configHash: z.string().regex(/^[a-f0-9]{64}$/),
     interactionMode: interactionModeSchema.default("form"),
@@ -1042,6 +1229,7 @@ export const processCaptureRecordSchema = z
     validationRuns: z.array(validationRunSchema),
     selectedUploadIds: z.array(z.string().uuid()).max(5),
     understanding: processUnderstandingSchema.nullable(),
+    currentStateDetails: currentStateDetailsSchema.nullable().default(null),
     uploads: z.array(uploadRecordSchema).max(5),
     confirmedAt: z.string().datetime().nullable(),
     createdAt: z.string().datetime(),
@@ -1312,6 +1500,17 @@ export type PreviousQuestionReview = z.infer<
 export type ValidationRun = z.infer<typeof validationRunSchema>;
 export type ProcessUnderstanding = z.infer<typeof processUnderstandingSchema>;
 export type ProcessCaptureRecord = z.infer<typeof processCaptureRecordSchema>;
+export const processDefinitionDraftSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    understanding: processUnderstandingSchema,
+    currentStateDetails: currentStateDetailsSchema,
+  })
+  .strict();
+export type ProcessDefinitionDraft = z.infer<
+  typeof processDefinitionDraftSchema
+>;
+export type CurrentStateDetails = z.infer<typeof currentStateDetailsSchema>;
 
 /** Fachlicher Schlüssel für aktive Prozessaufnahmen. */
 export function normalizedProcessName(value: string) {

@@ -66,6 +66,7 @@ describe("process capture repository", () => {
       "history.jsonl",
       "metadata.yaml",
       "operations.jsonl",
+      "process-definition.json",
       "process-understanding.json",
       "uploads",
     ]);

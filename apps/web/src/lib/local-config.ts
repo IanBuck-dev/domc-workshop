@@ -4,7 +4,7 @@ import type { ProcessCaptureConfig } from "./process-types";
 const STORAGE_KEY = "claims-ai-process-capture.config.v2";
 function currentConfig(value: unknown): ProcessCaptureConfig {
   const config = processCaptureConfigSchema.parse(value);
-  if (config.profile.version !== 2 || !("workCharacteristics" in config))
+  if (config.profile.version === 1 || !("workCharacteristics" in config))
     throw new Error("Die Konfiguration verwendet eine ältere Profilversion.");
   return config;
 }

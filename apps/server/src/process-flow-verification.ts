@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import {
   processFlowSchema,
+  processDefinitionDraftSchema,
   processStepSchema,
   processUnderstandingSchema,
   validateProcessFlow,
@@ -109,5 +110,68 @@ export async function verifyProcessFlowFile(
   if (errors.length) return { ok: false, errors };
 
   // Der Hash bindet das grüne Ergebnis an genau den vom Agenten geprüften Stand.
+  return { ok: true, revision: createHash("sha256").update(raw).digest("hex") };
+}
+
+/** Verifies the profile-3 aggregate before either of its projections is published. */
+export async function verifyProcessDefinitionFile(
+  file: string,
+): Promise<ProcessFlowVerification> {
+  let raw: string;
+  try {
+    raw = await readFile(file, "utf8");
+  } catch {
+    return {
+      ok: false,
+      errors: [
+        {
+          path: "",
+          code: "missing_file",
+          message: "The process definition file is missing.",
+        },
+      ],
+    };
+  }
+  if (Buffer.byteLength(raw) > maxWorkingBytes)
+    return {
+      ok: false,
+      errors: [
+        {
+          path: "",
+          code: "file_too_large",
+          message: "The process definition file exceeds the size limit.",
+        },
+      ],
+    };
+  let value: unknown;
+  try {
+    value = JSON.parse(raw);
+  } catch {
+    return {
+      ok: false,
+      errors: [
+        {
+          path: "",
+          code: "invalid_json",
+          message: "The process definition file is not valid JSON.",
+        },
+      ],
+    };
+  }
+  const parsed = processDefinitionDraftSchema.safeParse(value);
+  if (!parsed.success)
+    return {
+      ok: false,
+      errors: parsed.error.issues.map((issue) => ({
+        path: pathOf(issue.path),
+        code: issue.code,
+        message: issue.message,
+      })),
+    };
+  const graphErrors = validateProcessFlow(
+    parsed.data.understanding.flow,
+    parsed.data.understanding.steps,
+  );
+  if (graphErrors.length) return { ok: false, errors: graphErrors };
   return { ok: true, revision: createHash("sha256").update(raw).digest("hex") };
 }
