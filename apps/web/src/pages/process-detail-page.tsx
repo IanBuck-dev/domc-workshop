@@ -3,6 +3,7 @@ import {
   ArrowRight,
   EllipsisVertical,
   FileSpreadsheet,
+  ClipboardCheck,
   Sparkles,
   Trash2,
   Workflow,
@@ -13,6 +14,7 @@ import { ProcessDeleteDialog } from "../components/process-delete-dialog";
 import { Badge } from "../components/ui/badge";
 import { api } from "../lib/api-client";
 import type { OpportunityDiscoverySummary } from "../lib/opportunity-types";
+import type { AgenticPotentialAssessmentDetail } from "../lib/agentic-potential-assessment-types";
 import {
   opportunityEntryPhase,
   processNavigationModel,
@@ -36,6 +38,8 @@ export function ProcessDetailPage() {
   const [process, setProcess] = useState<ProcessCaptureRecord | null>(null);
   const [opportunity, setOpportunity] = useState<OpportunityDiscoverySummary>();
   const [opportunityLoaded, setOpportunityLoaded] = useState(false);
+  const [assessment, setAssessment] =
+    useState<AgenticPotentialAssessmentDetail | null>(null);
   const [busy, setBusy] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState("");
@@ -51,6 +55,17 @@ export function ProcessDetailPage() {
       .process(id)
       .then((nextProcess) => active && setProcess(nextProcess))
       .catch((reason: Error) => active && setError(reason.message));
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
+  useEffect(() => {
+    let active = true;
+    api
+      .agenticAssessment(id)
+      .then((value) => active && setAssessment(value))
+      .catch(() => active && setAssessment(null));
     return () => {
       active = false;
     };
@@ -152,7 +167,7 @@ export function ProcessDetailPage() {
           {error}
         </p>
       )}
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {process && navigation ? (
           <ProcessModuleCard
             title="Prozessaufnahme"
@@ -189,6 +204,62 @@ export function ProcessDetailPage() {
             icon={<Sparkles />}
             state={navigation.opportunity}
             action={opportunityAction(navigation.opportunity)}
+          />
+        ) : (
+          <ProcessModuleCardSkeleton />
+        )}
+        {process && opportunityLoaded ? (
+          <ProcessModuleCard
+            title="Potenzialbewertung"
+            description="Schreibgeschützte Kriterienprüfung des agentischen Szenarios mit Excel-Export."
+            icon={<ClipboardCheck />}
+            state={{
+              status:
+                assessment?.record.state === "completed"
+                  ? "Bewertet"
+                  : assessment?.record.state === "failed"
+                    ? "Unterbrochen"
+                    : assessment
+                      ? "Läuft"
+                      : opportunity?.state === "completed" &&
+                          opportunity.isStale
+                        ? "Prozessstand veraltet"
+                        : opportunity?.state === "completed"
+                          ? "Bereit zur Bewertung"
+                          : "Nach Szenarien",
+              tone:
+                assessment?.record.state === "failed"
+                  ? "danger"
+                  : assessment?.record.state === "completed"
+                    ? "success"
+                    : assessment
+                      ? "info"
+                      : opportunity?.state === "completed" &&
+                          opportunity.isStale
+                        ? "warning"
+                        : "neutral",
+              actionLabel:
+                opportunity?.state === "completed" && !opportunity.isStale
+                  ? "Öffnen"
+                  : null,
+              action: null,
+              blockedReason:
+                opportunity?.state !== "completed"
+                  ? "Zuerst die drei Szenarien abschließen."
+                  : opportunity.isStale
+                    ? "Die Szenarioanalyse muss zum bestätigten Prozessstand passen."
+                    : null,
+            }}
+            action={
+              opportunity?.state === "completed" && !opportunity.isStale ? (
+                <Link
+                  className={buttonVariants({ variant: "secondary" })}
+                  to={`/processes/${id}/opportunities/agentic-assessment`}
+                >
+                  Öffnen <ArrowRight />
+                </Link>
+              ) : null
+            }
           />
         ) : (
           <ProcessModuleCardSkeleton />

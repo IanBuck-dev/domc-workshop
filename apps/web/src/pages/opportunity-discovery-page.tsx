@@ -241,11 +241,30 @@ export function OpportunityDiscoveryPage({
         !record.scenarios &&
         record.state !== "scenarios_failed" && <ScenariosSkeleton />}
       {phase === "scenarios" && record.scenarios && (
-        <OpportunityScenariosView
-          scenarios={record.scenarios.scenarios}
-          hypotheses={hypotheses}
-          steps={record.sourceProcess.understanding.steps}
-        />
+        <>
+          <OpportunityScenariosView
+            scenarios={record.scenarios.scenarios}
+            hypotheses={hypotheses}
+            steps={record.sourceProcess.understanding.steps}
+          />
+          {record.state === "completed" && (
+            <Card className="flex-row items-center justify-between gap-4 p-5">
+              <div>
+                <h2 className="text-heading">Agentisches Szenario bewerten</h2>
+                <p className="text-muted-foreground">
+                  Die Kriterienbewertung wird einmal erstellt und danach
+                  schreibgeschützt geprüft.
+                </p>
+              </div>
+              <Link
+                className="rounded-md bg-primary px-4 py-2 text-label text-primary-foreground"
+                to={`/processes/${id}/opportunities/agentic-assessment`}
+              >
+                Bewertung öffnen
+              </Link>
+            </Card>
+          )}
+        </>
       )}
     </section>
   );

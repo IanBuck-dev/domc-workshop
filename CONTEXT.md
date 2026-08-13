@@ -71,3 +71,7 @@ _Avoid_: Process Capture, solution assessment, project scoring
 **PDD Export**:
 A deterministic, read-only Excel Process Definition Document derived from the confirmed fields of one Process Record. It preserves the confirmed source revision, provenance, assumptions, open points, and evidence; it is never imported back.
 _Avoid_: Editable process document, template editor, process assessment
+
+**Agentic Potential Assessment**:
+The advisory, immutable criteria assessment of the completed `SCN-agentic` scenario. It is created by one bounded AI call; its web review and Excel export are deterministic views of the saved result.
+_Avoid_: Process assessment, solution approval, prioritisation

@@ -12,6 +12,7 @@ import type {
   OpportunityDiscoveryPublicRecord,
   OpportunityDiscoverySummary,
 } from "./opportunity-types";
+import type { AgenticPotentialAssessmentDetail } from "./agentic-potential-assessment-types";
 import type { PublicSiteInformation } from "./public-site-information";
 import type { MemoryOverviewDetail } from "../../../../packages/domain/src/memory";
 import type {
@@ -283,6 +284,44 @@ export const api = {
       `/opportunities/${processId}/retry`,
       { method: "POST" },
     ),
+  agenticAssessment: (processId: string) =>
+    req<AgenticPotentialAssessmentDetail>(
+      `/opportunities/${processId}/agentic-assessment`,
+    ),
+  startAgenticAssessment: (processId: string) =>
+    req<{ operationId: string; state: "queued" }>(
+      `/opportunities/${processId}/agentic-assessment`,
+      { method: "POST" },
+    ),
+  retryAgenticAssessment: (processId: string) =>
+    req<{ operationId: string; state: "queued" }>(
+      `/opportunities/${processId}/agentic-assessment/retry`,
+      { method: "POST" },
+    ),
+  exportAgenticAssessment: async (processId: string) => {
+    const response = await fetch(
+      `/api/opportunities/${encodeURIComponent(processId)}/agentic-assessment/export`,
+      { method: "POST" },
+    );
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new ApiError(
+        (body as { error?: string }).error ??
+          "Die Excel-Arbeitsmappe konnte nicht erstellt werden.",
+        response.status,
+        undefined,
+        body,
+      );
+    }
+    return {
+      blob: await response.blob(),
+      filename: downloadFilename(
+        response.headers.get("content-disposition"),
+        "Agentische-Potenzialbewertung.xlsx",
+      ),
+      assessmentRevision: response.headers.get("x-agentic-assessment-revision"),
+    };
+  },
   memory: () => req<MemoryOverviewDetail>("/memory"),
   forgetMemory: () =>
     req<MemoryOverviewDetail>("/memory", { method: "DELETE" }),

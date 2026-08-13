@@ -130,6 +130,8 @@ built and covered by four test files.
 - Every scenario must name human oversight; a scenario without it fails validation.
 - Prompts and response schemas are versioned repository files.
 
+Completed `SCN-agentic` scenarios can feed the separate [agentic potential assessment](agentic-potential-assessment.md). That assessment is advisory and does not change discovery's three-scenario contract.
+
 ## Open items
 
 See [`../BACKLOG.md`](../BACKLOG.md).

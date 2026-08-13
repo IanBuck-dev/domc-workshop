@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "criteria"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "criteria": {
+      "type": "array",
+      "minItems": 24,
+      "maxItems": 24,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "criterionId",
+              "score",
+              "confidenceLevel",
+              "rationale",
+              "evidenceIds",
+              "hypothesisIds",
+              "assumptions",
+              "openQuestions"
+            ],
+            "properties": {
+              "status": { "const": "scored" },
+              "criterionId": {
+                "enum": [
+                  "strategic_fit",
+                  "qualitative_process_improvement",
+                  "customer_value",
+                  "employee_value",
+                  "temporal_process_improvement",
+                  "risk_reduction",
+                  "scalability",
+                  "organizational_development",
+                  "time_urgency",
+                  "process_criticality",
+                  "process_maturity",
+                  "change_effort",
+                  "experience_base",
+                  "process_expertise",
+                  "process_diversity",
+                  "process_systems",
+                  "process_data",
+                  "context_understanding",
+                  "data_structuring_degree",
+                  "decision_complexity",
+                  "ai_data_foundation",
+                  "error_tolerance",
+                  "explainability_need",
+                  "autonomy_and_human_ai_collaboration"
+                ]
+              },
+              "score": { "enum": [0, 1, 2] },
+              "confidenceLevel": { "const": "high" },
+              "rationale": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 8000
+              },
+              "evidenceIds": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 250,
+                "uniqueItems": true,
+                "items": { "type": "string", "minLength": 1, "maxLength": 120 }
+              },
+              "hypothesisIds": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 250,
+                "uniqueItems": true,
+                "items": { "type": "string", "minLength": 1, "maxLength": 120 }
+              },
+              "assumptions": { "type": "array", "maxItems": 0 },
+              "openQuestions": { "type": "array", "maxItems": 0 }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "criterionId",
+              "score",
+              "confidenceLevel",
+              "rationale",
+              "evidenceIds",
+              "hypothesisIds",
+              "assumptions",
+              "openQuestions"
+            ],
+            "properties": {
+              "status": { "const": "insufficient_evidence" },
+              "criterionId": {
+                "enum": [
+                  "strategic_fit",
+                  "qualitative_process_improvement",
+                  "customer_value",
+                  "employee_value",
+                  "temporal_process_improvement",
+                  "risk_reduction",
+                  "scalability",
+                  "organizational_development",
+                  "time_urgency",
+                  "process_criticality",
+                  "process_maturity",
+                  "change_effort",
+                  "experience_base",
+                  "process_expertise",
+                  "process_diversity",
+                  "process_systems",
+                  "process_data",
+                  "context_understanding",
+                  "data_structuring_degree",
+                  "decision_complexity",
+                  "ai_data_foundation",
+                  "error_tolerance",
+                  "explainability_need",
+                  "autonomy_and_human_ai_collaboration"
+                ]
+              },
+              "score": { "type": "null" },
+              "confidenceLevel": { "enum": ["medium", "low"] },
+              "rationale": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 8000
+              },
+              "evidenceIds": {
+                "type": "array",
+                "maxItems": 250,
+                "uniqueItems": true,
+                "items": { "type": "string", "minLength": 1, "maxLength": 120 }
+              },
+              "hypothesisIds": {
+                "type": "array",
+                "maxItems": 250,
+                "uniqueItems": true,
+                "items": { "type": "string", "minLength": 1, "maxLength": 120 }
+              },
+              "assumptions": {
+                "type": "array",
+                "maxItems": 50,
+                "items": { "type": "string", "minLength": 1, "maxLength": 8000 }
+              },
+              "openQuestions": {
+                "type": "array",
+                "maxItems": 50,
+                "items": { "type": "string", "minLength": 1, "maxLength": 8000 }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

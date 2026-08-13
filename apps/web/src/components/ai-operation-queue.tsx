@@ -33,18 +33,20 @@ export function AiOperationQueue() {
                 ? "wird ausgeführt"
                 : `Warteplatz ${operation.position}`}
           </span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            aria-label={`${operationLabel(operation.operationName)} abbrechen`}
-            onClick={async () => {
-              // Die aktualisierte Warteschlange kommt über den Ereignisstrom.
-              await api.cancelOperation(operation.operationId);
-            }}
-          >
-            <X className="size-4" />
-          </Button>
+          {operation.state !== "failed" && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              aria-label={`${operationLabel(operation.operationName)} abbrechen`}
+              onClick={async () => {
+                // Die aktualisierte Warteschlange kommt über den Ereignisstrom.
+                await api.cancelOperation(operation.operationId);
+              }}
+            >
+              <X className="size-4" />
+            </Button>
+          )}
         </div>
       ))}
     </aside>
@@ -57,6 +59,7 @@ function operationLabel(value: string) {
       "process-follow-ups": "Prozessangaben prüfen",
       "process-synthesis": "Prozessbild erstellen",
       "opportunity-discovery": "KI-Potenziale entdecken",
+      "agentic-potential-assessment": "Agentische Potenzialbewertung",
     }[value] ?? "KI-Unterstützung"
   );
 }
