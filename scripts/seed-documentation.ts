@@ -24,6 +24,7 @@ import {
 import {
   processCaptureConfigSchema,
   normalizedProcessName,
+  type CurrentStateDetails,
   type ProcessCaptureConfig,
 } from "../packages/domain/src/process-understanding.ts";
 import {
@@ -136,6 +137,7 @@ async function main() {
     ]),
   );
   const prozessIds = new Map<string, string>();
+  const initialDetails = new Map<string, CurrentStateDetails>();
   const belegIds = new Map<string, Map<string, string>>();
   const commits = new Map<string, string>();
   const uebersprungen: string[] = [];
@@ -175,6 +177,11 @@ async function main() {
           "chat",
         );
         prozessIds.set(fixture.slug, record.id);
+        if (!record.currentStateDetails)
+          throw new SeedError(
+            `Der Prozess „${fixture.titel}" besitzt keine initiale Ist-Prozessdefinition.`,
+          );
+        initialDetails.set(fixture.slug, record.currentStateDetails);
       } catch (error) {
         if (error instanceof DuplicateProcessNameError)
           throw new SeedError(
@@ -233,6 +240,11 @@ async function main() {
           understanding.knowledgeGaps.length || understanding.conflicts.length
             ? "with_gaps"
             : "complete",
+          {
+            schemaVersion: 1,
+            understanding,
+            currentStateDetails: initialDetails.get(fixture.slug)!,
+          },
         );
       else {
         // Frühere Korrekturbelege werden mitgeführt: `correctUnderstanding`
