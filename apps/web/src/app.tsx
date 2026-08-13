@@ -16,6 +16,7 @@ import { ProcessEventsProvider } from "./lib/process-events";
 import { ImprintPage } from "./pages/imprint-page";
 import { PrivacyPage } from "./pages/privacy-page";
 import { UsageNoticePage } from "./pages/usage-notice-page";
+import { AgenticPotentialAssessmentPage } from "./pages/agentic-potential-assessment-page";
 
 const publicPaths = new Set([
   "/impressum",
@@ -71,6 +72,10 @@ export function App() {
             <Route
               path="scenarios"
               element={<OpportunityDiscoveryPage phase="scenarios" />}
+            />
+            <Route
+              path="agentic-assessment"
+              element={<AgenticPotentialAssessmentPage />}
             />
           </Route>
           <Route path="/dokumentation" element={<DocumentationPage />} />

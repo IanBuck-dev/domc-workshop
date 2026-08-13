@@ -2,7 +2,7 @@
 
 ## Product boundary
 
-Build a local prototype that captures and confirms how a department process works today and, in separate downstream modules, discovers evidence-backed KI-potential hypotheses with three read-only human-oversight scenarios and creates read-only PDD Excel exports for confirmed processes. Do not add solution assessment, financial values, scoring, prioritization, handover, or general project-management features to the active flow.
+Build a local prototype that captures and confirms how a department process works today and, in separate downstream modules, discovers evidence-backed KI-potential hypotheses with three read-only human-oversight scenarios, assesses the completed agentic scenario once against a versioned criteria catalogue, and creates read-only Excel exports. Do not add solution approval, financial values, prioritization, handover, or general project-management features to the active flow.
 
 ## Runtime
 

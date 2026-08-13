@@ -13,7 +13,7 @@ export function DemoDataWarning() {
 
   return (
     <aside
-      className="absolute inset-x-0 top-16 z-40 border-b border-amber-700/20 bg-amber-50 text-amber-950 shadow-sm"
+      className="relative z-40 border-b border-amber-700/20 bg-amber-50 text-amber-950 shadow-sm"
       role="note"
     >
       <div className="mx-auto flex max-w-7xl items-start gap-3 px-4 py-3 text-ui sm:px-6 lg:px-8">

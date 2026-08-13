@@ -25,11 +25,6 @@ const copy = {
     humanRole: "Mensch überwacht und übernimmt kritische Fälle",
   },
 } as const;
-const scoreFromConfidence = {
-  high: 85,
-  medium: 65,
-  low: 40,
-} as const;
 const capabilities = {
   interpretation: "Interpretation",
   generation: "Generierung",
@@ -159,7 +154,6 @@ function ScenarioColumn({
   onToggle: () => void;
 }) {
   const label = copy[scenario.level];
-  const score = scoreFromConfidence[scenario.confidenceLevel];
   const affected = scenario.affectedProcessStepIds.length;
   const included = scenario.includedHypothesisIds.length;
 
@@ -208,15 +202,11 @@ function ScenarioColumn({
           </p>
         </div>
         <ColumnMetric
-          label="Score"
-          value={`${score} von 100`}
-          progress={score}
-          progressClass={
-            scenario.level === "assistive"
-              ? "bg-primary/20 [&_[data-slot=progress-indicator]]:bg-primary"
-              : scenario.level === "delegated"
-                ? "bg-sky-800/20 [&_[data-slot=progress-indicator]]:bg-sky-800"
-                : "bg-violet-800/20 [&_[data-slot=progress-indicator]]:bg-violet-800"
+          label="Konfidenz"
+          value={
+            { high: "hoch", medium: "mittel", low: "niedrig" }[
+              scenario.confidenceLevel
+            ]
           }
         />
         <ColumnMetric
@@ -458,7 +448,14 @@ function ScenarioDetail({
         </div>
       </details>
       <footer className="border-t pt-4">
-        <b>Score: {scoreFromConfidence[scenario.confidenceLevel]} von 100</b>
+        <b>
+          Konfidenz:{" "}
+          {
+            { high: "hoch", medium: "mittel", low: "niedrig" }[
+              scenario.confidenceLevel
+            ]
+          }
+        </b>
         <p className="mt-1 text-ui text-muted-foreground">
           <span className="font-semibold text-foreground">Herleitung: </span>
           {scenario.confidenceRationale}

@@ -18,10 +18,12 @@ understanding** that the lead confirms. Confirmed processes then feed two downst
 outputs: **AI-potential hypotheses with human-oversight scenarios**, and a **living
 process documentation corpus**.
 
-The product boundary is deliberate and enforced in `AGENTS.md`: no solution assessment,
-no financial values, no scoring, no prioritisation, no handover, no project management.
-Confirmed processes can also produce a read-only PDD Excel workbook; it is a downstream
-artifact, not a second canonical process record.
+The product boundary is deliberate and enforced in `AGENTS.md`: no solution approval,
+financial values, prioritisation, handover, or project management. The completed agentic
+scenario may receive one advisory criteria assessment; it deliberately leaves financial,
+policy, group, and total results uncalculated. Confirmed processes can also produce a
+read-only PDD Excel workbook; it is a downstream artifact, not a second canonical process
+record.
 
 ## The flow
 
@@ -51,20 +53,21 @@ artifact, not a second canonical process record.
 
 ## Documents
 
-| Document                                                 | Feature                                                                                                      |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| [process-capture.md](process-capture.md)                 | Intake: the five topics, the mandatory work characteristics, iterative validation, uploads, the process list |
-| [chat-capture.md](chat-capture.md)                       | Conversational intake and the one resumable Claude session                                                   |
-| [process-understanding.md](process-understanding.md)     | The canonical understanding, provenance, editing, and confirmation                                           |
-| [process-diagram.md](process-diagram.md)                 | The typed process flow graph (Prozessbild)                                                                   |
-| [opportunity-discovery.md](opportunity-discovery.md)     | AI-potential hypotheses and the three human-oversight scenarios                                              |
-| [agent-memory.md](agent-memory.md)                       | The agent brain: one company-wide memory that grows with every confirmation                                  |
-| [process-documentation.md](process-documentation.md)     | The living documentation corpus and its viewer                                                               |
-| [pdd-export.md](pdd-export.md)                           | The deterministic current-state PDD Excel export using the versioned 17-sheet template                       |
-| [ai-runtime.md](ai-runtime.md)                           | How Claude is called: bounded operations, versioned prompts, validation, sandbox, progress events            |
-| [demo-data.md](demo-data.md)                             | The LifeCorp fixtures and the two seed scripts                                                               |
-| [access-and-public-pages.md](access-and-public-pages.md) | Login gate, session, demo-data warning, public pages                                                         |
-| [ui-system.md](ui-system.md)                             | Light-mode palette, surface contract, type scale, loading states                                             |
+| Document                                                           | Feature                                                                                                      |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| [process-capture.md](process-capture.md)                           | Intake: the five topics, the mandatory work characteristics, iterative validation, uploads, the process list |
+| [chat-capture.md](chat-capture.md)                                 | Conversational intake and the one resumable Claude session                                                   |
+| [process-understanding.md](process-understanding.md)               | The canonical understanding, provenance, editing, and confirmation                                           |
+| [process-diagram.md](process-diagram.md)                           | The typed process flow graph (Prozessbild)                                                                   |
+| [opportunity-discovery.md](opportunity-discovery.md)               | AI-potential hypotheses and the three human-oversight scenarios                                              |
+| [agentic-potential-assessment.md](agentic-potential-assessment.md) | Immutable review and deterministic Excel export of the agentic scenario criteria assessment                  |
+| [agent-memory.md](agent-memory.md)                                 | The agent brain: one company-wide memory that grows with every confirmation                                  |
+| [process-documentation.md](process-documentation.md)               | The living documentation corpus and its viewer                                                               |
+| [pdd-export.md](pdd-export.md)                                     | The deterministic current-state PDD Excel export using the versioned 17-sheet template                       |
+| [ai-runtime.md](ai-runtime.md)                                     | How Claude is called: bounded operations, versioned prompts, validation, sandbox, progress events            |
+| [demo-data.md](demo-data.md)                                       | The LifeCorp fixtures and the two seed scripts                                                               |
+| [access-and-public-pages.md](access-and-public-pages.md)           | Login gate, session, demo-data warning, public pages                                                         |
+| [ui-system.md](ui-system.md)                                       | Light-mode palette, surface contract, type scale, loading states                                             |
 
 ## Architecture
 

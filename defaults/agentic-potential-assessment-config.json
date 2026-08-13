@@ -1,0 +1,302 @@
+{
+  "schemaVersion": 1,
+  "profile": { "id": "agentic-potential-assessment-v1", "version": 1 },
+  "ai": {
+    "model": "claude-opus-4-8",
+    "reasoningEffort": "high",
+    "timeoutMs": 300000,
+    "maxOutputTokens": 12000,
+    "maxInputCharacters": 200000,
+    "maxBudgetUsd": 1
+  },
+  "criteria": [
+    {
+      "id": "regulatory_admissibility",
+      "category": "Zulässigkeit / Verpflichtung",
+      "name": "Regulatorische Zulässigkeit",
+      "definition": "Bewertet, ob gesetzliche, regulatorische oder interne Vorgaben die Umsetzung grundsätzlich ausschließen.",
+      "scale": "0 = nicht ausgeschlossen, 1 = ausgeschlossen",
+      "order": 1,
+      "assessmentType": "policy_excluded"
+    },
+    {
+      "id": "absolute_necessity",
+      "category": "Zulässigkeit / Verpflichtung",
+      "name": "Absolute Notwendigkeit",
+      "definition": "Bewertet, ob eine strategische, regulatorische oder existenzielle Verpflichtung besteht.",
+      "scale": "0 = keine obligatorische Umsetzung, 2 = verbindlich oder alternativlos",
+      "order": 2,
+      "assessmentType": "policy_excluded"
+    },
+    {
+      "id": "annual_savings_potential",
+      "category": "Betriebswirtschaftliche Rentabilität",
+      "name": "Jährliches Einsparpotential",
+      "definition": "Erwarteter wiederkehrender finanzieller Nutzen pro Jahr.",
+      "scale": "Absoluter Betrag in Euro pro Jahr",
+      "order": 3,
+      "assessmentType": "policy_excluded"
+    },
+    {
+      "id": "one_time_savings",
+      "category": "Betriebswirtschaftliche Rentabilität",
+      "name": "Einmalige Ersparnisse",
+      "definition": "Einmalige finanzielle Vorteile im Zusammenhang mit Einführung oder Alternativen.",
+      "scale": "Absoluter Betrag in Euro",
+      "order": 4,
+      "assessmentType": "policy_excluded"
+    },
+    {
+      "id": "annual_operating_costs",
+      "category": "Betriebswirtschaftliche Rentabilität",
+      "name": "Jährliche Betriebskosten",
+      "definition": "Laufende Kosten für Betrieb, Nutzung und Wartung der Lösung.",
+      "scale": "Absoluter Betrag in Euro pro Jahr",
+      "order": 5,
+      "assessmentType": "policy_excluded"
+    },
+    {
+      "id": "one_time_costs",
+      "category": "Betriebswirtschaftliche Rentabilität",
+      "name": "Einmalige Kosten",
+      "definition": "Einmalige Aufwände für Konzeption, Entwicklung, Einführung und Inbetriebnahme.",
+      "scale": "Absoluter Betrag in Euro",
+      "order": 6,
+      "assessmentType": "policy_excluded"
+    },
+    {
+      "id": "strategic_fit",
+      "category": "Qualitativ-strategische Relevanz",
+      "name": "Strategische Passung",
+      "definition": "Beitrag zu strategischen Transformations-, Wachstums-, Effizienz-, Kunden- oder Digitalisierungszielen.",
+      "scale": "0 = keine, 1 = begrenzte, 2 = wesentliche strategische Relevanz",
+      "order": 7,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "qualitative_process_improvement",
+      "category": "Qualitativ-strategische Relevanz",
+      "name": "Qualitative Prozessoptimierung",
+      "definition": "Erwartete Verbesserung von Fehleranfälligkeit, Prozess- und Ergebnisqualität, Vorgabentreue und Vollständigkeit.",
+      "scale": "0 = keine, 1 = spürbare, 2 = erhebliche Verbesserung",
+      "order": 8,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "customer_value",
+      "category": "Qualitativ-strategische Relevanz",
+      "name": "Kunden-Mehrwert",
+      "definition": "Nutzen für interne und externe Kunden nach Wirkung und Reichweite.",
+      "scale": "0 = keiner, 1 = begrenzt, 2 = hoch und breit wirksam",
+      "order": 9,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "employee_value",
+      "category": "Qualitativ-strategische Relevanz",
+      "name": "Mitarbeiter-Mehrwert",
+      "definition": "Entlastung von monotonen oder belastenden Tätigkeiten und Verbesserung der Arbeitsqualität.",
+      "scale": "0 = keiner, 1 = spürbar, 2 = erheblich und breit wirksam",
+      "order": 10,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "temporal_process_improvement",
+      "category": "Qualitativ-strategische Relevanz",
+      "name": "Temporale Prozessoptimierung",
+      "definition": "Verbesserung von Bearbeitungs-, Durchlauf- und Wartezeiten sowie Verfügbarkeit.",
+      "scale": "0 = keine, 1 = spürbare, 2 = erhebliche zeitliche Wirkung",
+      "order": 11,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "risk_reduction",
+      "category": "Qualitativ-strategische Relevanz",
+      "name": "Risikoreduktion",
+      "definition": "Reduktion von Qualitäts-, Betriebs- oder Ausfallrisiken durch die Lösung.",
+      "scale": "0 = keine, 1 = spürbare, 2 = erhebliche Risikominderung",
+      "order": 12,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "scalability",
+      "category": "Qualitativ-strategische Relevanz",
+      "name": "Skalierbarkeit",
+      "definition": "Erweiterbarkeit, Wiederverwendbarkeit und Übertragbarkeit auf weitere Anwendungsfälle.",
+      "scale": "0 = kaum, 1 = eingeschränkt, 2 = stark skalierbar",
+      "order": 13,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "organizational_development",
+      "category": "Qualitativ-strategische Relevanz",
+      "name": "Organisationsentwicklung",
+      "definition": "Beitrag zu Technologieerprobung, Kompetenzaufbau und Weiterentwicklung von Arbeitsweisen.",
+      "scale": "0 = keine, 1 = spürbare, 2 = hohe Wirkung",
+      "order": 14,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "time_urgency",
+      "category": "Qualitativ-strategische Relevanz",
+      "name": "Zeitliche Dringlichkeit",
+      "definition": "Zeitkritik durch Fristen, Risiken, Terminabhängigkeiten oder absehbaren Handlungsbedarf.",
+      "scale": "0 = keine, 1 = mittel, 2 = hoch und kurzfristig",
+      "order": 15,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "business_case_stability",
+      "category": "Implementierungskomplexität",
+      "name": "Business Case Stabilität",
+      "definition": "Stabilität und Belastbarkeit wirtschaftlicher Erwartungen.",
+      "scale": "0 = kritisch, 1 = moderat, 2 = vorteilhaft",
+      "order": 16,
+      "assessmentType": "policy_excluded"
+    },
+    {
+      "id": "process_criticality",
+      "category": "Implementierungskomplexität",
+      "name": "Prozess-Kritikalität",
+      "definition": "Bedeutung des Prozesses und Auswirkungen von Fehlern, Ausfällen oder Verzögerungen.",
+      "scale": "0 = kritisch, 1 = moderat, 2 = geringe Kritikalität",
+      "order": 17,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "compliance_risk",
+      "category": "Implementierungskomplexität",
+      "name": "Compliance Risiko",
+      "definition": "Einschränkungen durch Datenschutz-, Sicherheits- und Compliance-Anforderungen.",
+      "scale": "0 = kritisch, 1 = beherrschbar, 2 = geringe Einschränkungen",
+      "order": 18,
+      "assessmentType": "policy_excluded"
+    },
+    {
+      "id": "process_maturity",
+      "category": "Implementierungskomplexität",
+      "name": "Prozess-Reife",
+      "definition": "Standardisierung, Stabilität, Dokumentation und Messbarkeit des Prozesses.",
+      "scale": "0 = kritisch, 1 = teilweise etabliert, 2 = klar standardisiert",
+      "order": 19,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "change_effort",
+      "category": "Implementierungskomplexität",
+      "name": "Change Aufwand",
+      "definition": "Erforderliche Anpassungen an Systemen, Rollen, Arbeitsweisen und Akzeptanz.",
+      "scale": "0 = hoch, 1 = annehmbar, 2 = gering",
+      "order": 20,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "experience_base",
+      "category": "Implementierungskomplexität",
+      "name": "Erfahrungsbasis",
+      "definition": "Vorhandene Erfahrungen, Kompetenzen, Technologien und vergleichbare Anwendungsfälle.",
+      "scale": "0 = kaum vorhanden, 1 = teilweise, 2 = umfangreich",
+      "order": 21,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "process_expertise",
+      "category": "Implementierungskomplexität",
+      "name": "Prozess-Expertise",
+      "definition": "Verfügbarkeit und Dokumentation von Fach-, Regel- und Kontextwissen.",
+      "scale": "0 = personenabhängig, 1 = teilweise, 2 = umfassend dokumentiert",
+      "order": 22,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "process_diversity",
+      "category": "Implementierungskomplexität",
+      "name": "Prozess-Diversität",
+      "definition": "Vielfalt von Varianten, Ausnahmen, Eingaben, Aktionen und Regeln.",
+      "scale": "0 = hoch komplex, 1 = teilweise variabel, 2 = einheitlich",
+      "order": 23,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "process_systems",
+      "category": "Implementierungskomplexität",
+      "name": "Prozess-Systeme",
+      "definition": "Eignung der beteiligten Systeme nach Anzahl, Stabilität und Zugriffsmöglichkeiten.",
+      "scale": "0 = kritisch, 1 = teilweise geeignet, 2 = stabil und integrierbar",
+      "order": 24,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "process_data",
+      "category": "Implementierungskomplexität",
+      "name": "Prozess-Daten",
+      "definition": "Digitale Verfügbarkeit, Strukturierung und Qualität der Prozessdaten.",
+      "scale": "0 = unzureichend, 1 = teilweise geeignet, 2 = hochwertig und strukturiert",
+      "order": 25,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "context_understanding",
+      "category": "Technische KI-Attraktivität",
+      "name": "Kontextverständnis",
+      "definition": "Nutzen durch Interpretation, Mustererkennung und situatives Kontextverständnis.",
+      "scale": "0 = kaum Bedarf, 1 = teilweise, 2 = hoher Bedarf",
+      "order": 26,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "data_structuring_degree",
+      "category": "Technische KI-Attraktivität",
+      "name": "Datenstrukturierungsgrad",
+      "definition": "Nutzen durch Verarbeitung oder Erzeugung unstrukturierter Daten.",
+      "scale": "0 = strukturiert, 1 = teilweise unstrukturiert, 2 = hoher unstrukturierter Anteil",
+      "order": 27,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "decision_complexity",
+      "category": "Technische KI-Attraktivität",
+      "name": "Entscheidungskomplexität",
+      "definition": "Nutzen durch Mustererkennung, Bewertung und Prognose bei unvollständigen Informationen.",
+      "scale": "0 = regelbasiert, 1 = teilweise Bewertung, 2 = hoher Urteilsbedarf",
+      "order": 28,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "ai_data_foundation",
+      "category": "Technische KI-Attraktivität",
+      "name": "KI-Datengrundlagen",
+      "definition": "Verfügbarkeit und Qualität relevanter Daten, Dokumente oder Wissensquellen.",
+      "scale": "0 = unzureichend, 1 = teilweise geeignet, 2 = umfangreich und relevant",
+      "order": 29,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "error_tolerance",
+      "category": "Technische KI-Attraktivität",
+      "name": "Fehlertoleranz",
+      "definition": "Beherrschbarkeit von Unsicherheiten, Fehlentscheidungen und Verzerrungen.",
+      "scale": "0 = geringe Toleranz, 1 = begrenzt, 2 = beherrschbar",
+      "order": 30,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "explainability_need",
+      "category": "Technische KI-Attraktivität",
+      "name": "Erklärbarkeitsbedarf",
+      "definition": "Anforderung an detaillierte Nachvollziehbarkeit von Ergebnissen oder Entscheidungen.",
+      "scale": "0 = vollständig erforderlich, 1 = teilweise, 2 = geringe Anforderungen",
+      "order": 31,
+      "assessmentType": "ai"
+    },
+    {
+      "id": "autonomy_and_human_ai_collaboration",
+      "category": "Technische KI-Attraktivität",
+      "name": "Autonomiegrad & Mensch-KI-Kollaboration",
+      "definition": "Mögliche Autonomie und nötige menschliche Kontroll- oder Freigabeschritte.",
+      "scale": "0 = umfassende menschliche Prüfung, 1 = teilweise Kontrolle, 2 = weitgehend autonom oder effiziente Kollaboration",
+      "order": 32,
+      "assessmentType": "ai"
+    }
+  ]
+}

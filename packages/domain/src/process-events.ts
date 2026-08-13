@@ -29,6 +29,7 @@ export const processHistoryEventNames = [
   "opportunity-snapshot-flow-migrated",
   "chat-contract-flow-migrated",
   "pdd-exported",
+  "agentic-potential-assessment-exported",
 ] as const;
 export const processHistoryEventNameSchema = z.enum(processHistoryEventNames);
 export type ProcessHistoryEventName = z.infer<
@@ -41,6 +42,7 @@ export const processOperationNames = [
   "opportunity-discovery",
   "memory-distillation",
   "documentation-sync",
+  "agentic-potential-assessment",
 ] as const;
 
 export const processOperationStatusSchema = z

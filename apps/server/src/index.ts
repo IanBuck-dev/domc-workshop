@@ -35,6 +35,10 @@ import { CorpusService } from "./corpus-service.ts";
 import { corpusRoutes } from "./routes/corpus.ts";
 import { pddExportRoutes } from "./routes/pdd-exports.ts";
 import { PddExportRepository } from "../../../packages/storage/src/pdd-export-repository.ts";
+import { AgenticPotentialAssessmentRepository } from "../../../packages/storage/src/agentic-potential-assessment-repository.ts";
+import { ClaudeAgenticPotentialAssessmentAdapter } from "../../../packages/claude/src/agentic-potential-assessment-adapter.ts";
+import { AgenticPotentialAssessmentService } from "./agentic-potential-assessment-service.ts";
+import { agenticPotentialAssessmentRoutes } from "./routes/agentic-potential-assessments.ts";
 import {
   workspacePath,
   hasWebDist,
@@ -49,9 +53,16 @@ await acquireInstanceLock(root);
 await migrateProcessFlowStorage(root);
 const processRepo = new ProcessCaptureRepository(root),
   opportunityRepo = new OpportunityDiscoveryRepository(root),
+  agenticAssessmentRepo = new AgenticPotentialAssessmentRepository(root),
   memoryRepo = new MemoryRepository(root),
   app = new Hono();
 const opportunityAi = new ClaudeOpportunityAiAdapter();
+const agenticAssessmentService = new AgenticPotentialAssessmentService(
+  processRepo,
+  opportunityRepo,
+  agenticAssessmentRepo,
+  new ClaudeAgenticPotentialAssessmentAdapter(),
+);
 const opportunityService = new OpportunityDiscoveryService(
   processRepo,
   opportunityRepo,
@@ -83,6 +94,7 @@ void corpusService
     ),
   );
 await opportunityRepo.recoverInterrupted();
+await agenticAssessmentRepo.recoverInterrupted();
 await memoryRepo.ensure();
 app.onError((error, c) => {
   console.error(error);
@@ -157,6 +169,15 @@ app.route(
     opportunityAi,
     undefined,
     opportunityService,
+  ),
+);
+app.route(
+  "/api/opportunities",
+  agenticPotentialAssessmentRoutes(
+    processRepo,
+    opportunityRepo,
+    agenticAssessmentRepo,
+    agenticAssessmentService,
   ),
 );
 app.route("/api/ai-operations", aiOperationRoutes());
