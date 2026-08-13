@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
+import { mkdtemp, readdir, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { validateProcessFlow } from "../packages/domain/src/process-understanding.ts";
+import { ProcessCaptureRepository } from "../packages/storage/src/process-capture-repository.ts";
 import {
   expandUnderstanding,
   inhaltAt,
@@ -40,6 +44,52 @@ describe("Seeddaten der Prozessdokumentation", () => {
       revisionen.some((revision) => revision.zurueckgenommenAm !== null),
     ).toBe(true);
   });
+
+  test("publiziert vollständige Profil-3-Definitionen über den echten Seed-Pfad", async () => {
+    const workspace = await mkdtemp(join(tmpdir(), "documentation-seed-"));
+    try {
+      const root = resolve(import.meta.dir, "..");
+      const child = Bun.spawn(
+        [process.execPath, "run", "scripts/seed-documentation.ts"],
+        {
+          cwd: root,
+          env: {
+            ...process.env,
+            WORKSPACE_PATH: workspace,
+            CLAIMS_AI_DEFAULTS_DIR: join(root, "defaults"),
+          },
+          stdout: "pipe",
+          stderr: "pipe",
+        },
+      );
+      const [exitCode, stdout, stderr] = await Promise.all([
+        child.exited,
+        new Response(child.stdout).text(),
+        new Response(child.stderr).text(),
+      ]);
+      if (exitCode !== 0)
+        throw new Error(`Seed fehlgeschlagen:\n${stdout}\n${stderr}`);
+
+      const records = await new ProcessCaptureRepository(workspace).list();
+      expect(records).toHaveLength(fixtures.length);
+      expect(
+        records.every(
+          (record) =>
+            record.state === "confirmed" &&
+            record.profile.version === 3 &&
+            record.currentStateDetails !== null,
+        ),
+      ).toBe(true);
+      const documentationFiles = await readdir(join(workspace, "docs"), {
+        recursive: true,
+      });
+      expect(
+        documentationFiles.filter((file) => file.endsWith(".md")),
+      ).toHaveLength(fixtures.length + 1);
+    } finally {
+      await rm(workspace, { recursive: true, force: true });
+    }
+  }, 30_000);
 
   for (const fixture of fixtures) {
     describe(fixture.slug, () => {
