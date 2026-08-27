@@ -1,32 +1,14 @@
-import type { StreamTextResult, ToolSet } from "ai";
+import type {
+  AiChatTurnRequest,
+  ChatCaptureAiAdapter as RuntimeChatCaptureAiAdapter,
+  ChatProcessFlowVerification,
+  NormalizedChatTurnHandle,
+} from "../../ai-runtime/src/contracts.ts";
 
-export type ChatProcessFlowVerification =
-  | { ok: true; revision: string }
-  | {
-      ok: false;
-      errors: Array<{ path: string; code: string; message: string }>;
-    };
+export type { ChatProcessFlowVerification };
+export type ChatCaptureTurnRequest = AiChatTurnRequest;
+export type ChatCaptureTurnStream = NormalizedChatTurnHandle;
+export type ChatCaptureAiAdapter = RuntimeChatCaptureAiAdapter;
 
-export interface ChatCaptureTurnRequest {
-  processId: string;
-  sessionId: string;
-  resume: boolean;
-  prompt: string;
-  systemPrompt: string;
-  cwd: string;
-  timeoutMs: number;
-  maxBudgetUsd: number;
-  signal: AbortSignal;
-  verifyProcessFlow: () => Promise<ChatProcessFlowVerification>;
-}
-
-export interface ChatCaptureTurnStream {
-  result: StreamTextResult<ToolSet, any, any>;
-  requestedSessionId: string;
-  verification: () => { ok: boolean; revision: string | null };
-}
-
-export interface ChatCaptureClaudeAdapter {
-  startTurn(request: ChatCaptureTurnRequest): Promise<ChatCaptureTurnStream>;
-  deleteSession(sessionId: string, cwd: string): Promise<void>;
-}
+/** @deprecated Use ChatCaptureAiAdapter. */
+export type ChatCaptureClaudeAdapter = ChatCaptureAiAdapter;

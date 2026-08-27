@@ -1,13 +1,22 @@
 import { createHash } from "node:crypto";
 import { copyFile, mkdir, readFile } from "node:fs/promises";
 import { join, relative } from "node:path";
-import type { StreamTextResult, ToolSet } from "ai";
 import {
   chatMessageRequestSchema,
   type ChatTranscriptEvent,
 } from "../../../packages/domain/src/chat-capture.ts";
-import type { ProcessCaptureRecord } from "../../../packages/domain/src/process-understanding.ts";
-import type { ChatCaptureClaudeAdapter } from "../../../packages/claude/src/chat-capture-contracts.ts";
+import {
+  assertUnderstandingReferences,
+  processDefinitionDraftSchema,
+  processUnderstandingSchema,
+  type ProcessCaptureRecord,
+  type ProcessDefinitionDraft,
+  type ProcessUnderstanding,
+} from "../../../packages/domain/src/process-understanding.ts";
+import type {
+  ChatCaptureAiAdapter,
+  NormalizedChatTurnHandle,
+} from "../../../packages/ai-runtime/src/contracts.ts";
 import {
   isMemoryEmpty,
   memorySourceTag,
@@ -18,6 +27,7 @@ import {
 import { ChatCaptureRepository } from "../../../packages/storage/src/chat-capture-repository.ts";
 import type { MemoryRepository } from "../../../packages/storage/src/memory-repository.ts";
 import { ProcessCaptureRepository } from "../../../packages/storage/src/process-capture-repository.ts";
+import { atomicWrite } from "../../../packages/storage/src/atomic-write.ts";
 import {
   verifyProcessDefinitionFile,
   verifyProcessFlowFile,
@@ -44,6 +54,22 @@ export interface MemoryPromptComposition {
 }
 
 const utf8Bytes = (value: string) => new TextEncoder().encode(value).byteLength;
+
+function canonicalizeCoverageNames(
+  understanding: ProcessUnderstanding,
+  record: ProcessCaptureRecord,
+): ProcessUnderstanding {
+  const names = new Map(
+    record.uploads.map((upload) => [upload.id, upload.name]),
+  );
+  return {
+    ...understanding,
+    documentCoverage: understanding.documentCoverage.map((coverage) => ({
+      ...coverage,
+      name: names.get(coverage.uploadId) ?? coverage.name,
+    })),
+  };
+}
 
 function topicBulletLines(topicFiles: Record<MemoryTopic, string>) {
   const topics = parseMemoryTopicContents(topicFiles);
@@ -156,7 +182,7 @@ export type ActiveChatTurn = {
   record: ProcessCaptureRecord;
   previousSessionId: string;
   replacementCandidateId: string | null;
-  result: StreamTextResult<ToolSet, any, any>;
+  result: NormalizedChatTurnHandle["result"];
   verification: () => { ok: boolean; revision: string | null };
 };
 
@@ -165,7 +191,7 @@ export class ChatCaptureService {
 
   constructor(
     private readonly processes: ProcessCaptureRepository,
-    private readonly ai: ChatCaptureClaudeAdapter,
+    private readonly ai: ChatCaptureAiAdapter,
     private readonly memory: MemoryRepository,
   ) {
     this.chats = new ChatCaptureRepository(processes.root);
@@ -336,11 +362,92 @@ export class ChatCaptureService {
       sessionId: activeSessionId,
       resume: replacementCandidateId ? false : session.activeSessionStarted,
       cwd: this.processes.dir(id),
-      systemPrompt: contracts.prompt,
+      systemPrompt: `${contracts.prompt}\n\n## Eingefrorenes JSON-Schema\n\n${JSON.stringify(contracts.schema)}`,
+      model: record.configSnapshot.ai.model,
       prompt: `${memoryContext}${recoveryContext}${actionInstruction}${uploadText}${mentionText}\n\nNutzernachricht (Evidenzart chat_message, sourceId ${request.id}):\n${request.text}`,
       timeoutMs: record.configSnapshot.ai.timeoutMs,
       maxBudgetUsd: record.configSnapshot.ai.maxBudgetUsd,
       signal,
+      writeProcessFlow: async (value) => {
+        let parsedJson: unknown;
+        try {
+          parsedJson = JSON.parse(value);
+        } catch {
+          return {
+            ok: false,
+            errors: [
+              {
+                path: "",
+                code: "invalid_json",
+                message:
+                  "Der vollständige Prozessstand ist kein gültiges JSON.",
+              },
+            ],
+          };
+        }
+        const definitionMode = record.profile.version === 3;
+        const parsed = definitionMode
+          ? processDefinitionDraftSchema.safeParse(parsedJson)
+          : processUnderstandingSchema.safeParse(parsedJson);
+        if (!parsed.success)
+          return {
+            ok: false,
+            errors: parsed.error.issues.map((issue) => ({
+              path: issue.path.join("."),
+              code: issue.code,
+              message: issue.message,
+            })),
+          };
+        const parsedFlow: ProcessDefinitionDraft | ProcessUnderstanding =
+          definitionMode
+            ? {
+                ...(parsed.data as ProcessDefinitionDraft),
+                understanding: canonicalizeCoverageNames(
+                  (parsed.data as ProcessDefinitionDraft).understanding,
+                  record,
+                ),
+              }
+            : canonicalizeCoverageNames(
+                parsed.data as ProcessUnderstanding,
+                record,
+              );
+        const understanding =
+          "understanding" in parsedFlow ? parsedFlow.understanding : parsedFlow;
+        try {
+          const chatMessageIds = new Set(
+            (await this.chats.transcript(id))
+              .filter((event) => event.role === "user")
+              .map((event) => event.id),
+          );
+          assertUnderstandingReferences(record, understanding, {
+            chatMessageIds,
+          });
+        } catch (error) {
+          return {
+            ok: false,
+            errors: [
+              {
+                path: "understanding.evidence",
+                code: "invalid_reference",
+                message:
+                  error instanceof Error
+                    ? error.message
+                    : "Ungültige Referenz im Prozessstand.",
+              },
+            ],
+          };
+        }
+        const path = join(
+          this.processes.dir(id),
+          definitionMode
+            ? "process-definition.json"
+            : "process-understanding.json",
+        );
+        await atomicWrite(path, `${JSON.stringify(parsedFlow, null, 2)}\n`);
+        return definitionMode
+          ? verifyProcessDefinitionFile(path)
+          : verifyProcessFlowFile(path);
+      },
       verifyProcessFlow: () =>
         record.profile.version === 3
           ? verifyProcessDefinitionFile(
@@ -388,7 +495,8 @@ export class ChatCaptureService {
       verification.revision !== current.revision
     )
       throw new Error("Chat turn did not verify the process flow.");
-    const metadata = finalStep.providerMetadata?.["claude-code"] as
+    const metadata = (finalStep.providerMetadata?.["codex-cli"] ??
+      finalStep.providerMetadata?.["claude-code"]) as
       Record<string, unknown> | undefined;
     const sessionId =
       typeof metadata?.sessionId === "string"

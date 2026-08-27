@@ -27,6 +27,7 @@ export function AgenticPotentialAssessmentPage() {
   const [detail, setDetail] = useState<AgenticPotentialAssessmentDetail | null>(
     null,
   );
+  const [detailLoaded, setDetailLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState("");
@@ -38,6 +39,7 @@ export function AgenticPotentialAssessmentPage() {
     setProcess(nextProcess);
     setOpportunity(nextOpportunity);
     setDetail(await api.agenticAssessment(id));
+    setDetailLoaded(true);
   }, [id]);
   useEffect(() => {
     void load().catch((reason) => setError((reason as Error).message));
@@ -60,7 +62,8 @@ export function AgenticPotentialAssessmentPage() {
         </p>
       </section>
     );
-  if (!process || !opportunity) return <AssessmentPageSkeleton id={id} />;
+  if (!process || !opportunity || !detailLoaded)
+    return <AssessmentPageSkeleton id={id} />;
 
   const record = detail?.record;
   const scenario = opportunity.record.scenarios?.scenarios.find(

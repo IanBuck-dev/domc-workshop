@@ -9,7 +9,7 @@ Build a local prototype that captures and confirms how a department process work
 - Use the user's `zsh` shell.
 - Run terminal commands with a non-login shell so Node 22 from nvm is used.
 - Use Bun for dependency installation, development scripts, bundling, and cross-platform prototype compilation.
-- Treat the locally authenticated `claude` CLI as the only AI provider in the first prototype.
+- Use the locally authenticated `codex` CLI by default; `AI_PROVIDER=claude-cli` keeps the Claude CLI compatibility path.
 - On macOS the dev server always starts without the AI sandbox (`scripts/dev.ts` auto-detects darwin); the sandbox is for Linux environments only.
 - Keep all submitted content and generated artifacts in repository-local files. Never commit real insurance or personal data.
 
@@ -20,12 +20,12 @@ The prototype's login is gated. Real or reusable credentials live in the user's 
 ## Implementation rules
 
 - Use TypeScript with strict type checking.
-- Keep domain logic independent of React and the Claude adapter.
+- Keep domain logic independent of React and AI-provider adapters.
 - Validate every file read and every AI response at runtime before using it.
 - Write files atomically and preserve an append-only audit history for AI and manual changes.
 - Preserve evidence, assumptions, confidence, and provenance for every structured process fact. Human corrections require a recorded reason.
 - AI output is advisory. Only a user action can confirm the process understanding.
-- Claude prompts and structured response schemas are versioned repository files, not inline strings scattered through application code.
+- AI prompts and structured response schemas are versioned repository files, not inline strings scattered through application code.
 - Do not send unrelated repository content to Claude. Pass only the idea data required for the current operation.
 - Avoid autonomous loops. Process capture actions trigger one bounded operation. The explicitly started opportunity-discovery job is the sole exception: it may perform exactly one bounded hypothesis call followed deterministically by exactly one bounded scenario call when at least one high-confidence hypothesis or the defined fallback of two to three medium-confidence hypotheses exists.
 - Process confirmation additionally triggers exactly one bounded memory-distillation operation.

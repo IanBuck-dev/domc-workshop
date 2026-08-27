@@ -31,6 +31,7 @@ import {
 } from "../components/ui/dropdown-menu";
 import { Skeleton } from "../components/ui/skeleton";
 import { Spinner } from "../components/ui/spinner";
+import { useAiOperations, useProcessChanged } from "../lib/process-events";
 
 export function ProcessDetailPage() {
   const { id = "" } = useParams();
@@ -46,6 +47,7 @@ export function ProcessDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const operations = useAiOperations();
 
   // Der Kopfbereich braucht nur `process` — er wartet nicht auf die
   // Potenzial-Übersicht, die für ihre eigene Kachel getrennt lädt.
@@ -59,6 +61,36 @@ export function ProcessDetailPage() {
       active = false;
     };
   }, [id]);
+
+  useProcessChanged(id, () => {
+    void Promise.all([
+      api.process(id).then(setProcess),
+      api.opportunitySummaries().then((summaries) => {
+        setOpportunity(summaries.find((item) => item.processId === id));
+        setOpportunityLoaded(true);
+      }),
+      api
+        .agenticAssessment(id)
+        .then(setAssessment)
+        .catch(() => setAssessment(null)),
+    ]).catch((reason: Error) => setError(reason.message));
+  });
+
+  // The queue stream is a second server-pushed completion signal. Refreshing
+  // from it closes the small gap when a process-changed event was emitted
+  // before this page's subscriber was registered or while SSE reconnected.
+  useEffect(() => {
+    void Promise.all([
+      api.opportunitySummaries().then((summaries) => {
+        setOpportunity(summaries.find((item) => item.processId === id));
+        setOpportunityLoaded(true);
+      }),
+      api
+        .agenticAssessment(id)
+        .then(setAssessment)
+        .catch(() => setAssessment(null)),
+    ]).catch((reason: Error) => setError(reason.message));
+  }, [id, operations]);
 
   useEffect(() => {
     let active = true;

@@ -1,4 +1,4 @@
-import { SandboxRunner } from "./sandbox-runner.ts";
+import type { AiRuntimeProvider } from "../../ai-runtime/src/contracts.ts";
 import type {
   ProcessAiResult,
   SynthesisRequest,
@@ -16,7 +16,7 @@ import {
 } from "./process-ai-utils.ts";
 
 export class ProcessSynthesisAdapter {
-  constructor(private readonly runner: SandboxRunner) {}
+  constructor(private readonly runner: AiRuntimeProvider) {}
   async run(
     request: SynthesisRequest,
   ): Promise<ProcessAiResult<ProcessUnderstanding>> {

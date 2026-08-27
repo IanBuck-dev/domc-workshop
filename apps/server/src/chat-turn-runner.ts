@@ -114,7 +114,10 @@ export class ChatTurnRunner {
       done: Promise.resolve({ ok: false, aborted: false, message: "" }),
     };
     this.running.set(id, entry);
-    entry.done = this.run(entry, active).catch(() => {
+    entry.done = this.run(entry, active).catch((error) => {
+      console.error(
+        `[chat-turn] ${id}/${active.requestId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
       this.running.delete(id);
       return {
         ok: false as const,
@@ -198,19 +201,20 @@ export class ChatTurnRunner {
     const watcher = setInterval(() => void scan(), 350);
     try {
       for await (const part of active.result.fullStream) {
-        if (part.type === "error") throw part.error;
-        if (part.type === "abort")
+        const streamPart = part as any;
+        if (streamPart.type === "error") throw streamPart.error;
+        if (streamPart.type === "abort")
           throw new Error("Chat turn aborted by provider.");
         if (
-          part.type === "tool-input-start" &&
+          streamPart.type === "tool-input-start" &&
           active.action === "analyze_documents" &&
-          (part.toolName === "Read" || part.toolName === "Glob")
+          (streamPart.toolName === "Read" || streamPart.toolName === "Glob")
         ) {
           activity("reading_documents");
           continue;
         }
-        if (part.type !== "tool-call") continue;
-        const toolName = part.toolName;
+        if (streamPart.type !== "tool-call") continue;
+        const toolName = streamPart.toolName;
         if (
           active.action === "analyze_documents" &&
           (toolName === "Read" || toolName === "Glob")
@@ -218,8 +222,12 @@ export class ChatTurnRunner {
           activity("reading_documents");
           continue;
         }
+        if (toolName === "write_process_flow") {
+          activity("updating_diagram");
+          continue;
+        }
         if (toolName !== "Write") continue;
-        const input = part.input;
+        const input = streamPart.input;
         const target =
           input && typeof input === "object"
             ? ((input as Record<string, unknown>).file_path ??
@@ -239,7 +247,10 @@ export class ChatTurnRunner {
       const completed = await this.service.finishTurn(active);
       understandingState(completed.understanding);
       return { ok: true, text: completed.assistant.text };
-    } catch {
+    } catch (error) {
+      console.error(
+        `[chat-turn] ${id}/${active.requestId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
       const aborted = entry.controller.signal.aborted;
       await this.service.failTurn(active, aborted);
       return {

@@ -34,7 +34,7 @@ export class AgenticPotentialAssessmentService {
             processId,
             configHash: record.configHash,
             model: {
-              model: "opus",
+              model: record.configSnapshot.ai.model,
               effort: "high",
               timeoutMs: record.configSnapshot.ai.timeoutMs,
               maxOutputTokens: record.configSnapshot.ai.maxOutputTokens,

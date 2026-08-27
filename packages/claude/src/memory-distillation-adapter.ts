@@ -1,6 +1,8 @@
 import { memoryOperationListSchema } from "../../domain/src/memory.ts";
 import type { MemoryDistillationRequest } from "./memory-distillation-contracts.ts";
-import { SandboxRunner, type SandboxRunnerOptions } from "./sandbox-runner.ts";
+import type { AiRuntimeProvider } from "../../ai-runtime/src/contracts.ts";
+import type { SandboxRunnerOptions } from "./sandbox-runner.ts";
+import { providerRuntime } from "./provider-runtime.ts";
 
 function boundedJson(value: unknown, maximum: number) {
   const json = JSON.stringify(value, null, 2);
@@ -12,7 +14,7 @@ function boundedJson(value: unknown, maximum: number) {
 }
 
 export class MemoryDistillationAdapter {
-  constructor(private readonly runner: SandboxRunner) {}
+  constructor(private readonly runner: AiRuntimeProvider) {}
 
   run(request: MemoryDistillationRequest) {
     const input = {
@@ -35,10 +37,8 @@ export class MemoryDistillationAdapter {
 }
 
 export class ClaudeMemoryDistillationAdapter extends MemoryDistillationAdapter {
-  constructor(options: SandboxRunnerOptions | SandboxRunner = {}) {
-    super(
-      options instanceof SandboxRunner ? options : new SandboxRunner(options),
-    );
+  constructor(options: AiRuntimeProvider | SandboxRunnerOptions = {}) {
+    super(providerRuntime(options));
   }
 
   distill(request: MemoryDistillationRequest) {

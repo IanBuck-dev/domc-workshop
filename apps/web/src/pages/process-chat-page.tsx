@@ -197,6 +197,7 @@ export function ProcessChatPage() {
     () => {},
   );
   const lastRevision = useRef<string | null>(null);
+  const pendingTurnId = useRef<string | null>(null);
   const transport = useMemo(
     () =>
       new DefaultChatTransport<ProcessChatUIMessage>({
@@ -335,6 +336,25 @@ export function ProcessChatPage() {
     }
   }, [chat.status, reloadView]);
   useEffect(() => {
+    const pending = pendingTurnId.current;
+    if (
+      !pending ||
+      view?.activeTurn ||
+      (chat.status !== "submitted" && chat.status !== "streaming") ||
+      !view?.transcript.some(
+        (event) => event.role === "assistant" && event.turnId === pending,
+      )
+    )
+      return;
+    // Der Serverzug ist autoritativ und kann eine getrennte HTTP-Verbindung
+    // überleben. Falls deren Abschluss am Client verloren geht, darf sie den
+    // bereits gespeicherten Turn nicht weiter als laufend anzeigen.
+    pendingTurnId.current = null;
+    chat.stop();
+    setStreamActivity(null);
+    void reloadView({ syncMessages: true });
+  }, [chat, chat.status, reloadView, view?.activeTurn, view?.transcript]);
+  useEffect(() => {
     if (!desktop) setExpanded(false);
   }, [desktop]);
   useEffect(() => {
@@ -420,11 +440,13 @@ export function ProcessChatPage() {
     if (!content) return;
     setText("");
     const sentMentions = mentions;
+    const turnId = crypto.randomUUID();
+    pendingTurnId.current = turnId;
     setMentions([]);
     try {
       await chat.sendMessage(
         {
-          id: crypto.randomUUID(),
+          id: turnId,
           role: "user",
           parts: [{ type: "text", text: content }],
           metadata: {
@@ -448,6 +470,7 @@ export function ProcessChatPage() {
       // Uploads mit, im Composer darf danach kein Rest-Chip hängen bleiben.
       setTurnUploadIds([]);
     } catch (reason) {
+      if (pendingTurnId.current === turnId) pendingTurnId.current = null;
       setError(
         reason instanceof Error
           ? reason.message

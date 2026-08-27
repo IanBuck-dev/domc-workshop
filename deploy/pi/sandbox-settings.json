@@ -5,7 +5,10 @@
       "*.anthropic.com",
       "claude.ai",
       "*.claude.ai",
-      "platform.claude.com"
+      "platform.claude.com",
+      "api.openai.com",
+      "*.openai.com",
+      "chatgpt.com"
     ],
     "deniedDomains": [],
     "allowUnixSockets": [],
@@ -22,9 +25,15 @@
     "allowRead": [
       ".",
       "/var/lib/claims-ai/.claude",
+      "/var/lib/claims-ai/.codex",
       "/opt/claims-ai-portfolio/current/node_modules/@anthropic-ai/sandbox-runtime"
     ],
-    "allowWrite": [".", "/tmp/claude", "/var/lib/claims-ai/.claude"],
+    "allowWrite": [
+      ".",
+      "/tmp/claude",
+      "/var/lib/claims-ai/.claude",
+      "/var/lib/claims-ai/.codex"
+    ],
     "denyWrite": []
   },
   "mandatoryDenySearchDepth": 5,

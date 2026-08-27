@@ -58,7 +58,7 @@ const workCharacteristicCorrectionSchema = z.object({
 function model(record: ProcessCaptureRecord): ProcessAiModelConfig {
   const ai = record.configSnapshot.ai;
   return {
-    model: "opus",
+    model: ai.model,
     effort: "medium",
     timeoutMs: ai.timeoutMs,
     maxOutputTokens: ai.maxOutputTokens,

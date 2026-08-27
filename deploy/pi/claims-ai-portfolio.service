@@ -13,11 +13,12 @@ Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=3210
 Environment=HOME=/var/lib/claims-ai
+Environment=AI_PROVIDER=codex-cli
 Environment=CLAUDE_CONFIG_DIR=/var/lib/claims-ai/.claude
 Environment=CLAIMS_AI_DEFAULTS_DIR=/opt/claims-ai-portfolio/current/defaults
 Environment=AI_UPLOAD_ROOT=/var/lib/claims-ai/workspace/process-captures
-Environment=PUBLIC_SITE_INFORMATION_PATH=/var/lib/claims-ai/public-site-information.json
 Environment=AI_SANDBOX_SETTINGS=/opt/claims-ai-portfolio/current/deploy/pi/sandbox-settings.json
+Environment=PUBLIC_SITE_INFORMATION_PATH=/var/lib/claims-ai/public-site-information.json
 Environment=PATH=/opt/claims-ai-portfolio/current/node_modules/.bin:/var/lib/claims-ai/.bun/bin:/usr/local/bin:/usr/bin:/bin
 ExecStartPre=/usr/bin/install -d -m 700 /tmp/claude
 ExecStart=/var/lib/claims-ai/.bun/bin/bun apps/server/src/index.ts

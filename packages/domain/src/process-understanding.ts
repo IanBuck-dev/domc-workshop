@@ -188,9 +188,9 @@ const processCaptureConfigBase = {
     maxProcessBytes: z.literal(100 * 1024 * 1024),
   }),
   ai: z.object({
-    model: z.enum(["sonnet", "opus", "claude-opus-4-8"]),
+    model: z.enum(["sonnet", "opus", "claude-opus-4-8", "gpt-5.6-sol"]),
     reasoningEffort: z.literal("medium"),
-    timeoutMs: z.number().int().min(10_000).max(300_000),
+    timeoutMs: z.number().int().min(10_000).max(600_000),
     maxOutputTokens: z.number().int().min(512).max(32_768),
     maxInputCharacters: z.number().int().min(10_000).max(2_000_000),
     maxBudgetUsd: z.number().positive().max(10),
@@ -1190,6 +1190,8 @@ export const uploadRecordSchema = z.object({
   uploadedAt: z.string().datetime(),
 });
 export const aiTraceSchema = z.object({
+  // Records written before provider selection existed came from Claude CLI.
+  provider: z.enum(["codex-cli", "claude-cli"]).default("claude-cli"),
   operationId: z.string().uuid(),
   sessionId: z.string().min(1).nullable(),
   model: z.string().min(1),
@@ -1517,7 +1519,9 @@ export function normalizedProcessName(value: string) {
   return value.trim().toLocaleLowerCase("de-DE").replace(/\s+/g, " ");
 }
 export type UploadRecord = z.infer<typeof uploadRecordSchema>;
-export type AiTrace = z.infer<typeof aiTraceSchema>;
+// Input keeps the added provider backward compatible; storage parsing fills legacy
+// records with `claude-cli` via the schema default.
+export type AiTrace = z.input<typeof aiTraceSchema>;
 export type UnderstandingSection = z.infer<typeof understandingSectionSchema>;
 
 export function assertExactlyFiveAnswers(answers: TopicAnswer[]) {

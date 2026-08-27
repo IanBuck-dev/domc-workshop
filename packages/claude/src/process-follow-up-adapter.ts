@@ -1,4 +1,4 @@
-import { SandboxRunner } from "./sandbox-runner.ts";
+import type { AiRuntimeProvider } from "../../ai-runtime/src/contracts.ts";
 import type {
   FollowUpRequest,
   FollowUpResult,
@@ -13,7 +13,7 @@ import {
 } from "./process-ai-utils.ts";
 
 export class ProcessFollowUpAdapter {
-  constructor(private readonly runner: SandboxRunner) {}
+  constructor(private readonly runner: AiRuntimeProvider) {}
   async run(
     request: FollowUpRequest,
   ): Promise<ProcessAiResult<FollowUpResult>> {

@@ -7,11 +7,6 @@ import {
   ProcessCaptureNotFoundError,
   ProcessCaptureRepository,
 } from "../../../packages/storage/src/process-capture-repository.ts";
-import { ClaudeProcessAiAdapter } from "../../../packages/claude/src/process-ai-adapter.ts";
-import { ClaudeOpportunityAiAdapter } from "../../../packages/claude/src/opportunity-ai-adapter.ts";
-import { ClaudeChatCaptureAdapter } from "../../../packages/claude/src/chat-capture-adapter.ts";
-import { ClaudeMemoryDistillationAdapter } from "../../../packages/claude/src/memory-distillation-adapter.ts";
-import { ClaudeMemoryConsolidationAdapter } from "../../../packages/claude/src/memory-consolidation-adapter.ts";
 import { OpportunityDiscoveryRepository } from "../../../packages/storage/src/opportunity-discovery-repository.ts";
 import { MemoryRepository } from "../../../packages/storage/src/memory-repository.ts";
 import { processCaptureRoutes } from "./routes/process-captures.ts";
@@ -36,9 +31,9 @@ import { corpusRoutes } from "./routes/corpus.ts";
 import { pddExportRoutes } from "./routes/pdd-exports.ts";
 import { PddExportRepository } from "../../../packages/storage/src/pdd-export-repository.ts";
 import { AgenticPotentialAssessmentRepository } from "../../../packages/storage/src/agentic-potential-assessment-repository.ts";
-import { ClaudeAgenticPotentialAssessmentAdapter } from "../../../packages/claude/src/agentic-potential-assessment-adapter.ts";
 import { AgenticPotentialAssessmentService } from "./agentic-potential-assessment-service.ts";
 import { agenticPotentialAssessmentRoutes } from "./routes/agentic-potential-assessments.ts";
+import { createAiRuntimeFactory } from "./ai-runtime-factory.ts";
 import {
   workspacePath,
   hasWebDist,
@@ -56,12 +51,13 @@ const processRepo = new ProcessCaptureRepository(root),
   agenticAssessmentRepo = new AgenticPotentialAssessmentRepository(root),
   memoryRepo = new MemoryRepository(root),
   app = new Hono();
-const opportunityAi = new ClaudeOpportunityAiAdapter();
+const aiRuntime = createAiRuntimeFactory();
+const opportunityAi = aiRuntime.opportunity;
 const agenticAssessmentService = new AgenticPotentialAssessmentService(
   processRepo,
   opportunityRepo,
   agenticAssessmentRepo,
-  new ClaudeAgenticPotentialAssessmentAdapter(),
+  aiRuntime.assessment,
 );
 const opportunityService = new OpportunityDiscoveryService(
   processRepo,
@@ -71,15 +67,15 @@ const opportunityService = new OpportunityDiscoveryService(
 const memoryService = new MemoryDistillationService(
   processRepo,
   memoryRepo,
-  new ClaudeMemoryDistillationAdapter(),
+  aiRuntime.memoryDistillation,
 );
 const memoryConsolidationService = new MemoryConsolidationService(
   memoryRepo,
-  new ClaudeMemoryConsolidationAdapter(),
+  aiRuntime.memoryConsolidation,
 );
 const chatService = new ChatCaptureService(
   processRepo,
-  new ClaudeChatCaptureAdapter(),
+  aiRuntime.chat,
   memoryRepo,
 );
 const chatTurnRunner = new ChatTurnRunner(chatService, processRepo);
@@ -110,7 +106,7 @@ app.onError((error, c) => {
     );
   const internalOperationError =
     error instanceof SyntaxError ||
-    /Claude|sandbox|structured|schema|JSON|output exceeded|ENOENT|EACCES/i.test(
+    /Claude|Codex|sandbox|structured|schema|JSON|output exceeded|ENOENT|EACCES/i.test(
       error instanceof Error ? error.message : "",
     );
   return c.json(
@@ -137,7 +133,7 @@ app.route(
   "/api/processes",
   processCaptureRoutes(
     processRepo,
-    new ClaudeProcessAiAdapter(),
+    aiRuntime.process,
     async (id) => {
       // Ein laufender Zug hält sonst Dateien des gelöschten Prozesses offen.
       await chatTurnRunner.stop(id);

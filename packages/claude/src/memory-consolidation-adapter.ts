@@ -1,6 +1,8 @@
 import { memoryConsolidationResultSchema } from "../../domain/src/memory.ts";
 import type { MemoryConsolidationRequest } from "./memory-consolidation-contracts.ts";
-import { SandboxRunner, type SandboxRunnerOptions } from "./sandbox-runner.ts";
+import type { AiRuntimeProvider } from "../../ai-runtime/src/contracts.ts";
+import type { SandboxRunnerOptions } from "./sandbox-runner.ts";
+import { providerRuntime } from "./provider-runtime.ts";
 
 function boundedJson(value: unknown, maximum: number) {
   const json = JSON.stringify(value, null, 2);
@@ -12,7 +14,7 @@ function boundedJson(value: unknown, maximum: number) {
 }
 
 export class MemoryConsolidationAdapter {
-  constructor(private readonly runner: SandboxRunner) {}
+  constructor(private readonly runner: AiRuntimeProvider) {}
 
   run(request: MemoryConsolidationRequest) {
     return this.runner.runStructured({
@@ -30,10 +32,8 @@ export class MemoryConsolidationAdapter {
 }
 
 export class ClaudeMemoryConsolidationAdapter extends MemoryConsolidationAdapter {
-  constructor(options: SandboxRunnerOptions | SandboxRunner = {}) {
-    super(
-      options instanceof SandboxRunner ? options : new SandboxRunner(options),
-    );
+  constructor(options: AiRuntimeProvider | SandboxRunnerOptions = {}) {
+    super(providerRuntime(options));
   }
 
   consolidate(request: MemoryConsolidationRequest) {

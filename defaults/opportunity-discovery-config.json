@@ -6,7 +6,7 @@
     "scenarios": "Erzeuge drei kompakte, nachvollziehbare Ausbaustufen mit klarer Arbeitsteilung zwischen Mensch und KI. Bewerte weder Wirtschaftlichkeit noch Machbarkeit."
   },
   "ai": {
-    "model": "opus",
+    "model": "gpt-5.6-sol",
     "reasoningEffort": "high",
     "timeoutMs": 300000,
     "maxOutputTokens": 12000,

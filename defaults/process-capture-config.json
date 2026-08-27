@@ -156,9 +156,9 @@
     "maxProcessBytes": 104857600
   },
   "ai": {
-    "model": "opus",
+    "model": "gpt-5.6-sol",
     "reasoningEffort": "medium",
-    "timeoutMs": 300000,
+    "timeoutMs": 480000,
     "maxOutputTokens": 12000,
     "maxInputCharacters": 200000,
     "maxBudgetUsd": 1

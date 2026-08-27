@@ -4,9 +4,11 @@ import {
 } from "../../domain/src/agentic-potential-assessment.ts";
 import type {
   AiRuntimeModelConfig,
-  AiStructuredResult,
-} from "./ai-runtime-contracts.ts";
-import { SandboxRunner, type SandboxRunnerOptions } from "./sandbox-runner.ts";
+  AiRuntimeProvider,
+  StructuredAiResult as AiStructuredResult,
+} from "../../ai-runtime/src/contracts.ts";
+import type { SandboxRunnerOptions } from "./sandbox-runner.ts";
+import { providerRuntime } from "./provider-runtime.ts";
 
 export interface AgenticPotentialAssessmentAiAdapter {
   assess(request: {
@@ -19,10 +21,9 @@ export interface AgenticPotentialAssessmentAiAdapter {
   }): Promise<AiStructuredResult<unknown>>;
 }
 export class ClaudeAgenticPotentialAssessmentAdapter implements AgenticPotentialAssessmentAiAdapter {
-  private readonly runner: SandboxRunner;
-  constructor(options: SandboxRunnerOptions | SandboxRunner = {}) {
-    this.runner =
-      options instanceof SandboxRunner ? options : new SandboxRunner(options);
+  private readonly runner: AiRuntimeProvider;
+  constructor(options: AiRuntimeProvider | SandboxRunnerOptions = {}) {
+    this.runner = providerRuntime(options);
   }
   assess(
     request: Parameters<AgenticPotentialAssessmentAiAdapter["assess"]>[0],

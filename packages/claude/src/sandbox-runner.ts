@@ -10,13 +10,14 @@ import {
 import { createHash } from "node:crypto";
 import { basename, join, relative, resolve, sep } from "node:path";
 import { tmpdir } from "node:os";
-import type { ZodType } from "zod";
 import type { ProcessSelectedUpload } from "./process-ai-contracts.ts";
 import type {
-  AiRuntimeModelConfig,
-  AiStructuredResult,
-} from "./ai-runtime-contracts.ts";
+  AiRuntimeProvider,
+  StructuredAiRequest,
+  StructuredAiResult,
+} from "../../ai-runtime/src/contracts.ts";
 import type { AiTrace } from "../../domain/src/process-understanding.ts";
+import { providerModel } from "../../ai-runtime/src/operation-policy.ts";
 
 const NO_NETWORK_TOOLS = ["WebFetch", "WebSearch", "Task", "NotebookEdit"];
 const TOOL_NAMES = ["Read", "Glob", "Bash"] as const;
@@ -29,19 +30,8 @@ export const CLAUDE_NETWORK_ALLOWED_DOMAINS = [
   "platform.claude.com",
 ] as const;
 
-export interface SandboxOperation<T> {
-  processId: string;
-  operationName: string;
-  prompt: string;
-  systemPrompt: string;
-  responseSchema: ZodType<T>;
-  responseJsonSchema: object;
-  structuredOutput?: "constrained" | "prompted";
-  model: AiRuntimeModelConfig;
-  tools: "none" | "workspace";
+export interface SandboxOperation<T> extends StructuredAiRequest<T> {
   selectedUploads?: ProcessSelectedUpload[];
-  sessionId?: string;
-  signal?: AbortSignal;
 }
 
 export interface SandboxTransportRequest {
@@ -295,7 +285,8 @@ export async function runSandboxTransport(
   }
 }
 
-export class SandboxRunner {
+export class SandboxRunner implements AiRuntimeProvider {
+  readonly id = "claude-cli" as const;
   private readonly options: Required<
     Pick<
       SandboxRunnerOptions,
@@ -342,16 +333,16 @@ export class SandboxRunner {
   }
 
   runStructured<T>(
-    operation: SandboxOperation<T>,
-  ): Promise<AiStructuredResult<T>> {
+    operation: StructuredAiRequest<T>,
+  ): Promise<StructuredAiResult<T>> {
     const operationId = crypto.randomUUID();
     return this.execute(operation, operationId);
   }
 
   private async execute<T>(
-    operation: SandboxOperation<T>,
+    operation: StructuredAiRequest<T>,
     operationId: string,
-  ): Promise<AiStructuredResult<T>> {
+  ): Promise<StructuredAiResult<T>> {
     const startedAt = performance.now();
     const logicalSessionId = operation.sessionId ?? crypto.randomUUID();
     await mkdir(this.options.tempRoot, { recursive: true, mode: 0o700 });
@@ -418,9 +409,10 @@ export class SandboxRunner {
           ? (envelope.usage as Record<string, unknown>)
           : {};
       const trace: AiTrace = {
+        provider: "claude-cli",
         operationId,
         sessionId: logicalSessionId,
-        model: operation.model.model,
+        model: providerModel("claude-cli", operation.model.model),
         durationMs: Math.round(performance.now() - startedAt),
         inputTokens:
           typeof usage.input_tokens === "number" ? usage.input_tokens : null,
@@ -481,7 +473,7 @@ export class SandboxRunner {
       "--strict-mcp-config",
       "--no-session-persistence",
       "--model",
-      operation.model.model,
+      providerModel("claude-cli", operation.model.model),
       "--effort",
       operation.model.effort,
       "--max-budget-usd",

@@ -48,7 +48,10 @@ async function run(command: string[], env: Record<string, string | undefined>) {
     throw new Error(`${command.join(" ")} endete mit Exit-Code ${code}.`);
 }
 
-const workspace = await mkdtemp(join(tmpdir(), "zukunftswerkstatt-e2e-"));
+const providedWorkspace = process.env.E2E_WORKSPACE_PATH;
+const workspace =
+  providedWorkspace ??
+  (await mkdtemp(join(tmpdir(), "zukunftswerkstatt-e2e-")));
 const username = `e2e-${crypto.randomUUID()}`;
 const password = crypto.randomUUID();
 const passwordHash = await Bun.password.hash(password);
@@ -71,12 +74,13 @@ const commonEnv = {
 let server: Bun.Subprocess | undefined;
 let succeeded = false;
 try {
-  await run(
-    screenshotMode
-      ? ["bun", "run", "scripts/seed-documentation.ts"]
-      : ["bun", "run", "scripts/seed-demo-process.ts", scenario],
-    commonEnv,
-  );
+  if (!providedWorkspace)
+    await run(
+      screenshotMode
+        ? ["bun", "run", "scripts/seed-documentation.ts"]
+        : ["bun", "run", "scripts/seed-demo-process.ts", scenario],
+      commonEnv,
+    );
   server = Bun.spawn(["bun", "run", "scripts/dev.ts"], {
     cwd: process.cwd(),
     env: commonEnv,
@@ -92,7 +96,7 @@ try {
       "--config=playwright.config.ts",
       screenshotMode
         ? "e2e/seeded-ui-screenshots.pw.ts"
-        : "e2e/real-claude-product-flow.pw.ts",
+        : "e2e/real-provider-product-flow.pw.ts",
       ...(process.argv.includes("--headed") ? ["--headed"] : []),
     ],
     {
@@ -106,7 +110,7 @@ try {
 } finally {
   server?.kill("SIGTERM");
   if (server) await server.exited.catch(() => undefined);
-  if (process.env.E2E_KEEP_WORKSPACE === "1" || !succeeded)
+  if (providedWorkspace || process.env.E2E_KEEP_WORKSPACE === "1" || !succeeded)
     console.log(`E2E-Workspace bleibt erhalten: ${workspace}`);
   else await rm(workspace, { recursive: true, force: true });
 }

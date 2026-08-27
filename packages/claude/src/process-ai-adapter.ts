@@ -1,4 +1,6 @@
-import { SandboxRunner, type SandboxRunnerOptions } from "./sandbox-runner.ts";
+import type { AiRuntimeProvider } from "../../ai-runtime/src/contracts.ts";
+import type { SandboxRunnerOptions } from "./sandbox-runner.ts";
+import { providerRuntime } from "./provider-runtime.ts";
 import type {
   FollowUpRequest,
   ProcessAiAdapter,
@@ -10,9 +12,8 @@ import { ProcessSynthesisAdapter } from "./process-synthesis-adapter.ts";
 export class ClaudeProcessAiAdapter implements ProcessAiAdapter {
   private readonly followUpAdapter: ProcessFollowUpAdapter;
   private readonly synthesisAdapter: ProcessSynthesisAdapter;
-  constructor(options: SandboxRunnerOptions | SandboxRunner = {}) {
-    const runner =
-      options instanceof SandboxRunner ? options : new SandboxRunner(options);
+  constructor(options: AiRuntimeProvider | SandboxRunnerOptions = {}) {
+    const runner = providerRuntime(options);
     this.followUpAdapter = new ProcessFollowUpAdapter(runner);
     this.synthesisAdapter = new ProcessSynthesisAdapter(runner);
   }

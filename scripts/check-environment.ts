@@ -2,6 +2,11 @@ export {};
 
 const target = process.argv[2] ?? "local";
 const strictPi = target === "pi";
+const provider = process.env.AI_PROVIDER ?? "codex-cli";
+if (provider !== "codex-cli" && provider !== "claude-cli") {
+  console.error("FEHLER AI_PROVIDER muss codex-cli oder claude-cli sein");
+  process.exit(1);
+}
 
 async function commandVersion(command: string, args: string[] = ["--version"]) {
   const lookup = Bun.spawn(
@@ -30,7 +35,12 @@ async function commandVersion(command: string, args: string[] = ["--version"]) {
 
 const checks = [
   ["Bun", "bun", ["--version"], true],
-  ["Claude CLI", "claude", ["--version"], true],
+  [
+    provider === "codex-cli" ? "Codex CLI" : "Claude CLI",
+    provider === "codex-cli" ? "codex" : "claude",
+    ["--version"],
+    true,
+  ],
   ["Sandbox Runtime", "srt", ["--version"], strictPi],
   ["Bubblewrap", "bwrap", ["--version"], strictPi],
   ["socat", "socat", ["-V"], strictPi],

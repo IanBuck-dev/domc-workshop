@@ -16,7 +16,7 @@ describe("chat AI runtime contract", () => {
     expect(packageJson.dependencies["@shadcn/react"]).toBe("0.2.1");
   });
 
-  test("uses current stream APIs and medium Opus session settings", async () => {
+  test("uses current stream APIs and the frozen model setting", async () => {
     const adapter = await readFile(
       join(process.cwd(), "packages/claude/src/chat-capture-adapter.ts"),
       "utf8",
@@ -32,7 +32,9 @@ describe("chat AI runtime contract", () => {
       "utf8",
     );
     expect(adapter).toContain("streamText");
-    expect(adapter).toContain('provider("opus"');
+    expect(adapter).toContain(
+      'provider(providerModel("claude-cli", request.model)',
+    );
     expect(adapter).toContain("strictMcpConfig: true");
     expect(adapter).toContain('effort: "medium"');
     expect(adapter).toContain("persistSession: true");

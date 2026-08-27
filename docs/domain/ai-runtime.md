@@ -2,11 +2,13 @@
 
 ## Purpose
 
-How Claude is actually called. Every AI feature in the prototype goes through the same
+How the selected CLI provider is actually called. Every AI feature in the prototype goes through the same
 narrow path: a versioned prompt plus a versioned JSON schema, one bounded call, a
 validated response, a recorded trace. Nothing in this repository calls a model ad hoc.
 
-The locally authenticated `claude` CLI is the only AI provider.
+`AI_PROVIDER=codex-cli` is the default and uses the locally authenticated `codex` CLI.
+`AI_PROVIDER=claude-cli` preserves the existing Claude CLI path. `AI_MODEL` overrides the
+provider model for an operator session; defaults are `gpt-5.6-sol` and `opus` respectively.
 
 ## How it works
 
@@ -15,7 +17,7 @@ The locally authenticated `claude` CLI is the only AI provider.
 There are exactly five operation names (`processOperationNames`,
 `packages/domain/src/process-events.ts:37`):
 
-| Operation               | Uses Claude                                               | Triggered by                 |
+| Operation               | Uses selected provider                                    | Triggered by                 |
 | ----------------------- | --------------------------------------------------------- | ---------------------------- |
 | `process-follow-ups`    | yes                                                       | the lead pressing validate   |
 | `process-synthesis`     | yes                                                       | the lead pressing synthesise |
@@ -29,7 +31,7 @@ The rules that hold across all of them:
 - no session is resumed. Chat capture is the single documented exception
   ([chat-capture.md](chat-capture.md));
 - only the data the current operation needs is sent — the selected uploads and that
-  process's own content. No unrelated repository content ever goes to Claude.
+  process's own content. No unrelated repository content ever goes to a provider.
 
 `documentation-sync` and corpus reconciliation are deterministic bounded operations
 without a Claude session, so the AI rules above do not constrain them.
@@ -61,9 +63,9 @@ The browser side is `apps/web/src/lib/process-events.tsx`.
 
 ### Model configuration
 
-`AiRuntimeModelConfig` (`packages/claude/src/ai-runtime-contracts.ts`) is the shared
-budget every call carries: `model` (`opus`, the Claude CLI alias for the current Opus;
-frozen legacy records may still use `claude-opus-4-8`), `effort` (`medium` | `high`),
+`AiRuntimeModelConfig` (`packages/ai-runtime/src/contracts.ts`) is the shared
+budget every call carries: `model` (`gpt-5.6-sol` by default; frozen legacy records may
+still use `opus` or `claude-opus-4-8`), `effort` (`medium` | `high`),
 `timeoutMs`, `maxOutputTokens`, `maxInputCharacters`, and `maxBudgetUsd`. The values come
 from `defaults/process-capture-config.json` and
 `defaults/opportunity-discovery-config.json` and are **frozen per record** at creation
@@ -96,13 +98,20 @@ transparency surface, kept out of the normal capture flow.
 ### Validation on both edges
 
 Every AI response is parsed against its Zod schema before anything is stored, and every
-file read is parsed before use. `AiStructuredResult<T>` pairs the validated value with an
-`AiTrace`: `operationId`, `sessionId`, `model`, `durationMs`, input and output tokens, and
+file read is parsed before use. `StructuredAiResult<T>` pairs the validated value with an
+`AiTrace`: `provider`, `operationId`, `sessionId`, `model`, `durationMs`, input and output tokens, and
 whether the call was sandboxed. Traces are stored with the record they produced.
 
 ### Sandbox
 
-`packages/claude/src/sandbox-runner.ts` runs the Claude subprocess with a process-local
+`packages/ai-runtime/src/codex-cli-adapter.ts` runs Codex as `codex exec --ephemeral`
+with `--output-schema`, JSON output, an isolated working directory, and the outer SRT
+sandbox in production. It allows only operation-local reads/writes, OpenAI authentication
+files and executable access; network is limited to OpenAI domains. Chat uses the App
+Server in read-only mode; only the two application-owned process-flow tools may validate
+and atomically write the current process. Codex cannot enforce the
+configured USD budget; timeout, output limit, sandbox and bounded call count remain
+enforced. `packages/claude/src/sandbox-runner.ts` runs the Claude subprocess with a process-local
 working directory and a network allow-list restricted to
 `api.anthropic.com`, `*.anthropic.com`, `claude.ai`, `*.claude.ai`, and
 `platform.claude.com`. Tools are either `none` or `workspace`-scoped per operation.
@@ -130,7 +139,7 @@ happened to a process, including the AI-adjacent ones: `validation-run-completed
 
 | Layer            | Path                                                                                                                                                                                                                  |
 | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Contracts        | `packages/claude/src/ai-runtime-contracts.ts`, `process-ai-contracts.ts`, `opportunity-ai-contracts.ts`, `chat-capture-contracts.ts`, `memory-*-contracts.ts`                                                         |
+| Contracts        | `packages/ai-runtime/src/contracts.ts`, `packages/claude/src/process-ai-contracts.ts`, `opportunity-ai-contracts.ts`, `chat-capture-contracts.ts`, `memory-*-contracts.ts`                                            |
 | Adapters         | `packages/claude/src/*-adapter.ts`                                                                                                                                                                                    |
 | Sandbox          | `packages/claude/src/sandbox-runner.ts`, `chat-sandbox-spawn.ts`                                                                                                                                                      |
 | Queue and events | `apps/server/src/process-operation-manager.ts`, `process-events.ts`, `routes/events.ts`, `routes/ai-operations.ts`, `routes/config.ts`                                                                                |

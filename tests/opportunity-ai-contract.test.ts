@@ -51,7 +51,7 @@ describe("opportunity Claude contract", () => {
     const sourceProcess = createOpportunityProcessSnapshot(process);
     const defaults = await opportunityDefaults();
     expect(defaults.config.ai).toMatchObject({
-      model: "opus",
+      model: "gpt-5.6-sol",
       reasoningEffort: "high",
     });
     const captured: SandboxTransportRequest[] = [];

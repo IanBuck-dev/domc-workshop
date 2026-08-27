@@ -19,23 +19,22 @@ git rev-parse HEAD
 Der Arbeitsbaum muss leer sein. Deployt wird ausschließlich ein bereits zu
 `origin` gepushter Commit.
 
-## 2. Claude-Anmeldung prüfen
+## 2. Codex-Anmeldung prüfen
 
 ```zsh
 ssh ian_claw@pi-controller.tailb3f4a9.ts.net \
-  'sudo -u claims-ai env HOME=/var/lib/claims-ai CLAUDE_CONFIG_DIR=/var/lib/claims-ai/.claude PATH=/var/lib/claims-ai/.bun/bin:/usr/local/bin:/usr/bin:/bin /var/lib/claims-ai/.bun/bin/claude auth status'
+  'sudo -u claims-ai env HOME=/var/lib/claims-ai PATH=/var/lib/claims-ai/.bun/bin:/usr/local/bin:/usr/bin:/bin codex login status'
 ```
 
-Erwartet werden `"loggedIn": true`, `"authMethod": "claude.ai"` und
-`"subscriptionType": "pro"`. Ein ausgeschöpftes Nutzungsfenster wird erst bei
-einer echten Claude-Aktion sichtbar; dafür wird kein separater Testaufruf
-verbraucht.
+Erwartet wird eine erfolgreiche Codex-Anmeldung. Ein ausgeschöpftes
+Nutzungsfenster wird erst bei einer echten Provider-Aktion sichtbar; dafür wird
+kein separater Testaufruf verbraucht.
 
 Falls eine erneute Anmeldung erforderlich ist:
 
 ```zsh
 ssh -t ian_claw@pi-controller.tailb3f4a9.ts.net \
-  'sudo -u claims-ai env HOME=/var/lib/claims-ai CLAUDE_CONFIG_DIR=/var/lib/claims-ai/.claude PATH=/var/lib/claims-ai/.bun/bin:/usr/local/bin:/usr/bin:/bin /var/lib/claims-ai/.bun/bin/claude auth login'
+  'sudo -u claims-ai env HOME=/var/lib/claims-ai PATH=/var/lib/claims-ai/.bun/bin:/usr/local/bin:/usr/bin:/bin codex login'
 ```
 
 ## 3. Bestehenden Workspace vor dem Release erfassen

@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 import { processCaptureConfigSchema } from "../../../packages/domain/src/process-understanding.ts";
-import type { AiRuntimeModelConfig } from "../../../packages/claude/src/ai-runtime-contracts.ts";
+import type { AiRuntimeModelConfig } from "../../../packages/ai-runtime/src/contracts.ts";
 import type { MemoryConsolidationContracts } from "../../../packages/claude/src/memory-consolidation-contracts.ts";
 
 const consolidationInputCharacters = 1_100_000;

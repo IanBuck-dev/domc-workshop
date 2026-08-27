@@ -1,4 +1,6 @@
-import { SandboxRunner, type SandboxRunnerOptions } from "./sandbox-runner.ts";
+import type { AiRuntimeProvider } from "../../ai-runtime/src/contracts.ts";
+import type { SandboxRunnerOptions } from "./sandbox-runner.ts";
+import { providerRuntime } from "./provider-runtime.ts";
 import type {
   OpportunityAiAdapter,
   OpportunityHypothesisRequest,
@@ -11,9 +13,8 @@ export class ClaudeOpportunityAiAdapter implements OpportunityAiAdapter {
   private readonly hypotheses: OpportunityHypothesisAdapter;
   private readonly scenarios: OpportunityScenarioAdapter;
 
-  constructor(options: SandboxRunnerOptions | SandboxRunner = {}) {
-    const runner =
-      options instanceof SandboxRunner ? options : new SandboxRunner(options);
+  constructor(options: AiRuntimeProvider | SandboxRunnerOptions = {}) {
+    const runner = providerRuntime(options);
     this.hypotheses = new OpportunityHypothesisAdapter(runner);
     this.scenarios = new OpportunityScenarioAdapter(runner);
   }

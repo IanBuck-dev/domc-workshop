@@ -1,5 +1,5 @@
 import { opportunityScenarioAiResultSchema } from "../../domain/src/opportunity-discovery.ts";
-import { SandboxRunner } from "./sandbox-runner.ts";
+import type { AiRuntimeProvider } from "../../ai-runtime/src/contracts.ts";
 import type { OpportunityScenarioRequest } from "./opportunity-ai-contracts.ts";
 import {
   boundedOpportunityJson,
@@ -7,7 +7,7 @@ import {
 } from "./opportunity-ai-utils.ts";
 
 export class OpportunityScenarioAdapter {
-  constructor(private readonly runner: SandboxRunner) {}
+  constructor(private readonly runner: AiRuntimeProvider) {}
 
   run(request: OpportunityScenarioRequest) {
     return this.runner.runStructured({

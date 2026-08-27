@@ -36,7 +36,7 @@ fi
 sudo -u claims-ai env \
   HOME="${STATE_DIR}" \
   PATH="${STATE_DIR}/.bun/bin:/usr/local/bin:/usr/bin:/bin" \
-  zsh -c "bun add --global @anthropic-ai/claude-code@2.1.215 && cd '${INSTALL_DIR}' && bun install --frozen-lockfile && bun run build"
+  zsh -c "bun add --global @openai/codex @anthropic-ai/claude-code@2.1.215 && cd '${INSTALL_DIR}' && bun install --frozen-lockfile && bun run build"
 
 if [[ ! -f "${ENV_FILE}" ]]; then
   read -r -s "APP_PASSWORD?Passwort für den Benutzer testing: "
@@ -70,7 +70,9 @@ install -o root -g root -m 0644 "${INSTALL_DIR}/deploy/pi/claims-ai-portfolio.se
 systemctl daemon-reload
 systemctl enable claims-ai-portfolio.service
 
-print "Installation abgeschlossen. Vor dem ersten Start Claude einmalig authentifizieren:"
+print "Installation abgeschlossen. Für den Standardprovider Codex einmalig authentifizieren:"
+print "sudo -u claims-ai env HOME=${STATE_DIR} PATH=${STATE_DIR}/.bun/bin:\$PATH codex login"
+print "Für AI_PROVIDER=claude-cli zusätzlich Claude authentifizieren:"
 print "sudo -u claims-ai env HOME=${STATE_DIR} CLAUDE_CONFIG_DIR=${STATE_DIR}/.claude PATH=${STATE_DIR}/.bun/bin:\$PATH claude auth login"
 print "Danach: sudo systemctl start claims-ai-portfolio"
 print "Cloudflare Tunnel muss auf http://127.0.0.1:3210 zeigen."

@@ -6,12 +6,13 @@ import {
 } from "ai-sdk-provider-claude-code";
 import { z } from "zod";
 import type {
-  ChatCaptureClaudeAdapter,
+  ChatCaptureAiAdapter,
   ChatCaptureTurnRequest,
 } from "./chat-capture-contracts.ts";
+import { providerModel } from "../../ai-runtime/src/operation-policy.ts";
 import { prepareChatSandboxSpawn } from "./chat-sandbox-spawn.ts";
 
-export class ClaudeChatCaptureAdapter implements ChatCaptureClaudeAdapter {
+export class ClaudeChatCaptureAdapter implements ChatCaptureAiAdapter {
   async startTurn(request: ChatCaptureTurnRequest) {
     if (request.signal.aborted)
       throw new DOMException("AI operation cancelled.", "AbortError");
@@ -20,6 +21,12 @@ export class ClaudeChatCaptureAdapter implements ChatCaptureClaudeAdapter {
     });
     let verifiedRevision: string | null = null;
     const processTools = {
+      write_process_flow: tool({
+        description:
+          "Schreibt ausschließlich den vollständigen Prozessstand nach Schema. Danach verify_process_flow aufrufen.",
+        inputSchema: z.object({ content: z.string() }),
+        execute: async ({ content }) => request.writeProcessFlow(content),
+      }),
       verify_process_flow: tool({
         description:
           "Prüft den bereits geschriebenen vollständigen Prozessstand. Nach jedem Write und vor dem Abschluss aufrufen; Fehler korrigieren und erneut prüfen.",
@@ -53,7 +60,7 @@ export class ClaudeChatCaptureAdapter implements ChatCaptureClaudeAdapter {
           "Read",
           "Glob",
           "Bash",
-          "Write",
+          "mcp__process__write_process_flow",
           "mcp__process__verify_process_flow",
         ],
         permissionMode: "bypassPermissions",
@@ -61,7 +68,7 @@ export class ClaudeChatCaptureAdapter implements ChatCaptureClaudeAdapter {
         spawnClaudeCodeProcess,
       },
     });
-    const model = provider("opus", {
+    const model = provider(providerModel("claude-cli", request.model), {
       ...(request.resume
         ? { resume: request.sessionId }
         : { sessionId: request.sessionId }),
