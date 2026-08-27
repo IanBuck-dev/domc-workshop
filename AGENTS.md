@@ -80,7 +80,7 @@ The prototype's login is gated. Real or reusable credentials live in the user's 
 
 ## Verification
 
-Before considering an implementation task complete, run `./scripts/qa all` and the required release build. Verify UI workflows through Chrome DevTools MCP at desktop and tablet widths, including filtered console and failed-network inspection. Prefer accessibility snapshots over screenshots except when judging visual layout.
+Before considering an implementation task complete, run `./scripts/qa all` and the required release build. Use the Playwright CLI with headless Chromium for all UI interaction and verification; do not use Chrome DevTools MCP or the Codex Chrome extension unless the user explicitly overrides this rule. Verify workflows at desktop and tablet widths, including console errors and failed-network inspection. Use the isolated `bun run screenshots:local` runner for the deterministic showcase when applicable; it must not interrupt an already running development process. Prefer accessibility snapshots over screenshots except when judging visual layout.
 
 ## Planning source
 

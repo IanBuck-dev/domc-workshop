@@ -4,11 +4,12 @@ import {
   EllipsisVertical,
   FileSpreadsheet,
   ClipboardCheck,
+  LockKeyhole,
   Sparkles,
   Trash2,
   Workflow,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ProcessDeleteDialog } from "../components/process-delete-dialog";
 import { Badge } from "../components/ui/badge";
@@ -202,6 +203,7 @@ export function ProcessDetailPage() {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {process && navigation ? (
           <ProcessModuleCard
+            step="01"
             title="Prozessaufnahme"
             description="Erfasste Angaben, Rückfragen und das bestätigte Prozessbild."
             icon={<Workflow />}
@@ -220,30 +222,35 @@ export function ProcessDetailPage() {
         )}
         {process && navigation ? (
           <ProcessModuleCard
+            step="02"
             title="PDD-Export"
-            description="Eine schreibgeschützte Excel-Arbeitsmappe aus dem bestätigten Prozessbild."
+            description="Schreibgeschützte Excel-Arbeitsmappe aus dem bestätigten Prozessbild."
             icon={<FileSpreadsheet />}
             state={navigation.pdd}
             action={pddAction(navigation.pdd)}
+            disabledActionLabel="Excel erstellen"
           />
         ) : (
           <ProcessModuleCardSkeleton />
         )}
         {process && navigation && opportunityLoaded ? (
           <ProcessModuleCard
+            step="03"
             title="KI-Potenziale"
             description="Potenzialhypothesen und drei Szenarien für den Einsatz von KI."
             icon={<Sparkles />}
             state={navigation.opportunity}
             action={opportunityAction(navigation.opportunity)}
+            disabledActionLabel="Starten"
           />
         ) : (
           <ProcessModuleCardSkeleton />
         )}
         {process && opportunityLoaded ? (
           <ProcessModuleCard
+            step="04"
             title="Potenzialbewertung"
-            description="Schreibgeschützte Kriterienprüfung des agentischen Szenarios mit Excel-Export."
+            description="Kriterienprüfung des ausgewählten agentischen Szenarios."
             icon={<ClipboardCheck />}
             state={{
               status:
@@ -277,7 +284,7 @@ export function ProcessDetailPage() {
               action: null,
               blockedReason:
                 opportunity?.state !== "completed"
-                  ? "Zuerst die drei Szenarien abschließen."
+                  ? "Erst nach Abschluss der Szenarien verfügbar."
                   : opportunity.isStale
                     ? "Die Szenarioanalyse muss zum bestätigten Prozessstand passen."
                     : null,
@@ -292,6 +299,7 @@ export function ProcessDetailPage() {
                 </Link>
               ) : null
             }
+            disabledActionLabel="Bewertung starten"
           />
         ) : (
           <ProcessModuleCardSkeleton />
@@ -420,23 +428,28 @@ function ProcessModuleCardSkeleton() {
   return (
     <Card className="py-0">
       <CardContent
-        className="grid min-h-52 grid-cols-[auto_minmax(0,1fr)] gap-4 p-5"
+        className="relative flex min-h-72 flex-col px-5 pt-4 pb-17"
         role="status"
         aria-busy="true"
         aria-label="Modul wird geladen"
       >
         <span className="sr-only">Modul wird geladen</span>
-        <Skeleton className="size-11 rounded-lg" />
-        <div className="flex min-w-0 flex-col">
-          <div className="flex items-start justify-between gap-3">
-            <Skeleton className="h-5 w-36" />
-            <Skeleton className="h-5 w-20 rounded-full" />
-          </div>
-          <Skeleton className="mt-3 h-4 w-full" />
-          <Skeleton className="mt-2 h-4 w-2/3" />
-          <div className="mt-auto flex min-h-11 items-center justify-end pt-4">
-            <Skeleton className="h-9 w-28" />
-          </div>
+        <div className="flex items-center justify-between gap-4">
+          <Skeleton className="h-4 w-6" />
+          <Skeleton className="h-5 w-24 rounded-full" />
+        </div>
+        <div className="mt-5 flex items-center gap-3">
+          <Skeleton className="size-11 shrink-0 rounded-lg" />
+          <Skeleton className="h-6 w-36" />
+        </div>
+        <div className="mt-4 space-y-2">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-5/6" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+        <div className="mt-auto pt-5">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="absolute right-5 bottom-4 h-9 w-28" />
         </div>
       </CardContent>
     </Card>
@@ -444,46 +457,73 @@ function ProcessModuleCardSkeleton() {
 }
 
 function ProcessModuleCard({
+  step,
   title,
   description,
   icon,
   state,
   action,
+  disabledActionLabel,
 }: {
+  step: `0${1 | 2 | 3 | 4}`;
   title: string;
   description: string;
   icon: React.ReactNode;
   state: ModuleNavigationState;
   action: React.ReactNode;
+  disabledActionLabel?: string;
 }) {
+  const blockedReasonId = useId();
+
   return (
     <Card className="py-0">
-      <CardContent className="grid min-h-52 grid-cols-[auto_minmax(0,1fr)] gap-4 p-5">
-        <div className="grid size-11 place-items-center rounded-lg bg-secondary text-primary">
-          {icon}
+      <CardContent className="relative flex min-h-72 flex-col px-5 pt-4 pb-17">
+        <div className="flex min-w-0 items-center justify-between gap-4">
+          <span
+            className="text-overline text-muted-foreground"
+            aria-hidden="true"
+          >
+            {step}
+          </span>
+          <Badge
+            variant={
+              state.tone === "danger"
+                ? "destructive"
+                : state.tone === "warning"
+                  ? "outline"
+                  : "secondary"
+            }
+          >
+            {state.status}
+          </Badge>
         </div>
-        <div className="flex min-w-0 flex-col">
-          <div className="flex items-start justify-between gap-3">
-            <h2 className="text-heading">{title}</h2>
-            <Badge
-              variant={
-                state.tone === "danger"
-                  ? "destructive"
-                  : state.tone === "warning"
-                    ? "outline"
-                    : "secondary"
-              }
-            >
-              {state.status}
-            </Badge>
+        <div className="mt-5 flex min-w-0 items-center gap-3">
+          <div className="grid size-11 shrink-0 place-items-center rounded-lg bg-secondary text-primary">
+            {icon}
           </div>
-          <p className="mt-3 text-muted-foreground">{description}</p>
-          <div className="mt-auto flex min-h-11 items-center justify-end pt-4">
-            {action ?? (
-              <span className="mr-auto text-ui text-muted-foreground">
-                {state.blockedReason}
-              </span>
-            )}
+          <h2 className="min-w-0 text-heading">{title}</h2>
+        </div>
+        <p className="mt-4 text-muted-foreground">{description}</p>
+        <div className="mt-auto pt-5">
+          <p
+            id={state.blockedReason ? blockedReasonId : undefined}
+            className="text-ui text-muted-foreground"
+          >
+            {state.blockedReason}
+          </p>
+          <div className="absolute right-5 bottom-4 flex h-9 justify-end">
+            {action ??
+              (disabledActionLabel ? (
+                <Button
+                  variant="secondary"
+                  disabled
+                  aria-describedby={
+                    state.blockedReason ? blockedReasonId : undefined
+                  }
+                >
+                  <LockKeyhole /> {disabledActionLabel}
+                </Button>
+              ) : null)}
           </div>
         </div>
       </CardContent>
