@@ -53,6 +53,8 @@ The prototype's login is gated. Real or reusable credentials live in the user's 
   HTTP, keine Zugangsdaten nötig). Der Dev-Start seedet einen leeren Workspace
   automatisch; `DEMO_SEED=0` schaltet das ab.
 - Der Demo-Sidecar in der Web-App speist sich aus `GET /api/demo/szenarien`.
+- Der Präsentationsfall `leitungswasserschaden-wohngebaeude` deckt die reale
+  Claude-Strecke von der Chat-Aufnahme bis zu beiden Excel-Exporten ab.
 - `tests/demo-data.test.ts` hält die Szenarien konsistent — Schema, Dokumentenlisten,
   Fachbereiche, Formularfelder.
 - Systemnamen und Personas kommen aus `demo-data/UNTERNEHMEN.md` und müssen über alle
@@ -62,8 +64,11 @@ The prototype's login is gated. Real or reusable credentials live in the user's 
   einer Rücknahme. Der Seed ist additiv, überspringt vorhandene Prozesstitel und erzeugt
   jeden Archiveintrag über die produktiven Pfade (`finalizeChatCapture`,
   `correctUnderstanding`/`confirm`, `syncProcess`, `revert`); in `workspace/docs` wird
-  nichts von Hand geschrieben. Format und erzählte Geschichte stehen in
-  `demo-data/dokumentation/README.md`, geprüft von `tests/documentation-seed.test.ts`.
+  nichts von Hand geschrieben. Für den Leitungswasser-Präsentationsfall erzeugt er über
+  die Repository-Pfade zusätzlich vier Potenzialhypothesen, drei Szenarien und eine
+  abgeschlossene Bewertung mit klarer Demo-Seed-Trace, ohne KI-Aufruf. Format und erzählte
+  Geschichte stehen in `demo-data/dokumentation/README.md`, geprüft von
+  `tests/documentation-seed.test.ts`.
 
 ## UX rules
 

@@ -79,8 +79,10 @@ if (withoutAiSandbox)
 
 await autoSeedIfEmpty();
 
-const port = await findFreePort(3210);
+const preferredApiPort = Number(process.env.DEV_API_PORT ?? 3210);
+const port = await findFreePort(preferredApiPort);
 const apiProxyTarget = `http://127.0.0.1:${port}`;
+const webPort = Number(process.env.DEV_WEB_PORT ?? 5173);
 
 const server = Bun.spawn(["bun", "apps/server/src/index.ts"], {
   stdout: "inherit",
@@ -93,7 +95,16 @@ const server = Bun.spawn(["bun", "apps/server/src/index.ts"], {
   },
 });
 const web = Bun.spawn(
-  ["bun", "x", "vite", "--config", "apps/web/vite.config.ts"],
+  [
+    "bun",
+    "x",
+    "vite",
+    "--config",
+    "apps/web/vite.config.ts",
+    "--port",
+    String(webPort),
+    "--strictPort",
+  ],
   {
     stdout: "inherit",
     stderr: "inherit",

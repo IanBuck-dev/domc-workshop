@@ -55,7 +55,7 @@ export async function loadMemoryConsolidationDefaults(
       responseSchema: responseSchema(await schemaFile.json()),
     },
     model: {
-      model: config.ai.model === "sonnet" ? "claude-opus-4-8" : config.ai.model,
+      model: config.ai.model === "sonnet" ? "opus" : config.ai.model,
       effort: config.ai.reasoningEffort,
       timeoutMs: config.ai.timeoutMs,
       // The transport derives its response buffer from this field. It must hold

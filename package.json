@@ -16,6 +16,9 @@
     "format": "prettier --check .",
     "format:write": "prettier --write .",
     "test": "bun test",
+    "test:e2e:local": "bun run scripts/run-local-e2e.ts",
+    "test:e2e:local:headed": "bun run scripts/run-local-e2e.ts --headed",
+    "screenshots:local": "bun run scripts/run-local-e2e.ts --screenshots",
     "icons": "bun run scripts/generate-icons.ts",
     "seed": "bun run scripts/seed-demo-process.ts",
     "seed:docs": "bun run scripts/seed-documentation.ts",
@@ -55,6 +58,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.37.0",
+    "@playwright/test": "^1.62.1",
     "@types/bun": "latest",
     "@types/js-yaml": "^4.0.9",
     "@types/react": "^19.1.16",

@@ -79,7 +79,34 @@ export function corpusRoutes(service: CorpusService) {
       const rev = revisionSchema.parse(c.req.query("rev") ?? "HEAD");
       const path = pathSchema.parse(c.req.query("path") ?? "");
       await service.initialize();
-      return c.json(await service.git.tree(rev, path));
+      const [entries, rawCatalog] = await Promise.all([
+        service.git.tree(rev, path),
+        service.git.show(rev, "katalog.json").catch(() => null),
+      ]);
+      const parsedCatalog = rawCatalog
+        ? catalogSchema.safeParse(JSON.parse(rawCatalog))
+        : null;
+      const labels = new Map<string, string>([["prozesse", "Prozesse"]]);
+      if (parsedCatalog?.success)
+        for (const item of parsedCatalog.data) {
+          const department = item.slug.split("/")[0];
+          if (department)
+            labels.set(`prozesse/${department}`, item.fachbereich);
+          labels.set(`prozesse/${item.slug}.md`, item.titel);
+        }
+      return c.json(
+        entries
+          .filter(
+            (entry) =>
+              entry.path !== "index.md" && entry.path !== "katalog.json",
+          )
+          .map((entry) => ({
+            ...entry,
+            ...(labels.has(entry.path)
+              ? { label: labels.get(entry.path)! }
+              : {}),
+          })),
+      );
     } catch (value) {
       return error(c, value);
     }

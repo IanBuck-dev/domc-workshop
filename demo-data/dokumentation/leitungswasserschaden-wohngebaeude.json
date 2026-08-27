@@ -133,6 +133,18 @@
           "typ": "free_text"
         }
       ],
+      "akteure": [
+        {
+          "art": "role",
+          "name": "Schadensachbearbeiter Sach",
+          "beteiligung": "performs"
+        },
+        {
+          "art": "external_party",
+          "name": "Versicherungsnehmer",
+          "beteiligung": "supplies"
+        }
+      ],
       "belege": ["b1"]
     },
     {
@@ -156,6 +168,13 @@
           "typ": "system_field"
         }
       ],
+      "akteure": [
+        {
+          "art": "role",
+          "name": "Schadensachbearbeiter Sach",
+          "beteiligung": "decides"
+        }
+      ],
       "belege": ["b2"]
     },
     {
@@ -172,6 +191,23 @@
           "name": "Positionen und Summe des Kostenvoranschlags",
           "quelle": "Handwerksunternehmen",
           "typ": "document"
+        }
+      ],
+      "akteure": [
+        {
+          "art": "role",
+          "name": "Schadensachbearbeiter Sach",
+          "beteiligung": "performs"
+        },
+        {
+          "art": "external_party",
+          "name": "Handwerksunternehmen",
+          "beteiligung": "supplies"
+        },
+        {
+          "art": "external_party",
+          "name": "Externer Sachverständiger",
+          "beteiligung": "performs"
         }
       ],
       "belege": ["b3"]
@@ -191,6 +227,13 @@
           "typ": "spreadsheet"
         }
       ],
+      "akteure": [
+        {
+          "art": "role",
+          "name": "Schadensachbearbeiter Sach",
+          "beteiligung": "decides"
+        }
+      ],
       "belege": ["b4"]
     },
     {
@@ -206,6 +249,18 @@
           "typ": "system_field"
         }
       ],
+      "akteure": [
+        {
+          "art": "role",
+          "name": "Schadensachbearbeiter Sach",
+          "beteiligung": "performs"
+        },
+        {
+          "art": "external_party",
+          "name": "Versicherungsnehmer",
+          "beteiligung": "receives"
+        }
+      ],
       "belege": ["b4"]
     },
     {
@@ -218,6 +273,13 @@
       ],
       "hinweis": null,
       "informationen": [],
+      "akteure": [
+        {
+          "art": "role",
+          "name": "Schadensachbearbeiter Sach",
+          "beteiligung": "performs"
+        }
+      ],
       "belege": ["b5"]
     }
   ],
@@ -239,6 +301,15 @@
         "folge": "Der Schaden wird abgelehnt und der Vorgang geschlossen."
       }
     ]
+  },
+  "pdd": {
+    "kurzbeschreibung": "Die Sachbearbeitung nimmt Leitungswasserschäden entgegen, prüft den Versicherungsschutz, steuert Kostenvoranschlag oder Gutachten und reguliert den bestätigten Betrag bis zum Abschluss in KOMPASS.",
+    "prozesseignerRolle": "Teamleitung Sachschaden Wohngebäude",
+    "vertraulichkeit": "confidential",
+    "betriebUndSupport": "Die Gruppe Sachschaden Wohngebäude bearbeitet rund 120 Fälle pro Monat während der Servicezeiten. Fachliche Sonderfälle eskalieren an die Teamleitung; technische Störungen der Kernsysteme gehen an den Anwendersupport.",
+    "zugriffUndSchutz": "Zugriff auf Schaden-, Vertrags- und Zahlungsdaten erhalten nur berechtigte Mitarbeitende über ihre Rollen in KOMPASS, VERA, AKTE und SAP FI. Externe erhalten ausschließlich die für Auftrag oder Rückfrage erforderlichen Falldaten.",
+    "monitoringUndNachvollziehbarkeit": "Schadenstatus, Deckungsergebnis, Reserve, Zahlungsveranlassung und Abschluss werden in KOMPASS protokolliert. Ein- und ausgehende Dokumente sowie Abrechnungsschreiben liegen revisionsbezogen in der AKTE.",
+    "leitplankenUndOffeneFragen": []
   },
   "revisionen": []
 }

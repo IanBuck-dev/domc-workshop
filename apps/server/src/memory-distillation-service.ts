@@ -67,7 +67,7 @@ export class MemoryDistillationService {
       this.memory.topicContents(),
     ]);
     const model = {
-      model: "claude-opus-4-8",
+      model: "opus",
       effort: "medium",
       timeoutMs: record.configSnapshot.ai.timeoutMs,
       maxOutputTokens: record.configSnapshot.ai.maxOutputTokens,

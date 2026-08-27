@@ -94,7 +94,10 @@ describe("Dokumentationskorpus", () => {
     expect(first.frontmatter.quell_revision).toBe(computeSourceRevision(input));
     expect(parseCorpusMarkdown(first.markdown)).toEqual(first.frontmatter);
     expect(first.markdown).toContain("## Offene Fragen und Widersprüche");
-    expect(first.markdown).toContain("- ai_structured:");
+    const body = first.markdown.replace(/^---\n[\s\S]*?\n---\n/, "");
+    expect(body).toContain("Qualität: Mit offenen Punkten bestätigt");
+    expect(body).not.toContain("Provenienz-Zählwerte");
+    expect(body).not.toContain("ai_structured");
   });
 
   test("transliteriert Slugs und trennt gleichlautende Prozessidentitäten", () => {
@@ -307,9 +310,22 @@ describe("Dokumentationskorpus", () => {
       expect(await service.git.workingFile(path)).toBe(
         renderProcess(source).markdown,
       );
+      expect(await (await app.request("/api/corpus/tree")).json()).toEqual([
+        expect.objectContaining({
+          name: "prozesse",
+          label: "Prozesse",
+          type: "tree",
+        }),
+      ]);
       expect(
         await (await app.request("/api/corpus/tree?path=prozesse")).json(),
-      ).toEqual([expect.objectContaining({ name: "vertrieb", type: "tree" })]);
+      ).toEqual([
+        expect.objectContaining({
+          name: "vertrieb",
+          label: "Vertrieb",
+          type: "tree",
+        }),
+      ]);
       expect(
         await (
           await app.request(`/api/corpus/file?path=${encodeURIComponent(path)}`)

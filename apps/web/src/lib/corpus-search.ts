@@ -1,5 +1,5 @@
 import type { CorpusNode } from "./corpus-tree";
-import { entryLabel, splitFrontmatter } from "./corpus-types";
+import { splitFrontmatter } from "./corpus-types";
 
 /**
  * Suche über den Dokumentenbaum: Beschriftung und Fließtext.
@@ -52,7 +52,7 @@ function prune(
       if (children.length) result.push({ ...node, children });
       continue;
     }
-    const imTitel = normalized(entryLabel(node.name)).includes(needle);
+    const imTitel = normalized(node.label).includes(needle);
     const imText = countMatches(contents.get(node.path), needle);
     if (!imTitel && !imText) continue;
     treffer.set(node.path, imText);

@@ -90,7 +90,7 @@ export function OpportunityDiscoveryPage({
       >
         <ArrowLeft /> Zum Prozess
       </Link>
-      <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+      <div className="flex flex-col justify-between gap-6 xl:flex-row xl:items-end">
         <div>
           <p className="text-eyebrow uppercase text-primary">
             KI-Potenziale entdecken

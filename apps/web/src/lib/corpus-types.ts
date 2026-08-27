@@ -12,6 +12,8 @@ export type CorpusEntry = {
   path: string;
   type: "blob" | "tree";
   size: number;
+  /** Fachliche Beschriftung aus dem versionierten Katalog. */
+  label?: string;
 };
 
 /** Der Anlass einer Änderung — der Trailer `Anlass:` der Commit-Nachricht. */

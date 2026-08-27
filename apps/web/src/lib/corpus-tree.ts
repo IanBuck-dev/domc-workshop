@@ -1,7 +1,8 @@
-import type { CorpusEntry } from "./corpus-types";
+import { entryLabel, type CorpusEntry } from "./corpus-types";
 
 export type CorpusNode = {
   name: string;
+  label: string;
   path: string;
   type: "blob" | "tree";
   size: number;
@@ -27,6 +28,9 @@ export function buildCorpusTree(entries: CorpusEntry[]): CorpusNode[] {
       if (!node) {
         node = {
           name: segment,
+          label: last
+            ? (entry.label ?? entryLabel(segment))
+            : entryLabel(segment),
           path,
           type: last ? entry.type : "tree",
           size: last ? entry.size : 0,
@@ -34,6 +38,7 @@ export function buildCorpusTree(entries: CorpusEntry[]): CorpusNode[] {
         };
         level.push(node);
       }
+      if (last && entry.label) node.label = entry.label;
       level = node.children;
     });
   }
@@ -43,7 +48,7 @@ export function buildCorpusTree(entries: CorpusEntry[]): CorpusNode[] {
 function sortNodes(nodes: CorpusNode[]): CorpusNode[] {
   nodes.sort((a, b) => {
     if (a.type !== b.type) return a.type === "tree" ? -1 : 1;
-    return a.name.localeCompare(b.name, "de");
+    return a.label.localeCompare(b.label, "de");
   });
   for (const node of nodes) sortNodes(node.children);
   return nodes;

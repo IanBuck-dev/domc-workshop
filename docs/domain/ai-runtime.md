@@ -62,7 +62,8 @@ The browser side is `apps/web/src/lib/process-events.tsx`.
 ### Model configuration
 
 `AiRuntimeModelConfig` (`packages/claude/src/ai-runtime-contracts.ts`) is the shared
-budget every call carries: `model` (`claude-opus-4-8`), `effort` (`medium` | `high`),
+budget every call carries: `model` (`opus`, the Claude CLI alias for the current Opus;
+frozen legacy records may still use `claude-opus-4-8`), `effort` (`medium` | `high`),
 `timeoutMs`, `maxOutputTokens`, `maxInputCharacters`, and `maxBudgetUsd`. The values come
 from `defaults/process-capture-config.json` and
 `defaults/opportunity-discovery-config.json` and are **frozen per record** at creation

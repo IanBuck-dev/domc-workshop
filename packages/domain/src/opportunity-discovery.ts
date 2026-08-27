@@ -87,7 +87,7 @@ const identifierArraySchema = (minimum = 0, maximum = 100) =>
 
 const aiRuntimeConfigSchema = z
   .object({
-    model: z.enum(["sonnet", "claude-opus-4-8"]),
+    model: z.enum(["sonnet", "opus", "claude-opus-4-8"]),
     reasoningEffort: z.enum(["medium", "high"]),
     timeoutMs: z.number().int().min(10_000).max(300_000),
     maxOutputTokens: z.number().int().min(512).max(32_768),

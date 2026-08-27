@@ -102,7 +102,7 @@ describe("process AI contract", () => {
     });
     const config = await processConfig();
     expect(config.ai).toMatchObject({
-      model: "claude-opus-4-8",
+      model: "opus",
       reasoningEffort: "medium",
     });
     const result = await new ProcessFollowUpAdapter(runner).run({

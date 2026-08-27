@@ -37,12 +37,7 @@ export function AgenticPotentialAssessmentPage() {
     ]);
     setProcess(nextProcess);
     setOpportunity(nextOpportunity);
-    try {
-      setDetail(await api.agenticAssessment(id));
-    } catch (reason) {
-      if ((reason as { status?: number }).status === 404) setDetail(null);
-      else throw reason;
-    }
+    setDetail(await api.agenticAssessment(id));
   }, [id]);
   useEffect(() => {
     void load().catch((reason) => setError((reason as Error).message));

@@ -40,13 +40,14 @@ demo-data/szenarien/<slug>/
 `drehbuch.json` holds the answers; `DREHBUCH.md` references them by turn number only, so
 there are never two copies to drift apart.
 
-### The three capture scenarios
+### The four capture scenarios
 
-| Slug                   | Department | The case it exercises                                                                                                                |
-| ---------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `kfz-glasschaden`      | Schaden    | the clean case — clear flow, three complementary documents. Baseline: steps, roles, systems recognised, `documentCoverage: complete` |
-| `beitragsanpassung`    | Vertrag    | the contradictory case — two documents disagree. Does the assistant notice and ask, or silently pick one?                            |
-| `provisionsabrechnung` | Vertrieb   | the document-free case — conversation only, no textual crutch                                                                        |
+| Slug                                 | Department | The case it exercises                                                                                                                |
+| ------------------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `kfz-glasschaden`                    | Schaden    | the clean case — clear flow, three complementary documents. Baseline: steps, roles, systems recognised, `documentCoverage: complete` |
+| `beitragsanpassung`                  | Vertrag    | the contradictory case — two documents disagree. Does the assistant notice and ask, or silently pick one?                            |
+| `provisionsabrechnung`               | Vertrieb   | the document-free case — conversation only, no textual crutch                                                                        |
+| `leitungswasserschaden-wohngebaeude` | Schaden    | the flagship management case — high-volume document intake, expert steering, judgement, exceptions, and external hand-offs           |
 
 ### Running a tuning round
 
@@ -82,23 +83,31 @@ eight confirmed processes in `demo-data/dokumentation/`, replaying confirm → c
 re-confirm → revert in chronological order so the archive shows exactly what the
 application produces. Nothing is written into `workspace/docs/` by hand.
 
+That seed also creates four evidence-backed hypotheses, all three oversight scenarios,
+and a completed agentic assessment for the flagship Leitungswasser process. The content
+is deterministic presentation data built through the opportunity and assessment
+repositories, with an explicit `deterministischer-demo-seed` operation trace and no
+provider invocation. It exists so browser, export, and video checks can cover the
+downstream review flow while preserving the production rule of one bounded AI run.
+
 `bun run seed --list` / `bun run seed:docs --list` show what is available.
 
 ## Where it lives
 
-| Layer    | Path                                                                                                                                                                      |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Fixtures | `demo-data/UNTERNEHMEN.md`, `demo-data/szenarien/`, `demo-data/dokumentation/`                                                                                            |
-| Server   | `apps/server/src/demo-scenarios.ts`, `routes/demo.ts` (`GET /api/demo/szenarien`, `…/dateien/:zielname`)                                                                  |
-| Web      | `apps/web/src/components/demo-sidecar.tsx`                                                                                                                                |
-| Scripts  | `scripts/seed-demo-process.ts` (`bun run seed`), `scripts/seed-documentation.ts` (`bun run seed:docs`), `scripts/documentation-fixtures.ts`, `scripts/reset-workspace.ts` |
-| Tests    | `tests/demo-data.test.ts`, `documentation-seed.test.ts`                                                                                                                   |
+| Layer    | Path                                                                                                                                                                                                                 |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fixtures | `demo-data/UNTERNEHMEN.md`, `demo-data/szenarien/`, `demo-data/dokumentation/`                                                                                                                                       |
+| Server   | `apps/server/src/demo-scenarios.ts`, `routes/demo.ts` (`GET /api/demo/szenarien`, `…/dateien/:zielname`)                                                                                                             |
+| Web      | `apps/web/src/components/demo-sidecar.tsx`                                                                                                                                                                           |
+| Scripts  | `scripts/seed-demo-process.ts` (`bun run seed`), `scripts/seed-documentation.ts` (`bun run seed:docs`), `scripts/documentation-fixtures.ts`, `scripts/showcase-opportunity-fixture.ts`, `scripts/reset-workspace.ts` |
+| Tests    | `tests/demo-data.test.ts`, `documentation-seed.test.ts`                                                                                                                                                              |
 
 ## Implementation status
 
-**Implemented.** Three capture scenarios with scripts and documents, eight documentation
-fixtures, both seed scripts, the auto-seed on an empty workspace, the stage-aware sidecar,
-and the document-serving endpoint.
+**Implemented.** Four capture scenarios with scripts and documents, eight documentation
+fixtures, a deterministic flagship opportunity/assessment result, both seed scripts, the
+auto-seed on an empty workspace, the stage-aware sidecar, and the document-serving
+endpoint.
 
 ## Constraints
 

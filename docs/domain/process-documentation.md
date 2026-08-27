@@ -85,7 +85,10 @@ The viewer at `/dokumentation` is read-only apart from the revert action:
 - an _Änderungsverlauf_ tab with a side-by-side diff (`react-diff-view`) and the revert
   dialog.
 
-Markdown is rendered by `react-markdown` with `skipHtml` and **without** `remark-gfm`.
+The manager-facing tree excludes the generated index and machine catalogue. Its folder
+and document labels come from the versioned catalogue, so German spelling and acronyms
+stay intact even though filesystem paths remain portable slugs. Markdown is rendered by
+`react-markdown` with `skipHtml` and **without** `remark-gfm`.
 
 ## Where it lives
 
@@ -110,12 +113,8 @@ revert, driven through the productive code paths (`finalizeChatCapture`,
 `correctUnderstanding`/`confirm`, `syncProcess`, `revert`) — nothing is written into
 `workspace/docs` by hand.
 
-Three divergences from the UI guardrails are known and recorded in
-[`../BACKLOG.md`](../BACKLOG.md): `katalog.json` and the index appear as browsable
-documents in the manager-facing tree; tree labels come from transliterated file paths
-("It", "Stoerungsannahme im anwendersupport") rather than the document's own H1; and the
-rendered document ends with a _Provenienz-Zählwerte_ section that prints the raw
-provenance enum keys. Tables can never render, because `remark-gfm` is absent.
+The remaining viewer gap is recorded in [`../BACKLOG.md`](../BACKLOG.md): tables cannot
+render because `remark-gfm` is absent.
 
 ## Constraints
 

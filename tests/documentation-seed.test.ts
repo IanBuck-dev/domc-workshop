@@ -3,6 +3,8 @@ import { mkdtemp, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { validateProcessFlow } from "../packages/domain/src/process-understanding.ts";
+import { AgenticPotentialAssessmentRepository } from "../packages/storage/src/agentic-potential-assessment-repository.ts";
+import { OpportunityDiscoveryRepository } from "../packages/storage/src/opportunity-discovery-repository.ts";
 import { ProcessCaptureRepository } from "../packages/storage/src/process-capture-repository.ts";
 import {
   expandUnderstanding,
@@ -80,6 +82,35 @@ describe("Seeddaten der Prozessdokumentation", () => {
             record.currentStateDetails !== null,
         ),
       ).toBe(true);
+      const flagship = records.find(
+        (record) =>
+          record.cover.processName ===
+          "Leitungswasserschaden Wohngebäude regulieren",
+      );
+      expect(flagship?.confirmationQuality).toBe("complete");
+      const opportunity = await new OpportunityDiscoveryRepository(
+        workspace,
+      ).required(flagship!.id);
+      expect(opportunity.state).toBe("completed");
+      expect(
+        opportunity.scenarios?.scenarios.find(
+          (scenario) => scenario.id === "SCN-agentic",
+        )?.title,
+      ).toBe("Agentischer Schaden-Arbeitsbegleiter");
+      expect(
+        opportunity.hypotheses?.stepAnalyses.flatMap(
+          (analysis) => analysis.hypotheses,
+        ),
+      ).toHaveLength(4);
+      const assessment = await new AgenticPotentialAssessmentRepository(
+        workspace,
+      ).required(flagship!.id);
+      expect(assessment.state).toBe("completed");
+      expect(
+        assessment.result?.criteria.filter(
+          (criterion) => criterion.status === "scored",
+        ),
+      ).toHaveLength(15);
       const documentationFiles = await readdir(join(workspace, "docs"), {
         recursive: true,
       });

@@ -108,6 +108,37 @@ describe("Korpus-Baum", () => {
     expect(markup).toContain('aria-current="true"');
   });
 
+  test("bevorzugt versionierte Fachlabels für Ordner und Dokumente", () => {
+    const nodes = buildCorpusTree([
+      {
+        name: "prozesse",
+        path: "prozesse",
+        type: "tree",
+        size: 0,
+        label: "Prozesse",
+      },
+      {
+        name: "it",
+        path: "prozesse/it",
+        type: "tree",
+        size: 0,
+        label: "IT",
+      },
+      {
+        name: "stoerungsannahme-im-anwendersupport.md",
+        path: "prozesse/it/stoerungsannahme-im-anwendersupport.md",
+        type: "blob",
+        size: 100,
+        label: "Störungsannahme im Anwendersupport",
+      },
+    ]);
+    expect(nodes[0]?.children[0]?.label).toBe("IT");
+    expect(nodes[0]?.children[0]?.children[0]?.label).toBe(
+      "Störungsannahme im Anwendersupport",
+    );
+    expect(filterCorpusTree(nodes, "störung", new Map()).gefunden).toBe(1);
+  });
+
   test("verbirgt die Kinder eines zugeklappten Ordners", () => {
     const nodes = buildCorpusTree(entries);
     const render = (collapsed: Set<string>) =>

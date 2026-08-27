@@ -76,6 +76,11 @@ async function fixture(failures = 0) {
 describe("agentic potential assessment API", () => {
   test("runs one AI call, returns the stored result and exports without AI", async () => {
     const { app, process, assessments, attempts } = await fixture();
+    const empty = await app.request(
+      `/api/opportunities/${process.id}/agentic-assessment`,
+    );
+    expect(empty.status).toBe(200);
+    expect(await empty.json()).toEqual({ record: null, isStale: false });
     expect(
       (
         await app.request(

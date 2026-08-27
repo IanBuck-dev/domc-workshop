@@ -32,11 +32,12 @@ describe("chat AI runtime contract", () => {
       "utf8",
     );
     expect(adapter).toContain("streamText");
-    expect(adapter).toContain('provider("claude-opus-4-8"');
+    expect(adapter).toContain('provider("opus"');
+    expect(adapter).toContain("strictMcpConfig: true");
     expect(adapter).toContain('effort: "medium"');
     expect(adapter).toContain("persistSession: true");
     expect(adapter).toContain("settingSources: []");
-    expect(adapter).toContain("maxTurns: 12");
+    expect(adapter).toContain("maxTurns: 20");
     expect(route).toContain("createUIMessageStreamResponse");
     expect(runner).toContain(
       "for await (const part of active.result.fullStream)",

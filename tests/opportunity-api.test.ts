@@ -143,8 +143,8 @@ describe("opportunity discovery API", () => {
     expect(completed.scenarios?.scenarios).toHaveLength(3);
     expect(calls).toEqual(["hypotheses", "scenarios"]);
     expect(modelCalls).toEqual([
-      { model: "claude-opus-4-8", effort: "high" },
-      { model: "claude-opus-4-8", effort: "high" },
+      { model: "opus", effort: "high" },
+      { model: "opus", effort: "high" },
     ]);
     const detail = await app.request(`/api/opportunities/${process.id}`);
     expect(detail.status).toBe(200);

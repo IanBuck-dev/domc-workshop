@@ -325,6 +325,10 @@ describe("chat capture UI contract", () => {
     expect(page).not.toContain('send("skip_documents")');
     expect(page).toContain("Boolean(view?.activeTurn)");
     expect(page).toContain("view?.activeTurn?.kind");
+    expect(page).toContain(
+      'chat.status === "ready" || chat.status === "error"',
+    );
+    expect(page).toContain("void reloadView({ syncMessages: true })");
     expect(service).toContain("skipDocumentsAssistantText");
     expect(service).toContain("Was löst den Vorgang aus");
   });

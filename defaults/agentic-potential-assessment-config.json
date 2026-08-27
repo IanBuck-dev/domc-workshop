@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "profile": { "id": "agentic-potential-assessment-v1", "version": 1 },
   "ai": {
-    "model": "claude-opus-4-8",
+    "model": "opus",
     "reasoningEffort": "high",
     "timeoutMs": 300000,
     "maxOutputTokens": 12000,

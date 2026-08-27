@@ -35,7 +35,7 @@ export class OpportunityDiscoveryService {
           let record = await this.opportunities.required(processId);
           const contracts = await this.opportunities.contracts(processId);
           const model = {
-            model: "claude-opus-4-8",
+            model: "opus",
             effort: "high",
             timeoutMs: record.configSnapshot.ai.timeoutMs,
             maxOutputTokens: record.configSnapshot.ai.maxOutputTokens,

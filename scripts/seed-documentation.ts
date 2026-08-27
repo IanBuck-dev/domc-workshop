@@ -29,10 +29,12 @@ import {
 } from "../packages/domain/src/process-understanding.ts";
 import {
   expandUnderstanding,
+  expandCurrentStateDetails,
   inhaltAt,
   listDocumentationFixtures,
   type DocumentationFixture,
 } from "./documentation-fixtures.ts";
+import { seedFlagshipOpportunity } from "./showcase-opportunity-fixture.ts";
 
 /**
  * Der Zeitstempel eines Datensatzes entsteht dort, wo er geschrieben wird —
@@ -233,6 +235,12 @@ async function main() {
         inhaltAt(fixture, nummer),
         zuordnung,
       );
+      const currentStateDetails = expandCurrentStateDetails(
+        fixture,
+        inhaltAt(fixture, nummer),
+        understanding,
+        initialDetails.get(fixture.slug)!,
+      );
       if (ereignis.art === "erstbestaetigung")
         await repo.finalizeChatCapture(
           id,
@@ -243,7 +251,7 @@ async function main() {
           {
             schemaVersion: 1,
             understanding,
-            currentStateDetails: initialDetails.get(fixture.slug)!,
+            currentStateDetails,
           },
         );
       else {
@@ -276,6 +284,14 @@ async function main() {
         }`,
       );
     });
+  }
+
+  const flagshipId = prozessIds.get("leitungswasserschaden-wohngebaeude");
+  if (flagshipId) {
+    await seedFlagshipOpportunity(root, await repo.required(flagshipId));
+    console.log(
+      `Showcase     ${flagshipId}  KI-Szenarien und Potenzialbewertung angelegt`,
+    );
   }
 
   if (uebersprungen.length) {

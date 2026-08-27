@@ -2,13 +2,11 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import {
   confirmationQualitySchema,
-  processUnderstandingSchema,
-  provenanceSchema,
-  type ProcessUnderstanding,
   normalizedProcessName,
+  processUnderstandingSchema,
 } from "../../domain/src/process-understanding.ts";
 
-export const rendererVersion = 1;
+export const rendererVersion = 2;
 export const emptySection = "_Keine Angaben erfasst._";
 
 const processIdSchema = z.string().regex(/^PROC-\d{4}$/);
@@ -129,30 +127,6 @@ function lines(value: string[] | null) {
 function fact(value: string | null) {
   return value ?? emptySection;
 }
-function provenanceCounts(understanding: ProcessUnderstanding) {
-  const facts = [
-    understanding.purpose,
-    understanding.trigger,
-    understanding.outcome,
-    understanding.boundaries,
-    understanding.participants,
-    understanding.informationSources,
-    understanding.systems,
-    understanding.controls,
-    understanding.handoffs,
-    understanding.volumeAndTime,
-    understanding.painPoints,
-    understanding.improvementGoals,
-    ...understanding.steps,
-  ];
-  const counts = Object.fromEntries(
-    provenanceSchema.options.map((key) => [key, 0]),
-  ) as Record<(typeof provenanceSchema.options)[number], number>;
-  for (const item of facts) counts[item.provenance] += 1;
-  return provenanceSchema.options
-    .map((key) => `- ${key}: ${counts[key]}`)
-    .join("\n");
-}
 function yaml(value: string) {
   return JSON.stringify(value);
 }
@@ -191,7 +165,11 @@ export function renderProcess(
     ...understanding.knowledgeGaps.map((item) => `- Offene Frage: ${item}`),
     ...understanding.conflicts.map((item) => `- Widerspruch: ${item}`),
   ];
-  const markdown = `---\nid: ${yaml(frontmatter.id)}\ntitel: ${yaml(frontmatter.titel)}\nfachbereich: ${yaml(frontmatter.fachbereich)}\nstatus: aktiv\nbestaetigt_am: ${yaml(frontmatter.bestaetigt_am)}\nqualitaet: ${frontmatter.qualitaet}\nquell_revision: ${frontmatter.quell_revision}\nrenderer_version: ${rendererVersion}\noffene_punkte: ${frontmatter.offene_punkte}\n---\n\n# ${source.cover.processName}\n\n## Zweck und Ergebnis\n\n**Zweck:** ${fact(understanding.purpose.value)}\n\n**Ergebnis:** ${fact(understanding.outcome.value)}\n\n## Auslöser\n\n${fact(understanding.trigger.value)}\n\n## Geltungsbereich und Abgrenzung\n\n${fact(understanding.boundaries.value)}\n\n## Beteiligte und Rollen\n\n${lines(understanding.participants.value)}\n\n## Ablauf\n\n${steps}\n\n## Systeme\n\n${lines(understanding.systems.value)}\n\n## Informationsquellen und Dokumente\n\n${documents.length ? documents.map((item) => `- ${item}`).join("\n") : emptySection}\n\n## Kontrollen\n\n${lines(understanding.controls.value)}\n\n## Übergaben\n\n${lines(understanding.handoffs.value)}\n\n## Mengen und Zeiten\n\n${lines(understanding.volumeAndTime.value)}\n\n## Bekannte Schwachstellen\n\n${lines(understanding.painPoints.value)}\n\n## Verbesserungsziele\n\n${lines(understanding.improvementGoals.value)}\n\n## Offene Fragen und Widersprüche\n\n${open.length ? open.join("\n") : emptySection}\n\n## Quellen und Änderungshistorie\n\n- Quell-Prozess: ${source.id}\n- Bestätigungsdatum: ${source.confirmedAt}\n- Qualität: ${source.confirmationQuality}\n\n### Provenienz-Zählwerte\n\n${provenanceCounts(understanding)}\n`;
+  const quality =
+    source.confirmationQuality === "complete"
+      ? "Vollständig bestätigt"
+      : "Mit offenen Punkten bestätigt";
+  const markdown = `---\nid: ${yaml(frontmatter.id)}\ntitel: ${yaml(frontmatter.titel)}\nfachbereich: ${yaml(frontmatter.fachbereich)}\nstatus: aktiv\nbestaetigt_am: ${yaml(frontmatter.bestaetigt_am)}\nqualitaet: ${frontmatter.qualitaet}\nquell_revision: ${frontmatter.quell_revision}\nrenderer_version: ${rendererVersion}\noffene_punkte: ${frontmatter.offene_punkte}\n---\n\n# ${source.cover.processName}\n\n## Zweck und Ergebnis\n\n**Zweck:** ${fact(understanding.purpose.value)}\n\n**Ergebnis:** ${fact(understanding.outcome.value)}\n\n## Auslöser\n\n${fact(understanding.trigger.value)}\n\n## Geltungsbereich und Abgrenzung\n\n${fact(understanding.boundaries.value)}\n\n## Beteiligte und Rollen\n\n${lines(understanding.participants.value)}\n\n## Ablauf\n\n${steps}\n\n## Systeme\n\n${lines(understanding.systems.value)}\n\n## Informationsquellen und Dokumente\n\n${documents.length ? documents.map((item) => `- ${item}`).join("\n") : emptySection}\n\n## Kontrollen\n\n${lines(understanding.controls.value)}\n\n## Übergaben\n\n${lines(understanding.handoffs.value)}\n\n## Mengen und Zeiten\n\n${lines(understanding.volumeAndTime.value)}\n\n## Bekannte Schwachstellen\n\n${lines(understanding.painPoints.value)}\n\n## Verbesserungsziele\n\n${lines(understanding.improvementGoals.value)}\n\n## Offene Fragen und Widersprüche\n\n${open.length ? open.join("\n") : emptySection}\n\n## Quellen und Änderungshistorie\n\n- Quell-Prozess: ${source.id}\n- Bestätigungsdatum: ${source.confirmedAt}\n- Qualität: ${quality}\n`;
   const path = processPath(source, sources);
   return { path, pfad: path, frontmatter, markdown };
 }

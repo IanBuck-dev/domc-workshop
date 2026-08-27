@@ -43,29 +43,6 @@ product decision is required first.
 
 ## process-documentation
 
-- **[process-documentation] `katalog.json` and the generated index are browsable
-  documents** — they appear in the manager-facing tree as searchable entries, so a
-  department lead can click into raw JSON. `AGENTS.md` forbids raw JSON in the normal UI.
-  `GET /api/corpus/tree` returns the repository listing unfiltered and `buildCorpusTree`
-  passes every entry through. Filter both out; the catalogue is machine metadata, not a
-  chapter. Evidence: `apps/server/src/routes/corpus.ts:82`,
-  `apps/web/src/lib/corpus-tree.ts:18`. Size: S.
-
-- **[process-documentation] Tree labels come from transliterated file paths** — the tree
-  shows "It" and "Stoerungsannahme im anwendersupport" while the document's own H1 reads
-  correctly, because `slug()` transliterates ä→ae, ö→oe, ü→ue, ß→ss for the filesystem and
-  `entryLabel` merely strips `.md`, replaces hyphens with spaces, and capitalises the first
-  letter. `documentTitle` in the same file already reads the H1 correctly — use that, or
-  the title in `katalog.json`. Evidence: `apps/web/src/lib/corpus-types.ts:79`,
-  `packages/corpus/src/index.ts` (`slug`). Size: S.
-
-- **[process-documentation] Published documents end with raw provenance enum keys** — the
-  `### Provenienz-Zählwerte` section prints `user_stated: 3`, `ai_inferred: 5` and so on
-  into the document a department lead reads and prints as PDF. That is model terminology in
-  the UI. Either render German labels or drop the section from the published body and keep
-  the counts in the catalogue. Evidence: `packages/corpus/src/index.ts` (`renderProcess`,
-  `provenanceCounts`). Size: S.
-
 - **[process-documentation] Tables can never render, and both sides of the gap are dead
   code** — `react-markdown` runs with `skipHtml` and **without** `remark-gfm`, so a GFM
   table stays literal text. That makes the table CSS at

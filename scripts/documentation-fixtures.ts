@@ -15,8 +15,10 @@ import { z } from "zod";
 import {
   processDecisionModeSchema,
   processInformationTypeSchema,
+  currentStateDetailsSchema,
   processUnderstandingSchema,
   provenanceSchema,
+  type CurrentStateDetails,
   type ProcessUnderstanding,
 } from "../packages/domain/src/process-understanding.ts";
 
@@ -82,6 +84,24 @@ const schrittSchema = z
     ausgaben: z.array(z.string().trim().min(1).max(1_000)).min(1).max(30),
     hinweis: z.string().trim().min(1).max(4_000).nullable().default(null),
     informationen: z.array(informationSchema).max(40).default([]),
+    akteure: z
+      .array(
+        z
+          .object({
+            art: z.enum(["department", "role", "external_party"]),
+            name: z.string().trim().min(1).max(240),
+            beteiligung: z.enum([
+              "performs",
+              "decides",
+              "approves",
+              "receives",
+              "supplies",
+            ]),
+          })
+          .strict(),
+      )
+      .max(20)
+      .default([]),
     provenienz: provenanceSchema.optional(),
     belege: z.array(belegIdSchema).max(50).default([]),
     konfidenz: z.number().int().min(0).max(100).nullable().optional(),
@@ -133,6 +153,24 @@ const inhaltSchema = {
   verzweigung: verzweigungSchema.nullable(),
 };
 
+const pddSchema = z
+  .object({
+    kurzbeschreibung: z.string().trim().min(1).max(4_000),
+    prozesseignerRolle: z.string().trim().min(1).max(240),
+    vertraulichkeit: z.enum([
+      "internal",
+      "confidential",
+      "strictly_confidential",
+    ]),
+    betriebUndSupport: z.string().trim().min(1).max(4_000),
+    zugriffUndSchutz: z.string().trim().min(1).max(4_000),
+    monitoringUndNachvollziehbarkeit: z.string().trim().min(1).max(4_000),
+    leitplankenUndOffeneFragen: z
+      .array(z.string().trim().min(1).max(2_000))
+      .max(40),
+  })
+  .strict();
+
 const revisionSchema = z
   .object({
     bestaetigtAm: z.string().datetime(),
@@ -180,6 +218,7 @@ export const documentationFixtureSchema = z
       .min(1)
       .max(30),
     revisionen: z.array(revisionSchema).max(5).default([]),
+    pdd: pddSchema.optional(),
     ...inhaltSchema,
   })
   .strict()
@@ -330,6 +369,12 @@ export function expandUnderstanding(
       type: information.typ,
       typeDetail: information.typDetail,
     })),
+    actors: schritt.akteure.map((actor, nummer) => ({
+      id: `step-${index + 1}-actor-${nummer + 1}`,
+      kind: actor.art,
+      name: actor.name,
+      involvement: actor.beteiligung,
+    })),
     miscellaneous: schritt.hinweis,
     ...herkunft({
       provenienz: schritt.provenienz,
@@ -358,6 +403,84 @@ export function expandUnderstanding(
     conflicts: inhalt.widersprueche,
     steps,
     flow: flow(inhalt),
+  });
+}
+
+/**
+ * Ergänzt den vollständigen Ist-Zustand nur für Fixtures, die ihn fachlich
+ * ausdrücklich beschreiben. Ohne `pdd` bleibt der vom Produkt angelegte offene
+ * Stand erhalten; der Seed erfindet keine Angaben für ältere Geschichten.
+ */
+export function expandCurrentStateDetails(
+  fixture: DocumentationFixture,
+  inhalt: Inhalt,
+  understanding: ProcessUnderstanding,
+  fallback: CurrentStateDetails,
+): CurrentStateDetails {
+  if (!fixture.pdd) return fallback;
+  const known = <T>(value: T) => ({
+    state: "known" as const,
+    value,
+    reason: null,
+    provenance: "user_confirmed" as const,
+    evidenceIds: understanding.evidence.map((item) => item.id),
+    confidence: 100,
+    assumptions: [],
+    confirmed: true,
+  });
+  const systems = (understanding.systems.value ?? []).map((name, index) => ({
+    id: `system-${index + 1}`,
+    name,
+    kind:
+      name === "Outlook"
+        ? ("communication" as const)
+        : name === "AKTE"
+          ? ("repository" as const)
+          : ("application" as const),
+  }));
+  const painPoints = (understanding.painPoints.value ?? []).map(
+    (description, index) => ({ id: `pain-${index + 1}`, description }),
+  );
+  const variations = inhalt.verzweigung
+    ? [
+        {
+          id: "variation-1",
+          name: inhalt.verzweigung.frage,
+          kind: "flow_branch" as const,
+          trigger: inhalt.verzweigung.frage,
+          currentHandling: inhalt.verzweigung.zweige
+            .map((branch) =>
+              [branch.label, branch.ermittlung, branch.folge]
+                .filter(Boolean)
+                .join(": "),
+            )
+            .join("; "),
+          affectedStepIds: [`step-${inhalt.verzweigung.nachSchritt}`],
+          gatewayId: "xor-1",
+        },
+      ]
+    : [];
+  return currentStateDetailsSchema.parse({
+    schemaVersion: 1,
+    currentStateSummary: known(fixture.pdd.kurzbeschreibung),
+    processOwner: known({
+      department: fixture.fachbereich,
+      role: fixture.pdd.prozesseignerRolle,
+    }),
+    confidentiality: known(fixture.pdd.vertraulichkeit),
+    systems: known(systems),
+    painPoints: known(painPoints),
+    variations: known(variations),
+    operationalContext: {
+      operationAndSupport: known(fixture.pdd.betriebUndSupport),
+      accessAndProtection: known(fixture.pdd.zugriffUndSchutz),
+      monitoringAndTraceability: known(
+        fixture.pdd.monitoringUndNachvollziehbarkeit,
+      ),
+      constraintsAndOpenQuestions: known(
+        fixture.pdd.leitplankenUndOffeneFragen,
+      ),
+    },
   });
 }
 

@@ -326,12 +326,14 @@ export function ProcessChatPage() {
     tabRef.current = tab;
   }, [tab]);
   useEffect(() => {
-    void syncTranscript();
-  }, [syncTranscript]);
-  useEffect(() => {
-    if (chat.status === "ready" || chat.status === "error")
+    if (chat.status === "ready" || chat.status === "error") {
       setStreamActivity(null);
-  }, [chat.status]);
+      // The process-change event can arrive just before the stream reaches its
+      // terminal status. Refresh again here so a failed provider turn cannot
+      // leave a stale `activeTurn` locking the composer.
+      void reloadView({ syncMessages: true });
+    }
+  }, [chat.status, reloadView]);
   useEffect(() => {
     if (!desktop) setExpanded(false);
   }, [desktop]);

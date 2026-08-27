@@ -188,7 +188,7 @@ const processCaptureConfigBase = {
     maxProcessBytes: z.literal(100 * 1024 * 1024),
   }),
   ai: z.object({
-    model: z.enum(["sonnet", "claude-opus-4-8"]),
+    model: z.enum(["sonnet", "opus", "claude-opus-4-8"]),
     reasoningEffort: z.literal("medium"),
     timeoutMs: z.number().int().min(10_000).max(300_000),
     maxOutputTokens: z.number().int().min(512).max(32_768),

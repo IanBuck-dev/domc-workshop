@@ -394,7 +394,9 @@ async function collectDocuments(path = ""): Promise<CorpusEntry[]> {
   const entries = await api.corpus.tree(path);
   const nested = await Promise.all(
     entries.map(async (entry) =>
-      entry.type === "tree" ? collectDocuments(entry.path) : [entry],
+      entry.type === "tree"
+        ? [entry, ...(await collectDocuments(entry.path))]
+        : [entry],
     ),
   );
   return nested.flat();

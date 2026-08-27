@@ -37,10 +37,15 @@ export class ClaudeChatCaptureAdapter implements ChatCaptureClaudeAdapter {
         cwd: request.cwd,
         systemPrompt: request.systemPrompt,
         effort: "medium",
-        maxTurns: 12,
+        // Document intake needs enough bounded tool steps to read the schema and
+        // selected files, write the complete snapshot, verify it, and repair a
+        // rejected draft. Opus 5 exhausted the former limit of 12 before it
+        // could return a user-facing answer in the real product flow.
+        maxTurns: 20,
         maxBudgetUsd: request.maxBudgetUsd,
         persistSession: true,
         settingSources: [],
+        strictMcpConfig: true,
         mcpServers: {
           process: createAiSdkMcpServer("process", processTools),
         },
@@ -56,7 +61,7 @@ export class ClaudeChatCaptureAdapter implements ChatCaptureClaudeAdapter {
         spawnClaudeCodeProcess,
       },
     });
-    const model = provider("claude-opus-4-8", {
+    const model = provider("opus", {
       ...(request.resume
         ? { resume: request.sessionId }
         : { sessionId: request.sessionId }),

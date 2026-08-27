@@ -1,6 +1,5 @@
 import { ChevronDown, FileText, Folder } from "lucide-react";
 import type { CorpusNode } from "../lib/corpus-tree";
-import { entryLabel } from "../lib/corpus-types";
 import { cn } from "../lib/utils";
 
 /**
@@ -85,7 +84,7 @@ function CorpusTreeNode({
             aria-hidden="true"
           />
           <Folder className="size-4 shrink-0" aria-hidden="true" />
-          <span className="truncate">{entryLabel(node.name)}</span>
+          <span className="truncate">{node.label}</span>
         </button>
         {open && (
           <ul className="space-y-1">
@@ -127,7 +126,7 @@ function CorpusTreeNode({
           className="size-4 shrink-0 text-muted-foreground"
           aria-hidden="true"
         />
-        <span className="truncate">{entryLabel(node.name)}</span>
+        <span className="truncate">{node.label}</span>
         {fundstellen > 0 && (
           <span className="ml-auto shrink-0 text-caption text-muted-foreground">
             {fundstellen === 1 ? "1 Stelle" : `${fundstellen} Stellen`}

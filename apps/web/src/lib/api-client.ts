@@ -285,9 +285,9 @@ export const api = {
       { method: "POST" },
     ),
   agenticAssessment: (processId: string) =>
-    req<AgenticPotentialAssessmentDetail>(
+    req<AgenticPotentialAssessmentDetail | { record: null; isStale: false }>(
       `/opportunities/${processId}/agentic-assessment`,
-    ),
+    ).then((detail) => (detail.record ? detail : null)),
   startAgenticAssessment: (processId: string) =>
     req<{ operationId: string; state: "queued" }>(
       `/opportunities/${processId}/agentic-assessment`,

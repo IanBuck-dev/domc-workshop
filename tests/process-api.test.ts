@@ -243,8 +243,8 @@ describe("process capture API", () => {
         ?.steps,
     ).toHaveLength(5);
     expect(modelCalls).toEqual([
-      { model: "claude-opus-4-8", effort: "medium" },
-      { model: "claude-opus-4-8", effort: "medium" },
+      { model: "opus", effort: "medium" },
+      { model: "opus", effort: "medium" },
     ]);
     await waitForNoActiveOperation(created.id);
     const correctedCharacteristics = workCharacteristicAnswers();

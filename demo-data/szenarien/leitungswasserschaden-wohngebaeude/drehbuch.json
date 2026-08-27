@@ -1,0 +1,44 @@
+{
+  "zuege": [
+    {
+      "nummer": 1,
+      "antwort": "Bei uns geht es um Leitungswasserschäden am Wohngebäude, vom ersten Anruf oder der Portalmeldung bis zur Zahlung und bis der Fall in KOMPASS zu ist. Hausrat im selben Schaden, Betrugsprüfung und späterer Regress sind bewusst eigene Prozesse. Wir haben in der Gruppe ungefähr 120 neue Fälle im Monat.",
+      "hinweis": "Setzt Zweck, Grenzen, Auslöser, Ergebnis und Volumen ohne den Prozess mit angrenzenden Modulen zu vermischen."
+    },
+    {
+      "nummer": 2,
+      "antwort": "Zuerst legen wir den Fall in KOMPASS an und prüfen in VERA, ob der Vertrag am Schadentag lief und Leitungswasser eingeschlossen ist. Ohne Deckung geht eine begründete Ablehnung raus. Ist die Deckung unklar, geben wir an den Fachsupport Vertrag; wir raten da nicht selbst.",
+      "hinweis": "Erzeugt die Deckungsentscheidung und die fachliche Eskalation als klaren Alternativpfad."
+    },
+    {
+      "nummer": 3,
+      "antwort": "Bei Deckung brauchen wir Schadenfotos, Schadenursache und einen Kostenvoranschlag. Das kommt als Portalanhang, PDF, Handyfoto oder über den Vermittler. In gut einem Drittel der Meldungen fehlt zunächst etwas. Dann schreiben oder telefonieren wir hinterher und dokumentieren alles in AKTE.",
+      "hinweis": "Macht die unstrukturierte Dokumentenarbeit, Medienbrüche und Rückfrageschleife sichtbar."
+    },
+    {
+      "nummer": 4,
+      "antwort": "Danach triagieren wir: Über 5.000 Euro erwarteter Schadenhöhe ist ein Gutachter Pflicht. Unterhalb der Grenze kann trotzdem einer rausgehen, etwa bei unklarem Schadenbild, vermietetem Objekt, möglichem Schimmel oder auffälligen Vorschäden. Die Beauftragung läuft per Outlook; den Status halten wir in einer Teamliste nach.",
+      "hinweis": "Trennt feste Regel und professionelles Urteil und zeigt die externe Orchestrierung über E-Mail und Liste."
+    },
+    {
+      "nummer": 5,
+      "antwort": "Wenn Kostenvoranschlag oder Gutachten vollständig sind, prüfen wir jede Position gegen Deckung und Schadenbild. Nicht gedeckte oder doppelte Positionen kürzen wir mit Begründung. Bei Widerspruch prüfen wir neue Belege noch einmal. Parallel setzen wir die Reserve in KOMPASS und passen sie bei neuen Erkenntnissen an.",
+      "hinweis": "Beschreibt die belegbasierte Fachentscheidung, Rückschleife und Reservenpflege ohne eine automatische Entscheidung zu behaupten."
+    },
+    {
+      "nummer": 6,
+      "antwort": "Danach geht die Zahlung über SAP FI entweder an den Kunden oder direkt an den Handwerker, wenn eine Abtretung vorliegt. Kontaktdaten kommen aus PARTO. Das Abrechnungsschreiben und alle Belege landen in AKTE; anschließend schließen wir den Vorgang in KOMPASS.",
+      "hinweis": "Vervollständigt Hauptablauf, Zahlungsempfänger-Variante, Systeme und Abschlusskontrolle."
+    },
+    {
+      "nummer": 7,
+      "antwort": "Ein normaler Fall dauert etwa zwei Wochen, mit Gutachter eher sechs bis acht. Aktiv bearbeiten wir einen einfachen Fall ungefähr 35 Minuten, aber verteilt über mehrere Kontakte. Besonders viel Zeit kostet das Nachfordern fehlender Unterlagen und das Nachhalten der Gutachter, weil KOMPASS deren Status nicht kennt.",
+      "hinweis": "Liefert Durchlaufzeit, aktive Bearbeitungszeit und managementrelevante Engpässe."
+    },
+    {
+      "nummer": 8,
+      "antwort": "Wichtig sind noch zwei Ausnahmen: Bei unbewohnbarem Gebäude organisieren wir sofort eine Notmaßnahme und prüfen Vorschuss oder Hotelkosten, bevor die normale Prüfung fertig ist. Bei Verdachtsmerkmalen stoppen wir keine Deckungsprüfung, geben aber mit den Belegen an die Betrugsprüfung ab. Mein Ziel wäre eine vollständige Erstmeldung, automatisch gelesene Unterlagen und ein Assistent, der fehlende Schritte und Fristen aktiv nachhält, während die Leistungsentscheidung bei uns bleibt.",
+      "hinweis": "Erfasst zeitkritische Ausnahme, kontrollierte Übergabe und ein agentisches Potenzial mit klarer menschlicher Verantwortung."
+    }
+  ]
+}

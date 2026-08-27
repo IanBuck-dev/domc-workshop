@@ -29,11 +29,10 @@ export function agenticPotentialAssessmentRoutes(
     const processId = c.req.param("processId");
     await processes.required(processId);
     const record = await assessments.get(processId);
-    if (!record)
-      return c.json(
-        { error: "Agentische Potenzialbewertung nicht gefunden." },
-        404,
-      );
+    // "Noch nicht erstellt" ist der reguläre Anfangszustand der Prüfseite,
+    // kein fehlender HTTP-Endpunkt. Ein erfolgreicher leerer Read vermeidet
+    // Browser-404s im normalen Nutzerfluss.
+    if (!record) return c.json({ record: null, isStale: false });
     const opportunity = await opportunities.get(processId);
     return c.json({
       record: toAgenticPotentialAssessmentPublicRecord(record),

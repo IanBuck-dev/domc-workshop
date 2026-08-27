@@ -156,7 +156,7 @@
     "maxProcessBytes": 104857600
   },
   "ai": {
-    "model": "claude-opus-4-8",
+    "model": "opus",
     "reasoningEffort": "medium",
     "timeoutMs": 300000,
     "maxOutputTokens": 12000,

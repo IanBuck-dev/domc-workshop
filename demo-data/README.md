@@ -50,7 +50,15 @@ Für die Potenzialanalyse muss nicht jedes Mal der ganze Chat gespielt werden:
 Zustand `confirmed` mit einem vorbereiteten Prozessverständnis an — danach
 genügt „Potenzialanalyse starten" im UI.
 
-## Die drei Szenarien
+`bun run seed:docs` legt zusätzlich für den Präsentationsfall
+`Leitungswasserschaden Wohngebäude regulieren` vier fachlich ausgearbeitete
+Potenzialhypothesen, drei Aufsichtsszenarien und eine abgeschlossene
+Potenzialbewertung an. Das ist ein ausdrücklich gekennzeichneter,
+deterministischer Demo-Seed: Er ruft keine KI auf und dient der reproduzierbaren
+Web-, Export- und Videoprüfung. Der normale Produktfluss erzeugt dieselben
+Datensätze weiterhin genau einmal über den konfigurierten KI-Provider.
+
+## Die vier Szenarien
 
 - **kfz-glasschaden** (Fachbereich Schaden) — der saubere Fall: klarer
   Ablauf, drei sich ergänzende Dokumente. Tuningziel: Grundleistung prüfen —
@@ -62,6 +70,11 @@ genügt „Potenzialanalyse starten" im UI.
 - **provisionsabrechnung** (Fachbereich Vertrieb) — der dokumentenlose Fall:
   keine Dokumente, reine Gesprächsaufnahme. Tuningziel: Gesprächsführung ohne
   Textstütze.
+- **leitungswasserschaden-wohngebaeude** (Fachbereich Schaden) — der
+  Präsentationsfall für Versicherungsmanagement: hoher Eingang, heterogene
+  Unterlagen, Gutachtersteuerung, professionelles Urteil, Fristen und
+  kontrollierte Übergaben. Tuningziel ist die komplette Strecke bis zum
+  agentischen Szenario und zu beiden Excel-Artefakten.
 
 ## Automatisches Seeding beim Dev-Start
 
