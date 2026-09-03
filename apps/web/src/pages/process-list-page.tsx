@@ -10,21 +10,30 @@ import { Button } from "../components/ui/button";
 import { api } from "../lib/api-client";
 import type { OpportunityDiscoverySummary } from "../lib/opportunity-types";
 import type { ProcessCaptureRecord } from "../lib/process-types";
+import type { AgenticPotentialAssessmentSummary } from "../lib/agentic-potential-assessment-types";
 
 export function ProcessListPage() {
   const [records, setRecords] = useState<ProcessCaptureRecord[]>([]);
   const [opportunities, setOpportunities] = useState<
     OpportunityDiscoverySummary[]
   >([]);
+  const [assessments, setAssessments] = useState<
+    AgenticPotentialAssessmentSummary[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
     let isCurrent = true;
-    Promise.all([api.processes(), api.opportunitySummaries()])
-      .then(([processes, summaries]) => {
+    Promise.all([
+      api.processes(),
+      api.opportunitySummaries(),
+      api.agenticAssessmentSummaries(),
+    ])
+      .then(([processes, summaries, assessmentSummaries]) => {
         if (!isCurrent) return;
         setRecords(processes);
         setOpportunities(summaries);
+        setAssessments(assessmentSummaries);
       })
       .catch((reason: Error) => {
         if (isCurrent) setError(reason.message);
@@ -73,6 +82,7 @@ export function ProcessListPage() {
         <ProcessListTable
           records={records}
           opportunities={opportunities}
+          assessments={assessments}
           header={header}
         />
       )}

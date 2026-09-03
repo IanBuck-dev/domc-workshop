@@ -76,6 +76,10 @@ _Avoid_: Editable process document, template editor, process assessment
 The advisory, immutable criteria assessment of the completed `SCN-agentic` scenario. It is created by one bounded AI call; its web review and Excel export are deterministic views of the saved result.
 _Avoid_: Process assessment, solution approval, prioritisation
 
+**AI Potential Score**:
+A directional 0–100 portfolio index calculated deterministically from the high-confidence benefit, feasibility, and AI-suitability criteria of a current Agentic Potential Assessment. It is not a financial business case or an implementation decision.
+_Avoid_: ROI, savings estimate, approval score
+
 **Demo Process Portfolio**:
 The curated set of fictional LifeCorp processes used to demonstrate the product. It covers LifeCorp's offered insurance business, its direct and intermediary channels, and Insurance-Enabling IT; generic corporate support processes are outside its scope.
 _Avoid_: Complete company process landscape, generic IT support or HR showcase

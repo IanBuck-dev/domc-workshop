@@ -3,7 +3,10 @@ import { mkdtemp, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { validateProcessFlow } from "../packages/domain/src/process-understanding.ts";
+import { agenticPotentialScore } from "../packages/domain/src/agentic-potential-assessment.ts";
 import { AgenticPotentialAssessmentRepository } from "../packages/storage/src/agentic-potential-assessment-repository.ts";
+import { ChatCaptureRepository } from "../packages/storage/src/chat-capture-repository.ts";
+import { MemoryRepository } from "../packages/storage/src/memory-repository.ts";
 import { OpportunityDiscoveryRepository } from "../packages/storage/src/opportunity-discovery-repository.ts";
 import { ProcessCaptureRepository } from "../packages/storage/src/process-capture-repository.ts";
 import {
@@ -12,8 +15,10 @@ import {
   listDocumentationFixtures,
   type DocumentationFixture,
 } from "../scripts/documentation-fixtures.ts";
+import { listShowcaseJourneyFixtures } from "../scripts/showcase-journey-fixtures.ts";
 
 const fixtures = await listDocumentationFixtures();
+const journeys = await listShowcaseJourneyFixtures();
 
 /**
  * Die Seeddaten der lebenden Dokumentation werden nicht von Hand als
@@ -88,29 +93,60 @@ describe("Seeddaten der Prozessdokumentation", () => {
           "SCH-01 · Leitungswasserschaden Wohngebäude regulieren",
       );
       expect(flagship?.confirmationQuality).toBe("complete");
-      const opportunity = await new OpportunityDiscoveryRepository(
-        workspace,
-      ).required(flagship!.id);
-      expect(opportunity.state).toBe("completed");
+      const opportunities = new OpportunityDiscoveryRepository(workspace);
+      const assessments = new AgenticPotentialAssessmentRepository(workspace);
+      const chats = new ChatCaptureRepository(workspace);
+      const byTitle = new Map(
+        records.map((record) => [record.cover.processName, record]),
+      );
+      const fixtureBySlug = new Map(
+        fixtures.map((fixture) => [fixture.slug, fixture]),
+      );
+      for (const journey of journeys) {
+        const fixture = fixtureBySlug.get(journey.slug)!;
+        const record = byTitle.get(fixture.titel)!;
+        const opportunity = await opportunities.required(record.id);
+        expect(opportunity.state).toBe("completed");
+        expect(opportunity.scenarios?.scenarios).toHaveLength(3);
+        expect(
+          opportunity.hypotheses?.stepAnalyses.flatMap(
+            (analysis) => analysis.hypotheses,
+          ),
+        ).toHaveLength(journey.hypotheses.length);
+
+        const assessment = await assessments.required(record.id);
+        expect(assessment.state).toBe("completed");
+        expect(agenticPotentialScore(assessment.result)?.value).toBe(
+          journey.expectedScore,
+        );
+
+        const transcript = await chats.transcript(record.id);
+        expect(
+          transcript.filter((event) => event.role === "user"),
+        ).toHaveLength(journey.conversation.length);
+        expect(
+          transcript.filter((event) => event.role === "assistant").length,
+        ).toBeGreaterThan(journey.conversation.length);
+        expect(record.uploads).toHaveLength(journey.documents.length);
+        expect(record.understanding?.documentCoverage).toHaveLength(
+          journey.documents.length,
+        );
+      }
       expect(
-        opportunity.scenarios?.scenarios.find(
+        (
+          await Promise.all(
+            records.map((record) => opportunities.get(record.id)),
+          )
+        ).filter(Boolean),
+      ).toHaveLength(6);
+      const flagshipOpportunity = await opportunities.required(flagship!.id);
+      expect(
+        flagshipOpportunity.scenarios?.scenarios.find(
           (scenario) => scenario.id === "SCN-agentic",
         )?.title,
       ).toBe("Agentischer Schaden-Arbeitsbegleiter");
-      expect(
-        opportunity.hypotheses?.stepAnalyses.flatMap(
-          (analysis) => analysis.hypotheses,
-        ),
-      ).toHaveLength(4);
-      const assessment = await new AgenticPotentialAssessmentRepository(
-        workspace,
-      ).required(flagship!.id);
-      expect(assessment.state).toBe("completed");
-      expect(
-        assessment.result?.criteria.filter(
-          (criterion) => criterion.status === "scored",
-        ),
-      ).toHaveLength(15);
+      const memory = await new MemoryRepository(workspace).topics();
+      expect(Object.values(memory).flat().length).toBeGreaterThanOrEqual(11);
       const documentationFiles = await readdir(join(workspace, "docs"), {
         recursive: true,
       });

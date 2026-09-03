@@ -18,6 +18,8 @@
     "test": "bun test",
     "test:e2e:local": "bun run scripts/run-local-e2e.ts",
     "test:e2e:local:headed": "bun run scripts/run-local-e2e.ts --headed",
+    "test:e2e:real": "bun run scripts/run-local-e2e.ts --real-provider",
+    "test:e2e:real:headed": "bun run scripts/run-local-e2e.ts --real-provider --headed",
     "screenshots:local": "bun run scripts/run-local-e2e.ts --screenshots",
     "licenses": "bun run scripts/generate-third-party-notices.ts",
     "licenses:check": "bun run scripts/generate-third-party-notices.ts --check",

@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 1,
+  "slug": "mahnverfahren-direktinkasso-leben",
+  "expectedScore": 28,
+  "documents": [],
+  "conversation": [
+    {
+      "assistant": "Wie startet der Mahnlauf und welche Vorschläge erhalten Sie aus SAP S/4HANA?",
+      "userEvidenceId": "b1"
+    },
+    {
+      "assistant": "Welche Vertragsdaten benötigen Sie und was passiert nach der Freigabe mit Mahnung und Ablage?",
+      "userEvidenceId": "b2"
+    },
+    {
+      "assistant": "Wie groß sind die Läufe, wie viele Fälle fassen Sie manuell an und wie lange dauert das?",
+      "userEvidenceId": "b3"
+    },
+    {
+      "assistant": "Welche Ausschlüsse und Kontrollen entscheiden über die Mahnung?",
+      "userEvidenceId": "b4"
+    },
+    {
+      "assistant": "Wie behandeln und dokumentieren Sie die verbleibenden Sonderfälle?",
+      "userEvidenceId": "b5"
+    }
+  ],
+  "hypotheses": [
+    {
+      "stepOrder": 2,
+      "title": "Ausschlussinformationen in einer Prüfsicht bündeln",
+      "currentSituation": "Die Sachbearbeitung gleicht Ausschlussgründe über mehrere Masken in SAP S/4HANA und VERA ab.",
+      "aiContribution": "Eine Assistenz fasst Status und Fundstellen zusammen und erläutert den angewandten Ausschlussgrund.",
+      "aiCapabilities": ["generation"],
+      "expectedChange": "Die Sachbearbeitung sieht alle prüfrelevanten Fakten in einer Ansicht.",
+      "deterministicAutomation": [
+        "Statusfelder und Ausschlusscodes regelbasiert zusammenführen"
+      ],
+      "requiredAccess": ["SAP S/4HANA und VERA"],
+      "humanRole": "Die Sachbearbeitung prüft Sonderfälle und bestätigt die Auswahlliste.",
+      "potentialLevel": "low",
+      "potentialRationale": "Der größte Hebel ist eine klassische Systemintegration; KI ergänzt nur verständliche Erläuterungen.",
+      "confidenceLevel": "high",
+      "confidenceRationale": "Regeln, Systeme und Kontrollpunkt sind eindeutig dokumentiert.",
+      "assumptions": [],
+      "openQuestions": []
+    },
+    {
+      "stepOrder": 3,
+      "title": "Ausnahmebegründungen konsistent formulieren",
+      "currentSituation": "Einzelne Ausschlüsse werden manuell begründet und in der AKTE dokumentiert.",
+      "aiContribution": "Die KI erstellt aus ausgewähltem Grund und Status einen standardisierten Textentwurf.",
+      "aiCapabilities": ["generation"],
+      "expectedChange": "Begründungen werden einheitlicher, bleiben aber vollständig geprüft.",
+      "deterministicAutomation": ["Pflichtfelder der Begründung prüfen"],
+      "requiredAccess": ["Ausnahmegrund und Vertragsstatus", "AKTE"],
+      "humanRole": "Die Sachbearbeitung wählt den Grund und bestätigt den Text.",
+      "potentialLevel": "low",
+      "potentialRationale": "Das begrenzte Textvolumen rechtfertigt nur eine kleine assistive Ergänzung.",
+      "confidenceLevel": "high",
+      "confidenceRationale": "Eingabe, Ergebnis und menschliche Freigabe sind belegt.",
+      "assumptions": [],
+      "openQuestions": []
+    }
+  ],
+  "scenario": {
+    "titles": {
+      "assistive": "Assistierte Mahnprüfung",
+      "delegated": "Delegierte Regelprüfung mit Freigabe",
+      "agentic": "Kontrollierter Mahnlauf-Begleiter"
+    },
+    "summaries": {
+      "assistive": "Die KI erläutert gebündelte Statusdaten und entwirft Ausnahmebegründungen.",
+      "delegated": "Regelprüfungen laufen automatisch; Ausnahmen und Mahnlauf bleiben freigabepflichtig.",
+      "agentic": "Ein begrenzter Agent hält Prüfliste und Ausnahmen zusammen, ohne Mahnentscheidung oder Versand zu übernehmen."
+    },
+    "targetStates": {
+      "assistive": "Die Sachbearbeitung erhält eine gemeinsame Prüfsicht.",
+      "delegated": "Eindeutige Statusprüfungen laufen deterministisch und werden als Freigabeliste vorgelegt.",
+      "agentic": "Der Begleiter koordiniert offene Ausnahmen; die eigentliche Wertschöpfung bleibt regelbasiert."
+    },
+    "changesFromToday": [
+      "Statusinformationen werden in einer Prüfsicht gebündelt.",
+      "Ausnahmebegründungen folgen einer einheitlichen Vorlage."
+    ],
+    "aiResponsibilities": [
+      "Statuszusammenfassung verständlich darstellen",
+      "Begründungstexte vorbereiten"
+    ],
+    "deterministicAutomation": [
+      "Ausschlusscodes abgleichen",
+      "Mahnliste erzeugen",
+      "Versand- und Ablagestatus prüfen"
+    ],
+    "orchestration": ["offene Ausnahmen bis zur Freigabe nachhalten"],
+    "humanResponsibilities": [
+      "Ausnahmen entscheiden",
+      "Mahnlauf im Vier-Augen-Prinzip freigeben"
+    ],
+    "humanOversight": [
+      "Keine Mahnung ohne bestätigte Prüfliste",
+      "Jede Ausnahmebegründung wird fachlich geprüft"
+    ],
+    "informationAndDocuments": [
+      "Mahnvorschläge",
+      "Vertrags- und Ausschlussstatus",
+      "Ausnahmevermerke"
+    ],
+    "systemTargets": ["SAP S/4HANA", "VERA", "AKTE"],
+    "prerequisites": ["Ausschlusscodes und Mahnregeln sind versioniert."],
+    "risks": [
+      "Ein Ausschlussstatus wird zeitversetzt angezeigt.",
+      "Eine Begründung verdeckt einen fachlich falschen Grund."
+    ],
+    "assumptions": [
+      "Die gemeinsame Statussicht wird technisch bereitgestellt."
+    ],
+    "openQuestions": [
+      "Lohnt die KI-Ergänzung gegenüber einer reinen Regel- und UI-Verbesserung?"
+    ],
+    "confidenceLevel": "high",
+    "confidenceRationale": "Der stark regelbasierte Ablauf und der geringe KI-Anteil sind gut belegt."
+  },
+  "assessment": [
+    {
+      "criterionId": "strategic_fit",
+      "score": 0,
+      "rationale": "Die Verbesserung ist lokal und kein wesentlicher strategischer KI-Hebel."
+    },
+    {
+      "criterionId": "qualitative_process_improvement",
+      "score": 1,
+      "rationale": "Eine gemeinsame Prüfsicht verbessert die Bedienung, nicht den fachlichen Kern."
+    },
+    {
+      "criterionId": "customer_value",
+      "score": 1,
+      "rationale": "Konsistentere Prüfungen können Fehlmahnungen reduzieren, wirken aber nur indirekt."
+    },
+    {
+      "criterionId": "employee_value",
+      "score": 1,
+      "rationale": "Weniger Maskenwechsel entlasten die Sachbearbeitung spürbar, aber begrenzt."
+    },
+    {
+      "criterionId": "temporal_process_improvement",
+      "score": 1,
+      "rationale": "Der Statusabgleich wird kürzer; der übrige Mahnlauf bleibt unverändert."
+    },
+    {
+      "criterionId": "process_criticality",
+      "score": 0,
+      "rationale": "Eine unberechtigte Mahnung ist kundenwirksam und kritisch."
+    },
+    {
+      "criterionId": "process_maturity",
+      "score": 2,
+      "rationale": "Regeln, Kontrollen und Lauf sind klar standardisiert."
+    },
+    {
+      "criterionId": "change_effort",
+      "score": 0,
+      "rationale": "Eine zusätzliche agentische Schicht wäre gegenüber dem kleinen Nutzen unverhältnismäßig."
+    },
+    {
+      "criterionId": "process_systems",
+      "score": 0,
+      "rationale": "Die benötigte gemeinsame Sicht fehlt und verlangt zunächst klassische Integration."
+    },
+    {
+      "criterionId": "context_understanding",
+      "score": 0,
+      "rationale": "Die Prüfung basiert überwiegend auf festen Status- und Ausschlussregeln."
+    },
+    {
+      "criterionId": "data_structuring_degree",
+      "score": 0,
+      "rationale": "Die relevanten Informationen liegen als strukturierte Systemfelder vor."
+    },
+    {
+      "criterionId": "decision_complexity",
+      "score": 0,
+      "rationale": "Der Normalfall ist regelbasiert; nur einzelne Ausnahmen werden bewertet."
+    },
+    {
+      "criterionId": "autonomy_and_human_ai_collaboration",
+      "score": 0,
+      "rationale": "Mahnfreigabe und Ausnahmeentscheidung erfordern umfassende menschliche Kontrolle."
+    }
+  ],
+  "memoryFacts": [
+    {
+      "topic": "muster.md",
+      "fact": "Das Mahnverfahren im Direktinkasso Leben ist bei LifeCorp weitgehend regelbasiert und nutzt eine Vier-Augen-Freigabe."
+    }
+  ]
+}

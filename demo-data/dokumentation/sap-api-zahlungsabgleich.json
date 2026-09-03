@@ -24,6 +24,14 @@
     {
       "id": "b4",
       "text": "Ein kleiner Anschluss dauert normalerweise vier bis sechs Wochen. Die größte Unsicherheit sind unterschiedliche Zahlungs- und Schadenreferenzen sowie Fehlerfälle bei verspäteten SAP-Buchungen."
+    },
+    {
+      "id": "b5",
+      "text": "Wir testen normale Zuordnungen, widersprüchliche Referenzen, fehlende Schlüssel und verspätete Buchungen gemeinsam mit Zahlungsverkehr und Schaden. Jeder fachliche Fall braucht ein erwartetes Ergebnis."
+    },
+    {
+      "id": "b6",
+      "text": "Vor Produktion prüfen Security und Betrieb Berechtigungen, Monitoring, Wiederanlauf und Audit. Freigegeben wird erst, wenn Fachbereich, API-Team und Betrieb ihre Nachweise bestätigt haben."
     }
   ],
   "zweck": {

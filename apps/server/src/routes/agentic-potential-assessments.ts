@@ -2,7 +2,11 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { Hono } from "hono";
-import { toAgenticPotentialAssessmentPublicRecord } from "../../../../packages/domain/src/agentic-potential-assessment.ts";
+import {
+  agenticPotentialAssessmentSummarySchema,
+  agenticPotentialScore,
+  toAgenticPotentialAssessmentPublicRecord,
+} from "../../../../packages/domain/src/agentic-potential-assessment.ts";
 import type { ProcessCaptureRepository } from "../../../../packages/storage/src/process-capture-repository.ts";
 import type { OpportunityDiscoveryRepository } from "../../../../packages/storage/src/opportunity-discovery-repository.ts";
 import type { AgenticPotentialAssessmentRepository } from "../../../../packages/storage/src/agentic-potential-assessment-repository.ts";
@@ -138,6 +142,37 @@ export function agenticPotentialAssessmentRoutes(
         500,
       );
     }
+  });
+  return app;
+}
+
+export function agenticPotentialAssessmentSummaryRoutes(
+  processes: ProcessCaptureRepository,
+  opportunities: OpportunityDiscoveryRepository,
+  assessments: AgenticPotentialAssessmentRepository,
+) {
+  const app = new Hono();
+  app.get("/", async (c) => {
+    const summaries = await Promise.all(
+      (await processes.list()).map(async (process) => {
+        const assessment = await assessments.get(process.id);
+        if (!assessment) return null;
+        const opportunity = await opportunities.get(process.id);
+        const isStale =
+          !opportunity || assessments.isStale(assessment, opportunity);
+        return agenticPotentialAssessmentSummarySchema.parse({
+          processId: process.id,
+          state: assessment.state,
+          isStale,
+          score:
+            assessment.state === "completed" && !isStale && assessment.result
+              ? agenticPotentialScore(assessment.result)
+              : null,
+          updatedAt: assessment.updatedAt,
+        });
+      }),
+    );
+    return c.json(summaries.filter((summary) => summary !== null));
   });
   return app;
 }

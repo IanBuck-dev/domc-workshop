@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 1,
+  "slug": "zahlungseingaenge-klaeren",
+  "expectedScore": 85,
+  "documents": [
+    {
+      "source": "demo-data/journeys/documents/zahlungseingaenge-clearing-leitfaden.md",
+      "targetName": "Clearing-Leitfaden_Zahlungseingaenge.md",
+      "mediaType": "md"
+    },
+    {
+      "source": "demo-data/journeys/documents/zahlungseingaenge-beispielfaelle.csv",
+      "targetName": "Beispielfaelle_Zahlungseingaenge.csv",
+      "mediaType": "csv"
+    }
+  ],
+  "conversation": [
+    {
+      "assistant": "Was löst die Klärung aus, und welches Ergebnis muss am Ende fachlich vorliegen?",
+      "userEvidenceId": "b1"
+    },
+    {
+      "assistant": "Wie gehen Sie bei einem unklaren Verwendungszweck konkret vor?",
+      "userEvidenceId": "b2"
+    },
+    {
+      "assistant": "Welche Systeme durchsuchen Sie und nach welchen Merkmalen?",
+      "userEvidenceId": "b3"
+    },
+    {
+      "assistant": "Wo braucht es eine fachliche Entscheidung oder eine zusätzliche Kontrolle?",
+      "userEvidenceId": "b4"
+    },
+    {
+      "assistant": "Wie endet der Normalfall, und wohin geben Sie nicht lösbare Fälle weiter?",
+      "userEvidenceId": "b5"
+    },
+    {
+      "assistant": "Welche Mengen, Bearbeitungszeiten und wiederkehrenden Engpässe sehen Sie?",
+      "userEvidenceId": "b6"
+    }
+  ],
+  "hypotheses": [
+    {
+      "stepOrder": 2,
+      "title": "Verwendungszwecke und Buchungsdaten fallbezogen interpretieren",
+      "currentSituation": "Unvollständige, vertauschte oder abgekürzte Angaben werden heute manuell gelesen und in mehreren Suchläufen geprüft.",
+      "aiContribution": "Ein Agent extrahiert mögliche Referenzen, normalisiert Schreibweisen und begründet jede Suchspur anhand des Zahlungseingangs.",
+      "aiCapabilities": ["interpretation", "recognition"],
+      "expectedChange": "Die Sachbearbeitung beginnt mit einer priorisierten und belegten Kandidatenliste statt mit einer freien Suche.",
+      "deterministicAutomation": [
+        "IBAN und Betragsfelder formal prüfen",
+        "bekannte Referenzmuster abgleichen"
+      ],
+      "requiredAccess": [
+        "Zahlungseingang aus SAP S/4HANA",
+        "lesender Zugriff auf VERA, PARTO und KOMPASS"
+      ],
+      "humanRole": "Die Sachbearbeitung prüft mehrdeutige Kandidaten und entscheidet über die fachliche Zuordnung.",
+      "potentialLevel": "high",
+      "potentialRationale": "Hohe Fallzahl, Freitext und wiederholte systemübergreifende Suche erzeugen einen breiten Hebel.",
+      "confidenceLevel": "high",
+      "confidenceRationale": "Suchmerkmale, Systeme und heutiger manueller Ablauf sind im bestätigten Prozess belegt.",
+      "assumptions": [],
+      "openQuestions": []
+    },
+    {
+      "stepOrder": 5,
+      "title": "Plausible Zuordnungen mit Begründung vorlegen",
+      "currentSituation": "Ähnliche Namen und fehlende Referenzen erzeugen mehrere plausible Treffer, die einzeln bewertet werden.",
+      "aiContribution": "Der Agent führt Vertrags-, Personen- und Vorgangsdaten zusammen, bewertet Widersprüche und schlägt eine nachvollziehbare Rangfolge vor.",
+      "aiCapabilities": ["interpretation", "recommendation"],
+      "expectedChange": "Eindeutige Fälle werden schneller vorbereitet; Risikofälle werden früh für die Zweitprüfung markiert.",
+      "deterministicAutomation": [
+        "Betragsgleichheit prüfen",
+        "Dubletten und gesperrte Verträge markieren"
+      ],
+      "requiredAccess": [
+        "Lesender Zugriff auf SAP S/4HANA, VERA, PARTO und KOMPASS"
+      ],
+      "humanRole": "Die Sachbearbeitung bestätigt jede Buchung; Risikofälle verbleiben in der Zweitprüfung.",
+      "potentialLevel": "high",
+      "potentialRationale": "Die Begründung plausibler Treffer reduziert Suchzeit, ohne die kontrollpflichtige Buchung zu automatisieren.",
+      "confidenceLevel": "high",
+      "confidenceRationale": "Mehrdeutigkeit, Kontrollpunkt und Übergabe sind ausdrücklich dokumentiert.",
+      "assumptions": [],
+      "openQuestions": []
+    },
+    {
+      "stepOrder": 7,
+      "title": "Rückfragen und Übergaben vollständig vorbereiten",
+      "currentSituation": "Nicht lösbare Fälle werden mit manuell zusammengesuchten Fakten per Exchange Online weitergegeben.",
+      "aiContribution": "Der Agent erstellt ein vollständiges Klärpaket und einen Kommunikationsentwurf mit Quellenverweisen.",
+      "aiCapabilities": ["generation", "planning"],
+      "expectedChange": "Fachbereiche erhalten beim ersten Kontakt die relevanten Zahlungs-, Vertrags- und Suchinformationen.",
+      "deterministicAutomation": ["Pflichtfelder des Übergabepakets prüfen"],
+      "requiredAccess": [
+        "Fallbezogene Suchergebnisse",
+        "Exchange Online als Entwurfskanal"
+      ],
+      "humanRole": "Die Sachbearbeitung prüft Empfänger und Inhalt vor dem Versand.",
+      "potentialLevel": "medium",
+      "potentialRationale": "Die Übergabe ist seltener als die Zuordnung, verursacht aber vermeidbare Rückfragen.",
+      "confidenceLevel": "high",
+      "confidenceRationale": "Übergabeweg und benötigte Fakten sind im Prozess belegt.",
+      "assumptions": [],
+      "openQuestions": []
+    }
+  ],
+  "scenario": {
+    "titles": {
+      "assistive": "Assistierte Zahlungsklärung",
+      "delegated": "Delegierte Treffervorbereitung mit Buchungsfreigabe",
+      "agentic": "Agentischer Clearing-Begleiter"
+    },
+    "summaries": {
+      "assistive": "Die KI strukturiert jeden Klärfall und schlägt Suchspuren vor; alle Aktionen werden einzeln angestoßen.",
+      "delegated": "Der Agent führt Suchläufe und Plausibilitätsprüfungen selbstständig aus, legt Zuordnung oder Übergabe aber zur Freigabe vor.",
+      "agentic": "Der Agent orchestriert die Klärung über Zahlungs-, Vertrags- und Schadensysteme und eskaliert mehrdeutige Fälle nachvollziehbar."
+    },
+    "targetStates": {
+      "assistive": "Die Sachbearbeitung erhält strukturierte Kandidaten und Kommunikationsentwürfe.",
+      "delegated": "Eindeutige Such- und Prüfschritte laufen innerhalb fester Leitplanken; Buchungen bleiben freigabepflichtig.",
+      "agentic": "Der Agent hält den Clearing-Fall arbeitsfähig, begründet die wahrscheinlichste Zuordnung und steuert Ausnahmen zur richtigen menschlichen Kontrolle."
+    },
+    "changesFromToday": [
+      "Systemübergreifende Suchergebnisse werden fallbezogen zusammengeführt.",
+      "Mehrdeutige Treffer werden mit Widersprüchen und Belegen dargestellt.",
+      "Übergaben enthalten beim ersten Versand alle verfügbaren Fakten."
+    ],
+    "aiResponsibilities": [
+      "Verwendungszwecke interpretieren und Suchmerkmale ableiten",
+      "Treffer über mehrere Systeme zusammenführen",
+      "Klärpakete und Rückfragen vorbereiten"
+    ],
+    "deterministicAutomation": [
+      "Referenzformate und Beträge prüfen",
+      "Buchungs- und Freigabestatus überwachen"
+    ],
+    "orchestration": [
+      "Suchläufe, Zweitprüfung und fachliche Übergabe koordinieren"
+    ],
+    "humanResponsibilities": [
+      "Zuordnung und Buchung freigeben",
+      "Risikofälle zweitprüfen",
+      "unklare fachliche Bezüge entscheiden"
+    ],
+    "humanOversight": [
+      "Keine Buchung ohne bestätigte Zuordnung",
+      "Stichprobenkontrolle eindeutiger Vorschläge durch die Teamleitung"
+    ],
+    "informationAndDocuments": [
+      "SAP-Zahlungseingang",
+      "Vertrags-, Partner- und Schadendaten",
+      "bisherige Rückfragen"
+    ],
+    "systemTargets": [
+      "SAP S/4HANA",
+      "VERA",
+      "PARTO",
+      "KOMPASS",
+      "Exchange Online"
+    ],
+    "prerequisites": [
+      "Lesende Schnittstellen liefern fallbezogene Daten mit Zeitstempel.",
+      "Freigaben und Zweitprüfungsregeln sind versioniert."
+    ],
+    "risks": [
+      "Ein ähnlicher Name führt zu einem falschen Treffer.",
+      "Zeitversetzte Buchungen erzeugen widersprüchliche Status."
+    ],
+    "assumptions": [
+      "Schreibzugriff bleibt auf freigegebene Buchungsaktionen begrenzt."
+    ],
+    "openQuestions": [
+      "Welche Trefferkonfidenz erlaubt eine verkürzte Prüfung?"
+    ],
+    "confidenceLevel": "high",
+    "confidenceRationale": "Ablauf, Systeme, Fallvarianten und Kontrollpunkte sind vollständig im Prozessbild belegt."
+  },
+  "assessment": [
+    {
+      "criterionId": "strategic_fit",
+      "score": 2,
+      "rationale": "Schnelleres Zahlungs-Clearing unterstützt direkt stabile Bestände und korrekte Konten."
+    },
+    {
+      "criterionId": "qualitative_process_improvement",
+      "score": 2,
+      "rationale": "Begründete Treffer ersetzen wiederholte freie Suchläufe über fünf Systeme."
+    },
+    {
+      "criterionId": "customer_value",
+      "score": 2,
+      "rationale": "Zahlungen werden schneller dem richtigen Vertrag oder Schaden zugeordnet."
+    },
+    {
+      "criterionId": "employee_value",
+      "score": 2,
+      "rationale": "Die belastende Suche und das manuelle Zusammentragen von Fakten sinken deutlich."
+    },
+    {
+      "criterionId": "temporal_process_improvement",
+      "score": 2,
+      "rationale": "Die belegte systemübergreifende Suchzeit wird bei jedem Klärfall verkürzt."
+    },
+    {
+      "criterionId": "process_criticality",
+      "score": 1,
+      "rationale": "Fehlzuordnungen sind relevant, werden aber durch Buchungsfreigabe und Zweitprüfung begrenzt."
+    },
+    {
+      "criterionId": "process_maturity",
+      "score": 2,
+      "rationale": "Schritte, Suchmerkmale und Eskalationsweg sind klar beschrieben."
+    },
+    {
+      "criterionId": "process_expertise",
+      "score": 2,
+      "rationale": "Das Prozessbild dokumentiert Suchlogik, Rollen und Kontrollpunkte umfassend."
+    },
+    {
+      "criterionId": "process_data",
+      "score": 1,
+      "rationale": "Relevante Daten existieren, sind aber über mehrere Systeme und Freitext verteilt."
+    },
+    {
+      "criterionId": "context_understanding",
+      "score": 2,
+      "rationale": "Verwendungszweck, Person, Vertrag, Schaden und Buchungszeitpunkt müssen gemeinsam interpretiert werden."
+    },
+    {
+      "criterionId": "data_structuring_degree",
+      "score": 2,
+      "rationale": "Freitext und uneinheitliche Referenzen erfordern erhebliche Strukturierungsleistung."
+    },
+    {
+      "criterionId": "decision_complexity",
+      "score": 1,
+      "rationale": "Viele Fälle sind plausibel ableitbar, mehrdeutige Treffer benötigen jedoch Bewertung."
+    },
+    {
+      "criterionId": "error_tolerance",
+      "score": 0,
+      "rationale": "Eine falsche Buchung ist nicht akzeptabel und verlangt menschliche Freigabe."
+    }
+  ],
+  "memoryFacts": [
+    {
+      "topic": "systeme.md",
+      "fact": "Zahlungsklärfälle werden bei LifeCorp über SAP S/4HANA, VERA, PARTO und KOMPASS recherchiert."
+    },
+    {
+      "topic": "muster.md",
+      "fact": "Nicht zuordenbare Zahlungseingänge entstehen häufig durch unvollständige oder vertauschte Angaben im Verwendungszweck."
+    }
+  ]
+}

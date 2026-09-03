@@ -24,9 +24,10 @@ crawler, or autonomous process discovery. Those capabilities are a future vision
 hidden or partial feature of the prototype.
 
 The product boundary is deliberate and enforced in `AGENTS.md`: no solution approval,
-financial values, prioritisation, handover, or project management. The completed agentic
-scenario may receive one advisory criteria assessment; it deliberately leaves financial,
-policy, group, and total results uncalculated. Confirmed processes can also produce a
+financial values, automatic implementation decisions, handover, or project management.
+The completed agentic scenario may receive one advisory criteria assessment; a sufficiently
+covered assessment yields a deterministic directional portfolio score while financial and
+policy results remain uncalculated. Confirmed processes can also produce a
 read-only PDD Excel workbook; it is a downstream artifact, not a second canonical process
 record.
 

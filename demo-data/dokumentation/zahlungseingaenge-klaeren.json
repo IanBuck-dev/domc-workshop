@@ -24,6 +24,14 @@
     {
       "id": "b4",
       "text": "Eine Zuordnung braucht einen eindeutigen Beleg aus Betrag, Person und fachlichem Bezug. Ab 10.000 Euro oder bei mehreren möglichen Treffern prüft eine zweite Person vor der Buchung."
+    },
+    {
+      "id": "b5",
+      "text": "Wenn der Bezug eindeutig ist, buche ich die Zahlung in SAP auf den Vertrag oder Schaden. Nicht lösbare Fälle gebe ich mit den Suchergebnissen an Vertrag, Vertrieb oder Schaden weiter."
+    },
+    {
+      "id": "b6",
+      "text": "Am meisten Zeit verlieren wir bei vertauschten Ziffern, Sammelzahlungen und ähnlichen Namen. Dann springe ich mehrfach zwischen den Systemen und muss die gleiche Suche erklären."
     }
   ],
   "zweck": {

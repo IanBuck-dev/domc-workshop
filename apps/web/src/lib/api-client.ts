@@ -12,7 +12,10 @@ import type {
   OpportunityDiscoveryPublicRecord,
   OpportunityDiscoverySummary,
 } from "./opportunity-types";
-import type { AgenticPotentialAssessmentDetail } from "./agentic-potential-assessment-types";
+import type {
+  AgenticPotentialAssessmentDetail,
+  AgenticPotentialAssessmentSummary,
+} from "./agentic-potential-assessment-types";
 import type { PublicSiteInformation } from "./public-site-information";
 import type { MemoryOverviewDetail } from "../../../../packages/domain/src/memory";
 import type {
@@ -271,6 +274,8 @@ export const api = {
     ),
   opportunitySummaries: () =>
     req<OpportunityDiscoverySummary[]>("/opportunities"),
+  agenticAssessmentSummaries: () =>
+    req<AgenticPotentialAssessmentSummary[]>("/agentic-assessments"),
   opportunity: (processId: string) =>
     req<OpportunityDiscoveryDetail>(`/opportunities/${processId}`),
   startOpportunity: (processId: string) =>

@@ -28,6 +28,21 @@ describe("process list UI", () => {
         createElement(ProcessListTable, {
           records: [record],
           opportunities: [],
+          assessments: [
+            {
+              processId: record.id,
+              state: "completed",
+              isStale: false,
+              score: {
+                value: 72,
+                benefit: 90,
+                feasibility: 38,
+                aiSuitability: 80,
+                scoredCriteria: 14,
+              },
+              updatedAt: "2026-09-03T10:00:00.000Z",
+            },
+          ],
           header: createElement("h1", null, "Prozesse"),
         }),
       ),
@@ -36,6 +51,9 @@ describe("process list UI", () => {
     expect(markup).toContain("Prozesse durchsuchen");
     expect(markup).toContain("Fachbereich");
     expect(markup).toContain("Status");
+    expect(markup).toContain("Score");
+    expect(markup).toContain(">72</span>");
+    expect(markup).toContain("Nutzen 90 · Umsetzbarkeit 38 · KI-Eignung 80");
     expect(markup).toContain("Entwurf");
     expect(markup).toContain('href="/processes/PROC-0007"');
   });
@@ -50,7 +68,7 @@ describe("process list UI", () => {
     expect(markup).toContain('role="status"');
     expect(markup).toContain('aria-label="Prozessliste wird geladen"');
     expect(markup).toContain("Prozesse");
-    expect(markup.match(/data-slot="skeleton"/g)).toHaveLength(27);
+    expect(markup.match(/data-slot="skeleton"/g)).toHaveLength(33);
   });
 
   test("keeps the process heading visible while the list is loading", () => {

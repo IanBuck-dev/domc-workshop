@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "slug": "vermittler-onboarding",
+  "expectedScore": 58,
+  "documents": [
+    {
+      "source": "demo-data/journeys/documents/vermittler-onboarding-checkliste.md",
+      "targetName": "Checkliste_Vermittler-Onboarding.md",
+      "mediaType": "md"
+    }
+  ],
+  "conversation": [
+    {
+      "assistant": "Was ist der Auslöser des Onboardings und wann ist ein Vermittler arbeitsfähig?",
+      "userEvidenceId": "b1"
+    },
+    {
+      "assistant": "Welche Nachweise prüfen Sie und wodurch entstehen die häufigsten Wartezeiten?",
+      "userEvidenceId": "b2"
+    },
+    {
+      "assistant": "Wie legen Sie Partner und Provisionsvereinbarung in den Systemen an?",
+      "userEvidenceId": "b3"
+    },
+    {
+      "assistant": "Welche Übergabe gibt es an die IT und wie verfolgen Sie deren Status?",
+      "userEvidenceId": "b4"
+    },
+    {
+      "assistant": "Welche letzte Kontrolle ist vor der Aktivierung zwingend?",
+      "userEvidenceId": "b5"
+    },
+    {
+      "assistant": "Wie viele Onboardings bearbeiten Sie und welche Durchlaufzeit ist typisch?",
+      "userEvidenceId": "b6"
+    }
+  ],
+  "hypotheses": [
+    {
+      "stepOrder": 2,
+      "title": "Zulassungsunterlagen vollständig und fristbezogen vorprüfen",
+      "currentSituation": "Mehrere Nachweise kommen häufig unvollständig herein und werden manuell auf Gültigkeit geprüft.",
+      "aiContribution": "Ein Agent erkennt Dokumenttyp und Gültigkeitsangaben, gleicht die Checkliste ab und bereitet eine konkrete Nachforderung vor.",
+      "aiCapabilities": ["recognition", "interpretation", "generation"],
+      "expectedChange": "Fehlende oder ablaufende Nachweise werden beim ersten Durchgang verständlich benannt.",
+      "deterministicAutomation": [
+        "Pflichtdokumente gegen Checkliste abgleichen",
+        "Datumsfelder formal prüfen"
+      ],
+      "requiredAccess": ["Zulassungsunterlagen und Aufnahmeantrag", "AKTE"],
+      "humanRole": "Die Vermittlerbetreuung bewertet Echtheit und fachliche Zulässigkeit der Nachweise.",
+      "potentialLevel": "high",
+      "potentialRationale": "Dokumentensichtung und Nachforderungen bestimmen die heutige Durchlaufzeit.",
+      "confidenceLevel": "high",
+      "confidenceRationale": "Dokumenttypen, Kontrollziel und Engpass sind belegt.",
+      "assumptions": [],
+      "openQuestions": []
+    },
+    {
+      "stepOrder": 5,
+      "title": "Zugangs- und Schulungsstatus nachhalten",
+      "currentSituation": "IT-Antrag und Schulungsbestätigung werden über E-Mail verfolgt; der aktuelle Stand ist nicht gemeinsam sichtbar.",
+      "aiContribution": "Der Agent führt offene Aktionen zusammen, erinnert zuständige Stellen und bereitet Eskalationen vor.",
+      "aiCapabilities": ["planning", "generation"],
+      "expectedChange": "Vermittlerservice und IT sehen denselben Status bis zur kontrollierten Aktivierung.",
+      "deterministicAutomation": [
+        "offene Fristen markieren",
+        "vollständigen Aktivierungsstatus prüfen"
+      ],
+      "requiredAccess": ["Exchange Online, PARTO und Schulungsbestätigung"],
+      "humanRole": "Vermittlerservice und IT bestätigen Zugang, Schulung und Aktivierung.",
+      "potentialLevel": "medium",
+      "potentialRationale": "Koordination spart Nachfragen, bleibt aber von externen Rückmeldungen abhängig.",
+      "confidenceLevel": "high",
+      "confidenceRationale": "Übergabe, Statuslücke und Aktivierungskontrolle sind bestätigt.",
+      "assumptions": [],
+      "openQuestions": []
+    }
+  ],
+  "scenario": {
+    "titles": {
+      "assistive": "Assistiertes Vermittler-Onboarding",
+      "delegated": "Delegierte Onboarding-Vorbereitung",
+      "agentic": "Agentischer Onboarding-Koordinator"
+    },
+    "summaries": {
+      "assistive": "Die KI prüft Checklisten und entwirft Nachforderungen; jeder Schritt bleibt benutzergeführt.",
+      "delegated": "Der Agent verfolgt fehlende Nachweise und Status selbstständig, legt Zulassung und Aktivierung aber zur Freigabe vor.",
+      "agentic": "Der Agent koordiniert Dokumente, Partneranlage, IT-Zugang und Schulungsstatus bis zur kontrollierten Aktivierung."
+    },
+    "targetStates": {
+      "assistive": "Die Vermittlerbetreuung erhält vollständige Prüflisten und Nachforderungsentwürfe.",
+      "delegated": "Routinekommunikation und Statusnachhaltung laufen innerhalb fester Fristen.",
+      "agentic": "Der Agent hält das Onboarding arbeitsfähig und eskaliert fehlende Nachweise oder Freigaben an die zuständige Rolle."
+    },
+    "changesFromToday": [
+      "Nachweise werden gegen eine gemeinsame Checkliste geprüft.",
+      "IT- und Schulungsstatus werden zentral nachgehalten.",
+      "Aktivierungsvoraussetzungen sind vor der Freigabe sichtbar."
+    ],
+    "aiResponsibilities": [
+      "Nachweise klassifizieren und auf Vollständigkeit prüfen",
+      "Nachforderungen vorbereiten",
+      "offene Zugangs- und Schulungsaktionen koordinieren"
+    ],
+    "deterministicAutomation": [
+      "Pflichtnachweise und Datumsfelder prüfen",
+      "Fristen und Statusübergänge überwachen"
+    ],
+    "orchestration": [
+      "Vermittler, Vermittlerservice und IT entlang offener Aktionen koordinieren"
+    ],
+    "humanResponsibilities": [
+      "Zulässigkeit der Nachweise bewerten",
+      "Courtagesatz und Stornohaftung freigeben",
+      "Vermittler aktivieren"
+    ],
+    "humanOversight": [
+      "Keine Aktivierung ohne bestätigte Nachweise und Schulung",
+      "Vier-Augen-Freigabe der Provisionsvereinbarung"
+    ],
+    "informationAndDocuments": [
+      "Aufnahmeantrag",
+      "Zulassungsnachweise",
+      "Provisionsvereinbarung",
+      "IT- und Schulungsstatus"
+    ],
+    "systemTargets": ["PARTO", "PROVISO", "AKTE", "Exchange Online"],
+    "prerequisites": [
+      "Dokumentencheckliste und Gültigkeitsregeln sind versioniert.",
+      "Status der IT-Anträge ist abrufbar."
+    ],
+    "risks": [
+      "Ein formell vorhandener Nachweis wird inhaltlich falsch bewertet.",
+      "Eine Erinnerung erreicht den falschen Beteiligten."
+    ],
+    "assumptions": [
+      "IT stellt den Bearbeitungsstatus des Zugangsantrags bereit."
+    ],
+    "openQuestions": ["Welche Nachweise dürfen rein formal vorgeprüft werden?"],
+    "confidenceLevel": "medium",
+    "confidenceRationale": "Fachlicher Ablauf und Engpässe sind belegt; technischer Statuszugriff bleibt offen."
+  },
+  "assessment": [
+    {
+      "criterionId": "strategic_fit",
+      "score": 1,
+      "rationale": "Schnelleres Onboarding unterstützt den Vertrieb, betrifft aber eine begrenzte Fallzahl."
+    },
+    {
+      "criterionId": "qualitative_process_improvement",
+      "score": 2,
+      "rationale": "Eine gemeinsame Prüfliste und Statussicht beseitigen zentrale Medienbrüche."
+    },
+    {
+      "criterionId": "customer_value",
+      "score": 1,
+      "rationale": "Vermittler werden schneller arbeitsfähig; Versicherungsnehmer profitieren nur indirekt."
+    },
+    {
+      "criterionId": "employee_value",
+      "score": 2,
+      "rationale": "Wiederholte Nachforderungen und Statusnachfragen werden deutlich reduziert."
+    },
+    {
+      "criterionId": "temporal_process_improvement",
+      "score": 1,
+      "rationale": "Die Durchlaufzeit kann sinken, hängt aber weiter von externen Nachweisen ab."
+    },
+    {
+      "criterionId": "process_criticality",
+      "score": 0,
+      "rationale": "Fehlerhafte Zulassung oder Aktivierung ist vertrieblich und regulatorisch kritisch."
+    },
+    {
+      "criterionId": "process_maturity",
+      "score": 1,
+      "rationale": "Der Ablauf ist bekannt, Status und Übergaben sind jedoch nur teilweise standardisiert."
+    },
+    {
+      "criterionId": "experience_base",
+      "score": 1,
+      "rationale": "Erfahrung besteht, bleibt bei Sonderfällen aber personenabhängig."
+    },
+    {
+      "criterionId": "process_expertise",
+      "score": 2,
+      "rationale": "Pflichtnachweise, Rollen und Aktivierungskontrolle sind klar dokumentiert."
+    },
+    {
+      "criterionId": "context_understanding",
+      "score": 1,
+      "rationale": "Dokumente benötigen fachlichen Kontext, folgen aber bekannten Typen."
+    },
+    {
+      "criterionId": "data_structuring_degree",
+      "score": 1,
+      "rationale": "Nachweise sind Dokumente mit teils gut erkennbaren Feldern."
+    },
+    {
+      "criterionId": "decision_complexity",
+      "score": 1,
+      "rationale": "Vollständigkeit ist regelbasiert, fachliche Zulässigkeit benötigt Bewertung."
+    },
+    {
+      "criterionId": "ai_data_foundation",
+      "score": 0,
+      "rationale": "Ein zentraler historischer Datenbestand für Prüfergebnisse ist nicht belegt."
+    },
+    {
+      "criterionId": "explainability_need",
+      "score": 1,
+      "rationale": "Nachforderungen müssen begründet sein; die finale Zulassung bleibt menschlich."
+    }
+  ],
+  "memoryFacts": [
+    {
+      "topic": "systeme.md",
+      "fact": "PARTO führt LifeCorp-Vermittler, PROVISO hält deren Provisionsvereinbarungen."
+    },
+    {
+      "topic": "zustaendigkeiten.md",
+      "fact": "Der Vermittlerservice aktiviert neue Vermittler erst nach vollständigen Nachweisen, IT-Zugang und bestätigter Erstschulung."
+    }
+  ]
+}

@@ -23,10 +23,13 @@ import {
 } from "../packages/storage/src/process-capture-repository.ts";
 import {
   processCaptureConfigSchema,
+  processUnderstandingSchema,
   normalizedProcessName,
   type CurrentStateDetails,
   type ProcessCaptureConfig,
+  type UploadRecord,
 } from "../packages/domain/src/process-understanding.ts";
+import { MemoryRepository } from "../packages/storage/src/memory-repository.ts";
 import {
   expandUnderstanding,
   expandCurrentStateDetails,
@@ -34,7 +37,8 @@ import {
   listDocumentationFixtures,
   type DocumentationFixture,
 } from "./documentation-fixtures.ts";
-import { seedFlagshipOpportunity } from "./showcase-opportunity-fixture.ts";
+import { seedShowcaseOpportunity } from "./showcase-opportunity-fixture.ts";
+import { listShowcaseJourneyFixtures } from "./showcase-journey-fixtures.ts";
 
 /**
  * Der Zeitstempel eines Datensatzes entsteht dort, wo er geschrieben wird —
@@ -115,6 +119,28 @@ class SeedError extends Error {}
 async function main() {
   const argv = process.argv.slice(2);
   const fixtures = await listDocumentationFixtures();
+  const journeys = await listShowcaseJourneyFixtures();
+  const journeyBySlug = new Map(
+    journeys.map((journey) => [journey.slug, journey]),
+  );
+  const fixtureBySlug = new Map(
+    fixtures.map((fixture) => [fixture.slug, fixture]),
+  );
+  for (const journey of journeys) {
+    const fixture = fixtureBySlug.get(journey.slug);
+    if (!fixture)
+      throw new SeedError(
+        `Showcase-Journey „${journey.slug}" besitzt kein Dokumentations-Fixture.`,
+      );
+    const expectedEvidence = fixture.belege.map((item) => item.id).sort();
+    const actualEvidence = journey.conversation
+      .map((turn) => turn.userEvidenceId)
+      .sort();
+    if (JSON.stringify(actualEvidence) !== JSON.stringify(expectedEvidence))
+      throw new SeedError(
+        `Showcase-Journey „${journey.slug}" muss jeden Gesprächsbeleg genau einmal verwenden.`,
+      );
+  }
   if (argv.includes("--list")) {
     for (const fixture of fixtures)
       console.log(
@@ -128,6 +154,7 @@ async function main() {
   const root = workspacePath();
   const repo = new ProcessCaptureRepository(root);
   const chats = new ChatCaptureRepository(root);
+  const memory = new MemoryRepository(root);
   const corpus = new CorpusService(repo, root);
   const config = await loadConfig();
   await corpus.initialize();
@@ -142,6 +169,7 @@ async function main() {
   const initialDetails = new Map<string, CurrentStateDetails>();
   const belegIds = new Map<string, Map<string, string>>();
   const commits = new Map<string, string>();
+  const uploads = new Map<string, UploadRecord[]>();
   const uebersprungen: string[] = [];
 
   for (const fixture of fixtures) {
@@ -192,21 +220,110 @@ async function main() {
         throw error;
       }
     });
-    const zuordnung = new Map<string, string>();
-    for (const beleg of fixture.belege) {
-      const id = crypto.randomUUID();
-      zuordnung.set(beleg.id, id);
-      await chats.append(prozessIds.get(fixture.slug)!, {
-        schemaVersion: 2,
-        id,
-        turnId: null,
-        at: fixture.erstelltAm,
-        role: "user",
-        status: "complete",
-        text: beleg.text,
-        mentions: [],
-        action: "message",
+    const processId = prozessIds.get(fixture.slug)!;
+    const journey = journeyBySlug.get(fixture.slug);
+    const journeyUploads: UploadRecord[] = [];
+    if (journey) {
+      const mime = {
+        md: "text/markdown",
+        txt: "text/plain",
+        csv: "text/csv",
+        pdf: "application/pdf",
+      } as const;
+      for (const document of journey.documents) {
+        const bytes = await Bun.file(
+          resolve(process.cwd(), document.source),
+        ).bytes();
+        journeyUploads.push(
+          await repo.saveUpload(
+            processId,
+            new File([bytes], document.targetName, {
+              type: mime[document.mediaType],
+            }),
+          ),
+        );
+      }
+      await chats.updateState(processId, {
+        documentGate: journeyUploads.length ? "documents_selected" : "skipped",
+        selectedUploadIds: journeyUploads.map((upload) => upload.id),
+        lastTurnOutcome: "completed",
       });
+    }
+    uploads.set(fixture.slug, journeyUploads);
+
+    const zuordnung = new Map<string, string>();
+    const evidenceById = new Map(fixture.belege.map((item) => [item.id, item]));
+    if (journey) {
+      const base = new Date(fixture.erstelltAm).getTime();
+      const at = (index: number) =>
+        new Date(base + (index + 1) * 60_000).toISOString();
+      await chats.append(processId, {
+        schemaVersion: 2,
+        id: crypto.randomUUID(),
+        turnId: null,
+        at: at(0),
+        role: "assistant",
+        status: "complete",
+        text: journeyUploads.length
+          ? `Ich habe ${journeyUploads.length} Unterlage${journeyUploads.length === 1 ? "" : "n"} berücksichtigt. Ich gehe den heutigen Ablauf jetzt Schritt für Schritt mit Ihnen durch.`
+          : "Wir erfassen den heutigen Ablauf ohne Unterlagen. Ich frage die relevanten Punkte Schritt für Schritt ab.",
+        mentions: [],
+        action: journeyUploads.length ? "analyze_documents" : "skip_documents",
+      });
+      for (const [index, turn] of journey.conversation.entries()) {
+        await chats.append(processId, {
+          schemaVersion: 2,
+          id: crypto.randomUUID(),
+          turnId: null,
+          at: at(index * 2 + 1),
+          role: "assistant",
+          status: "complete",
+          text: turn.assistant,
+          mentions: [],
+          action: "message",
+        });
+        const evidence = evidenceById.get(turn.userEvidenceId)!;
+        const id = crypto.randomUUID();
+        zuordnung.set(evidence.id, id);
+        await chats.append(processId, {
+          schemaVersion: 2,
+          id,
+          turnId: null,
+          at: at(index * 2 + 2),
+          role: "user",
+          status: "complete",
+          text: evidence.text,
+          mentions: [],
+          action: "message",
+        });
+      }
+      await chats.append(processId, {
+        schemaVersion: 2,
+        id: crypto.randomUUID(),
+        turnId: null,
+        at: at(journey.conversation.length * 2 + 2),
+        role: "assistant",
+        status: "complete",
+        text: "Danke. Ich habe Ablauf, Rollen, Systeme, Kontrollen und offene Punkte im Prozessbild zusammengeführt. Bitte prüfen Sie den Stand vor der Bestätigung.",
+        mentions: [],
+        action: "confirmation",
+      });
+    } else {
+      for (const beleg of fixture.belege) {
+        const id = crypto.randomUUID();
+        zuordnung.set(beleg.id, id);
+        await chats.append(processId, {
+          schemaVersion: 2,
+          id,
+          turnId: null,
+          at: fixture.erstelltAm,
+          role: "user",
+          status: "complete",
+          text: beleg.text,
+          mentions: [],
+          action: "message",
+        });
+      }
     }
     belegIds.set(fixture.slug, zuordnung);
   }
@@ -230,11 +347,23 @@ async function main() {
       }
 
       const nummer = ereignis.art === "revision" ? ereignis.nummer : 0;
-      const understanding = expandUnderstanding(
+      let understanding = expandUnderstanding(
         fixture,
         inhaltAt(fixture, nummer),
         zuordnung,
       );
+      const selectedUploads = uploads.get(fixture.slug) ?? [];
+      if (selectedUploads.length)
+        understanding = processUnderstandingSchema.parse({
+          ...understanding,
+          documentCoverage: selectedUploads.map((upload) => ({
+            uploadId: upload.id,
+            name: upload.name,
+            status: "complete",
+            processedCharacters: null,
+            limitation: null,
+          })),
+        });
       const currentStateDetails = expandCurrentStateDetails(
         fixture,
         inhaltAt(fixture, nummer),
@@ -283,14 +412,38 @@ async function main() {
           ergebnis.commit ? ergebnis.commit.slice(0, 10) : "keine Änderung"
         }`,
       );
+      if (ereignis.art === "erstbestaetigung") {
+        const journey = journeyBySlug.get(fixture.slug);
+        const confirmed = await repo.required(id);
+        if (journey && confirmed.confirmedAt)
+          await memory.applyOperations(
+            `deterministischer-demo-seed:${id}`,
+            {
+              operations: journey.memoryFacts.map((item) => ({
+                action: "add" as const,
+                topic: item.topic,
+                fact: item.fact,
+              })),
+            },
+            {
+              processId: id,
+              confirmedAt: confirmed.confirmedAt.slice(0, 10),
+            },
+          );
+      }
     });
   }
 
-  const flagshipId = prozessIds.get("leitungswasserschaden-wohngebaeude");
-  if (flagshipId) {
-    await seedFlagshipOpportunity(root, await repo.required(flagshipId));
+  for (const journey of journeys) {
+    const processId = prozessIds.get(journey.slug);
+    if (!processId) continue;
+    await seedShowcaseOpportunity(
+      root,
+      await repo.required(processId),
+      journey,
+    );
     console.log(
-      `Showcase     ${flagshipId}  KI-Szenarien und Potenzialbewertung angelegt`,
+      `Showcase     ${processId}  KI-Szenarien und Potenzialbewertung angelegt (${journey.expectedScore})`,
     );
   }
 

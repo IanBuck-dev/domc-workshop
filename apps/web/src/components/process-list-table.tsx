@@ -22,6 +22,10 @@ import {
 } from "lucide-react";
 import { type ReactNode, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import type {
+  AgenticPotentialAssessmentSummary,
+  AgenticPotentialScore,
+} from "../lib/agentic-potential-assessment-types";
 import type { OpportunityDiscoverySummary } from "../lib/opportunity-types";
 import {
   processListSearchText,
@@ -56,6 +60,7 @@ import {
 interface ProcessListRow {
   record: ProcessCaptureRecord;
   status: ProcessListStatus;
+  score: AgenticPotentialScore | null;
   searchText: string;
 }
 
@@ -196,6 +201,9 @@ export function ProcessListTableSkeleton({ header }: { header: ReactNode }) {
               <Skeleton className="h-4 w-20" />
             </TableHead>
             <TableHead>
+              <Skeleton className="h-4 w-12" />
+            </TableHead>
+            <TableHead>
               <Skeleton className="h-4 w-24" />
             </TableHead>
             <TableHead>
@@ -211,6 +219,9 @@ export function ProcessListTableSkeleton({ header }: { header: ReactNode }) {
             <TableRow key={index}>
               <TableCell>
                 <Skeleton className="h-5 w-48" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-10" />
               </TableCell>
               <TableCell>
                 <Skeleton className="h-5 w-32" />
@@ -232,26 +243,34 @@ export function ProcessListTableSkeleton({ header }: { header: ReactNode }) {
 export function ProcessListTable({
   records,
   opportunities,
+  assessments,
   header,
 }: {
   records: ProcessCaptureRecord[];
   opportunities: OpportunityDiscoverySummary[];
+  assessments: AgenticPotentialAssessmentSummary[];
   header: ReactNode;
 }) {
   const navigate = useNavigate();
   const [globalFilter, setGlobalFilter] = useState("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "score", desc: true },
+  ]);
   const rows = useMemo(() => {
     const analyses = new Map(
       opportunities.map((item) => [item.processId, item]),
     );
+    const scores = new Map(
+      assessments.map((item) => [item.processId, item.score]),
+    );
     return records.map((record) => ({
       record,
       status: processListStatus(record, analyses.get(record.id)),
+      score: scores.get(record.id) ?? null,
       searchText: processListSearchText(record),
     }));
-  }, [opportunities, records]);
+  }, [assessments, opportunities, records]);
   const departments = useMemo(
     () =>
       [...new Set(rows.map((row) => row.record.cover.department))]
@@ -285,6 +304,27 @@ export function ProcessListTable({
             {row.original.record.cover.processName}
           </Link>
         ),
+      },
+      {
+        id: "score",
+        accessorFn: (row) => row.score?.value ?? -1,
+        header: "Score",
+        sortingFn: "basic",
+        cell: ({ row }) => {
+          const score = row.original.score;
+          return (
+            <span
+              className="font-semibold tabular-nums"
+              title={
+                score
+                  ? `Nutzen ${score.benefit} · Umsetzbarkeit ${score.feasibility} · KI-Eignung ${score.aiSuitability}`
+                  : "Noch keine aktuelle Potenzialbewertung verfügbar"
+              }
+            >
+              {score?.value ?? "–"}
+            </span>
+          );
+        },
       },
       {
         id: "department",
@@ -348,7 +388,6 @@ export function ProcessListTable({
   const reset = () => {
     setGlobalFilter("");
     setColumnFilters([]);
-    setSorting([]);
   };
   const cycleSorting = (id: string, append: boolean) => {
     setSorting((current) => {

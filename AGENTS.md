@@ -2,7 +2,7 @@
 
 ## Product boundary
 
-Build a local prototype that captures and confirms how a department process works today and, in separate downstream modules, discovers evidence-backed KI-potential hypotheses with three read-only human-oversight scenarios, assesses the completed agentic scenario once against a versioned criteria catalogue, and creates read-only Excel exports. Do not add solution approval, financial values, prioritization, handover, or general project-management features to the active flow.
+Build a local prototype that captures and confirms how a department process works today and, in separate downstream modules, discovers evidence-backed KI-potential hypotheses with three read-only human-oversight scenarios, assesses the completed agentic scenario once against a versioned criteria catalogue, derives a read-only directional portfolio score from sufficiently covered high-confidence criteria, and creates read-only Excel exports. Do not add solution approval, financial values, automatic implementation decisions, handover, or general project-management features to the active flow.
 
 ## Runtime
 
@@ -53,25 +53,27 @@ The prototype's login is gated. Real or reusable credentials live in the user's 
   HTTP, keine Zugangsdaten nötig). Der Dev-Start seedet einen leeren Workspace
   automatisch; `DEMO_SEED=0` schaltet das ab.
 - Der Demo-Sidecar in der Web-App speist sich aus `GET /api/demo/szenarien`.
-- Der Präsentationsfall `leitungswasserschaden-wohngebaeude` deckt die reale
-  KI-Strecke vom konfigurierten Provider bis zu beiden Excel-Exporten ab.
+- Der Präsentationsfall `leitungswasserschaden-wohngebaeude` deckt als ausdrücklich
+  gestarteter `test:e2e:real` die reale Codex-Strecke bis zu beiden Excel-Exporten ab.
 - `tests/demo-data.test.ts` hält die Szenarien konsistent — Schema, Dokumentenlisten,
   Fachbereiche, Formularfelder.
 - Bereichsübergreifende LifeCorp-Annahmen beginnen in `LIFECORP.md`; exakte Systemnamen
   und Personas kommen aus den dort verlinkten Detailkatalogen und müssen über alle
   Szenarien hinweg konsistent bleiben.
 - `bun run seed:showcase [--list]` erzeugt den vollständigen Präsentationsstand aus
-  14 bestätigten Prozessen und vier bewusst fortsetzbaren Aufnahmezuständen.
+  14 bestätigten Prozessen und vier bewusst fortsetzbaren Aufnahmezuständen. Sechs der
+  bestätigten Prozesse besitzen vollständige synthetische Chat-Journeys und Bewertungen.
 - `bun run seed:docs [--list]` füllt die lebende Prozessdokumentation aus
   `demo-data/dokumentation/` — 14 Prozesse über fünf Fachbereiche samt Revisionen und
   einer Rücknahme. Der Seed ist additiv, überspringt vorhandene Prozesstitel und erzeugt
   jeden Archiveintrag über die produktiven Pfade (`finalizeChatCapture`,
   `correctUnderstanding`/`confirm`, `syncProcess`, `revert`); in `workspace/docs` wird
-  nichts von Hand geschrieben. Für den Leitungswasser-Präsentationsfall erzeugt er über
-  die Repository-Pfade zusätzlich vier Potenzialhypothesen, drei Szenarien und eine
-  abgeschlossene Bewertung mit klarer Demo-Seed-Trace, ohne KI-Aufruf. Format und erzählte
-  Geschichte stehen in `demo-data/dokumentation/README.md`, geprüft von
-  `tests/documentation-seed.test.ts`.
+  nichts von Hand geschrieben. Für sechs ausgewählte Prozesse erzeugt er über die
+  Repository-Pfade zusätzlich Uploads, wechselnde Chatverläufe, Memory-Fakten,
+  Potenzialhypothesen, drei Szenarien und abgeschlossene Bewertungen mit klarer
+  Demo-Seed-Trace, ohne KI-Aufruf. Format und erzählte Geschichte stehen in
+  `demo-data/dokumentation/README.md`, geprüft von `tests/documentation-seed.test.ts` und
+  `tests/showcase-journey-fixtures.test.ts`.
 
 ## UX rules
 

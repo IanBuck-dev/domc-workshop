@@ -1,0 +1,266 @@
+{
+  "schemaVersion": 1,
+  "slug": "leitungswasserschaden-wohngebaeude",
+  "expectedScore": 72,
+  "documents": [
+    {
+      "source": "demo-data/szenarien/leitungswasserschaden-wohngebaeude/dokumente/arbeitsanweisung-leitungswasserschaden.md",
+      "targetName": "Arbeitsanweisung_Leitungswasserschaden.md",
+      "mediaType": "md"
+    },
+    {
+      "source": "demo-data/szenarien/leitungswasserschaden-wohngebaeude/dokumente/falluebersicht-q2.csv",
+      "targetName": "Falluebersicht_Leitungswasser_Q2.csv",
+      "mediaType": "csv"
+    },
+    {
+      "source": "demo-data/szenarien/leitungswasserschaden-wohngebaeude/dokumente/gutachtersteuerung.md",
+      "targetName": "Gutachtersteuerung_Leitungswasser.md",
+      "mediaType": "md"
+    }
+  ],
+  "conversation": [
+    {
+      "assistant": "Wie kommt ein Leitungswasserschaden bei Ihnen an, und wo beginnt Ihre Bearbeitung?",
+      "userEvidenceId": "b1"
+    },
+    {
+      "assistant": "Welche erste fachliche Prüfung führen Sie durch und welche Systeme benötigen Sie dafür?",
+      "userEvidenceId": "b2"
+    },
+    {
+      "assistant": "Wann reicht ein Kostenvoranschlag, und wann beauftragen Sie einen Sachverständigen?",
+      "userEvidenceId": "b3"
+    },
+    {
+      "assistant": "Wie prüfen Sie die Entschädigung und wie wird anschließend gezahlt?",
+      "userEvidenceId": "b4"
+    },
+    {
+      "assistant": "Wo legen Sie Schriftwechsel und Ergebnisse ab, und wann gilt der Vorgang als beendet?",
+      "userEvidenceId": "b5"
+    },
+    {
+      "assistant": "Welche Fallzahlen und Durchlaufzeiten sind für den Prozess typisch?",
+      "userEvidenceId": "b6"
+    }
+  ],
+  "hypotheses": [
+    {
+      "stepOrder": 1,
+      "title": "Schadeneingänge ordnen und Vollständigkeit vorbereiten",
+      "currentSituation": "Meldungen, Fotos und Kostenvoranschläge kommen über mehrere Kanäle und werden manuell einem Fall zugeordnet.",
+      "aiContribution": "Ein Agent liest die Eingänge, ordnet sie dem Schadenfall zu und erstellt eine belegte Vollständigkeitsprüfung.",
+      "aiCapabilities": ["interpretation", "recognition"],
+      "expectedChange": "Die Sachbearbeitung beginnt mit einem strukturierten Fallüberblick und einem Entwurf für fehlende Unterlagen.",
+      "deterministicAutomation": [
+        "Pflichtunterlagen je Schadenart abgleichen",
+        "Eingangsfristen überwachen"
+      ],
+      "requiredAccess": [
+        "KOMPASS und AKTE",
+        "Schadenmeldung, Fotos und Kostenvoranschlag"
+      ],
+      "humanRole": "Die Sachbearbeitung prüft Zuordnung und Unterlagenanforderung.",
+      "potentialLevel": "high",
+      "potentialRationale": "Wiederkehrender Sichtungsaufwand und unvollständige Ersteinreichungen treffen auf klar benannte Unterlagen.",
+      "confidenceLevel": "high",
+      "confidenceRationale": "Kanäle, Unterlagen und heutiger manueller Aufwand sind belegt.",
+      "assumptions": [],
+      "openQuestions": []
+    },
+    {
+      "stepOrder": 4,
+      "title": "Gutachterbeauftragung und Rückmeldungen orchestrieren",
+      "currentSituation": "Beauftragungsgrund, Frist und Rückmeldung werden zwischen KOMPASS, Exchange Online und einer Teamliste manuell nachgehalten.",
+      "aiContribution": "Der Agent führt Fallstatus und Kommunikation zusammen, bereitet Beauftragungen vor und weist auf ausstehende Rückmeldungen hin.",
+      "aiCapabilities": ["interpretation", "planning"],
+      "expectedChange": "Offene Gutachtertermine und nächste Aktionen werden fallbezogen sichtbar.",
+      "deterministicAutomation": [
+        "Wertgrenze prüfen",
+        "Fristüberschreitungen markieren"
+      ],
+      "requiredAccess": ["KOMPASS, Exchange Online und Gutachter-Teamliste"],
+      "humanRole": "Die Sachbearbeitung entscheidet über Beauftragung und Eskalation.",
+      "potentialLevel": "high",
+      "potentialRationale": "Der dokumentierte Medienbruch verzögert einen häufigen externen Übergabepunkt.",
+      "confidenceLevel": "high",
+      "confidenceRationale": "Übergabe, Friststeuerung und menschliche Entscheidung sind ausdrücklich erfasst.",
+      "assumptions": [],
+      "openQuestions": []
+    },
+    {
+      "stepOrder": 5,
+      "title": "Kostenvoranschlag und Gutachten belegbasiert vorprüfen",
+      "currentSituation": "Positionen werden manuell geprüft; Kürzungen müssen fachlich begründet werden.",
+      "aiContribution": "Der Agent stellt Positionen gegenüber, markiert Abweichungen und verknüpft jeden Hinweis mit seinem Beleg.",
+      "aiCapabilities": ["interpretation", "recommendation", "generation"],
+      "expectedChange": "Die Sachbearbeitung erhält eine nachvollziehbare Prüfliste, behält aber Leistungsentscheidung und Freigabe.",
+      "deterministicAutomation": ["Summen und Positionsnummern abgleichen"],
+      "requiredAccess": [
+        "Kostenvoranschlag, Gutachten und Vertragsdeckung",
+        "AKTE und VERA"
+      ],
+      "humanRole": "Die Sachbearbeitung bewertet Abweichungen, begründet Kürzungen und gibt die Entschädigung frei.",
+      "potentialLevel": "high",
+      "potentialRationale": "Unstrukturierte Dokumente und wiederkehrender Vergleichsaufwand sprechen für belegbasierte Assistenz.",
+      "confidenceLevel": "high",
+      "confidenceRationale": "Dokumenttypen, Kontrollpflicht und Entscheidung sind bestätigt.",
+      "assumptions": [],
+      "openQuestions": []
+    }
+  ],
+  "scenario": {
+    "titles": {
+      "assistive": "Belegbasierte Schadenassistenz",
+      "delegated": "Delegierte Fallvorbereitung mit Freigaben",
+      "agentic": "Agentischer Schaden-Arbeitsbegleiter"
+    },
+    "summaries": {
+      "assistive": "Die KI bereitet jeden Arbeitsschritt vor; die Sachbearbeitung stößt Aktionen an und entscheidet.",
+      "delegated": "Die KI übernimmt abgegrenzte Vorbereitungs- und Nachhalteaufgaben, kritische Aktionen bleiben freigabepflichtig.",
+      "agentic": "Ein Agent koordiniert Eingänge, Vollständigkeit, Gutachterstatus und belegbasierte Vorprüfung über die Schadenstrecke."
+    },
+    "targetStates": {
+      "assistive": "Die Sachbearbeitung erhält Fallübersichten, Prüflisten und Kommunikationsentwürfe.",
+      "delegated": "Routineaufgaben laufen innerhalb fester Leitplanken; Deckung, Kürzung und Zahlung bleiben beim Menschen.",
+      "agentic": "Der Agent hält den Fall arbeitsfähig, bereitet nächste Aktionen vor und eskaliert fachliche Entscheidungen nachvollziehbar."
+    },
+    "changesFromToday": [
+      "Eingänge und Belege werden fallbezogen strukturiert.",
+      "Gutachter- und Unterlagenaktionen werden aktiv nachgehalten.",
+      "Prüfhinweise verweisen auf ihre fachlichen Belege."
+    ],
+    "aiResponsibilities": [
+      "Unterlagen lesen und zuordnen",
+      "Fallstatus und nächste Aktionen zusammenführen",
+      "belegbasierte Prüf- und Kommunikationsentwürfe erstellen"
+    ],
+    "deterministicAutomation": [
+      "Wertgrenze und Pflichtunterlagen prüfen",
+      "Fristen und Freigabestatus überwachen"
+    ],
+    "orchestration": [
+      "Unterlagenanforderung, Gutachterstatus und Prüfschritte koordinieren"
+    ],
+    "humanResponsibilities": [
+      "Deckung, Kürzung und Entschädigung entscheiden",
+      "Zahlung und externe Übergaben freigeben",
+      "Fälle mit geringer Konfidenz übernehmen"
+    ],
+    "humanOversight": [
+      "Alle fachlichen und finanziellen Aktionen werden bestätigt.",
+      "Die Teamleitung überwacht Eskalationen und Stichproben."
+    ],
+    "informationAndDocuments": [
+      "Schadenmeldung, Fotos und Kostenvoranschlag",
+      "Vertragsdeckung",
+      "Gutachten, Schriftwechsel und Fallstatus"
+    ],
+    "systemTargets": [
+      "KOMPASS",
+      "VERA",
+      "AKTE",
+      "SAP S/4HANA",
+      "Exchange Online"
+    ],
+    "prerequisites": [
+      "Pflichtunterlagen, Kompetenzregeln und Eskalationsgründe sind versioniert.",
+      "Systemzugriffe werden rollen- und fallbezogen protokolliert."
+    ],
+    "risks": [
+      "Ein Dokument wird dem falschen Fall zugeordnet.",
+      "Eine zeitkritische Ausnahme wird nicht eskaliert."
+    ],
+    "assumptions": [
+      "Die genannten Systeme stellen geeignete Schnittstellen bereit."
+    ],
+    "openQuestions": [
+      "Welche Schreibaktionen dürfen später ohne Einzelfreigabe laufen?"
+    ],
+    "confidenceLevel": "medium",
+    "confidenceRationale": "Fachlicher Ablauf und Kontrollen sind belegt; Schnittstellen und Betriebsleitplanken bleiben zu klären."
+  },
+  "assessment": [
+    {
+      "criterionId": "qualitative_process_improvement",
+      "score": 2,
+      "rationale": "Der Agent reduziert Medienbrüche und stellt Eingänge, Status sowie Prüfbelege fallbezogen zusammen."
+    },
+    {
+      "criterionId": "customer_value",
+      "score": 2,
+      "rationale": "Vollständigere Erstkontakte und sichtbare nächste Schritte reduzieren Rückfragen."
+    },
+    {
+      "criterionId": "employee_value",
+      "score": 2,
+      "rationale": "Manuelles Übertragen, Sichten und Nachhalten werden vorbereitet."
+    },
+    {
+      "criterionId": "temporal_process_improvement",
+      "score": 2,
+      "rationale": "Wartezeiten bei Unterlagen und Gutachten werden aktiv nachgehalten."
+    },
+    {
+      "criterionId": "risk_reduction",
+      "score": 1,
+      "rationale": "Belegverweise und Eskalationen können Auslassungen senken."
+    },
+    {
+      "criterionId": "process_criticality",
+      "score": 0,
+      "rationale": "Der Prozess steuert Deckung, Entschädigung, Zahlung und zeitkritische Ausnahmen."
+    },
+    {
+      "criterionId": "process_expertise",
+      "score": 2,
+      "rationale": "Regeln, professionelles Urteil, Rollen und Übergaben sind konkret beschrieben."
+    },
+    {
+      "criterionId": "process_diversity",
+      "score": 0,
+      "rationale": "Mehrere Kanäle, Dokumenttypen, Deckungsfälle und Übergaben erzeugen viele Varianten."
+    },
+    {
+      "criterionId": "process_data",
+      "score": 1,
+      "rationale": "Daten sind vorhanden, liegen aber über mehrere Systeme und unstrukturierte Dokumente verteilt."
+    },
+    {
+      "criterionId": "context_understanding",
+      "score": 2,
+      "rationale": "Deckung, Schadenbild, Gebäudenutzung und Beleglage müssen gemeinsam interpretiert werden."
+    },
+    {
+      "criterionId": "data_structuring_degree",
+      "score": 2,
+      "rationale": "Freitext, Fotos, Kostenvoranschläge und Gutachten erfordern Strukturierung."
+    },
+    {
+      "criterionId": "decision_complexity",
+      "score": 2,
+      "rationale": "Wertgrenze, Deckung und professionelles Urteil wirken zusammen."
+    },
+    {
+      "criterionId": "explainability_need",
+      "score": 0,
+      "rationale": "Kürzungen und Deckung müssen vollständig belegbar begründet werden."
+    },
+    {
+      "criterionId": "autonomy_and_human_ai_collaboration",
+      "score": 2,
+      "rationale": "Autonome Vorbereitung und menschliche Leistungsentscheidung sind klar getrennt."
+    }
+  ],
+  "memoryFacts": [
+    {
+      "topic": "systeme.md",
+      "fact": "KOMPASS führt bei LifeCorp den Schadenvorgang; VERA liefert die Vertragsdeckung und AKTE hält die Dokumente."
+    },
+    {
+      "topic": "zustaendigkeiten.md",
+      "fact": "Die Sachschadenbearbeitung entscheidet über Deckung, Kürzung und Entschädigung bei Leitungswasserschäden."
+    }
+  ]
+}

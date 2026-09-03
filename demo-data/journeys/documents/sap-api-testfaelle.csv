@@ -1,0 +1,5 @@
+fall;beschreibung;erwartung
+T-01;Vertragsreferenz eindeutig;Treffer wird zur fachlichen Freigabe vorgelegt
+T-02;Schadenreferenz und Betrag widersprechen sich;Eskalation mit beiden Quellen
+T-03;SAP-Buchung trifft verspätet ein;Status wird mit ursprünglichem Buchungszeitpunkt aktualisiert
+T-04;keine Referenz vorhanden;keine Zuordnung und Übergabe an Clearing

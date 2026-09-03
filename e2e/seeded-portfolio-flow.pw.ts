@@ -1,0 +1,135 @@
+import { expect, test, type Page } from "@playwright/test";
+
+const username = process.env.E2E_AUTH_USERNAME;
+const password = process.env.E2E_AUTH_PASSWORD;
+
+const journeys = [
+  ["FIN-03 · Nicht zuordenbare Zahlungseingänge klären", 85],
+  ["VER-01 · Turnusmäßige Beitragsanpassung Wohngebäude", 79],
+  ["SCH-01 · Leitungswasserschaden Wohngebäude regulieren", 72],
+  ["VTR-01 · Onboarding neuer Vermittler im Außendienst", 58],
+  [
+    "IT-02 · SAP S/4HANA per API für agentischen Zahlungsabgleich in KOMPASS anbinden",
+    46,
+  ],
+  ["FIN-02 · Mahnverfahren im Direktinkasso Leben durchführen", 28],
+] as const;
+
+function observeBrowserFailures(page: Page) {
+  const consoleErrors: string[] = [];
+  const failedRequests: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+  page.on("requestfailed", (request) => {
+    failedRequests.push(
+      `${request.method()} ${request.url()}: ${request.failure()?.errorText}`,
+    );
+  });
+  return { consoleErrors, failedRequests };
+}
+
+async function login(page: Page) {
+  await page.addInitScript(() => {
+    localStorage.setItem("claims-ai.chat-tutorial.completed.v1", "1");
+    localStorage.setItem("claims-ai.demo-data-warning.dismissed.v1", "1");
+  });
+  await page.goto("/");
+  await page.getByLabel("Benutzername").fill(username!);
+  await page.getByLabel("Passwort").fill(password!);
+  await page.getByRole("button", { name: "Anmelden" }).click();
+  await expect(page.getByRole("heading", { name: "Prozesse" })).toBeVisible();
+}
+
+test("all six deterministic LifeCorp journeys reach both Excel exports", async ({
+  page,
+}) => {
+  test.skip(
+    !username || !password,
+    "Only the isolated local E2E runner supplies credentials.",
+  );
+  const failures = observeBrowserFailures(page);
+  await login(page);
+
+  const processResponse = await page.request.get("/api/processes");
+  expect(processResponse.ok()).toBeTruthy();
+  const processes = (await processResponse.json()) as Array<{
+    id: string;
+    cover: { processName: string };
+    uploads: unknown[];
+  }>;
+  const assessmentResponse = await page.request.get("/api/agentic-assessments");
+  expect(assessmentResponse.ok()).toBeTruthy();
+  const assessments = (await assessmentResponse.json()) as Array<{
+    processId: string;
+    score: { value: number } | null;
+  }>;
+  expect(assessments).toHaveLength(6);
+
+  for (const [title, expectedScore] of journeys) {
+    const process = processes.find((item) => item.cover.processName === title);
+    expect(process, `Seeded process ${title}`).toBeTruthy();
+    expect(
+      assessments.find((item) => item.processId === process!.id)?.score?.value,
+    ).toBe(expectedScore);
+
+    await page.goto("/");
+    const row = page.getByRole("row").filter({ hasText: title });
+    await expect(row).toBeVisible();
+    await expect(
+      row.getByText(String(expectedScore), { exact: true }),
+    ).toBeVisible();
+
+    await page.goto(`/processes/${process!.id}`);
+    await expect(page.getByRole("heading", { name: title })).toBeVisible();
+    const pddDownloadPromise = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Excel erstellen" }).click();
+    const pddDownload = await pddDownloadPromise;
+    expect(pddDownload.suggestedFilename()).toMatch(/\.xlsx$/i);
+
+    await page.goto(`/processes/${process!.id}/chat`);
+    await expect(
+      page.getByText(/^(Abgeschlossen|Mit offenen Punkten bestätigt)$/),
+    ).toBeVisible();
+    const chatResponse = await page.request.get(
+      `/api/processes/${process!.id}/chat`,
+    );
+    expect(chatResponse.ok()).toBeTruthy();
+    const chat = (await chatResponse.json()) as {
+      transcript: Array<{ role: "user" | "assistant" }>;
+    };
+    expect(
+      chat.transcript.filter((event) => event.role === "user").length,
+    ).toBeGreaterThanOrEqual(5);
+    expect(
+      chat.transcript.filter((event) => event.role === "assistant").length,
+    ).toBeGreaterThan(
+      chat.transcript.filter((event) => event.role === "user").length,
+    );
+
+    await page.goto(`/processes/${process!.id}/opportunities/scenarios`);
+    await expect(
+      page.getByRole("heading", { name: "Drei Szenarien im Vergleich" }),
+    ).toBeVisible();
+    await expect(page.getByText("Assistiert", { exact: true })).toBeVisible();
+    await expect(page.getByText("Teilautonom", { exact: true })).toBeVisible();
+    await expect(page.getByText("Agentisch", { exact: true })).toBeVisible();
+
+    await page.goto(
+      `/processes/${process!.id}/opportunities/agentic-assessment`,
+    );
+    await expect(
+      page.getByRole("heading", { name: "Ergebnisüberblick" }),
+    ).toBeVisible();
+    const assessmentDownloadPromise = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Excel erstellen" }).click();
+    const assessmentDownload = await assessmentDownloadPromise;
+    expect(assessmentDownload.suggestedFilename()).toMatch(/\.xlsx$/i);
+  }
+
+  expect(failures.failedRequests, "No browser request should fail").toEqual([]);
+  expect(
+    failures.consoleErrors,
+    "No browser console error should occur",
+  ).toEqual([]);
+});

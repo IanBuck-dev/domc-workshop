@@ -4,7 +4,10 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { AgenticPotentialAssessmentService } from "../apps/server/src/agentic-potential-assessment-service.ts";
-import { agenticPotentialAssessmentRoutes } from "../apps/server/src/routes/agentic-potential-assessments.ts";
+import {
+  agenticPotentialAssessmentRoutes,
+  agenticPotentialAssessmentSummaryRoutes,
+} from "../apps/server/src/routes/agentic-potential-assessments.ts";
 import type { AgenticPotentialAssessmentAiAdapter } from "../packages/claude/src/agentic-potential-assessment-adapter.ts";
 import { processOperationStatusSchema } from "../packages/domain/src/process-events.ts";
 import { AgenticPotentialAssessmentRepository } from "../packages/storage/src/agentic-potential-assessment-repository.ts";
@@ -70,6 +73,14 @@ async function fixture(failures = 0) {
       join(import.meta.dir, "..", "defaults"),
     ),
   );
+  app.route(
+    "/api/agentic-assessments",
+    agenticPotentialAssessmentSummaryRoutes(
+      processes,
+      opportunities,
+      assessments,
+    ),
+  );
   return { app, root, process, assessments, attempts: () => attempts };
 }
 
@@ -101,6 +112,15 @@ describe("agentic potential assessment API", () => {
     );
     expect(detail.status).toBe(200);
     expect((await detail.json()).record.result.criteria).toHaveLength(32);
+    const summaries = await app.request("/api/agentic-assessments");
+    expect(summaries.status).toBe(200);
+    expect(await summaries.json()).toEqual([
+      expect.objectContaining({
+        processId: process.id,
+        isStale: false,
+        score: expect.objectContaining({ value: 100 }),
+      }),
+    ]);
     const exported = await app.request(
       `/api/opportunities/${process.id}/agentic-assessment/export`,
       { method: "POST" },

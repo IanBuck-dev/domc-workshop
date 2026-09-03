@@ -26,13 +26,13 @@ describe("LifeCorp showcase seed", () => {
     ).toHaveLength(14);
     expect(
       portfolio.processes.filter((process) => process.depth === "end_to_end"),
-    ).toHaveLength(1);
+    ).toHaveLength(6);
     expect(
       portfolio.processes.filter((process) => process.depth === "detailed"),
-    ).toHaveLength(5);
+    ).toHaveLength(3);
     expect(
       portfolio.processes.filter((process) => process.depth === "compact"),
-    ).toHaveLength(12);
+    ).toHaveLength(9);
     expect(
       portfolio.processes.filter((process) => process.potential === "high"),
     ).toHaveLength(8);

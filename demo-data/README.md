@@ -32,6 +32,8 @@ demo-data/
   PROZESSPORTFOLIO.md    Zielauswahl und gewünschter Potenzial-Mix
   ABNAHMEMATRIX.md       Seed-Tiefe, UI-Zustand und Abnahme je Prozess
   showcase.json          Maschinenlesbare Reihenfolge und Sollzustände
+  journeys/              sechs vollständige, providerfreie Demo-Journeys:
+                          Chat, Uploads, Hypothesen, Szenarien, Bewertung
   szenarien/
     <slug>/
       szenario.json      Deckblatt (Fachbereich, Beteiligte, Prozessname),
@@ -65,13 +67,18 @@ Für die Potenzialanalyse muss nicht jedes Mal der ganze Chat gespielt werden:
 Zustand `confirmed` mit einem vorbereiteten Prozessverständnis an — danach
 genügt „Potenzialanalyse starten" im UI.
 
-`bun run seed:docs` legt zusätzlich für den Präsentationsfall
-`SCH-01 · Leitungswasserschaden Wohngebäude regulieren` vier fachlich ausgearbeitete
-Potenzialhypothesen, drei Aufsichtsszenarien und eine abgeschlossene
-Potenzialbewertung an. Das ist ein ausdrücklich gekennzeichneter,
-deterministischer Demo-Seed: Er ruft keine KI auf und dient der reproduzierbaren
-Web-, Export- und Videoprüfung. Der normale Produktfluss erzeugt dieselben
-Datensätze weiterhin genau einmal über den konfigurierten KI-Provider.
+`bun run seed:docs` legt zusätzlich sechs vollständig durchgespielte Journeys an:
+Zahlungseingänge (85), Beitragsanpassung (79), Leitungswasserschaden (72),
+Vermittler-Onboarding (58), SAP-API-Anbindung (46) und Mahnverfahren (28).
+Jede Journey besitzt einen wechselnden Chatverlauf, einen gemischten Upload-Stand,
+Memory-Fakten, belegte Potenzialhypothesen, drei Aufsichtsszenarien und eine
+abgeschlossene Bewertung. Der ausdrücklich gekennzeichnete Demo-Seed ruft keine KI auf.
+Der normale Produktfluss erzeugt dieselben Datensatzarten weiterhin genau einmal über
+den konfigurierten Provider.
+
+`bun run test:e2e:local` prüft alle sechs Journeys providerfrei bis zu beiden
+Excel-Downloads. Nur `bun run test:e2e:real` startet bewusst den realen Codex-Lauf für
+den Leitungswasserfall.
 
 ## Die sechs Aufnahmeszenarien
 

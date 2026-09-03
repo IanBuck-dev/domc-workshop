@@ -3,6 +3,8 @@ export type {
   AgenticAssessmentState,
   CriterionAssessment,
   AgenticAssessmentResult,
+  AgenticPotentialAssessmentSummary,
+  AgenticPotentialScore,
 } from "../../../../packages/domain/src/agentic-potential-assessment";
 import type { AgenticPotentialAssessmentRecord } from "../../../../packages/domain/src/agentic-potential-assessment";
 export interface AgenticPotentialAssessmentDetail {

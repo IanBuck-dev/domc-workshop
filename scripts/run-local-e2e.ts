@@ -5,6 +5,10 @@ import { createServer } from "node:net";
 
 const scenario = "leitungswasserschaden-wohngebaeude";
 const screenshotMode = process.argv.includes("--screenshots");
+const realProviderMode = process.argv.includes("--real-provider");
+
+if (screenshotMode && realProviderMode)
+  throw new Error("Screenshot- und Real-Provider-Modus schließen sich aus.");
 
 async function freePort() {
   return await new Promise<number>((resolve, reject) => {
@@ -61,6 +65,7 @@ const webPort = await freePort();
 const baseURL = `http://127.0.0.1:${webPort}`;
 const commonEnv = {
   ...process.env,
+  ...(realProviderMode ? { AI_PROVIDER: "codex-cli" } : {}),
   WORKSPACE_PATH: workspace,
   DEMO_SEED: "0",
   NO_OPEN: "1",
@@ -76,8 +81,8 @@ let succeeded = false;
 try {
   if (!providedWorkspace)
     await run(
-      screenshotMode
-        ? ["bun", "run", "scripts/seed-documentation.ts"]
+      screenshotMode || !realProviderMode
+        ? ["bun", "run", "scripts/seed-showcase.ts"]
         : ["bun", "run", "scripts/seed-demo-process.ts", scenario],
       commonEnv,
     );
@@ -96,7 +101,9 @@ try {
       "--config=playwright.config.ts",
       screenshotMode
         ? "e2e/seeded-ui-screenshots.pw.ts"
-        : "e2e/real-provider-product-flow.pw.ts",
+        : realProviderMode
+          ? "e2e/real-provider-product-flow.pw.ts"
+          : "e2e/seeded-portfolio-flow.pw.ts",
       ...(process.argv.includes("--headed") ? ["--headed"] : []),
     ],
     {

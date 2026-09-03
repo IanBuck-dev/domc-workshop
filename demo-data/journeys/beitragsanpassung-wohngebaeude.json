@@ -1,0 +1,228 @@
+{
+  "schemaVersion": 1,
+  "slug": "beitragsanpassung-wohngebaeude",
+  "expectedScore": 79,
+  "documents": [
+    {
+      "source": "demo-data/szenarien/beitragsanpassung/dokumente/verfahrensanweisung-beitragsanpassung.md",
+      "targetName": "Verfahrensanweisung_Beitragsanpassung.md",
+      "mediaType": "md"
+    },
+    {
+      "source": "demo-data/szenarien/beitragsanpassung/dokumente/protokoll-fachrunde.md",
+      "targetName": "Protokoll_Fachrunde_Beitragsanpassung.md",
+      "mediaType": "md"
+    }
+  ],
+  "conversation": [
+    {
+      "assistant": "Was startet die jährliche Beitragsanpassung und wer gibt die Parameter vor?",
+      "userEvidenceId": "b1"
+    },
+    {
+      "assistant": "Wie läuft die technische Verarbeitung ab, und wo beginnt Ihre manuelle Arbeit?",
+      "userEvidenceId": "b2"
+    },
+    {
+      "assistant": "Was passiert mit den erfolgreich angepassten Verträgen und den Anschreiben?",
+      "userEvidenceId": "b3"
+    },
+    {
+      "assistant": "Welche Kundenreaktionen bearbeiten Sie, und welche Frist ist dabei kritisch?",
+      "userEvidenceId": "b4"
+    },
+    {
+      "assistant": "Über welche Größenordnung sprechen wir, und wann entsteht die größte Belastung?",
+      "userEvidenceId": "b5"
+    }
+  ],
+  "hypotheses": [
+    {
+      "stepOrder": 3,
+      "title": "Ausnahmeliste fachlich erklären und priorisieren",
+      "currentSituation": "Die Ausnahmeliste aus VERA enthält nur Fehlerschlüssel; rund 1.200 Verträge werden einzeln geprüft.",
+      "aiContribution": "Ein Agent verbindet Fehlerschlüssel mit Vertragsmerkmalen, formuliert eine Klartextursache und bereitet die nächste Bearbeitung vor.",
+      "aiCapabilities": ["interpretation", "recommendation"],
+      "expectedChange": "Die Sachbearbeitung startet mit begründeten, nach Ursache gebündelten Ausnahmen.",
+      "deterministicAutomation": [
+        "Fehlerschlüssel auf bekannte Regeln abbilden",
+        "gesperrte Verträge markieren"
+      ],
+      "requiredAccess": [
+        "Ausnahmeliste und Vertragsdaten aus VERA",
+        "Ablage in AKTE"
+      ],
+      "humanRole": "Die Sachbearbeitung entscheidet über manuelles Nachziehen oder begründetes Aussetzen.",
+      "potentialLevel": "high",
+      "potentialRationale": "Ein großer jährlicher Massenprozess erzeugt eine konzentrierte, wiederkehrende Ausnahmebearbeitung.",
+      "confidenceLevel": "high",
+      "confidenceRationale": "Menge, Fehlerschlüssel, Systeme und Entscheidung sind belegt.",
+      "assumptions": [],
+      "openQuestions": []
+    },
+    {
+      "stepOrder": 5,
+      "title": "Widersprüche und Kündigungen fristgerecht orchestrieren",
+      "currentSituation": "Reaktionen kommen über Post und Exchange Online und werden in der saisonalen Spitze manuell nachverfolgt.",
+      "aiContribution": "Der Agent klassifiziert den Eingang, bündelt Vertrags- und Anpassungsgrund und bereitet eine Antwort mit Friststatus vor.",
+      "aiCapabilities": ["interpretation", "generation", "planning"],
+      "expectedChange": "Offene Kundenreaktionen werden mit Begründung und Frist in einer Arbeitsliste priorisiert.",
+      "deterministicAutomation": [
+        "Monatsfrist berechnen",
+        "Vollständigkeit der Antwortakte prüfen"
+      ],
+      "requiredAccess": [
+        "Exchange Online, AKTE und VERA",
+        "eingescannte Kundenreaktion"
+      ],
+      "humanRole": "Die Sachbearbeitung bewertet den Widerspruch und gibt jede Vertragsänderung oder Antwort frei.",
+      "potentialLevel": "high",
+      "potentialRationale": "Freitext, Fristdruck und wiederkehrende Spitzen verbinden hohen Nutzen mit klarer menschlicher Kontrolle.",
+      "confidenceLevel": "high",
+      "confidenceRationale": "Kanäle, Frist und heutige Engpässe sind bestätigt.",
+      "assumptions": [],
+      "openQuestions": []
+    }
+  ],
+  "scenario": {
+    "titles": {
+      "assistive": "Assistierte Anpassungsrunde",
+      "delegated": "Delegierte Ausnahmevorbereitung",
+      "agentic": "Agentischer Begleiter der Beitragsanpassung"
+    },
+    "summaries": {
+      "assistive": "Die KI erklärt Ausnahmen und entwirft Antworten; die Sachbearbeitung startet jeden Schritt.",
+      "delegated": "Der Agent gruppiert Ausnahmen und überwacht Reaktionsfristen selbstständig, legt Änderungen aber zur Freigabe vor.",
+      "agentic": "Der Agent koordiniert Ausnahmeliste und Kundenreaktionen über den Anpassungszyklus, während Laufparameter und Vertragsentscheidungen beim Menschen bleiben."
+    },
+    "targetStates": {
+      "assistive": "Jeder Einzelfall erhält eine verständliche Ursache und einen Antwortentwurf.",
+      "delegated": "Routineprüfungen und Fristnachhaltung laufen innerhalb klarer Regeln.",
+      "agentic": "Der Agent hält alle Ausnahmen und Reaktionen arbeitsfähig und eskaliert fachliche oder fristkritische Entscheidungen."
+    },
+    "changesFromToday": [
+      "Ausnahmen werden nach fachlicher Ursache gruppiert.",
+      "Kundenreaktionen erhalten einen fallbezogenen Friststatus.",
+      "Antworten verweisen auf Anpassungsgrund und Vertragsstand."
+    ],
+    "aiResponsibilities": [
+      "Ausnahmeschlüssel mit Vertragsdaten erklären",
+      "Kundenreaktionen klassifizieren",
+      "Antwort- und Bearbeitungsvorschläge erstellen"
+    ],
+    "deterministicAutomation": [
+      "Anpassungslauf in VERA",
+      "Fristen berechnen",
+      "Versand- und Ablagestatus abgleichen"
+    ],
+    "orchestration": [
+      "Ausnahmen, Kundenreaktionen und Fristen über die Anpassungsrunde koordinieren"
+    ],
+    "humanResponsibilities": [
+      "Laufparameter gegenzeichnen",
+      "Vertragsänderungen und Antworten freigeben",
+      "fachlich unklare Widersprüche entscheiden"
+    ],
+    "humanOversight": [
+      "Keine Vertragsänderung ohne Freigabe",
+      "Stichprobe der automatisierten Gruppierung"
+    ],
+    "informationAndDocuments": [
+      "Freigabeschreiben des Aktuariats",
+      "VERA-Ausnahmeliste",
+      "Widersprüche und Kündigungen"
+    ],
+    "systemTargets": ["VERA", "AKTE", "PARTO", "Exchange Online"],
+    "prerequisites": [
+      "Fehlerschlüssel und Bearbeitungsregeln sind versioniert.",
+      "Eingänge können einem Vertrag eindeutig zugeordnet werden."
+    ],
+    "risks": [
+      "Eine Kundenreaktion wird falsch klassifiziert.",
+      "Ein Fristfall wird wegen unvollständiger Eingangsdaten übersehen."
+    ],
+    "assumptions": ["Posteingänge stehen digital in der AKTE bereit."],
+    "openQuestions": [
+      "Welche Ausnahmeursachen dürfen gebündelt freigegeben werden?"
+    ],
+    "confidenceLevel": "high",
+    "confidenceRationale": "Massenmenge, Ausnahmeweg, Reaktionskanäle und Kontrollen sind belegt."
+  },
+  "assessment": [
+    {
+      "criterionId": "strategic_fit",
+      "score": 2,
+      "rationale": "Die jährliche Bestandsaktion betrifft einen zentralen Wohngebäudebestand."
+    },
+    {
+      "criterionId": "qualitative_process_improvement",
+      "score": 2,
+      "rationale": "Klartextursachen und gebündelte Arbeitslisten verbessern die Ausnahmebearbeitung erheblich."
+    },
+    {
+      "criterionId": "customer_value",
+      "score": 1,
+      "rationale": "Schnellere und konsistentere Antworten wirken positiv, betreffen aber nur reagierende Kunden."
+    },
+    {
+      "criterionId": "employee_value",
+      "score": 2,
+      "rationale": "Die manuelle Prüfung von rund 1.200 Ausnahmen und die saisonale Nachhaltung sinken deutlich."
+    },
+    {
+      "criterionId": "temporal_process_improvement",
+      "score": 2,
+      "rationale": "Priorisierung und Friststeuerung adressieren die belegte Spitze zwischen September und Januar."
+    },
+    {
+      "criterionId": "process_criticality",
+      "score": 1,
+      "rationale": "Fehler betreffen Verträge und Kundenkommunikation, werden aber vor Änderung freigegeben."
+    },
+    {
+      "criterionId": "process_maturity",
+      "score": 2,
+      "rationale": "Der jährliche Ablauf und seine Kontrollen sind etabliert."
+    },
+    {
+      "criterionId": "change_effort",
+      "score": 1,
+      "rationale": "Die Ergänzung erfordert Schnittstellen und neue Arbeitslisten, verändert aber nicht den Kernlauf."
+    },
+    {
+      "criterionId": "process_systems",
+      "score": 1,
+      "rationale": "Die Systeme sind bekannt, Post- und E-Mail-Eingänge bleiben jedoch verteilt."
+    },
+    {
+      "criterionId": "context_understanding",
+      "score": 1,
+      "rationale": "Fehlerursache und Kundenreaktion brauchen Vertragskontext, folgen aber wiederkehrenden Mustern."
+    },
+    {
+      "criterionId": "data_structuring_degree",
+      "score": 2,
+      "rationale": "Widersprüche und Kündigungen enthalten freien Text und teilweise gescannte Dokumente."
+    },
+    {
+      "criterionId": "decision_complexity",
+      "score": 1,
+      "rationale": "Viele Fälle sind regelgeleitet; einzelne Widersprüche verlangen fachliche Bewertung."
+    },
+    {
+      "criterionId": "autonomy_and_human_ai_collaboration",
+      "score": 2,
+      "rationale": "Routinevorbereitung und menschliche Vertragsfreigabe sind klar trennbar."
+    }
+  ],
+  "memoryFacts": [
+    {
+      "topic": "muster.md",
+      "fact": "Die Wohngebäude-Beitragsanpassung ist bei LifeCorp ein jährlicher Massenprozess mit rund 80.000 Verträgen."
+    },
+    {
+      "topic": "zustaendigkeiten.md",
+      "fact": "Das Aktuariat liefert Anpassungsfaktor und Stichtag; Vertrag bearbeitet Ausnahmen und Kundenreaktionen."
+    }
+  ]
+}

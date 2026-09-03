@@ -86,12 +86,12 @@ showcase is seeded once automatically. `DEMO_SEED=0` disables that.
 re-confirm → revert in chronological order so the archive shows exactly what the
 application produces. Nothing is written into `workspace/docs/` by hand.
 
-That seed also creates four evidence-backed hypotheses, all three oversight scenarios,
-and a completed agentic assessment for the flagship Leitungswasser process. The content
-is deterministic presentation data built through the opportunity and assessment
-repositories, with an explicit `deterministischer-demo-seed` operation trace and no
-provider invocation. It exists so browser, export, and video checks can cover the
-downstream review flow while preserving the production rule of one bounded AI run.
+That seed also creates six complete showcase journeys: synthetic alternating chat
+transcripts, zero to three selected uploads, sourced memory facts, evidence-backed
+hypotheses, all three oversight scenarios, and a completed agentic assessment. Their
+scores are 85, 79, 72, 58, 46, and 28. The content is deterministic presentation data
+built through the production repositories, with an explicit
+`deterministischer-demo-seed` trace and no provider invocation.
 
 `bun run seed:showcase` composes the 14 confirmed processes with four deliberate
 continuation states: review required, chat in progress, uploads ready, and not started.
@@ -101,20 +101,20 @@ continuation states: review required, chat in progress, uploads ready, and not s
 
 ## Where it lives
 
-| Layer    | Path                                                                                                                                                                                                                                                                       |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Fixtures | `LIFECORP.md`, `demo-data/*.md`, `demo-data/showcase.json`, `demo-data/szenarien/`, `demo-data/dokumentation/`                                                                                                                                                             |
-| Server   | `apps/server/src/demo-scenarios.ts`, `routes/demo.ts` (`GET /api/demo/szenarien`, `…/dateien/:zielname`)                                                                                                                                                                   |
-| Web      | `apps/web/src/components/demo-sidecar.tsx`                                                                                                                                                                                                                                 |
-| Scripts  | `scripts/seed-showcase.ts` (`bun run seed:showcase`), `scripts/seed-demo-process.ts` (`bun run seed`), `scripts/seed-documentation.ts` (`bun run seed:docs`), `scripts/documentation-fixtures.ts`, `scripts/showcase-opportunity-fixture.ts`, `scripts/reset-workspace.ts` |
-| Tests    | `tests/demo-data.test.ts`, `tests/documentation-seed.test.ts`, `tests/showcase-seed.test.ts`                                                                                                                                                                               |
+| Layer    | Path                                                                                                                                                                                                                                              |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fixtures | `LIFECORP.md`, `demo-data/*.md`, `demo-data/showcase.json`, `demo-data/szenarien/`, `demo-data/dokumentation/`, `demo-data/journeys/`                                                                                                             |
+| Server   | `apps/server/src/demo-scenarios.ts`, `routes/demo.ts` (`GET /api/demo/szenarien`, `…/dateien/:zielname`)                                                                                                                                          |
+| Web      | `apps/web/src/components/demo-sidecar.tsx`                                                                                                                                                                                                        |
+| Scripts  | `scripts/seed-showcase.ts`, `scripts/seed-demo-process.ts`, `scripts/seed-documentation.ts`, `scripts/documentation-fixtures.ts`, `scripts/showcase-journey-fixtures.ts`, `scripts/showcase-opportunity-fixture.ts`, `scripts/reset-workspace.ts` |
+| Tests    | `tests/demo-data.test.ts`, `tests/documentation-seed.test.ts`, `tests/showcase-journey-fixtures.test.ts`, `tests/showcase-seed.test.ts`, `e2e/seeded-portfolio-flow.pw.ts`                                                                        |
 
 ## Implementation status
 
 **Implemented.** Six capture scenarios, 14 confirmed documentation fixtures, four
-deliberate continuation states, a deterministic flagship opportunity/assessment result,
-the composed showcase seed, auto-seed on an empty workspace, the stage-aware sidecar, and
-the document-serving endpoint.
+deliberate continuation states, six deterministic end-to-end journeys with portfolio
+scores, the composed showcase seed, provider-free browser verification, auto-seed on an
+empty workspace, the stage-aware sidecar, and the document-serving endpoint.
 
 ## Constraints
 

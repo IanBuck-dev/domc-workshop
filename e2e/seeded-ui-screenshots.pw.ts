@@ -164,7 +164,7 @@ test("captures the deterministic German insurance showcase", async ({
   await expect(
     page.getByRole("heading", { name: "Ergebnisüberblick" }),
   ).toBeVisible();
-  await expect(page.getByText("15 von 32")).toBeVisible();
+  await expect(page.getByText("14 von 32")).toBeVisible();
   await save(page, "09-agentische-potenzialbewertung.png", false);
   const assessmentDownloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "Excel erstellen" }).click();

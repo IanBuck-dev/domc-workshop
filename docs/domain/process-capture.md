@@ -98,6 +98,11 @@ capture_in_progress ──► follow_up_required ──► synthesis_ready ─�
 card list entirely. Filtering has no debounce — the corpus and process counts are small
 enough that filtering on each keystroke is the simpler correct behaviour.
 
+For the KI Enabler, the table places the directional `Score` after the process name.
+It is available only from a current, completed agentic potential assessment; missing,
+incomplete, failed, or stale assessments display `–`. The initial view sorts scores
+descending and places processes without a score afterwards; every column remains sortable.
+
 Near-duplicate names are caught at creation: `GET /api/processes/similar` compares against
 `normalizedProcessName`.
 

@@ -228,6 +228,103 @@ export const agenticAssessmentResultSchema = z
   })
   .strict();
 
+export const agenticPotentialScoreSchema = z
+  .object({
+    value: z.number().int().min(0).max(100),
+    benefit: z.number().int().min(0).max(100),
+    feasibility: z.number().int().min(0).max(100),
+    aiSuitability: z.number().int().min(0).max(100),
+    scoredCriteria: z.number().int().min(0).max(24),
+  })
+  .strict();
+
+const agenticPotentialScoreCriteria = {
+  benefit: [
+    "strategic_fit",
+    "qualitative_process_improvement",
+    "customer_value",
+    "employee_value",
+    "temporal_process_improvement",
+    "risk_reduction",
+    "scalability",
+    "organizational_development",
+    "time_urgency",
+  ],
+  feasibility: [
+    "process_criticality",
+    "process_maturity",
+    "change_effort",
+    "experience_base",
+    "process_expertise",
+    "process_diversity",
+    "process_systems",
+    "process_data",
+  ],
+  aiSuitability: [
+    "context_understanding",
+    "data_structuring_degree",
+    "decision_complexity",
+    "ai_data_foundation",
+    "error_tolerance",
+    "explainability_need",
+    "autonomy_and_human_ai_collaboration",
+  ],
+} as const satisfies Record<string, readonly AssessableCriterionId[]>;
+
+function scoreGroup(
+  result: AgenticAssessmentResult,
+  criterionIds: readonly AssessableCriterionId[],
+) {
+  const byId = new Map(
+    result.criteria.map((criterion) => [criterion.criterionId, criterion]),
+  );
+  const scored = criterionIds
+    .map((criterionId) => byId.get(criterionId))
+    .filter(
+      (
+        criterion,
+      ): criterion is z.infer<typeof scoredCriterionAssessmentSchema> =>
+        criterion?.status === "scored",
+    );
+  if (scored.length < Math.ceil(criterionIds.length / 2)) return null;
+  return {
+    value: Math.round(
+      (scored.reduce((total, criterion) => total + criterion.score, 0) /
+        (scored.length * 2)) *
+        100,
+    ),
+    count: scored.length,
+  };
+}
+
+/**
+ * Portfolio index from the immutable, high-confidence assessment values.
+ * Missing criteria do not count as zero; every group needs at least 50%
+ * coverage before the directional score is shown.
+ */
+export function agenticPotentialScore(input: unknown) {
+  const result = agenticAssessmentResultSchema.parse(input);
+  const benefit = scoreGroup(result, agenticPotentialScoreCriteria.benefit);
+  const feasibility = scoreGroup(
+    result,
+    agenticPotentialScoreCriteria.feasibility,
+  );
+  const aiSuitability = scoreGroup(
+    result,
+    agenticPotentialScoreCriteria.aiSuitability,
+  );
+  if (!benefit || !feasibility || !aiSuitability) return null;
+  return agenticPotentialScoreSchema.parse({
+    value: Math.round(
+      benefit.value * 0.5 + feasibility.value * 0.3 + aiSuitability.value * 0.2,
+    ),
+    benefit: benefit.value,
+    feasibility: feasibility.value,
+    aiSuitability: aiSuitability.value,
+    scoredCriteria: benefit.count + feasibility.count + aiSuitability.count,
+  });
+}
+
 export function normalizeAgenticAssessment(
   input: unknown,
   sourceInput: unknown,
@@ -288,6 +385,15 @@ export const agenticAssessmentStates = [
   "failed",
 ] as const;
 export const agenticAssessmentStateSchema = z.enum(agenticAssessmentStates);
+export const agenticPotentialAssessmentSummarySchema = z
+  .object({
+    processId: z.string().regex(/^PROC-\d{4}$/),
+    state: agenticAssessmentStateSchema,
+    isStale: z.boolean(),
+    score: agenticPotentialScoreSchema.nullable(),
+    updatedAt: z.string().datetime(),
+  })
+  .strict();
 export function assertAgenticAssessmentTransition(
   fromInput: unknown,
   toInput: unknown,
@@ -446,5 +552,9 @@ export type AgenticAssessmentState = z.infer<
   typeof agenticAssessmentStateSchema
 >;
 export type CriterionAssessment = z.infer<typeof criterionAssessmentSchema>;
+export type AgenticPotentialScore = z.infer<typeof agenticPotentialScoreSchema>;
+export type AgenticPotentialAssessmentSummary = z.infer<
+  typeof agenticPotentialAssessmentSummarySchema
+>;
 export type AssessableCriterionId = z.infer<typeof assessableCriterionIdSchema>;
 export type ExcludedCriterionId = z.infer<typeof excludedCriterionIdSchema>;

@@ -163,9 +163,21 @@ here` before the suite could complete.
   both XLSX exports, and reported zero console errors or failed requests. The
   exact downloads pass ZIP integrity checks and the focused workbook/API tests.
 
+### E2E-015: Portfolio showed only one completed KI journey
+
+- Evidence: only the Leitungswasser process had stored scenarios and an assessment; the
+  other rows could not demonstrate progress or score ordering.
+- Fix: add six validated Journey fixtures with alternating synthetic chats, mixed uploads,
+  sourced memory facts, process-specific hypotheses, all three oversight scenarios, and
+  criterion-derived scores from 28 to 85. The local E2E command is provider-free; the real
+  Codex path moved behind the explicit `test:e2e:real` command.
+- Verification: `e2e/seeded-portfolio-flow.pw.ts` opens all six processes, verifies their
+  exact scores and conversations, visits scenarios and assessments, downloads twelve
+  workbooks, and completes without console errors or failed requests.
+
 ## Remaining acceptance evidence
 
-- One uninterrupted real Claude run through both Excel downloads.
+- One uninterrupted real Codex run through both Excel downloads.
 - No failed browser requests and no console errors during that run.
 
 ## Provider-free release evidence

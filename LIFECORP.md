@@ -105,6 +105,12 @@ Claude interpretiert. Es existiert keine deterministische OCR-Pipeline;
 materielle Angaben aus Bildern, Handschrift, Tabellen oder schlechter
 Scanqualität müssen Menschen bestätigen.
 
+Der Präsentationsstand enthält sechs vollständig chatbasierte Beispiel-Journeys.
+Sie zeigen bewusst unterschiedliche Potenziale: vom systemübergreifenden
+Zahlungs-Clearing über Schaden und Bestandsprozesse bis zum weitgehend regelbasierten
+Mahnverfahren. Die Gespräche und KI-Ergebnisse sind reproduzierbare Fixtures; ein realer
+Codex-Lauf wird nur separat für den Leitungswasserfall gestartet.
+
 ## Annahmen über die heutige Arbeitsweise
 
 - SharePoint Online enthält den initialen Prozesskatalog, Arbeitsanweisungen,

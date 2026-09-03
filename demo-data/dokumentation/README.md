@@ -54,6 +54,12 @@ zwischen November 2025 und Juli 2026:
 Die Rücknahme bei `beitragsanpassung-wohngebaeude` lässt das Archiv bewusst vom
 Quellstand abweichen — so hat der Abgleich in den Einstellungen etwas zu tun.
 
+Sechs dieser Prozesse besitzen zusätzlich eine Datei unter `../journeys/`. Der Seed
+verwebt deren Assistant-Fragen mit den `belege`-Antworten, lädt null bis drei fiktive
+Unterlagen über die normale Upload-Prüfung hoch und erzeugt danach Memory-Fakten,
+Potenzialhypothesen, alle drei Aufsichtsszenarien und eine abgeschlossene Bewertung.
+Keiner dieser Schritte startet einen KI-Provider.
+
 ## Dateiformat
 
 Geschrieben wird nur der deutsche Fachtext. Alles Mechanische — Kennungen,
@@ -65,6 +71,8 @@ Syntheseergebnis (`processUnderstandingSchema`, `validateProcessFlow`);
 
 - `belege` — die Gesprächsäußerungen. Sie werden als Chat-Nachrichten angelegt
   und sind die einzige zulässige Evidenzquelle.
+- `../journeys/<slug>.json` — synthetische Assistant-Fragen, Uploads, Potenziale,
+  Szenarien, Kriterienwerte und erwarteter Score für die sechs End-to-End-Fälle.
 - Inhaltsfelder (`zweck`, `ausloeser`, … `verbesserungsziele`) — entweder direkt
   der Wert oder `{ "wert": …, "belege": ["b1"], "konfidenz": 90 }`. Ohne Belege
   gilt eine Angabe als abgeleitet (`ai_inferred`), mit Belegen als genannt

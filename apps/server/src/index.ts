@@ -32,7 +32,10 @@ import { pddExportRoutes } from "./routes/pdd-exports.ts";
 import { PddExportRepository } from "../../../packages/storage/src/pdd-export-repository.ts";
 import { AgenticPotentialAssessmentRepository } from "../../../packages/storage/src/agentic-potential-assessment-repository.ts";
 import { AgenticPotentialAssessmentService } from "./agentic-potential-assessment-service.ts";
-import { agenticPotentialAssessmentRoutes } from "./routes/agentic-potential-assessments.ts";
+import {
+  agenticPotentialAssessmentRoutes,
+  agenticPotentialAssessmentSummaryRoutes,
+} from "./routes/agentic-potential-assessments.ts";
 import { createAiRuntimeFactory } from "./ai-runtime-factory.ts";
 import {
   workspacePath,
@@ -165,6 +168,14 @@ app.route(
     opportunityAi,
     undefined,
     opportunityService,
+  ),
+);
+app.route(
+  "/api/agentic-assessments",
+  agenticPotentialAssessmentSummaryRoutes(
+    processRepo,
+    opportunityRepo,
+    agenticAssessmentRepo,
   ),
 );
 app.route(

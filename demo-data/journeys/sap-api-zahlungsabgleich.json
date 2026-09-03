@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "slug": "sap-api-zahlungsabgleich",
+  "expectedScore": 46,
+  "documents": [
+    {
+      "source": "demo-data/journeys/documents/sap-api-datenvertrag.md",
+      "targetName": "Entwurf_Datenvertrag_SAP-KOMPASS.md",
+      "mediaType": "md"
+    },
+    {
+      "source": "demo-data/journeys/documents/sap-api-testfaelle.csv",
+      "targetName": "Testfaelle_SAP-KOMPASS.csv",
+      "mediaType": "csv"
+    }
+  ],
+  "conversation": [
+    {
+      "assistant": "Welchen fachlichen Zweck hat die neue Schnittstelle und wer grenzt den Auftrag ab?",
+      "userEvidenceId": "b1"
+    },
+    {
+      "assistant": "Welche Daten müssen zwischen SAP S/4HANA und KOMPASS eindeutig vereinbart werden?",
+      "userEvidenceId": "b2"
+    },
+    {
+      "assistant": "Wie werden Berechtigungen, Schutzbedarf und technische Identität festgelegt?",
+      "userEvidenceId": "b3"
+    },
+    {
+      "assistant": "Wie sieht die eigentliche Umsetzung und Absicherung über Azure API Management aus?",
+      "userEvidenceId": "b4"
+    },
+    {
+      "assistant": "Welche fachlichen und technischen Tests sind vor der Freigabe entscheidend?",
+      "userEvidenceId": "b5"
+    },
+    {
+      "assistant": "Wer gibt die Schnittstelle frei und welche Unterlagen gehen in den Betrieb?",
+      "userEvidenceId": "b6"
+    }
+  ],
+  "hypotheses": [
+    {
+      "stepOrder": 2,
+      "title": "Datenvertrag aus Anforderungen und Beispielen konsistent vorbereiten",
+      "currentSituation": "Fachliche Anforderungen und Beispiele liegen in getrennten Dokumenten und müssen manuell in einen Datenvertrag überführt werden.",
+      "aiContribution": "Ein Agent extrahiert Felder, Regeln und Widersprüche, verknüpft sie mit Beispielen und erzeugt einen prüfbaren Vertragsentwurf.",
+      "aiCapabilities": ["interpretation", "generation"],
+      "expectedChange": "Fachbereich und Integrationsteam prüfen einen belegten Entwurf statt Informationen manuell zusammenzutragen.",
+      "deterministicAutomation": [
+        "Feldnamen und Datentypen validieren",
+        "Pflichtfelder gegen Schema prüfen"
+      ],
+      "requiredAccess": [
+        "Anforderungsdokumente und Beispieldaten",
+        "Schnittstellenkatalog"
+      ],
+      "humanRole": "Fachbereich und API-Team bestätigen Bedeutung, Semantik und Version des Datenvertrags.",
+      "potentialLevel": "medium",
+      "potentialRationale": "Die Vorbereitung spart Abstimmung, ersetzt aber weder Architekturentscheidung noch Implementierung.",
+      "confidenceLevel": "high",
+      "confidenceRationale": "Dokumente, Rollen und Zielartefakt sind im Prozess benannt.",
+      "assumptions": [],
+      "openQuestions": []
+    },
+    {
+      "stepOrder": 5,
+      "title": "Testfälle und Nachweise systematisch vervollständigen",
+      "currentSituation": "Normale und verspätete Buchungen sowie widersprüchliche Referenzen müssen über verteilte Beispiele geprüft werden.",
+      "aiContribution": "Der Agent ordnet Anforderungen zu Testfällen, markiert fehlende Fehlerfälle und fasst Nachweise für die Freigabe zusammen.",
+      "aiCapabilities": ["interpretation", "recommendation", "generation"],
+      "expectedChange": "Review und Freigabe erhalten eine nachvollziehbare Abdeckung statt einer manuell gepflegten Sammlung.",
+      "deterministicAutomation": [
+        "Schema- und Vertragstests ausführen",
+        "erwartete Statuscodes prüfen"
+      ],
+      "requiredAccess": ["Testfälle, API-Spezifikation und Testprotokolle"],
+      "humanRole": "Entwicklung, Fachbereich und Security bewerten Ergebnisse und geben die Schnittstelle frei.",
+      "potentialLevel": "medium",
+      "potentialRationale": "KI unterstützt Vollständigkeit und Nachvollziehbarkeit, die technische Arbeit bleibt weitgehend klassisch.",
+      "confidenceLevel": "high",
+      "confidenceRationale": "Testarten, Fehlerfälle und Freigaben sind bestätigt.",
+      "assumptions": [],
+      "openQuestions": []
+    }
+  ],
+  "scenario": {
+    "titles": {
+      "assistive": "Assistierte API-Spezifikation",
+      "delegated": "Delegierte Test- und Nachweisvorbereitung",
+      "agentic": "Agentischer API-Delivery-Begleiter"
+    },
+    "summaries": {
+      "assistive": "Die KI erstellt Entwürfe und Prüflisten; das Team stößt alle Arbeiten an.",
+      "delegated": "Der Agent hält Anforderungen, Testabdeckung und Nachweise selbstständig synchron, legt Änderungen aber zur Prüfung vor.",
+      "agentic": "Der Agent koordiniert Spezifikation, Testfälle und Freigaben; Implementierung, Berechtigungen und Deployment bleiben beim IT-Team."
+    },
+    "targetStates": {
+      "assistive": "Teams erhalten konsistente Entwürfe für Datenvertrag und Testabdeckung.",
+      "delegated": "Dokumentenabgleich und Nachweisführung laufen innerhalb definierter Repository- und Testgrenzen.",
+      "agentic": "Der Agent hält das Delivery-Paket konsistent und eskaliert fachliche, Security- oder Betriebsentscheidungen."
+    },
+    "changesFromToday": [
+      "Anforderungen und Beispiele werden gemeinsam ausgewertet.",
+      "Testfälle werden auf Anforderungen zurückgeführt.",
+      "Freigaben erhalten ein vollständiges Nachweispaket."
+    ],
+    "aiResponsibilities": [
+      "Feld- und Regelentwürfe aus Quellen ableiten",
+      "Widersprüche und fehlende Tests markieren",
+      "Freigabenachweise zusammenstellen"
+    ],
+    "deterministicAutomation": [
+      "Schemas validieren",
+      "API-Vertragstests ausführen",
+      "Build- und Deployment-Gates prüfen"
+    ],
+    "orchestration": [
+      "Fachbereich, Integration, Security und Betrieb entlang offener Punkte koordinieren"
+    ],
+    "humanResponsibilities": [
+      "Architektur und Datenvertrag freigeben",
+      "Berechtigungen genehmigen",
+      "Code ändern und produktiv deployen"
+    ],
+    "humanOversight": [
+      "Keine Code- oder Infrastrukturänderung ohne Review",
+      "Security und Betrieb bestätigen ihre Leitplanken"
+    ],
+    "informationAndDocuments": [
+      "fachliche Anforderungen",
+      "Datenvertrag",
+      "Testfälle und Protokolle",
+      "Betriebs- und Berechtigungskonzept"
+    ],
+    "systemTargets": [
+      "SAP S/4HANA",
+      "KOMPASS",
+      "Azure API Management",
+      "Microsoft Entra ID",
+      "Microsoft Purview"
+    ],
+    "prerequisites": [
+      "Repository- und Testzugriffe sind begrenzt.",
+      "Fachliche Beispiele enthalten keine realen Kundendaten."
+    ],
+    "risks": [
+      "Ein Feld wird semantisch falsch interpretiert.",
+      "Ein generierter Test deckt den produktiven Fehlerfall nicht ab."
+    ],
+    "assumptions": [
+      "Spezifikation und Testnachweise stehen maschinenlesbar bereit."
+    ],
+    "openQuestions": [
+      "Welche Repository-Aktionen darf der Agent später selbstständig ausführen?"
+    ],
+    "confidenceLevel": "medium",
+    "confidenceRationale": "Artefakte und Kontrollpunkte sind klar; konkrete Toolzugriffe und Betriebsmodell bleiben offen."
+  },
+  "assessment": [
+    {
+      "criterionId": "strategic_fit",
+      "score": 2,
+      "rationale": "Die Schnittstelle ist ein Enabler für den agentischen Zahlungsabgleich."
+    },
+    {
+      "criterionId": "qualitative_process_improvement",
+      "score": 1,
+      "rationale": "Konsistentere Spezifikationen und Nachweise verbessern die Delivery, ersetzen sie aber nicht."
+    },
+    {
+      "criterionId": "customer_value",
+      "score": 0,
+      "rationale": "Der Nutzen entsteht zunächst intern und erreicht Kunden nur indirekt."
+    },
+    {
+      "criterionId": "employee_value",
+      "score": 1,
+      "rationale": "Abgleich und Dokumentation werden leichter, der technische Kernaufwand bleibt bestehen."
+    },
+    {
+      "criterionId": "temporal_process_improvement",
+      "score": 2,
+      "rationale": "Weniger Abstimmungsschleifen können Spezifikation und Testvorbereitung deutlich beschleunigen."
+    },
+    {
+      "criterionId": "process_criticality",
+      "score": 0,
+      "rationale": "Fehlerhafte Zahlungs- oder Berechtigungsdaten sind produktiv kritisch."
+    },
+    {
+      "criterionId": "process_maturity",
+      "score": 1,
+      "rationale": "Delivery-Schritte sind etabliert, Anforderungen bleiben über Dokumente verteilt."
+    },
+    {
+      "criterionId": "change_effort",
+      "score": 0,
+      "rationale": "Integration, Security, Betrieb und produktive API-Änderungen verursachen hohen Aufwand."
+    },
+    {
+      "criterionId": "process_expertise",
+      "score": 2,
+      "rationale": "Rollen, Artefakte, Tests und Freigaben sind im Prozessbild umfassend beschrieben."
+    },
+    {
+      "criterionId": "context_understanding",
+      "score": 1,
+      "rationale": "Fachliche Semantik muss verstanden werden, bleibt aber auf einen klaren Datenvertrag begrenzt."
+    },
+    {
+      "criterionId": "data_structuring_degree",
+      "score": 0,
+      "rationale": "Spezifikation, Schemas und Testfälle sind überwiegend strukturiert."
+    },
+    {
+      "criterionId": "decision_complexity",
+      "score": 1,
+      "rationale": "Vollständigkeitsvorschläge benötigen Bewertung, Architekturentscheidungen bleiben menschlich."
+    },
+    {
+      "criterionId": "error_tolerance",
+      "score": 0,
+      "rationale": "Fehler in Datenvertrag oder Berechtigung sind vor Produktivsetzung nicht tolerierbar."
+    }
+  ],
+  "memoryFacts": [
+    {
+      "topic": "systeme.md",
+      "fact": "LifeCorp stellt APIs zwischen SAP S/4HANA und KOMPASS über Azure API Management und Microsoft Entra ID bereit."
+    },
+    {
+      "topic": "zustaendigkeiten.md",
+      "fact": "API-Team, Fachbereich, Security und Betrieb geben Datenvertrag, Berechtigung und Produktivsetzung gemeinsam frei."
+    }
+  ]
+}
