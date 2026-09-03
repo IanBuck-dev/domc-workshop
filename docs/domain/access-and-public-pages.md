@@ -63,7 +63,14 @@ in `App.tsx`:
 | `/datenschutz`      | privacy notice                                    |
 | `/nutzungshinweise` | usage notice                                      |
 
-`PublicFooter` links all three from both the public and the authenticated shell.
+`PublicFooter` links all three from both the public and the authenticated shell. A fourth
+link, _Open-Source-Lizenzen_, serves the generated `THIRD_PARTY_NOTICES.txt` directly;
+license notices stay out of the statutory imprint copy.
+
+The repository-root `THIRD_PARTY_NOTICES.txt` is generated from the installed production
+dependency closure by `bun run licenses`. Every build first checks that it is current.
+Vite emits the same bytes into the public web build, and release builds additionally copy
+it beside the standalone executables and into every ZIP package.
 
 Their content is **not** hardcoded. `apps/server/src/public-site-information.ts` loads
 `.local/public-site-information.json` (override with `PUBLIC_SITE_INFORMATION_PATH`) and
@@ -88,15 +95,16 @@ The reader-facing German artefacts belong to this domain too:
 | Server  | `apps/server/src/session.ts`, `routes/auth.ts`, `public-site-information.ts`, `index.ts` (mounting `requireSession`)                                                                                                      |
 | Web     | `apps/web/src/App.tsx`, `pages/login-page.tsx`, `imprint-page.tsx`, `privacy-page.tsx`, `usage-notice-page.tsx`; `components/app-boot-screen.tsx`, `demo-data-warning.tsx`, `public-footer.tsx`, `public-page-layout.tsx` |
 | Config  | `.local/public-site-information.json` (gitignored), env `APP_AUTH_USERNAME`, `APP_AUTH_PASSWORD_HASH`, `APP_SESSION_SECRET` (≥32 chars)                                                                                   |
-| Scripts | `scripts/check-public-site-information.ts`, `scripts/check-environment.ts`                                                                                                                                                |
-| Tests   | `tests/auth.test.ts`, `login-ui.test.ts`, `public-pages-ui.test.ts`, `public-site-information.test.ts`, `demo-data-warning.test.ts`                                                                                       |
+| Scripts | `scripts/check-public-site-information.ts`, `scripts/check-environment.ts`, `scripts/generate-third-party-notices.ts`                                                                                                     |
+| Tests   | `tests/auth.test.ts`, `login-ui.test.ts`, `public-pages-ui.test.ts`, `public-site-information.test.ts`, `demo-data-warning.test.ts`, `third-party-notices.test.ts`                                                        |
 
 ## Implementation status
 
 **Implemented.** Hashed credentials with rate limiting, the signed 8-hour session cookie
 with strict flags and constant-time comparison, the blanket API gate, the boot screen, the
 dismissible demo-data warning, and all three public pages driven by validated,
-repository-external operator data. Five test files cover it.
+repository-external operator data. Generated third-party notices are linked globally and
+shipped with every build artifact. Six test files cover it.
 
 ## Constraints
 

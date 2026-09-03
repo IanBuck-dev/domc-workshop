@@ -44,25 +44,6 @@ export function ImprintPage() {
               <p>{information.supervisoryAuthority}</p>
             </section>
           )}
-          {/* OFL-1.1 requires the copyright and licence notice to travel with
-              the font files, which Vite emits into the bundle. This is where
-              that notice lives — keep it in sync with --font-sans in styles.css. */}
-          <section className="space-y-2">
-            <h2 className="text-heading">Schriftlizenz</h2>
-            <p className="text-ui text-muted-foreground">
-              Diese Anwendung verwendet die Schriftart Geist, Copyright 2024 The
-              Geist Project Authors, lizenziert unter der SIL Open Font License
-              1.1.{" "}
-              <a
-                className="font-medium text-primary hover:underline"
-                href="https://openfontlicense.org"
-                rel="noreferrer noopener"
-                target="_blank"
-              >
-                Lizenztext
-              </a>
-            </p>
-          </section>
           <p className="border-t pt-5 text-ui text-muted-foreground">
             Stand: {formatDate(information.lastUpdated)}
           </p>

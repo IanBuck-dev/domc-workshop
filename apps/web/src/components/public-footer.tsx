@@ -21,6 +21,12 @@ export function PublicFooter() {
         >
           Nutzungshinweise
         </a>
+        <a
+          className="hover:text-foreground hover:underline"
+          href="/THIRD_PARTY_NOTICES.txt"
+        >
+          Open-Source-Lizenzen
+        </a>
       </nav>
     </footer>
   );

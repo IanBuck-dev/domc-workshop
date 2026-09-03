@@ -1,6 +1,11 @@
 import { rm, mkdir, cp, chmod } from "node:fs/promises";
 import { join, resolve } from "node:path";
 const mode = process.argv[2] ?? "web";
+const notices = Bun.spawn(
+  ["bun", "run", "scripts/generate-third-party-notices.ts", "--check"],
+  { stdout: "inherit", stderr: "inherit" },
+);
+if (await notices.exited) process.exit(1);
 await rm("dist", { recursive: true, force: true });
 const vite = Bun.spawn(
   [
@@ -24,6 +29,7 @@ if (mode === "release") {
   if (await publicInformation.exited) process.exit(1);
   await mkdir("dist/defaults", { recursive: true });
   await cp("defaults", "dist/defaults", { recursive: true });
+  await cp("THIRD_PARTY_NOTICES.txt", "dist/THIRD_PARTY_NOTICES.txt");
   for (const [target, out] of [
     ["bun-darwin-arm64", "dist/Zukunftswerkstatt-macos-arm64"],
     ["bun-windows-x64", "dist/Zukunftswerkstatt-windows-x64.exe"],
@@ -52,6 +58,10 @@ if (mode === "release") {
     await cp(join("dist", executable), join(staging, executable));
     await cp("dist/web", join(staging, "web"), { recursive: true });
     await cp("dist/defaults", join(staging, "defaults"), { recursive: true });
+    await cp(
+      "THIRD_PARTY_NOTICES.txt",
+      join(staging, "THIRD_PARTY_NOTICES.txt"),
+    );
     if (platform !== "windows-x64")
       await chmod(join(staging, executable), 0o755);
     const zipPath = resolve(`dist/Zukunftswerkstatt-${platform}.zip`);

@@ -19,6 +19,8 @@
     "test:e2e:local": "bun run scripts/run-local-e2e.ts",
     "test:e2e:local:headed": "bun run scripts/run-local-e2e.ts --headed",
     "screenshots:local": "bun run scripts/run-local-e2e.ts --screenshots",
+    "licenses": "bun run scripts/generate-third-party-notices.ts",
+    "licenses:check": "bun run scripts/generate-third-party-notices.ts --check",
     "icons": "bun run scripts/generate-icons.ts",
     "seed": "bun run scripts/seed-demo-process.ts",
     "seed:docs": "bun run scripts/seed-documentation.ts",
