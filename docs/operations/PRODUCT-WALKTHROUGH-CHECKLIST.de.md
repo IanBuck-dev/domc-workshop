@@ -115,23 +115,24 @@ Vollständigkeitsprüfung und keine individuelle Rechtsberatung.
 - [ ] Falls die Seite später geschäftsmäßig oder für Vertragsabschlüsse genutzt wird:
       DDG-Anwendbarkeit neu bewerten und einen zweiten schnellen Kontaktweg vorsehen.
 - [x] Bibliotheksnamen gehören nicht in die gesetzlichen Betreiberangaben des Impressums.
-- [!] Vollständige Drittanbieter-Lizenztexte und Copyright-Hinweise werden mit Web-App
-  und Downloadpaketen ausgeliefert.
-- [!] Die ausgelieferten Geist-WOFF2-Dateien enthalten den vollständigen
-  OFL-1.1-Lizenztext oder werden von einer mitgelieferten Lizenzdatei begleitet.
-- [ ] Eine repository-eigene Datei `THIRD_PARTY_NOTICES` ist die einzige Quelle für
+- [x] Vollständige Drittanbieter-Lizenztexte und Copyright-Hinweise werden mit Web-App
+      und Downloadpaketen ausgeliefert.
+- [x] Die ausgelieferten Geist-WOFF2-Dateien enthalten den vollständigen
+      OFL-1.1-Lizenztext oder werden von einer mitgelieferten Lizenzdatei begleitet.
+- [x] Eine repository-eigene Datei `THIRD_PARTY_NOTICES.txt` ist die einzige Quelle für
       Drittanbieterhinweise; der Build kopiert sie unverändert in die ausgelieferte
       Web-App und jedes Downloadpaket.
 
 Nachweis:
 
 > Live-Konfiguration enthält Name, dreizeilige Anschrift und E-Mail; optionale Felder für
-> USt-ID, Register und Aufsicht sind `null`. Das Release enthält keine `LICENSE`,
-> `NOTICE`- oder `THIRD_PARTY_NOTICES`-Datei. Installiert sind 496 Paketversionen über
-> Laufzeit und Entwicklung: überwiegend MIT, außerdem Apache-2.0, ISC, BSD, OFL-1.1 und
-> weitere permissive Lizenzen. Browser und kompilierte Releasepakete enthalten
-> Drittanbietercode; der sichtbare Geist-Kurztext mit externem Link ersetzt die
-> vollständigen Auslieferungshinweise nicht zuverlässig. Fehler W-002 erfasst.
+> USt-ID, Register und Aufsicht sind `null`. `THIRD_PARTY_NOTICES.txt` wird
+> deterministisch aus der plattformunabhängigen Laufzeit-Abhängigkeitsmenge erzeugt.
+> Web-Build und alle drei Releasepakete enthalten die Datei einschließlich der
+> vollständigen Geist-OFL. Auf allen öffentlichen Seiten verlinkt der globale Footer
+> `Open-Source-Lizenzen`; der frühere Geist-Kurztext wurde aus dem Impressum entfernt.
+> Playwright prüfte die Live-Seite ohne Konsolen- oder Netzwerkfehler. Fehler W-002 ist
+> behoben.
 
 Quellenstand 2026-09-03:
 
@@ -547,10 +548,10 @@ Nachweis:
 
 ## Fehlerprotokoll
 
-| ID    | Bereich     | Beobachtung                                                                             | Reproduktion                                                                           | Erwartung                                                                                                                                       | Schwere | Status |
-| ----- | ----------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------ |
-| W-001 | Datenschutz | Seite nennt `Anthropic` und `Claude-CLI`, Dienst nutzt `codex-cli`.                     | Ohne Anmeldung `/datenschutz` öffnen, Abschnitt 7 lesen.                               | Anbieterneutrale oder zur aktiven Konfiguration passende Information.                                                                           | Hoch    | Offen  |
-| W-002 | Lizenzen    | Web-Build und Releasepakete enthalten keine vollständigen Drittanbieter-Lizenzhinweise. | Release bauen; `dist/` nach `LICENSE`, `NOTICE` und `THIRD_PARTY_NOTICES` durchsuchen. | Repository-Datei `THIRD_PARTY_NOTICES` als Quelle; unverändert in Web-Build und Downloadpakete kopiert, einschließlich vollständiger Geist-OFL. | Hoch    | Offen  |
+| ID    | Bereich     | Beobachtung                                                                              | Reproduktion                                                                           | Erwartung                                                                                                                                           | Schwere | Status   |
+| ----- | ----------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
+| W-001 | Datenschutz | Seite nennt `Anthropic` und `Claude-CLI`, Dienst nutzt `codex-cli`.                      | Ohne Anmeldung `/datenschutz` öffnen, Abschnitt 7 lesen.                               | Anbieterneutrale oder zur aktiven Konfiguration passende Information.                                                                               | Hoch    | Offen    |
+| W-002 | Lizenzen    | Web-Build und Releasepakete enthielten keine vollständigen Drittanbieter-Lizenzhinweise. | Release bauen; `dist/` nach `LICENSE`, `NOTICE` und `THIRD_PARTY_NOTICES` durchsuchen. | Repository-Datei `THIRD_PARTY_NOTICES.txt` als Quelle; unverändert in Web-Build und Downloadpakete kopiert, einschließlich vollständiger Geist-OFL. | Hoch    | Erledigt |
 
 ## Abschlussentscheidung
 
