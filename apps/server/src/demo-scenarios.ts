@@ -28,24 +28,59 @@ export const demoDokumentSchema = z.object({
 });
 export type DemoDokument = z.infer<typeof demoDokumentSchema>;
 
-export const demoSzenarioSchema = z.object({
-  slug: z.string().trim().min(1),
-  titel: z.string().trim().min(1),
-  cover: z.object({
-    department: z.string().trim().min(1),
-    participantName: z.string().trim().min(1),
-    participantEmail: z.email(),
-    processName: z.string().trim().min(1),
-  }),
-  interactionMode: z.enum(["chat", "form"]),
-  dokumente: z.array(demoDokumentSchema).max(5).default([]),
-  formular: z
-    .object({
-      antworten: z.record(z.string(), z.string()),
-      arbeitsmerkmale: z.record(z.string(), z.array(z.string())),
-    })
-    .optional(),
-});
+export const demoSzenarioSchema = z
+  .object({
+    slug: z.string().trim().min(1),
+    titel: z.string().trim().min(1),
+    cover: z.object({
+      department: z.string().trim().min(1),
+      participantName: z.string().trim().min(1),
+      participantEmail: z.email(),
+      processName: z.string().trim().min(1),
+    }),
+    interactionMode: z.enum(["chat", "form"]),
+    showcase: z
+      .object({
+        state: z.enum([
+          "not_started",
+          "uploads_ready",
+          "chat_in_progress",
+          "review_required",
+        ]),
+        completedTurns: z.number().int().min(1).max(5).optional(),
+      })
+      .strict()
+      .optional(),
+    dokumente: z.array(demoDokumentSchema).max(5).default([]),
+    formular: z
+      .object({
+        antworten: z.record(z.string(), z.string()),
+        arbeitsmerkmale: z.record(z.string(), z.array(z.string())),
+      })
+      .optional(),
+  })
+  .superRefine((scenario, ctx) => {
+    if (
+      scenario.showcase?.state === "chat_in_progress" &&
+      scenario.showcase.completedTurns === undefined
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["showcase", "completedTurns"],
+        message:
+          "Ein laufender Showcase-Chat braucht mindestens einen abgeschlossenen Zug.",
+      });
+    if (
+      scenario.showcase?.state !== "chat_in_progress" &&
+      scenario.showcase?.completedTurns !== undefined
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["showcase", "completedTurns"],
+        message:
+          "Abgeschlossene Züge sind nur für einen laufenden Showcase-Chat erlaubt.",
+      });
+  });
 export type DemoSzenario = z.infer<typeof demoSzenarioSchema>;
 
 export const demoZugSchema = z.object({

@@ -13,6 +13,7 @@
  *   bun run seed --list
  *   bun run seed <slug>
  *   bun run seed --alle
+ *   bun run seed --showcase
  *   bun run seed kfz-glasschaden --stufe bestaetigt
  */
 import { existsSync } from "node:fs";
@@ -29,23 +30,32 @@ import { ProcessCaptureRepository } from "../packages/storage/src/process-captur
 import { ChatCaptureRepository } from "../packages/storage/src/chat-capture-repository.ts";
 import {
   processCaptureConfigSchema,
+  processDefinitionDraftSchema,
   processUnderstandingSchema,
   type ProcessCaptureConfig,
+  type ProcessCaptureRecord,
   type UploadRecord,
 } from "../packages/domain/src/process-understanding.ts";
 import { createOpportunityProcessSnapshot } from "../packages/domain/src/opportunity-discovery.ts";
+import {
+  documentationFixtureSchema,
+  expandCurrentStateDetails,
+  expandUnderstanding,
+  inhaltAt,
+} from "./documentation-fixtures.ts";
 
 class SeedError extends Error {}
 
 function parseArgs(argv: string[]) {
   const list = argv.includes("--list");
   const alle = argv.includes("--alle");
+  const showcase = argv.includes("--showcase");
   const stufeIndex = argv.indexOf("--stufe");
   const stufe = stufeIndex === -1 ? undefined : argv[stufeIndex + 1];
   const slug = argv.find(
     (value, index) => !value.startsWith("--") && argv[index - 1] !== "--stufe",
   );
-  return { list, alle, stufe, slug };
+  return { list, alle, showcase, stufe, slug };
 }
 
 async function loadConfig(): Promise<ProcessCaptureConfig> {
@@ -76,6 +86,7 @@ function printTable(szenarien: DemoScenarioWithScript[]) {
     modus: szenario.interactionMode === "chat" ? "Chat" : "Formular",
     dokumente: String(szenario.dokumente.length),
     zuege: String(szenario.zuege.length),
+    showcase: szenario.showcase?.state ?? "Referenz",
   }));
   const header = {
     slug: "Slug",
@@ -84,6 +95,7 @@ function printTable(szenarien: DemoScenarioWithScript[]) {
     modus: "Modus",
     dokumente: "Dokumente",
     zuege: "Vorschläge",
+    showcase: "Showcase-Zustand",
   };
   const columns = Object.keys(header) as (keyof typeof header)[];
   const widths = Object.fromEntries(
@@ -114,6 +126,7 @@ async function confirmWithUnderstanding(
   chatRepo: ChatCaptureRepository,
   szenario: DemoScenarioWithScript,
   processId: string,
+  initialRecord: ProcessCaptureRecord,
   uploadsByName: Map<string, UploadRecord>,
 ) {
   const pfad = join(
@@ -185,9 +198,23 @@ async function confirmWithUnderstanding(
   });
 
   await chatRepo.updateState(processId, {
+    documentGate: documentCoverage.length ? "documents_selected" : "skipped",
     selectedUploadIds: documentCoverage.map((eintrag) => eintrag.uploadId),
   });
-  await repo.finalizeChatCapture(processId, understanding, "complete");
+  const definition =
+    initialRecord.profile.version === 3 && initialRecord.currentStateDetails
+      ? processDefinitionDraftSchema.parse({
+          schemaVersion: 1,
+          understanding,
+          currentStateDetails: initialRecord.currentStateDetails,
+        })
+      : undefined;
+  await repo.finalizeChatCapture(
+    processId,
+    understanding,
+    "complete",
+    definition,
+  );
 
   const bestaetigt = await repo.required(processId);
   if (bestaetigt.state !== "confirmed")
@@ -196,6 +223,148 @@ async function confirmWithUnderstanding(
     );
   createOpportunityProcessSnapshot(bestaetigt);
   return bestaetigt;
+}
+
+async function seedChatInProgress(
+  chatRepo: ChatCaptureRepository,
+  szenario: DemoScenarioWithScript,
+  processId: string,
+  uploadsByName: Map<string, UploadRecord>,
+) {
+  const completedTurns = szenario.showcase?.completedTurns ?? 0;
+  const selectedUploadIds = [...uploadsByName.values()].map(
+    (upload) => upload.id,
+  );
+  await chatRepo.updateState(processId, {
+    documentGate: selectedUploadIds.length ? "documents_selected" : "skipped",
+    selectedUploadIds,
+    lastTurnOutcome: "completed",
+  });
+  let lastTurnAt: string | null = null;
+  for (const zug of szenario.zuege.slice(0, completedTurns)) {
+    const turnId = crypto.randomUUID();
+    const at = new Date(Date.now() + zug.nummer * 1_000).toISOString();
+    lastTurnAt = at;
+    await chatRepo.append(processId, {
+      schemaVersion: 2,
+      id: crypto.randomUUID(),
+      turnId,
+      at,
+      role: "user",
+      status: "complete",
+      text: zug.antwort,
+      mentions: [],
+      action:
+        zug.nummer === 1 && selectedUploadIds.length
+          ? "analyze_documents"
+          : "message",
+    });
+    await chatRepo.append(processId, {
+      schemaVersion: 2,
+      id: crypto.randomUUID(),
+      turnId,
+      at: new Date(new Date(at).getTime() + 500).toISOString(),
+      role: "assistant",
+      status: "complete",
+      text:
+        zug.nummer === completedTurns
+          ? "Damit sind Ablauf und Quellen klarer. Als Nächstes brauche ich noch Mengen, Bearbeitungszeiten, Kontrollen und die wichtigsten Ausnahmen."
+          : "Verstanden. Ich halte diese Angaben mit ihrem Quellenbezug fest und gehe den Ablauf weiter mit Ihnen durch.",
+      mentions: [],
+      action: "message",
+    });
+  }
+  await chatRepo.updateSession(processId, {
+    activeSessionStarted: true,
+    lastTurnAt,
+  });
+}
+
+async function seedReviewRequired(
+  repo: ProcessCaptureRepository,
+  chatRepo: ChatCaptureRepository,
+  szenario: DemoScenarioWithScript,
+  processId: string,
+  initialRecord: ProcessCaptureRecord,
+  uploadsByName: Map<string, UploadRecord>,
+) {
+  const path = join(
+    demoDataRoot(),
+    "szenarien",
+    szenario.slug,
+    "aufnahme.json",
+  );
+  if (!existsSync(path))
+    throw new SeedError(
+      `Für den Review-Zustand von „${szenario.slug}" fehlt aufnahme.json.`,
+    );
+  const fixture = documentationFixtureSchema.parse(
+    JSON.parse(await readFile(path, "utf8")),
+  );
+  const evidenceIds = new Map<string, string>();
+  for (const beleg of fixture.belege) {
+    const id = crypto.randomUUID();
+    evidenceIds.set(beleg.id, id);
+    await chatRepo.append(processId, {
+      schemaVersion: 2,
+      id,
+      turnId: null,
+      at: fixture.erstelltAm,
+      role: "user",
+      status: "complete",
+      text: beleg.text,
+      mentions: [],
+      action: "message",
+    });
+  }
+  const expandedUnderstanding = expandUnderstanding(
+    fixture,
+    inhaltAt(fixture, 0),
+    evidenceIds,
+  );
+  const selectedUploads = [...uploadsByName.values()];
+  const understanding = processUnderstandingSchema.parse({
+    ...expandedUnderstanding,
+    documentCoverage: selectedUploads.map((upload) => ({
+      uploadId: upload.id,
+      name: upload.name,
+      status: "complete",
+      processedCharacters: null,
+      limitation: null,
+    })),
+  });
+  if (!initialRecord.currentStateDetails)
+    throw new SeedError(
+      `Der Review-Prozess „${szenario.slug}" besitzt keine Ist-Prozessdefinition.`,
+    );
+  const currentStateDetails = expandCurrentStateDetails(
+    fixture,
+    inhaltAt(fixture, 0),
+    understanding,
+    initialRecord.currentStateDetails,
+  );
+  const definition = processDefinitionDraftSchema.parse({
+    schemaVersion: 1,
+    understanding,
+    currentStateDetails,
+  });
+  const selectedUploadIds = selectedUploads.map((upload) => upload.id);
+  await chatRepo.updateState(processId, {
+    documentGate: selectedUploadIds.length ? "documents_selected" : "skipped",
+    selectedUploadIds,
+    lastTurnOutcome: "completed",
+  });
+  await repo.finalizeChatCapture(
+    processId,
+    understanding,
+    "with_gaps",
+    definition,
+  );
+  await repo.correctUnderstanding(
+    processId,
+    understanding,
+    "Das erzeugte Prozessbild wartet auf die fachliche Prüfung durch die Teamleitung.",
+  );
 }
 
 async function seedScenario(
@@ -234,8 +403,31 @@ async function seedScenario(
       chatRepo,
       szenario,
       record.id,
+      record,
       uploadsByName,
     );
+  else if (stufe === "showcase") {
+    const state = szenario.showcase?.state;
+    if (!state)
+      throw new SeedError(
+        `Für „${szenario.slug}" ist kein Showcase-Zustand definiert.`,
+      );
+    if (state === "not_started" && uploadsByName.size)
+      throw new SeedError(
+        `Der ungestartete Showcase-Prozess „${szenario.slug}" darf keine Uploads besitzen.`,
+      );
+    if (state === "chat_in_progress")
+      await seedChatInProgress(chatRepo, szenario, record.id, uploadsByName);
+    if (state === "review_required")
+      await seedReviewRequired(
+        repo,
+        chatRepo,
+        szenario,
+        record.id,
+        record,
+        uploadsByName,
+      );
+  }
 
   const drehbuchPfad = join(
     demoDataRoot(),
@@ -253,10 +445,14 @@ async function seedScenario(
     console.log(
       `  Status: bestätigt — Verständnis aus verstaendnis.json übernommen, Potenzialanalyse startbar.`,
     );
+  if (stufe === "showcase")
+    console.log(`  Showcase: ${szenario.showcase!.state}`);
 }
 
 async function main() {
-  const { list, alle, stufe, slug } = parseArgs(process.argv.slice(2));
+  const { list, alle, showcase, stufe, slug } = parseArgs(
+    process.argv.slice(2),
+  );
   if (stufe !== undefined && stufe !== "bestaetigt")
     throw new SeedError(
       `Unbekannte Stufe „${stufe}". Unterstützt wird bisher nur „bestaetigt".`,
@@ -264,6 +460,10 @@ async function main() {
   if (alle && stufe)
     throw new SeedError(
       `„--stufe" ist nur zusammen mit einem einzelnen Szenario nutzbar, nicht mit „--alle".`,
+    );
+  if (showcase && (alle || stufe || slug))
+    throw new SeedError(
+      `„--showcase" kann nicht mit einem Slug, „--alle" oder „--stufe" kombiniert werden.`,
     );
 
   const szenarien = await listDemoScenarios();
@@ -276,7 +476,7 @@ async function main() {
     return;
   }
 
-  if (!alle && !slug)
+  if (!alle && !showcase && !slug)
     throw new SeedError(
       "Bitte einen Szenario-Slug angeben, „--alle“ oder „--list“ verwenden.",
     );
@@ -285,6 +485,17 @@ async function main() {
   await ensureWorkspace(root);
   const repo = new ProcessCaptureRepository(root);
   const chatRepo = new ChatCaptureRepository(root);
+
+  if (showcase) {
+    const showcaseScenarios = szenarien.filter(
+      (szenario) => szenario.showcase !== undefined,
+    );
+    if (!showcaseScenarios.length)
+      throw new SeedError("Keine Showcase-Aufnahmezustände definiert.");
+    for (const szenario of showcaseScenarios)
+      await seedScenario(repo, chatRepo, szenario, "showcase");
+    return;
+  }
 
   if (alle) {
     if (!szenarien.length)

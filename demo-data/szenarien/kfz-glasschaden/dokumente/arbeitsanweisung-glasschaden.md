@@ -37,7 +37,7 @@ Es wird geprüft, ob die Werkstatt an das Direktabrechnungsverfahren
 die Rechnungsstellung automatisiert über die Clearing-Schnittstelle; diese
 Fälle durchlaufen die folgenden Schritte 3.3 bis 3.6 nicht manuell, sondern
 werden über die Schnittstelle direktabgerechnet und laufen automatisiert in
-SAP FI zur Zahlung. Ist keine Partnerwerkstatt beteiligt oder liegt eine
+SAP S/4HANA zur Zahlung. Ist keine Partnerwerkstatt beteiligt oder liegt eine
 Werkstattrechnung ohne Clearing-Kennzeichen vor, erfolgt die Bearbeitung
 manuell gemäß 3.3 bis 3.6.
 
@@ -61,7 +61,7 @@ freigegeben wird.
 
 Von der geprüften Rechnungssumme wird die vertraglich vereinbarte
 Selbstbeteiligung für Glasschäden in Höhe von 150 Euro abgezogen. Der
-verbleibende Betrag wird über **SAP FI** zur Auszahlung angewiesen. Bei
+verbleibende Betrag wird über **SAP S/4HANA** zur Auszahlung angewiesen. Bei
 Leasingfahrzeugen erfolgt die Auszahlung abweichend an die im Vertrag
 hinterlegte Leasinggesellschaft, nicht an die versicherte Person.
 
@@ -80,13 +80,13 @@ eindeutig aus VERA hervorgehen, werden an die Vertragsabteilung eskaliert.
 
 ## 5. Systembezüge
 
-| System  | Verwendung in diesem Prozess                                   |
-| ------- | -------------------------------------------------------------- |
-| KOMPASS | Schadenerfassung, Bearbeitungsstatus, Vorgangsablage           |
-| VERA    | Prüfung von Vertrags- und Deckungsdaten                        |
-| PARTO   | Stammdaten der Partnerwerkstätten, Ansprechpartner             |
-| AKTE    | Ablage von Rechnungen, Prüfvermerken und Zahlungsbestätigungen |
-| SAP FI  | Auszahlung des regulierten Betrags                             |
+| System      | Verwendung in diesem Prozess                                   |
+| ----------- | -------------------------------------------------------------- |
+| KOMPASS     | Schadenerfassung, Bearbeitungsstatus, Vorgangsablage           |
+| VERA        | Prüfung von Vertrags- und Deckungsdaten                        |
+| PARTO       | Stammdaten der Partnerwerkstätten, Ansprechpartner             |
+| AKTE        | Ablage von Rechnungen, Prüfvermerken und Zahlungsbestätigungen |
+| SAP S/4HANA | Auszahlung des regulierten Betrags                             |
 
 ## 6. Sonderfälle
 

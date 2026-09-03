@@ -1,0 +1,21 @@
+{
+  "slug": "bezugsrechtsaenderung-leben",
+  "titel": "VER-03 · Bezugsrechtsänderung einer Lebensversicherung bearbeiten",
+  "cover": {
+    "department": "Vertrag",
+    "participantName": "Edda Brandt",
+    "participantEmail": "edda.brandt@lifecorp.example",
+    "processName": "VER-03 · Bezugsrechtsänderung einer Lebensversicherung bearbeiten"
+  },
+  "interactionMode": "chat",
+  "showcase": {
+    "state": "review_required"
+  },
+  "dokumente": [
+    {
+      "quelle": "dokumente/arbeitsanweisung-bezugsrecht.md",
+      "zielname": "Arbeitsanweisung_Bezugsrechtsaenderung.pdf",
+      "format": "pdf"
+    }
+  ]
+}

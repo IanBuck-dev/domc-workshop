@@ -1,4 +1,4 @@
-# Drehbuch: Beitragsanpassung Bestandsvertrag
+# Drehbuch: Turnusmäßige Beitragsanpassung Wohngebäude
 
 Für Florian: Spielanleitung, Erwartungen je Zug und Fehlersignaturen für das
 Szenario `beitragsanpassung`. Die wörtlichen Antworten stehen in

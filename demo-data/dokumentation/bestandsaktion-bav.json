@@ -1,0 +1,206 @@
+{
+  "slug": "bestandsaktion-bav",
+  "titel": "VTR-04 · Bestandsaktion zur betrieblichen Altersvorsorge koordinieren",
+  "fachbereich": "Vertrieb",
+  "gespraechspartner": {
+    "name": "Edda Brandt",
+    "email": "edda.brandt@lifecorp.example"
+  },
+  "erstelltAm": "2026-05-05T08:45:00.000Z",
+  "bestaetigtAm": "2026-05-12T15:15:00.000Z",
+  "belege": [
+    {
+      "id": "b1",
+      "text": "Für eine bAV-Bestandsaktion bekommen wir Ziel und Ausschlüsse von der Vertriebsleitung. Ich ziehe die Arbeitgeber und Vermittler aus PARTO und gleiche die Verträge in VERA ab."
+    },
+    {
+      "id": "b2",
+      "text": "Briefing, Textbausteine und Freigaben liegen in SharePoint. Die Rückmeldungen der Vermittler kommen über Teams und E-Mail und landen am Ende in einer Excel-Liste im Kampagnenordner."
+    },
+    {
+      "id": "b3",
+      "text": "Wir machen vier bis sechs Aktionen im Jahr mit jeweils 300 bis 2.000 Arbeitgebern. Das Zusammenführen der Rückmeldungen dauert pro Aktion ungefähr drei Arbeitstage."
+    },
+    {
+      "id": "b4",
+      "text": "Vor Versand prüft Leben und bAV-Bestand eine Stichprobe. Unklare Zielgruppenfälle schließen wir aus, statt sie ohne Freigabe anzuschreiben."
+    }
+  ],
+  "zweck": {
+    "wert": "Eine fachlich freigegebene bAV-Bestandsaktion für passende Arbeitgeber und Vermittler koordinieren.",
+    "belege": ["b1"]
+  },
+  "ausloeser": {
+    "wert": "Freigegebener Aktionsauftrag der Vertriebsleitung mit Zielgruppe und Zeitraum.",
+    "belege": ["b1"]
+  },
+  "ergebnis": {
+    "wert": "Die Zielgruppe ist angesprochen, Vermittlerrückmeldungen sind konsolidiert und Folgebedarfe an den Bestand übergeben.",
+    "belege": ["b2"]
+  },
+  "abgrenzung": {
+    "wert": "Individuelle Vertragsberatung und Vertragsänderung erfolgen außerhalb der Vertriebsaktion.",
+    "belege": ["b4"]
+  },
+  "beteiligte": {
+    "wert": [
+      "Vertriebssteuerung und bAV-Aktionen",
+      "Vertriebsleitung",
+      "Leben und bAV-Bestand",
+      "Vermittler",
+      "Arbeitgeber"
+    ],
+    "belege": ["b1", "b4"]
+  },
+  "informationsquellen": {
+    "wert": [
+      "Aktionsbriefing in SharePoint Online",
+      "Arbeitgeber- und Vermittlerdaten in PARTO",
+      "Vertragsmerkmale in VERA",
+      "Rückmeldeliste in SharePoint Online"
+    ],
+    "belege": ["b1", "b2"]
+  },
+  "systeme": {
+    "wert": [
+      "SharePoint Online",
+      "PARTO",
+      "VERA",
+      "Microsoft Teams",
+      "Exchange Online"
+    ],
+    "belege": ["b1", "b2"]
+  },
+  "kontrollen": {
+    "wert": [
+      "Freigabe des Briefings",
+      "Ausschluss unklarer Zielgruppenfälle",
+      "Stichprobe durch Leben und bAV-Bestand vor Versand"
+    ],
+    "belege": ["b4"]
+  },
+  "uebergaben": {
+    "wert": [
+      "Vertriebsleitung an Vertriebssteuerung",
+      "Vertriebssteuerung an Vermittler",
+      "Vermittler an Leben und bAV-Bestand bei konkretem Änderungsbedarf"
+    ],
+    "belege": ["b1", "b2"]
+  },
+  "mengenUndZeiten": {
+    "wert": [
+      "Vier bis sechs Aktionen pro Jahr",
+      "300 bis 2.000 Arbeitgeber je Aktion",
+      "Drei Arbeitstage für die Rückmeldungskonsolidierung"
+    ],
+    "belege": ["b3"]
+  },
+  "schwachstellen": {
+    "wert": [
+      "Zielgruppen werden aus PARTO und VERA manuell abgeglichen",
+      "Rückmeldungen kommen über Teams und Exchange Online",
+      "Status wird in einer Excel-Liste zusammengeführt"
+    ],
+    "belege": ["b1", "b2"]
+  },
+  "verbesserungsziele": {
+    "wert": [
+      "Zielgruppenabgleich nachvollziehbar vorbereiten",
+      "Rückmeldungen automatisch der Aktion zuordnen",
+      "Offene Folgebedarfe übersichtlich bündeln"
+    ],
+    "belege": ["b1", "b2"]
+  },
+  "wissensluecken": [
+    "Eine einheitliche Definition für den Erfolg einer Bestandsaktion ist noch nicht festgelegt."
+  ],
+  "widersprueche": [],
+  "schritte": [
+    {
+      "name": "Aktionsauftrag übernehmen",
+      "taetigkeit": "Ziel, Zeitraum, Ausschlüsse und Freigaben aus dem Briefing prüfen.",
+      "eingaben": ["Freigegebenes Aktionsbriefing"],
+      "ausgaben": ["Arbeitsauftrag"],
+      "informationen": [
+        {
+          "name": "Ziel und Ausschlüsse",
+          "quelle": "SharePoint Online",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b1"]
+    },
+    {
+      "name": "Zielgruppe bilden",
+      "taetigkeit": "Arbeitgeber und Vermittler in PARTO auswählen und mit Vertragsmerkmalen aus VERA abgleichen.",
+      "eingaben": ["Arbeitsauftrag"],
+      "ausgaben": ["Vorläufige Zielgruppe"],
+      "informationen": [
+        {
+          "name": "Arbeitgeber, Vermittler und Vertragsmerkmale",
+          "quelle": "PARTO und VERA",
+          "typ": "database_or_report"
+        }
+      ],
+      "belege": ["b1"]
+    },
+    {
+      "name": "Zielgruppe fachlich prüfen",
+      "taetigkeit": "Ausschlüsse anwenden und eine Stichprobe mit Leben und bAV-Bestand abstimmen.",
+      "eingaben": ["Vorläufige Zielgruppe"],
+      "ausgaben": ["Freigegebene Zielgruppe"],
+      "informationen": [
+        {
+          "name": "Stichprobenfreigabe",
+          "quelle": "SharePoint Online",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Vermittler briefen",
+      "taetigkeit": "Freigegebene Unterlagen und jeweilige Arbeitgeberliste an die zuständigen Vermittler verteilen.",
+      "eingaben": ["Freigegebene Zielgruppe", "Textbausteine"],
+      "ausgaben": ["Versandtes Vermittlerbriefing"],
+      "informationen": [
+        {
+          "name": "Briefing und Arbeitgeberliste",
+          "quelle": "Microsoft Teams",
+          "typ": "free_text"
+        }
+      ],
+      "belege": ["b2"]
+    },
+    {
+      "name": "Rückmeldungen konsolidieren",
+      "taetigkeit": "Rückmeldungen aus Teams und Exchange Online der Aktion und den Arbeitgebern zuordnen.",
+      "eingaben": ["Vermittlerrückmeldungen"],
+      "ausgaben": ["Konsolidierter Aktionsstatus"],
+      "informationen": [
+        {
+          "name": "Rückmeldeliste",
+          "quelle": "SharePoint Online",
+          "typ": "database_or_report"
+        }
+      ],
+      "belege": ["b2", "b3"]
+    },
+    {
+      "name": "Folgebedarfe übergeben",
+      "taetigkeit": "Konkrete Beratungs- und Änderungsbedarfe an Vermittler und Leben und bAV-Bestand übergeben und Aktion abschließen.",
+      "eingaben": ["Konsolidierter Aktionsstatus"],
+      "ausgaben": ["Übergebene Folgebedarfe", "Abschlussbericht"],
+      "informationen": [
+        {
+          "name": "Folgebedarf je Arbeitgeber",
+          "quelle": "SharePoint Online",
+          "typ": "database_or_report"
+        }
+      ],
+      "belege": ["b2"]
+    }
+  ],
+  "verzweigung": null,
+  "revisionen": []
+}

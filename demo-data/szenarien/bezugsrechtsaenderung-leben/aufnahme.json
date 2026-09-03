@@ -1,0 +1,222 @@
+{
+  "slug": "bezugsrechtsaenderung-leben",
+  "titel": "VER-03 · Bezugsrechtsänderung einer Lebensversicherung bearbeiten",
+  "fachbereich": "Vertrag",
+  "gespraechspartner": {
+    "name": "Edda Brandt",
+    "email": "edda.brandt@lifecorp.example"
+  },
+  "erstelltAm": "2026-07-07T08:25:00.000Z",
+  "bestaetigtAm": "2026-07-14T14:35:00.000Z",
+  "belege": [
+    {
+      "id": "b1",
+      "text": "Ich bearbeite Änderungen des Bezugsrechts bei Lebensversicherungen. Der Auftrag kommt unterschrieben per Post, Kundenportal oder über den Vermittler. Am Ende ist die Änderung in VERA erfasst und bestätigt oder mit Begründung zurückgewiesen."
+    },
+    {
+      "id": "b2",
+      "text": "Ich prüfe zuerst Identität, Unterschrift, Vertragsnummer und ob der Versicherungsnehmer verfügungsberechtigt ist. Bei unwiderruflichem Bezugsrecht brauche ich zusätzlich die Zustimmung der bisher berechtigten Person."
+    },
+    {
+      "id": "b3",
+      "text": "Der Vertrag steht in VERA, der Auftrag und die Identitätsnachweise kommen in AKTE. Bei Altverträgen muss ich zusätzlich in LEBUS nachsehen. Rückfragen schicke ich über Exchange Online."
+    },
+    {
+      "id": "b4",
+      "text": "Wir haben etwa 240 Aufträge im Monat. Ein vollständiger Fall dauert rund 15 Minuten. Bei fehlender Zustimmung oder unklaren Namensangaben liegen die Fälle im Schnitt acht Arbeitstage."
+    },
+    {
+      "id": "b5",
+      "text": "Nach der Erfassung prüft eine zweite Person den Namen, die Art des Bezugsrechts und den Wirksamkeitszeitpunkt. Dann schicken wir die Bestätigung und legen sie in AKTE ab."
+    },
+    {
+      "id": "b6",
+      "text": "Offen ist noch, ob wir bei allen Altverträgen dieselbe Formulierung für die Zustimmung verwenden. Das Prozessbild soll deshalb erst von der Teamleitung geprüft werden."
+    }
+  ],
+  "zweck": {
+    "wert": "Eine vom verfügungsberechtigten Versicherungsnehmer beantragte Bezugsrechtsänderung korrekt prüfen, erfassen und bestätigen.",
+    "belege": ["b1", "b2"]
+  },
+  "ausloeser": {
+    "wert": "Eingang eines unterschriebenen Änderungsauftrags per Post, Kundenportal oder Vermittler.",
+    "belege": ["b1"]
+  },
+  "ergebnis": {
+    "wert": "Das Bezugsrecht ist in VERA oder LEBUS korrekt geändert und bestätigt oder der Auftrag wurde nachvollziehbar zurückgewiesen.",
+    "belege": ["b1", "b5"]
+  },
+  "abgrenzung": {
+    "wert": "Der Prozess umfasst keine Leistungsfallprüfung und keine rechtliche Beratung zur Wahl der bezugsberechtigten Person.",
+    "belege": ["b1", "b2"]
+  },
+  "beteiligte": {
+    "wert": [
+      "Sachbearbeitung Leben und bAV-Bestand",
+      "Versicherungsnehmer",
+      "Bezugsberechtigte Person",
+      "Zweitprüfer im Bestand",
+      "Vermittler"
+    ],
+    "belege": ["b1", "b2", "b5"]
+  },
+  "informationsquellen": {
+    "wert": [
+      "Änderungsauftrag",
+      "Identitätsnachweis",
+      "Vertragsdaten",
+      "Zustimmung bei unwiderruflichem Bezugsrecht"
+    ],
+    "belege": ["b1", "b2", "b3"]
+  },
+  "systeme": {
+    "wert": ["VERA", "LEBUS", "AKTE", "Exchange Online"],
+    "belege": ["b3"]
+  },
+  "kontrollen": {
+    "wert": [
+      "Identitäts- und Verfügungsberechtigungsprüfung",
+      "Zusätzliche Zustimmung bei unwiderruflichem Bezugsrecht",
+      "Vier-Augen-Prüfung von Name, Art und Wirksamkeitszeitpunkt"
+    ],
+    "belege": ["b2", "b5"]
+  },
+  "uebergaben": {
+    "wert": [
+      "Versicherungsnehmer oder Vermittler an Leben und bAV-Bestand",
+      "Sachbearbeitung an Zweitprüfer",
+      "Bestätigung an Versicherungsnehmer und Vermittler"
+    ],
+    "belege": ["b1", "b5"]
+  },
+  "mengenUndZeiten": {
+    "wert": [
+      "Rund 240 Aufträge pro Monat",
+      "15 Minuten bei vollständigem Auftrag",
+      "Acht Arbeitstage Liegezeit bei Rückfragen"
+    ],
+    "belege": ["b4"]
+  },
+  "schwachstellen": {
+    "wert": [
+      "Namen und Bezeichnungen werden in Freitext uneinheitlich angegeben",
+      "Zustimmungen fehlen bei unwiderruflichen Bezugsrechten",
+      "Altverträge erfordern einen zusätzlichen Abgleich in LEBUS"
+    ],
+    "belege": ["b2", "b3", "b4"]
+  },
+  "verbesserungsziele": {
+    "wert": [
+      "Vollständigkeit und Namensangaben vor der Erfassung prüfen",
+      "Aktuelle und alte Vertragsdaten übersichtlich gegenüberstellen",
+      "Rückfragen mit fehlenden Nachweisen vorbereiten"
+    ],
+    "belege": ["b2", "b3"]
+  },
+  "wissensluecken": [
+    "Ob für alle Altverträge dieselbe Zustimmungsformulierung gilt, muss die Teamleitung noch klären."
+  ],
+  "widersprueche": [],
+  "schritte": [
+    {
+      "name": "Auftrag zuordnen",
+      "taetigkeit": "Änderungsauftrag und Anhänge dem Lebensversicherungsvertrag zuordnen und in AKTE ablegen.",
+      "eingaben": ["Änderungsauftrag"],
+      "ausgaben": ["Zugeordneter Vorgang"],
+      "informationen": [
+        {
+          "name": "Vertragsnummer und gewünschte Person",
+          "quelle": "AKTE",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b1", "b3"]
+    },
+    {
+      "name": "Berechtigung prüfen",
+      "taetigkeit": "Identität, Unterschrift und Verfügungsberechtigung des Versicherungsnehmers prüfen.",
+      "eingaben": ["Zugeordneter Vorgang"],
+      "ausgaben": ["Geprüfte Berechtigung"],
+      "informationen": [
+        {
+          "name": "Identitätsnachweis und Vertragsinhaber",
+          "quelle": "AKTE und VERA",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b2", "b3"]
+    },
+    {
+      "name": "Zustimmung und Unterlagen prüfen",
+      "taetigkeit": "Art des bisherigen Bezugsrechts feststellen und bei Unwiderruflichkeit die erforderliche Zustimmung prüfen.",
+      "eingaben": ["Geprüfte Berechtigung"],
+      "ausgaben": ["Vollständiges Änderungspaket"],
+      "informationen": [
+        {
+          "name": "Art des Bezugsrechts und Zustimmung",
+          "quelle": "VERA, LEBUS und AKTE",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b2", "b3"]
+    },
+    {
+      "name": "Änderung erfassen",
+      "taetigkeit": "Bezugsberechtigte Person, Art und Wirksamkeitszeitpunkt im führenden Bestandssystem erfassen.",
+      "eingaben": ["Vollständiges Änderungspaket"],
+      "ausgaben": ["Erfasste Bezugsrechtsänderung"],
+      "informationen": [
+        {
+          "name": "Bezugsrechtsdaten",
+          "quelle": "VERA oder LEBUS",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b3"]
+    },
+    {
+      "name": "Änderung zweitprüfen",
+      "taetigkeit": "Name, Art des Bezugsrechts und Wirksamkeitszeitpunkt durch eine zweite Person prüfen lassen.",
+      "eingaben": ["Erfasste Bezugsrechtsänderung"],
+      "ausgaben": ["Freigegebene Änderung"],
+      "informationen": [
+        {
+          "name": "Prüfvermerk",
+          "quelle": "VERA oder LEBUS",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b5"]
+    },
+    {
+      "name": "Bestätigung versenden",
+      "taetigkeit": "Bestätigung an Versicherungsnehmer und gegebenenfalls Vermittler senden und in AKTE ablegen.",
+      "eingaben": ["Freigegebene Änderung"],
+      "ausgaben": ["Versandte und abgelegte Bestätigung"],
+      "informationen": [
+        { "name": "Bestätigungsschreiben", "quelle": "AKTE", "typ": "document" }
+      ],
+      "belege": ["b5"]
+    }
+  ],
+  "verzweigung": {
+    "nachSchritt": 3,
+    "frage": "Sind Berechtigung und erforderliche Zustimmung vollständig nachgewiesen?",
+    "modus": "rule_based",
+    "zweige": [
+      {
+        "label": "Ja, vollständig",
+        "ziel": 4,
+        "ermittlung": "Alle für die Art des Bezugsrechts erforderlichen Nachweise liegen vor.",
+        "folge": "Die Änderung wird erfasst."
+      },
+      {
+        "label": "Nein, Nachweis fehlt",
+        "ziel": "ende",
+        "ermittlung": "Identität, Verfügungsberechtigung oder Zustimmung ist nicht ausreichend belegt.",
+        "folge": "Der Auftrag wird mit konkreter Nachforderung zurückgegeben."
+      }
+    ]
+  },
+  "revisionen": []
+}

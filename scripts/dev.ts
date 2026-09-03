@@ -42,19 +42,19 @@ async function hasSeededProcesses(): Promise<boolean> {
 async function autoSeedIfEmpty() {
   if (process.env.DEMO_SEED === "0") return;
   if (await hasSeededProcesses()) return;
-  console.log("Workspace leer — Demo-Szenarien werden angelegt …");
-  const seedScript = join(process.cwd(), "scripts", "seed-demo-process.ts");
+  console.log("Workspace leer — LifeCorp-Showcase wird angelegt …");
+  const seedScript = join(process.cwd(), "scripts", "seed-showcase.ts");
   if (!existsSync(seedScript)) {
     console.warn(
-      "WARNUNG: Seed-Skript scripts/seed-demo-process.ts fehlt — Demo-Daten werden nicht angelegt.",
+      "WARNUNG: Seed-Skript scripts/seed-showcase.ts fehlt — Demo-Daten werden nicht angelegt.",
     );
     return;
   }
   try {
-    const seed = Bun.spawn(
-      ["bun", "run", "scripts/seed-demo-process.ts", "--alle"],
-      { stdout: "inherit", stderr: "inherit" },
-    );
+    const seed = Bun.spawn(["bun", "run", "scripts/seed-showcase.ts"], {
+      stdout: "inherit",
+      stderr: "inherit",
+    });
     const exitCode = await seed.exited;
     if (exitCode !== 0)
       console.warn(

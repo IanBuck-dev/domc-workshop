@@ -1,6 +1,6 @@
 {
   "slug": "vermittler-onboarding",
-  "titel": "Onboarding neuer Vermittler im Außendienst",
+  "titel": "VTR-01 · Onboarding neuer Vermittler im Außendienst",
   "fachbereich": "Vertrieb",
   "gespraechspartner": {
     "name": "Edda Brandt",
@@ -70,7 +70,7 @@
     "belege": ["b2", "b5"]
   },
   "systeme": {
-    "wert": ["PARTO", "PROVISO", "AKTE", "Outlook"],
+    "wert": ["PARTO", "PROVISO", "AKTE", "Exchange Online"],
     "belege": ["b3", "b4"]
   },
   "kontrollen": {

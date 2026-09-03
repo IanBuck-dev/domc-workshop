@@ -4,7 +4,8 @@ Diese Dateien füllen die Prozessdokumentation mit erfundenen, aber realistische
 Inhalten der **LifeCorp Versicherung**, damit sich Übersicht, Einzeldokumente,
 Verlauf, Diffs und Rücknahmen von Hand durchklicken lassen. Sie enthalten
 ausschließlich erfundene Daten; Systemnamen und Personas stammen aus
-[`../UNTERNEHMEN.md`](../UNTERNEHMEN.md).
+[`../UNTERNEHMEN.md`](../UNTERNEHMEN.md). Alle übergreifenden Annahmen stehen
+im zentralen [`LIFECORP.md`](../../LIFECORP.md).
 
 ## Seed ausführen
 
@@ -30,18 +31,25 @@ angegebene Datum ein.
 
 ## Was der Seed erzählt
 
-Acht Prozesse aus sechs Fachbereichen, bestätigt zwischen Januar und Juni 2026:
+Vierzehn versicherungsspezifische Prozesse aus fünf Fachbereichen, bestätigt
+zwischen November 2025 und Juli 2026:
 
-| Datei                                    | Fachbereich | Besonderheit                                             |
-| ---------------------------------------- | ----------- | -------------------------------------------------------- |
-| `betrugspruefung-schadenmeldungen`       | Schaden     | Ermessensentscheidung im Graphen, Revision im April      |
-| `leitungswasserschaden-wohngebaeude`     | Schaden     | vollständig — ohne Wissenslücken, Qualität `complete`    |
-| `beitragsanpassung-wohngebaeude`         | Vertrag     | Revision im Mai, **im Juli zurückgenommen**              |
-| `bestandsuebertragung-leben`             | Vertrag     | trägt einen echten Widerspruch zwischen zwei Auskünften  |
-| `vermittler-onboarding`                  | Vertrieb    | Revision im Juni                                         |
-| `rueckversicherungsabrechnung-quartal`   | Finanzen    | Verzweigung nach fachlichem Ermessen                     |
-| `stoerungsannahme-anwendersupport`       | IT          | Abbruchzweig: Abgabe an die Fachgruppe endet den Prozess |
-| `bewerbermanagement-ausbildungsjahrgang` | Personal    | linearer Ablauf ohne Verzweigung                         |
+| Datei                                  | Fachbereich | Besonderheit                                            |
+| -------------------------------------- | ----------- | ------------------------------------------------------- |
+| `betrugspruefung-schadenmeldungen`     | Schaden     | Ermessensentscheidung im Graphen, Revision im April     |
+| `leitungswasserschaden-wohngebaeude`   | Schaden     | vollständig — ohne Wissenslücken, Qualität `complete`   |
+| `beitragsanpassung-wohngebaeude`       | Vertrag     | Revision im Mai, **im Juli zurückgenommen**             |
+| `bestandsuebertragung-leben`           | Vertrag     | trägt einen echten Widerspruch zwischen zwei Auskünften |
+| `vermittler-onboarding`                | Vertrieb    | Revision im Juni                                        |
+| `rueckversicherungsabrechnung-quartal` | Finanzen    | Verzweigung nach fachlichem Ermessen                    |
+| `arbeitgeberwechsel-bav`               | Vertrag     | Unterlagenprüfung und Vier-Augen-Freigabe               |
+| `angebotsanfrage-wohngebaeude`         | Vertrieb    | Multimodale Objektunterlagen und Risikoprüfungsübergabe |
+| `bestandsaktion-bav`                   | Vertrieb    | Verteilte Vermittlerrückmeldungen                       |
+| `mahnverfahren-direktinkasso-leben`    | Finanzen    | bewusst geringes KI-Potenzial bei festen Regeln         |
+| `zahlungseingaenge-klaeren`            | Finanzen    | systemübergreifende Freitext-Zuordnung                  |
+| `copilot-studio-schadenwissen`         | IT          | Agentenprüfung mit Quellen- und Governancekontrollen    |
+| `sap-api-zahlungsabgleich`             | IT          | kontrollierter agentischer Systemzugang                 |
+| `m365-copilot-zugriffe`                | IT          | weitgehend regelbasierte Lizenzbereitstellung           |
 
 Die Rücknahme bei `beitragsanpassung-wohngebaeude` lässt das Archiv bewusst vom
 Quellstand abweichen — so hat der Abgleich in den Einstellungen etwas zu tun.

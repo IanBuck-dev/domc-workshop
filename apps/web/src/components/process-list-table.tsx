@@ -91,19 +91,24 @@ function FilterPopover({
   selected,
   onToggle,
   onClear,
+  className,
 }: {
   label: string;
   options: Array<{ value: string; label: string }>;
   selected: string[];
   onToggle: (value: string) => void;
   onClear: () => void;
+  className?: string;
 }) {
   const selectedCount = selected.length;
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="justify-between gap-3">
-          <span>
+        <Button
+          variant="outline"
+          className={cn("justify-between gap-3", className)}
+        >
+          <span className="truncate">
             {label}
             {selectedCount ? ` (${selectedCount})` : ""}
           </span>
@@ -367,6 +372,17 @@ export function ProcessListTable({
       <div className="flex flex-wrap items-end gap-4">
         {header}
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+          {hasFilters && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={reset}
+              aria-label="Filter zurücksetzen"
+              title="Filter zurücksetzen"
+            >
+              <RotateCcw className="size-4" />
+            </Button>
+          )}
           <label className="relative w-full sm:w-80">
             <Search
               className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
@@ -382,6 +398,7 @@ export function ProcessListTable({
           </label>
           <FilterPopover
             label="Fachbereich"
+            className="w-40"
             options={departments}
             selected={departmentFilter}
             onToggle={(value) => toggleFilter("department", value)}
@@ -393,6 +410,7 @@ export function ProcessListTable({
           />
           <FilterPopover
             label="Status"
+            className="w-32"
             options={statusOptions}
             selected={statusFilter}
             onToggle={(value) => toggleFilter("status", value)}
@@ -402,11 +420,6 @@ export function ProcessListTable({
               )
             }
           />
-          {hasFilters && (
-            <Button variant="ghost" size="sm" onClick={reset}>
-              <RotateCcw className="size-4" /> Filter zurücksetzen
-            </Button>
-          )}
           <Button asChild>
             <Link to="/processes/new">
               <Plus className="size-4" /> Prozess erfassen

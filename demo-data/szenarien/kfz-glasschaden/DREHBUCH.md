@@ -1,4 +1,4 @@
-# Drehbuch: Kfz-Glasschaden-Regulierung
+# Drehbuch: Kfz-Glasschaden regulieren
 
 Adressiert an Florian. Dieses Drehbuch spielt den sauberen Fall: gut
 dokumentiert, klarer Ablauf, drei sich ergänzende Dokumente. Tuningziel ist
@@ -57,17 +57,17 @@ erzeugt einen eigenen, unnötigen Hauptschritt.
 ### Zug 3 - Restliche Hauptschritte
 
 **Erwartung:** Rechnungsprüfung, Selbstbeteiligungsabzug (150 €), Auszahlung
-über SAP FI und Ablage in AKTE entstehen als eigene, klar unterscheidbare
+über SAP S/4HANA und Ablage in AKTE entstehen als eigene, klar unterscheidbare
 Schritte in dieser Reihenfolge. Die 150-€-Selbstbeteiligung landet als
 konkreter Wert in einem Schritt oder dessen `miscellaneous`.
 
 **Fehlersignatur:** Rechnungsprüfung und Selbstbeteiligung werden zu einem
-Schritt verschmolzen, oder SAP FI erscheint nicht als System der
+Schritt verschmolzen, oder SAP S/4HANA erscheint nicht als System der
 Auszahlung.
 
 ### Zug 4 - Systeme
 
-**Erwartung:** Alle fünf Systeme (KOMPASS, VERA, SAP FI, AKTE, PARTO) werden
+**Erwartung:** Alle fünf Systeme (KOMPASS, VERA, SAP S/4HANA, AKTE, PARTO) werden
 korrekt benannt; PARTO wird als im Hintergrund laufendes, von Edda nicht
 aktiv genutztes System erkannt statt als eigener Arbeitsschritt.
 
@@ -143,7 +143,7 @@ zwischen Clearing- und manuellen Fällen interpretiert.
   nummerierten Abschnitten aus `dokumente/arbeitsanweisung-glasschaden.md`
   (Sonderfälle fließen als Varianten in bestehende Schritte ein, nicht als
   eigene Schritte).
-- **Systeme:** KOMPASS, VERA, SAP FI, AKTE und PARTO müssen alle vorkommen,
+- **Systeme:** KOMPASS, VERA, SAP S/4HANA, AKTE und PARTO müssen alle vorkommen,
   korrekt der jeweiligen Rolle zugeordnet (PARTO passiv/im Hintergrund).
 - **documentCoverage:** alle drei Dokumente auf `complete`, keine
   `knowledgeGaps` zu Inhalten, die tatsächlich in den Dokumenten stehen

@@ -77,11 +77,11 @@ Fehlersignatur: Assistent erfindet einen Aufbau, Spalten oder Inhalte der
 Excel-Liste, die Edda nie genannt hat, oder behauptet Wissen über eine Unterlage,
 die es in diesem Szenario gar nicht gibt.
 
-**Zug 11** — Erwartung: SAP FI als Abstimmungssystem für die Auszahlung erfasst,
+**Zug 11** — Erwartung: SAP S/4HANA als Abstimmungssystem für die Auszahlung erfasst,
 inklusive sauberer Rollentrennung — die Finanzbuchhaltung zahlt aus, Edda liefert
 nur freigegebene Beträge.
 
-**Zug 12** — Erwartung: Reklamationsbearbeitung per Outlook als eigener Schritt,
+**Zug 12** — Erwartung: Reklamationsbearbeitung per E-Mail über Exchange Online als eigener Schritt,
 unstrukturiert (keine Vorlage, kein Ticketsystem), Edda sortiert selbst.
 
 **Zug 13** — Erwartung: Zeitdruck zum Monatsabschluss wird als Aufwands-/
@@ -109,13 +109,13 @@ Teamleitung) rundet Entscheidungen/Kontrollen ab.
 ## Erwartungen an das fertige Prozessverständnis
 
 - Hauptablauf mit PROVISO-Lauf, Stornohaftungsprüfung, manuellen Korrekturen bei
-  Vertragsänderungen, Abstimmung mit SAP FI und Reklamationsbearbeitung über
-  Outlook als erkennbare, geordnete Schritte.
+  Vertragsänderungen, Abstimmung mit SAP S/4HANA und Reklamationsbearbeitung über
+  Exchange Online als erkennbare, geordnete Schritte.
 - Systeme korrekt benannt: PROVISO, PARTO (Vermittlerdaten, ergibt sich implizit aus
   dem Kontext, ggf. gute Rückfrage wert, falls Edda es nicht von selbst nennt),
-  SAP FI, Outlook.
+  SAP S/4HANA, Exchange Online.
 - Rollen sauber getrennt: Edda (Sachbearbeitung/Prüfung), Kollegin
-  Vertriebsinnendienst (Excel-Sonderliste), Finanzbuchhaltung (SAP FI-Auszahlung),
+  Vertriebsinnendienst (Excel-Sonderliste), Finanzbuchhaltung (SAP S/4HANA-Auszahlung),
   Teamleitung (Eskalation bei größeren Abweichungen).
 - Mengengerüst (ca. 120 Außendienstler, ca. 40 Makler) und Rhythmus (monatlich, nach
   Buchungsschluss) im Verständnis sichtbar.
@@ -131,7 +131,7 @@ Naheliegende, evidenzbasierte Hypothesen für dieses Szenario:
 - **Excel-Sonderliste ablösen**: Die Sondervereinbarungen der Makler strukturiert in
   einem System statt in einer von einer Kollegin allein gepflegten Excel-Liste
   vorzuhalten, senkt Abstimmungsaufwand und Personenabhängigkeit.
-- **Reklamationen strukturieren**: Die unstrukturiert per Outlook eingehenden
+- **Reklamationen strukturieren**: Die unstrukturiert per E-Mail über Exchange Online eingehenden
   Reklamationen in einen geführten, nachvollziehbaren Bearbeitungsweg zu überführen,
   statt sie einzeln per Mail zu sortieren.
 - **Dunkelverarbeitung der Standardläufe**: Der PROVISO-Standardlauf und die

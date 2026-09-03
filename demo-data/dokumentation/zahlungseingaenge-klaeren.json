@@ -1,0 +1,235 @@
+{
+  "slug": "zahlungseingaenge-klaeren",
+  "titel": "FIN-03 · Nicht zuordenbare Zahlungseingänge klären",
+  "fachbereich": "Finanzen",
+  "gespraechspartner": {
+    "name": "Edda Brandt",
+    "email": "edda.brandt@lifecorp.example"
+  },
+  "erstelltAm": "2026-06-02T08:10:00.000Z",
+  "bestaetigtAm": "2026-06-09T14:50:00.000Z",
+  "belege": [
+    {
+      "id": "b1",
+      "text": "Jeden Morgen stehen in SAP S/4HANA Zahlungen, die wegen fehlender oder falscher Vertragsnummer nicht automatisch zugeordnet wurden. Wir beginnen mit Betrag, Absender und Verwendungszweck."
+    },
+    {
+      "id": "b2",
+      "text": "Ich suche nacheinander in VERA nach Verträgen, in PARTO nach Kunde oder Vermittler und manchmal in KOMPASS nach einem offenen Schaden. E-Mails zu Sammelzahlungen liegen in Exchange Online."
+    },
+    {
+      "id": "b3",
+      "text": "Es sind 70 bis 120 Positionen am Tag. Ein klarer Treffer dauert drei Minuten, schwierige Fälle 20 Minuten oder länger. Etwa zehn Prozent gehen als Rückfrage an Vertrieb oder Vertrag."
+    },
+    {
+      "id": "b4",
+      "text": "Eine Zuordnung braucht einen eindeutigen Beleg aus Betrag, Person und fachlichem Bezug. Ab 10.000 Euro oder bei mehreren möglichen Treffern prüft eine zweite Person vor der Buchung."
+    }
+  ],
+  "zweck": {
+    "wert": "Nicht automatisch zuordenbare Zahlungseingänge einer eindeutigen Forderung, einem Vertrag oder einem Absender zuweisen.",
+    "belege": ["b1"]
+  },
+  "ausloeser": {
+    "wert": "Tägliche Klärfallliste aus SAP S/4HANA nach Verarbeitung des Bankkontoauszugs.",
+    "belege": ["b1"]
+  },
+  "ergebnis": {
+    "wert": "Die Zahlung ist fachlich belegt gebucht oder mit dokumentierter Rückfrage beziehungsweise Rückzahlung weitergegeben.",
+    "belege": ["b4"]
+  },
+  "abgrenzung": {
+    "wert": "Der reguläre automatische Zahlungsabgleich und die Entscheidung über Vertrags- oder Schadenleistungen gehören nicht dazu.",
+    "belege": ["b1", "b2"]
+  },
+  "beteiligte": {
+    "wert": [
+      "Zahlungsverkehr und Hauptbuch",
+      "Vertrag",
+      "Vertrieb",
+      "Schaden",
+      "Bank und Zahlungspflichtiger"
+    ],
+    "belege": ["b2", "b3"]
+  },
+  "informationsquellen": {
+    "wert": [
+      "Bankkontoauszug und Klärfallliste",
+      "Verwendungszweck",
+      "Vertragsdaten in VERA",
+      "Kunden- und Vermittlerdaten in PARTO",
+      "Schadenstatus in KOMPASS",
+      "Sammelzahlungs-E-Mails"
+    ],
+    "belege": ["b1", "b2"]
+  },
+  "systeme": {
+    "wert": ["SAP S/4HANA", "VERA", "PARTO", "KOMPASS", "Exchange Online"],
+    "belege": ["b1", "b2"]
+  },
+  "kontrollen": {
+    "wert": [
+      "Eindeutiger Abgleich von Betrag, Person und fachlichem Bezug",
+      "Vier-Augen-Prüfung ab 10.000 Euro oder bei mehreren Treffern",
+      "Dokumentation des Zuordnungsbelegs"
+    ],
+    "belege": ["b4"]
+  },
+  "uebergaben": {
+    "wert": [
+      "Bankkanal an Zahlungsverkehr",
+      "Zahlungsverkehr an Vertrag, Vertrieb oder Schaden bei Rückfrage",
+      "Zahlungsverkehr an Hauptbuch zur endgültigen Buchung"
+    ],
+    "belege": ["b2", "b3"]
+  },
+  "mengenUndZeiten": {
+    "wert": [
+      "70 bis 120 Klärfälle pro Arbeitstag",
+      "Drei Minuten bei klarem Treffer",
+      "20 Minuten oder länger bei schwierigen Fällen",
+      "Etwa zehn Prozent mit fachlicher Rückfrage"
+    ],
+    "belege": ["b3"]
+  },
+  "schwachstellen": {
+    "wert": [
+      "Freitext-Verwendungszwecke enthalten unvollständige oder vertauschte Angaben",
+      "Suche springt manuell durch bis zu fünf Systeme",
+      "Ähnliche Namen erzeugen mehrere plausible Treffer"
+    ],
+    "belege": ["b1", "b2", "b4"]
+  },
+  "verbesserungsziele": {
+    "wert": [
+      "Plausible Treffer mit Begründung systemübergreifend vorschlagen",
+      "Mehrdeutige Fälle früh markieren",
+      "Fachliche Rückfragen mit vorhandenen Fakten vorbereiten"
+    ],
+    "belege": ["b2", "b4"]
+  },
+  "wissensluecken": [
+    "Die häufigsten Ursachen fehlerhafter Verwendungszwecke werden noch nicht kategorisiert."
+  ],
+  "widersprueche": [],
+  "schritte": [
+    {
+      "name": "Klärfallliste übernehmen",
+      "taetigkeit": "Tägliche Positionen und Bankinformationen aus SAP S/4HANA laden.",
+      "eingaben": ["Verarbeiteter Bankkontoauszug"],
+      "ausgaben": ["Priorisierte Klärfallliste"],
+      "informationen": [
+        {
+          "name": "Betrag, Absender und Verwendungszweck",
+          "quelle": "SAP S/4HANA",
+          "typ": "database_or_report"
+        }
+      ],
+      "belege": ["b1"]
+    },
+    {
+      "name": "Verwendungszweck auswerten",
+      "taetigkeit": "Vertrags-, Kunden-, Schaden- und Vermittlerhinweise aus dem Freitext erfassen.",
+      "eingaben": ["Klärfall"],
+      "ausgaben": ["Suchmerkmale"],
+      "informationen": [
+        {
+          "name": "Verwendungszweck",
+          "quelle": "Bankkontoauszug",
+          "typ": "free_text"
+        }
+      ],
+      "belege": ["b1"]
+    },
+    {
+      "name": "Vertrag und Person suchen",
+      "taetigkeit": "Suchmerkmale mit VERA und PARTO abgleichen und mögliche Treffer sammeln.",
+      "eingaben": ["Suchmerkmale"],
+      "ausgaben": ["Mögliche Vertrags- und Personentreffer"],
+      "informationen": [
+        {
+          "name": "Vertrags-, Kunden- und Vermittlerdaten",
+          "quelle": "VERA und PARTO",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b2"]
+    },
+    {
+      "name": "Fachlichen Bezug ergänzen",
+      "taetigkeit": "Bei Schadenhinweisen KOMPASS und bei Sammelzahlungen Exchange Online prüfen.",
+      "eingaben": ["Mögliche Treffer"],
+      "ausgaben": ["Ergänzter fachlicher Kontext"],
+      "informationen": [
+        {
+          "name": "Schadenstatus oder Zahlungsavis",
+          "quelle": "KOMPASS oder Exchange Online",
+          "typ": "free_text"
+        }
+      ],
+      "belege": ["b2"]
+    },
+    {
+      "name": "Zuordnung bewerten",
+      "taetigkeit": "Betrag, Person und fachlichen Bezug zu einem eindeutigen Ergebnis zusammenführen oder Rückfrage festlegen.",
+      "eingaben": ["Ergänzter fachlicher Kontext"],
+      "ausgaben": ["Zuordnungsvorschlag oder Rückfrage"],
+      "informationen": [
+        {
+          "name": "Zuordnungsbeleg",
+          "quelle": "SAP S/4HANA",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Risikofälle zweitprüfen",
+      "taetigkeit": "Positionen ab 10.000 Euro oder mit mehreren möglichen Treffern durch eine zweite Person prüfen lassen.",
+      "eingaben": ["Zuordnungsvorschlag"],
+      "ausgaben": ["Freigegebene Zuordnung"],
+      "informationen": [
+        {
+          "name": "Prüfvermerk",
+          "quelle": "SAP S/4HANA",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Zahlung buchen oder weitergeben",
+      "taetigkeit": "Freigegebene Zuordnung buchen oder den Fall mit vollständigem Kontext an den Fachbereich übergeben.",
+      "eingaben": ["Freigegebene Zuordnung oder Rückfrage"],
+      "ausgaben": ["Gebuchte Zahlung oder dokumentierte Übergabe"],
+      "informationen": [
+        {
+          "name": "Buchungs- oder Übergabestatus",
+          "quelle": "SAP S/4HANA",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b3", "b4"]
+    }
+  ],
+  "verzweigung": {
+    "nachSchritt": 5,
+    "frage": "Ist die Zuordnung eindeutig und ohne erhöhte Prüfschwelle?",
+    "modus": "professional_judgement",
+    "zweige": [
+      {
+        "label": "Eindeutig",
+        "ziel": 7,
+        "ermittlung": "Betrag, Person und fachlicher Bezug stimmen eindeutig überein.",
+        "folge": "Die Zahlung wird gebucht."
+      },
+      {
+        "label": "Mehrdeutig oder ab 10.000 Euro",
+        "ziel": 6,
+        "ermittlung": "Mehrere Treffer sind plausibel oder die Betragsgrenze ist erreicht.",
+        "folge": "Eine zweite Person prüft den Vorschlag."
+      }
+    ]
+  },
+  "revisionen": []
+}

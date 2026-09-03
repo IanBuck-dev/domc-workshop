@@ -1,6 +1,6 @@
 {
   "slug": "rueckversicherungsabrechnung-quartal",
-  "titel": "Quartalsabrechnung Rückversicherung",
+  "titel": "FIN-01 · Quartalsabrechnung Rückversicherung",
   "fachbereich": "Finanzen",
   "gespraechspartner": {
     "name": "Edda Brandt",
@@ -19,7 +19,7 @@
     },
     {
       "id": "b3",
-      "text": "Das Umlegen läuft bei mir in einer Tabelle, die ich seit Jahren pflege. In SAP FI kommt am Ende nur noch der fertige Buchungsstapel rein."
+      "text": "Das Umlegen läuft bei mir in einer Tabelle, die ich seit Jahren pflege. In SAP S/4HANA kommt am Ende nur noch der fertige Buchungsstapel rein."
     },
     {
       "id": "b4",
@@ -27,7 +27,7 @@
     },
     {
       "id": "b5",
-      "text": "Wenn beide Seiten die Abrechnung bestätigt haben, buche ich in SAP FI und leg die unterschriebene Abrechnung in der AKTE ab."
+      "text": "Wenn beide Seiten die Abrechnung bestätigt haben, buche ich in SAP S/4HANA und leg die unterschriebene Abrechnung in der AKTE ab."
     },
     {
       "id": "b6",
@@ -35,7 +35,7 @@
     }
   ],
   "zweck": {
-    "wert": "Quartalsweise Abrechnung der zedierten Beitragsanteile und der erstattungsfähigen Schadenanteile mit den Rückversicherern der LifeCorp, bis zur beiderseitig bestätigten und in SAP FI gebuchten Abrechnung.",
+    "wert": "Quartalsweise Abrechnung der zedierten Beitragsanteile und der erstattungsfähigen Schadenanteile mit den Rückversicherern der LifeCorp, bis zur beiderseitig bestätigten und in SAP S/4HANA gebuchten Abrechnung.",
     "belege": ["b1"]
   },
   "ausloeser": {
@@ -43,7 +43,7 @@
     "belege": ["b1", "b2"]
   },
   "ergebnis": {
-    "wert": "Eine von beiden Seiten bestätigte Quartalsabrechnung je Rückversicherungsvertrag, gebucht in SAP FI und mit dem unterschriebenen Abrechnungsdokument in der AKTE abgelegt.",
+    "wert": "Eine von beiden Seiten bestätigte Quartalsabrechnung je Rückversicherungsvertrag, gebucht in SAP S/4HANA und mit dem unterschriebenen Abrechnungsdokument in der AKTE abgelegt.",
     "belege": ["b5"]
   },
   "abgrenzung": {
@@ -71,13 +71,13 @@
     "belege": ["b2", "b4"]
   },
   "systeme": {
-    "wert": ["VERA", "KOMPASS", "SAP FI", "AKTE", "Outlook"],
+    "wert": ["VERA", "KOMPASS", "SAP S/4HANA", "AKTE", "Exchange Online"],
     "belege": ["b2", "b3", "b5"]
   },
   "kontrollen": {
     "wert": [
       "Abgleich der Summen aus VERA und KOMPASS gegen die Vorquartalswerte vor der Umlage",
-      "Vier-Augen-Prüfung des Buchungsstapels vor der Übernahme nach SAP FI",
+      "Vier-Augen-Prüfung des Buchungsstapels vor der Übernahme nach SAP S/4HANA",
       "Buchung erst nach schriftlicher Bestätigung durch den Rückversicherer",
       "Ablage der unterschriebenen Abrechnung in der AKTE je Rückversicherungsvertrag"
     ],
@@ -157,7 +157,7 @@
         },
         {
           "name": "Vorquartalssummen",
-          "quelle": "SAP FI",
+          "quelle": "SAP S/4HANA",
           "typ": "database_or_report"
         }
       ],
@@ -210,13 +210,13 @@
     },
     {
       "name": "Buchen und ablegen",
-      "taetigkeit": "Den Buchungsstapel nach SAP FI übernehmen, die Übernahme durch die Hauptbuchhaltung bestätigen lassen und die unterschriebene Abrechnung in der AKTE ablegen.",
+      "taetigkeit": "Den Buchungsstapel nach SAP S/4HANA übernehmen, die Übernahme durch die Hauptbuchhaltung bestätigen lassen und die unterschriebene Abrechnung in der AKTE ablegen.",
       "eingaben": [
         "Abgestimmte Abrechnung",
         "Bestätigung des Rückversicherers"
       ],
       "ausgaben": [
-        "Gebuchte Quartalsabrechnung in SAP FI",
+        "Gebuchte Quartalsabrechnung in SAP S/4HANA",
         "Abgelegte Abrechnung in der AKTE"
       ],
       "hinweis": "Ohne schriftliche Bestätigung des Rückversicherers wird nicht gebucht.",

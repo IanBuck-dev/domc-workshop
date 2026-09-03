@@ -1,6 +1,6 @@
 {
   "slug": "bestandsuebertragung-leben",
-  "titel": "Bestandsübertragung Leben von LEBUS nach VERA",
+  "titel": "VER-02 · Bestandsübertragung Leben von LEBUS nach VERA",
   "fachbereich": "Vertrag",
   "gespraechspartner": {
     "name": "Edda Brandt",
@@ -71,7 +71,7 @@
     "belege": ["b2", "b3", "b4"]
   },
   "systeme": {
-    "wert": ["LEBUS", "VERA", "AKTE", "PARTO", "Outlook"],
+    "wert": ["LEBUS", "VERA", "AKTE", "PARTO", "Exchange Online"],
     "belege": ["b2", "b3"]
   },
   "kontrollen": {

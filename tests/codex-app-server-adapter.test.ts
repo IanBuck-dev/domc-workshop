@@ -189,6 +189,42 @@ test("Codex app-server resumes the stored thread for a later user turn", async (
   expect(calls[2]?.params.threadId).toBe("stored-thread");
 });
 
+test("Codex app-server attaches selected images as multimodal input", async () => {
+  const calls: Record<string, any>[] = [];
+  let output!: PassThrough;
+  const adapter = new CodexChatCaptureAdapter({
+    start: () =>
+      fakeServer((message, stream) => {
+        output = stream;
+        calls.push(message);
+        if (message.method === "initialize")
+          output.write(
+            `${JSON.stringify({ jsonrpc: "2.0", id: message.id, result: {} })}\n`,
+          );
+        if (message.method === "thread/start")
+          output.write(
+            `${JSON.stringify({ jsonrpc: "2.0", id: message.id, result: { thread: { id: "thread-1" } } })}\n`,
+          );
+        if (message.method === "turn/start")
+          output.write(
+            `${JSON.stringify({ jsonrpc: "2.0", id: message.id, result: { turn: { id: "turn-1" } } })}\n`,
+          );
+      }),
+  });
+  await adapter.startTurn(
+    request({
+      attachments: [
+        { path: "/tmp/process/uploads/scan.png", mediaType: "image/png" },
+        { path: "/tmp/process/uploads/info.txt", mediaType: "text/plain" },
+      ],
+    }),
+  );
+  expect(calls.at(-1)?.params.input).toEqual([
+    { type: "text", text: "Bitte prüfen", text_elements: [] },
+    { type: "localImage", path: "/tmp/process/uploads/scan.png" },
+  ]);
+});
+
 test("Codex app-server interrupts and rejects an aborted turn", async () => {
   const controller = new AbortController();
   const calls: Record<string, any>[] = [];

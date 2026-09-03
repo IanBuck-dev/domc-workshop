@@ -15,10 +15,11 @@ otherwise two changes are being compared at once without anyone noticing.
 
 ### LifeCorp Versicherung
 
-`demo-data/UNTERNEHMEN.md` is the single source of the fiction: LifeCorp Versicherung
+`LIFECORP.md` is the central assumption register for the fiction: LifeCorp Versicherung
 VVaG, Dortmund, ~1,800 employees, lines of business Kfz / Hausrat-Wohngebäude / Leben /
-bAV, with a fixed invented system landscape and named personas. Its departments match the
-seven configured in `defaults/process-capture-config.json`.
+bAV, and the boundaries of the prototype story. It links the binding detail catalogues
+under `demo-data/`. The five visible departments match
+`defaults/process-capture-config.json`.
 
 Every scenario document and every scripted answer uses **only** these names. Consistency
 across the whole landscape is itself part of what a tuning round checks — if the assistant
@@ -40,7 +41,7 @@ demo-data/szenarien/<slug>/
 `drehbuch.json` holds the answers; `DREHBUCH.md` references them by turn number only, so
 there are never two copies to drift apart.
 
-### The four capture scenarios
+### The six capture scenarios
 
 | Slug                                 | Department | The case it exercises                                                                                                                |
 | ------------------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------ |
@@ -48,6 +49,8 @@ there are never two copies to drift apart.
 | `beitragsanpassung`                  | Vertrag    | the contradictory case — two documents disagree. Does the assistant notice and ask, or silently pick one?                            |
 | `provisionsabrechnung`               | Vertrieb   | the document-free case — conversation only, no textual crutch                                                                        |
 | `leitungswasserschaden-wohngebaeude` | Schaden    | the flagship management case — high-volume document intake, expert steering, judgement, exceptions, and external hand-offs           |
+| `einbruchdiebstahl-hausrat`          | Schaden    | an in-progress chat with one selected document and two completed turns                                                               |
+| `bezugsrechtsaenderung-leben`        | Vertrag    | a completed process image deliberately waiting for human review                                                                      |
 
 ### Running a tuning round
 
@@ -75,11 +78,11 @@ and selected scenario persist in browser storage
 credentials. It still goes through `ProcessCaptureRepository.saveUpload()`, so the same
 magic-byte and OOXML checks apply: a demo document the server would reject fails here too.
 
-If `workspace/process-captures/` is empty when `bun run dev` starts, all scenarios are
-seeded once automatically. `DEMO_SEED=0` disables that.
+If `workspace/process-captures/` is empty when `bun run dev` starts, the full LifeCorp
+showcase is seeded once automatically. `DEMO_SEED=0` disables that.
 
 `scripts/seed-documentation.ts` (`bun run seed:docs`) seeds the living documentation from
-eight confirmed processes in `demo-data/dokumentation/`, replaying confirm → correct →
+14 confirmed processes in `demo-data/dokumentation/`, replaying confirm → correct →
 re-confirm → revert in chronological order so the archive shows exactly what the
 application produces. Nothing is written into `workspace/docs/` by hand.
 
@@ -90,31 +93,35 @@ repositories, with an explicit `deterministischer-demo-seed` operation trace and
 provider invocation. It exists so browser, export, and video checks can cover the
 downstream review flow while preserving the production rule of one bounded AI run.
 
-`bun run seed --list` / `bun run seed:docs --list` show what is available.
+`bun run seed:showcase` composes the 14 confirmed processes with four deliberate
+continuation states: review required, chat in progress, uploads ready, and not started.
+`bun run seed:showcase --list` prints the canonical 18-process order without writing data.
+
+`bun run seed --list` / `bun run seed:docs --list` show the lower-level fixtures.
 
 ## Where it lives
 
-| Layer    | Path                                                                                                                                                                                                                 |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Fixtures | `demo-data/UNTERNEHMEN.md`, `demo-data/szenarien/`, `demo-data/dokumentation/`                                                                                                                                       |
-| Server   | `apps/server/src/demo-scenarios.ts`, `routes/demo.ts` (`GET /api/demo/szenarien`, `…/dateien/:zielname`)                                                                                                             |
-| Web      | `apps/web/src/components/demo-sidecar.tsx`                                                                                                                                                                           |
-| Scripts  | `scripts/seed-demo-process.ts` (`bun run seed`), `scripts/seed-documentation.ts` (`bun run seed:docs`), `scripts/documentation-fixtures.ts`, `scripts/showcase-opportunity-fixture.ts`, `scripts/reset-workspace.ts` |
-| Tests    | `tests/demo-data.test.ts`, `documentation-seed.test.ts`                                                                                                                                                              |
+| Layer    | Path                                                                                                                                                                                                                                                                       |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fixtures | `LIFECORP.md`, `demo-data/*.md`, `demo-data/showcase.json`, `demo-data/szenarien/`, `demo-data/dokumentation/`                                                                                                                                                             |
+| Server   | `apps/server/src/demo-scenarios.ts`, `routes/demo.ts` (`GET /api/demo/szenarien`, `…/dateien/:zielname`)                                                                                                                                                                   |
+| Web      | `apps/web/src/components/demo-sidecar.tsx`                                                                                                                                                                                                                                 |
+| Scripts  | `scripts/seed-showcase.ts` (`bun run seed:showcase`), `scripts/seed-demo-process.ts` (`bun run seed`), `scripts/seed-documentation.ts` (`bun run seed:docs`), `scripts/documentation-fixtures.ts`, `scripts/showcase-opportunity-fixture.ts`, `scripts/reset-workspace.ts` |
+| Tests    | `tests/demo-data.test.ts`, `tests/documentation-seed.test.ts`, `tests/showcase-seed.test.ts`                                                                                                                                                                               |
 
 ## Implementation status
 
-**Implemented.** Four capture scenarios with scripts and documents, eight documentation
-fixtures, a deterministic flagship opportunity/assessment result, both seed scripts, the
-auto-seed on an empty workspace, the stage-aware sidecar, and the document-serving
-endpoint.
+**Implemented.** Six capture scenarios, 14 confirmed documentation fixtures, four
+deliberate continuation states, a deterministic flagship opportunity/assessment result,
+the composed showcase seed, auto-seed on an empty workspace, the stage-aware sidecar, and
+the document-serving endpoint.
 
 ## Constraints
 
 - Invented data only, LifeCorp Versicherung, domain `lifecorp.example`. Never real
   customer, contract, or claim data in `demo-data/`.
-- System names and personas come from `demo-data/UNTERNEHMEN.md` and must stay consistent
-  across all scenarios.
+- Cross-cutting assumptions start in `LIFECORP.md`; exact system names and personas come
+  from the linked detail catalogues and must stay consistent across all scenarios.
 - Seeding goes through the productive code paths, never by hand-writing workspace files.
 - No script reads or requires the application credentials.
 

@@ -1,6 +1,6 @@
 {
   "slug": "betrugspruefung-schadenmeldungen",
-  "titel": "Betrugsprüfung auffälliger Schadenmeldungen",
+  "titel": "SCH-02 · Betrugsprüfung auffälliger Schadenmeldungen",
   "fachbereich": "Schaden",
   "gespraechspartner": {
     "name": "Edda Brandt",
@@ -70,7 +70,7 @@
     "belege": ["b2", "b3", "b4"]
   },
   "systeme": {
-    "wert": ["KOMPASS", "VERA", "PARTO", "AKTE", "Outlook"],
+    "wert": ["KOMPASS", "VERA", "PARTO", "AKTE", "Exchange Online"],
     "belege": ["b2", "b3", "b5"]
   },
   "kontrollen": {

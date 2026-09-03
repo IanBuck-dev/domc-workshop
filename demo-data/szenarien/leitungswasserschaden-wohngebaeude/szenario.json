@@ -1,11 +1,11 @@
 {
   "slug": "leitungswasserschaden-wohngebaeude",
-  "titel": "Leitungswasserschaden Wohngebäude regulieren",
+  "titel": "SCH-01 · Leitungswasserschaden Wohngebäude regulieren",
   "cover": {
     "department": "Schaden",
     "participantName": "Edda Brandt",
     "participantEmail": "edda.brandt@lifecorp.example",
-    "processName": "Leitungswasserschaden Wohngebäude regulieren"
+    "processName": "SCH-01 · Leitungswasserschaden Wohngebäude regulieren"
   },
   "interactionMode": "chat",
   "dokumente": [
@@ -28,8 +28,8 @@
   "formular": {
     "antworten": {
       "purpose-scope": "Wir regulieren Leitungswasserschäden an Wohngebäuden von der Schadenmeldung bis zur Zahlung und zum Abschluss. Hausratanteile, Betrugsprüfung und ein möglicher Rückgriff laufen in eigenen Prozessen.",
-      "flow-roles": "Die Schadenmeldung kommt über Portal, Telefon oder Vermittler. Wir legen in KOMPASS an, prüfen die Deckung in VERA, fordern Fotos und Kostenvoranschlag an und triagieren. Über 5.000 Euro oder bei unklarem Schadenbild beauftragen wir einen Sachverständigen per Outlook. Danach prüfen wir Positionen, setzen die Reserve, zahlen über SAP FI und schließen in KOMPASS und AKTE.",
-      "information-systems": "KOMPASS ist das Schadensystem, VERA hält den Vertrag, PARTO die Kontaktdaten, AKTE die Dokumente und SAP FI die Zahlung. Meldungen, Fotos, Kostenvoranschläge und Gutachten kommen in unterschiedlichen Formaten; die Gutachtersteuerung läuft über Outlook und eine Teamliste.",
+      "flow-roles": "Die Schadenmeldung kommt über Portal, Telefon oder Vermittler. Wir legen in KOMPASS an, prüfen die Deckung in VERA, fordern Fotos und Kostenvoranschlag an und triagieren. Über 5.000 Euro oder bei unklarem Schadenbild beauftragen wir einen Sachverständigen per E-Mail über Exchange Online. Danach prüfen wir Positionen, setzen die Reserve, zahlen über SAP S/4HANA und schließen in KOMPASS und AKTE.",
+      "information-systems": "KOMPASS ist das Schadensystem, VERA hält den Vertrag, PARTO die Kontaktdaten, AKTE die Dokumente und SAP S/4HANA die Zahlung. Meldungen, Fotos, Kostenvoranschläge und Gutachten kommen in unterschiedlichen Formaten; die Gutachtersteuerung läuft über Exchange Online und eine Teamliste.",
       "decisions-controls-handoffs": "Deckung ist regelbasiert. Die Gutachterentscheidung kombiniert die 5.000-Euro-Grenze mit Schadenbild, Gebäudenutzung und Auffälligkeiten. Gekürzte Positionen müssen begründet werden. Unklare Deckung geht an Fachsupport, Verdachtsfälle an die Betrugsprüfung und mögliche Rückgriffe nach Abschluss an Regress.",
       "effort-pain-goals": "Die größten Probleme sind unvollständige Erstmeldungen, manuelles Übertragen von Positionen und das Nachhalten externer Gutachter per E-Mail. Der Status ist für Service und Kunden oft nicht sichtbar. Wir wollen vollständige Fälle beim ersten Kontakt, eine belegte Vorprüfung und aktive Hinweise auf fehlende Schritte."
     },

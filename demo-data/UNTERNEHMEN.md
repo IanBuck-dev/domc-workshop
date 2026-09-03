@@ -6,29 +6,51 @@ Organisation, Systeme, Personen — sind erfunden. Zweck ist ein realistischer,
 aber vollständig unverfänglicher Rahmen für Tuningrunden der Prozessaufnahme
 und der Potenzialanalyse.
 
+Das zentrale, leserorientierte Annahmenregister steht in
+[`../LIFECORP.md`](../LIFECORP.md). Dieses Dokument bleibt der Detailkatalog für
+Unternehmensprofil, Systemnamen und Personas.
+
 ## Kurzporträt
 
 - **Name**: LifeCorp Versicherung VVaG
 - **Sitz**: Wallstraße 14, 44135 Dortmund
 - **Größe**: ca. 1.800 Mitarbeitende
-- **Sparten**: Kfz, Hausrat/Wohngebäude, Leben, betriebliche Altersvorsorge
+- **Sach/Komposit**: Kfz, Hausrat und Wohngebäude
+- **Leben und Vorsorge**: Lebensversicherung und betriebliche Altersvorsorge
+- **Vertriebskanäle**: bundesweites Direkt- und Vermittlergeschäft
 
-LifeCorp ist ein mittelgroßer, regional verwurzelter Versicherer mit
-bundesweitem Direkt- und Vermittlergeschäft. Das Haus modernisiert seit
-einigen Jahren seine Kernsysteme schrittweise, arbeitet dabei aber weiterhin
-mit einem historisch gewachsenen Altsystem im Lebengeschäft.
+LifeCorp ist ein mittelgroßer, regional verwurzelter Versicherer. Das Haus
+modernisiert seit einigen Jahren seine Kernsysteme schrittweise, arbeitet dabei
+aber weiterhin mit einem historisch gewachsenen Altsystem im Lebengeschäft.
+Kranken-, Haftpflicht-, Unfall-, Rechtsschutz- und eigenständige
+Gewerbeversicherungen gehören ausdrücklich nicht zum Angebot.
 
-## Organisationsstruktur
+## Fachbereiche im Demo-Prozessportfolio
 
-Die Fachbereiche entsprechen den in der App hinterlegten Abteilungen
-(`defaults/process-capture-config.json`):
+Die Präsentationsfälle bleiben auf das angebotene Versicherungsgeschäft und
+seine Vertriebskanäle begrenzt. Die Fachbereiche entsprechen den in der App
+hinterlegten Abteilungen (`defaults/process-capture-config.json`):
 
 - **Schaden** — Schadenannahme, Regulierung, Betrugsprüfung, alle Sparten.
 - **Vertrieb** — Vermittlerbetreuung, Angebotswesen, Provisionsabrechnung.
 - **Vertrag** — Vertragsverwaltung, Bestandsänderungen, Beitragsanpassungen.
-- **Finanzen** — Buchhaltung, Zahlungsverkehr, Rückversicherung, Reporting.
-- **IT** — Betrieb und Weiterentwicklung der Kernsysteme, Support.
-- **Personal** — Personalverwaltung, Recruiting, Aus- und Weiterbildung.
+- **Finanzen** — versicherungsspezifischer Zahlungsverkehr,
+  Prämieninkasso, Rückversicherung und Provisionsbuchung.
+- **IT** — Einführung und Governance von Microsoft 365 Copilot und Copilot
+  Studio sowie kontrollierte API-Anbindung der Versicherungssysteme für
+  agentische Fachbereichsanwendungen.
+
+LifeCorp besitzt selbstverständlich weitere interne Funktionen. Allgemeine
+IT-Support-, Personal-, Rechts-, Compliance- und Verwaltungsprozesse sind
+jedoch kein Teil des Demo-Prozessportfolios.
+
+Die vollständige Auswahl der Präsentationsfälle und ihr geplanter
+Potenzial-Mix stehen in [`PROZESSPORTFOLIO.md`](PROZESSPORTFOLIO.md). Der
+verbindliche Katalog für Systeme und Datenquellen steht in
+[`DATENQUELLEN.md`](DATENQUELLEN.md). Die Angaben, die jeder Demo-Prozess
+enthalten muss, stehen in [`MODELLIERUNGSRAHMEN.md`](MODELLIERUNGSRAHMEN.md).
+Teams, Rollen und organisatorische Übergaben sind in
+[`ORGANISATION.md`](ORGANISATION.md) festgelegt.
 
 ## Systemlandschaft
 
@@ -36,16 +58,23 @@ Feste, erfundene Systemnamen. Alle Szenariodokumente und Drehbuch-Antworten
 verwenden ausschließlich diese Namen — Konsistenz über die gesamte
 Systemlandschaft ist Teil dessen, was beim Tuning geprüft wird.
 
-| System      | Zweck                                                                                       |
-| ----------- | ------------------------------------------------------------------------------------------- |
-| **VERA**    | Bestandsführungssystem — verwaltet Verträge über alle Sparten außer Alt-Leben.              |
-| **KOMPASS** | Schadensystem — Erfassung, Bearbeitung und Regulierung von Schadenfällen.                   |
-| **PARTO**   | Partnersystem/CRM — Kunden-, Vermittler- und Kontaktdaten.                                  |
-| **AKTE**    | Dokumentenmanagementsystem — zentrale Ablage für Verträge, Schreiben und Nachweise.         |
-| **PROVISO** | Provisionssystem — berechnet und verwaltet Vergütungen für Vermittler im Außendienst.       |
-| **SAP FI**  | Standard-SAP-Modul für Finanzbuchhaltung und Zahlungsverkehr.                               |
-| **Outlook** | Standard-E-Mail- und Kalenderprogramm, unternehmensweit im Einsatz.                         |
-| **LEBUS**   | Altsystem-Host für das Lebengeschäft — Bestandsführung für Verträge vor der VERA-Migration. |
+| System                       | Zweck                                                                                        |
+| ---------------------------- | -------------------------------------------------------------------------------------------- |
+| **VERA**                     | Bestandsführungssystem für alle aktuellen Verträge außer dem Altbestand Leben.               |
+| **KOMPASS**                  | Schadensystem für Erfassung, Bearbeitung und Regulierung.                                    |
+| **PARTO**                    | separates Vertriebs- und Vermittler-CRM samt Vermittlerportal.                               |
+| **AKTE**                     | revisionsnahe Dokumentenablage für Verträge, Schäden, Schreiben und Nachweise.               |
+| **PROVISO**                  | Provisionssystem für Außendienst und Makler.                                                 |
+| **SAP S/4HANA**              | modernes ERP für Finanzbuchhaltung, Zahlungsverkehr, Prämieninkasso und Mahnwesen.           |
+| **LEBUS**                    | hostbasiertes Bestandssystem aus den 1990er-Jahren für nicht migrierte Lebensversicherungen. |
+| **Microsoft 365**            | Arbeitsumgebung mit Office-Anwendungen, Exchange Online, Teams und SharePoint Online.        |
+| **Microsoft 365 Copilot**    | KI-Zugriffsschicht für berechtigte Microsoft-365-Arbeitsinhalte.                             |
+| **Microsoft Copilot Studio** | Plattform für kontrollierte Fachbereichs-Agenten und deren Datenzugriffe.                    |
+| **Microsoft Entra ID**       | Identitäten, Gruppen und Zugriffsrechte.                                                     |
+| **Microsoft Purview**        | Klassifizierung, Schutz und Governance von Daten.                                            |
+| **Power Automate**           | regelbasierte Workflows zwischen Anwendungen und Diensten.                                   |
+| **Power BI**                 | Berichte und Management-Dashboards auf kuratierten Daten.                                    |
+| **Azure API Management**     | kontrollierter API-Zugang auf SAP S/4HANA und die Versicherungssysteme.                      |
 
 ## Personas
 

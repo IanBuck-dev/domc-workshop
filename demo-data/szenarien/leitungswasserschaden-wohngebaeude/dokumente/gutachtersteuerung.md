@@ -1,11 +1,11 @@
 # Fachnotiz Gutachtersteuerung Leitungswasser
 
-Die Gutachterbeauftragung wird derzeit nicht technisch aus KOMPASS gesteuert. Die Sachbearbeitung erstellt eine Outlook-Mail aus einer Textvorlage und trägt Fallnummer, Gutachter, Auftragsdatum, erwartete Rückmeldung und Wiedervorlage in die gemeinsame Teamliste ein.
+Die Gutachterbeauftragung wird derzeit nicht technisch aus KOMPASS gesteuert. Die Sachbearbeitung erstellt in Exchange Online eine E-Mail aus einer Textvorlage und trägt Fallnummer, Gutachter, Auftragsdatum, erwartete Rückmeldung und Wiedervorlage in die gemeinsame Teamliste ein.
 
 ## Beobachtungen aus der Fachrunde
 
 - Die feste 5.000-Euro-Grenze ist nur ein Teil der Entscheidung. Schadenbild, Gebäudenutzung, Vorschäden und fehlende Plausibilität können auch unterhalb der Grenze eine Begutachtung auslösen.
-- Vertretungen erkennen in KOMPASS nicht, ob ein Termin bereits vereinbart wurde. Sie müssen Outlook und Teamliste durchsuchen.
+- Vertretungen erkennen in KOMPASS nicht, ob ein Termin bereits vereinbart wurde. Sie müssen Exchange Online und Teamliste durchsuchen.
 - Fristen werden persönlich über Wiedervorlagen nachgehalten. Bei Urlaub entstehen Lücken.
 - Eingehende Gutachten werden manuell dem Fall zugeordnet und anschließend positionsweise mit dem Kostenvoranschlag verglichen.
 - Die fachliche Entscheidung über Deckung, Kürzungen und Entschädigung bleibt bei der Sachbearbeitung.

@@ -1,4 +1,4 @@
-# Verfahrensanweisung Beitragsanpassung Bestandsvertrag
+# Verfahrensanweisung Turnusmäßige Beitragsanpassung Wohngebäude
 
 **Dokumentnummer:** VA-VER-018
 **Version:** 3.0

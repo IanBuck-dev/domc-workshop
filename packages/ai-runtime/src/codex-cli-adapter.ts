@@ -192,6 +192,9 @@ export class CodexCliAdapter implements AiRuntimeProvider {
       const available = uploads.length
         ? uploads.map((name) => `- uploads/${name}`).join("\n")
         : "Keine ausgewählten Dateien.";
+      const imageArguments = uploads
+        .filter((name) => /\.(?:png|jpe?g)$/i.test(name))
+        .flatMap((name) => ["--image", `uploads/${name}`]);
       const prompt = `${request.systemPrompt}\n\n${request.prompt}\n\n## Verfügbare Dateien\n${available}\n\nGib ausschließlich das strukturierte Ergebnis gemäß response-schema.json aus.`;
       const codexCommand = [
         this.options.codexCommand,
@@ -211,6 +214,7 @@ export class CodexCliAdapter implements AiRuntimeProvider {
         providerModel("codex-cli", request.model.model),
         "--config",
         `model_reasoning_effort=${request.model.effort}`,
+        ...imageArguments,
         "-",
       ];
       const command = await this.sandboxCommand(cwd, codexCommand);

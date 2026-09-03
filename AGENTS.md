@@ -54,13 +54,16 @@ The prototype's login is gated. Real or reusable credentials live in the user's 
   automatisch; `DEMO_SEED=0` schaltet das ab.
 - Der Demo-Sidecar in der Web-App speist sich aus `GET /api/demo/szenarien`.
 - Der Präsentationsfall `leitungswasserschaden-wohngebaeude` deckt die reale
-  Claude-Strecke von der Chat-Aufnahme bis zu beiden Excel-Exporten ab.
+  KI-Strecke vom konfigurierten Provider bis zu beiden Excel-Exporten ab.
 - `tests/demo-data.test.ts` hält die Szenarien konsistent — Schema, Dokumentenlisten,
   Fachbereiche, Formularfelder.
-- Systemnamen und Personas kommen aus `demo-data/UNTERNEHMEN.md` und müssen über alle
+- Bereichsübergreifende LifeCorp-Annahmen beginnen in `LIFECORP.md`; exakte Systemnamen
+  und Personas kommen aus den dort verlinkten Detailkatalogen und müssen über alle
   Szenarien hinweg konsistent bleiben.
+- `bun run seed:showcase [--list]` erzeugt den vollständigen Präsentationsstand aus
+  14 bestätigten Prozessen und vier bewusst fortsetzbaren Aufnahmezuständen.
 - `bun run seed:docs [--list]` füllt die lebende Prozessdokumentation aus
-  `demo-data/dokumentation/` — acht Prozesse über sechs Fachbereiche samt Revisionen und
+  `demo-data/dokumentation/` — 14 Prozesse über fünf Fachbereiche samt Revisionen und
   einer Rücknahme. Der Seed ist additiv, überspringt vorhandene Prozesstitel und erzeugt
   jeden Archiveintrag über die produktiven Pfade (`finalizeChatCapture`,
   `correctUnderstanding`/`confirm`, `syncProcess`, `revert`); in `workspace/docs` wird

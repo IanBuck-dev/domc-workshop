@@ -1,0 +1,193 @@
+{
+  "slug": "m365-copilot-zugriffe",
+  "titel": "IT-03 · Microsoft-365-Copilot-Lizenzen und Zugriffe bereitstellen",
+  "fachbereich": "IT",
+  "gespraechspartner": {
+    "name": "Edda Brandt",
+    "email": "edda.brandt@lifecorp.example"
+  },
+  "erstelltAm": "2025-12-02T08:00:00.000Z",
+  "bestaetigtAm": "2025-12-09T11:45:00.000Z",
+  "belege": [
+    {
+      "id": "b1",
+      "text": "Bereichsleitungen melden quartalsweise namentlich, wer Microsoft 365 Copilot für einen freigegebenen Einsatz benötigt. Ohne bestätigte Schulung und Kostenstellenfreigabe gibt es keine Lizenz."
+    },
+    {
+      "id": "b2",
+      "text": "Wir prüfen in Entra ID Identität, Beschäftigungsstatus und die passende Fachbereichsgruppe. Purview muss für das Postfach und die SharePoint-Bereiche die vorgesehenen Schutzregeln zeigen."
+    },
+    {
+      "id": "b3",
+      "text": "Pro Quartal sind es ungefähr 40 bis 80 Anträge. Die Prüfung ist weitgehend regelbasiert und dauert bei vollständigen Angaben fünf Minuten; fehlende Schulungsnachweise verursachen die meisten Rückfragen."
+    },
+    {
+      "id": "b4",
+      "text": "Nach Zuweisung der Lizenz senden wir die Startinformation und prüfen nach 90 Tagen, ob das Konto noch aktiv und der Bedarf bestätigt ist."
+    }
+  ],
+  "zweck": {
+    "wert": "Microsoft-365-Copilot-Lizenzen nur an berechtigte, geschulte und fachlich bestätigte Personen vergeben.",
+    "belege": ["b1"]
+  },
+  "ausloeser": {
+    "wert": "Quartalsweise Bedarfsanmeldung einer Fachbereichsleitung.",
+    "belege": ["b1"]
+  },
+  "ergebnis": {
+    "wert": "Lizenz und vorgesehene Zugriffsgruppe sind zugewiesen oder der Antrag ist mit Grund zurückgegeben; eine 90-Tage-Prüfung ist terminiert.",
+    "belege": ["b4"]
+  },
+  "abgrenzung": {
+    "wert": "Freigabe einzelner SharePoint-Inhalte und fachliche Nutzungskonzepte bleiben bei den jeweiligen Informations- und Fachverantwortlichen.",
+    "belege": ["b2"]
+  },
+  "beteiligte": {
+    "wert": [
+      "Microsoft-365-Plattform",
+      "Fachbereichsleitung",
+      "Antragstellende Person",
+      "Identität und Data Governance"
+    ],
+    "belege": ["b1", "b2"]
+  },
+  "informationsquellen": {
+    "wert": [
+      "Bedarfsanmeldung",
+      "Schulungsnachweis",
+      "Kostenstellenfreigabe",
+      "Identität und Gruppen in Entra ID",
+      "Schutzstatus in Purview"
+    ],
+    "belege": ["b1", "b2"]
+  },
+  "systeme": {
+    "wert": [
+      "Microsoft 365 Copilot",
+      "Microsoft Entra ID",
+      "Microsoft Purview",
+      "SharePoint Online",
+      "Exchange Online"
+    ],
+    "belege": ["b2", "b4"]
+  },
+  "kontrollen": {
+    "wert": [
+      "Namentliche Bedarfs- und Kostenstellenfreigabe",
+      "Bestätigter Schulungsnachweis",
+      "Prüfung von Identität, Gruppe und Schutzstatus",
+      "90-Tage-Nachprüfung"
+    ],
+    "belege": ["b1", "b2", "b4"]
+  },
+  "uebergaben": {
+    "wert": [
+      "Fachbereichsleitung an Microsoft-365-Plattform",
+      "Microsoft-365-Plattform an Identität und Data Governance bei Schutzabweichungen",
+      "IT an antragstellende Person mit Startinformation"
+    ],
+    "belege": ["b1", "b2", "b4"]
+  },
+  "mengenUndZeiten": {
+    "wert": [
+      "40 bis 80 Anträge pro Quartal",
+      "Fünf Minuten Prüfung bei vollständigen Angaben",
+      "Nachprüfung nach 90 Tagen"
+    ],
+    "belege": ["b3", "b4"]
+  },
+  "schwachstellen": {
+    "wert": [
+      "Schulungsnachweise fehlen häufig",
+      "Bedarfslisten kommen in unterschiedlichen Tabellenformaten",
+      "Die Prüfung ist trotz fester Regeln manuell"
+    ],
+    "belege": ["b1", "b3"]
+  },
+  "verbesserungsziele": {
+    "wert": [
+      "Vollständigkeit vor Einreichung erzwingen",
+      "Regelprüfungen nachvollziehbar automatisieren",
+      "90-Tage-Nachprüfung zuverlässig terminieren"
+    ],
+    "belege": ["b1", "b4"]
+  },
+  "wissensluecken": [
+    "Die tatsächliche Nutzungsintensität wird im aktuellen Prozess nicht als Entzugskriterium verwendet."
+  ],
+  "widersprueche": [],
+  "schritte": [
+    {
+      "name": "Bedarfsmeldung prüfen",
+      "taetigkeit": "Person, Einsatzbedarf, Kostenstelle und Freigabe der Bereichsleitung auf Vollständigkeit prüfen.",
+      "eingaben": ["Bedarfsanmeldung"],
+      "ausgaben": ["Vollständiger Antrag oder Rückfrage"],
+      "informationen": [
+        {
+          "name": "Bedarf und Freigaben",
+          "quelle": "SharePoint Online",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b1", "b3"]
+    },
+    {
+      "name": "Schulung nachweisen",
+      "taetigkeit": "Gültigen Schulungsnachweis der antragstellenden Person kontrollieren.",
+      "eingaben": ["Vollständiger Antrag", "Schulungsnachweis"],
+      "ausgaben": ["Nachgewiesene Befähigung"],
+      "informationen": [
+        {
+          "name": "Schulungsstatus",
+          "quelle": "SharePoint Online",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b1", "b3"]
+    },
+    {
+      "name": "Identität und Schutz prüfen",
+      "taetigkeit": "Beschäftigungsstatus, Fachbereichsgruppe und anwendbare Purview-Regeln abgleichen.",
+      "eingaben": ["Nachgewiesene Befähigung"],
+      "ausgaben": ["Freigegebener Zugriffsumfang"],
+      "informationen": [
+        {
+          "name": "Identität, Gruppe und Schutzstatus",
+          "quelle": "Microsoft Entra ID und Microsoft Purview",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b2"]
+    },
+    {
+      "name": "Lizenz und Gruppe zuweisen",
+      "taetigkeit": "Microsoft-365-Copilot-Lizenz und freigegebene Fachbereichsgruppe zuweisen.",
+      "eingaben": ["Freigegebener Zugriffsumfang"],
+      "ausgaben": ["Aktivierte Lizenz und Gruppe"],
+      "informationen": [
+        {
+          "name": "Lizenz- und Gruppenstatus",
+          "quelle": "Microsoft Entra ID",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b2"]
+    },
+    {
+      "name": "Start und Nachprüfung dokumentieren",
+      "taetigkeit": "Startinformation versenden und die Bedarfsprüfung nach 90 Tagen terminieren.",
+      "eingaben": ["Aktivierte Lizenz und Gruppe"],
+      "ausgaben": ["Informierte Person", "Terminierte Nachprüfung"],
+      "informationen": [
+        {
+          "name": "Startinformation und Prüftermin",
+          "quelle": "Exchange Online",
+          "typ": "email"
+        }
+      ],
+      "belege": ["b4"]
+    }
+  ],
+  "verzweigung": null,
+  "revisionen": []
+}

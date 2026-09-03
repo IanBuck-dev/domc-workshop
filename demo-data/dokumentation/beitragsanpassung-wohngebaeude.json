@@ -1,6 +1,6 @@
 {
   "slug": "beitragsanpassung-wohngebaeude",
-  "titel": "Turnusmäßige Beitragsanpassung Wohngebäude",
+  "titel": "VER-01 · Turnusmäßige Beitragsanpassung Wohngebäude",
   "fachbereich": "Vertrag",
   "gespraechspartner": {
     "name": "Edda Brandt",
@@ -31,7 +31,7 @@
     }
   ],
   "zweck": {
-    "wert": "Jährliche Anpassung der Beiträge im Wohngebäudebestand an den vom Aktuariat vorgegebenen Anpassungsfaktor, einschließlich Kundenanschreiben und Bearbeitung der Reaktionen.",
+    "wert": "Jährlich wiederkehrender Massenprozess zur Anpassung der Beiträge im Wohngebäudebestand an den vom Aktuariat vorgegebenen Anpassungsfaktor, einschließlich Kundenanschreiben und Bearbeitung der Reaktionen.",
     "belege": ["b1"]
   },
   "ausloeser": {
@@ -61,12 +61,12 @@
       "Freigabeschreiben des Aktuariats mit Anpassungsfaktor und Stichtag",
       "Vertragsbestand Wohngebäude in VERA",
       "Ausnahmeliste des Anpassungslaufs",
-      "Eingehende Widersprüche und Kündigungen aus Post und Outlook"
+      "Eingehende Widersprüche und Kündigungen aus Post und Exchange Online"
     ],
     "belege": ["b1", "b2", "b4"]
   },
   "systeme": {
-    "wert": ["VERA", "AKTE", "PARTO", "Outlook"],
+    "wert": ["VERA", "AKTE", "PARTO", "Exchange Online"],
     "belege": ["b2", "b3"]
   },
   "kontrollen": {
@@ -98,7 +98,7 @@
   "schwachstellen": {
     "wert": [
       "Die Ausnahmeliste nennt nur einen Fehlerschlüssel, nicht den fachlichen Grund",
-      "Widersprüche kommen über Post und Outlook herein und werden ohne Werkzeugunterstützung nachverfolgt",
+      "Widersprüche kommen über Post und Exchange Online herein und werden ohne Werkzeugunterstützung nachverfolgt",
       "Die Monatsfrist wird in Spitzenzeiten nur mit Überstunden gehalten"
     ],
     "belege": ["b2", "b4"]

@@ -331,7 +331,15 @@ export class CodexChatCaptureAdapter {
       threadId = createdThread.id;
       const turn = await call("turn/start", {
         threadId,
-        input: [{ type: "text", text: request.prompt, text_elements: [] }],
+        input: [
+          { type: "text", text: request.prompt, text_elements: [] },
+          ...(request.attachments ?? [])
+            .filter((attachment) => attachment.mediaType.startsWith("image/"))
+            .map((attachment) => ({
+              type: "localImage",
+              path: attachment.path,
+            })),
+        ],
         cwd: request.cwd,
         approvalPolicy: "never",
         permissions: ":read-only",

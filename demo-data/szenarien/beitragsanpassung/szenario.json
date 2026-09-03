@@ -1,11 +1,11 @@
 {
   "slug": "beitragsanpassung",
-  "titel": "Beitragsanpassung Bestandsvertrag",
+  "titel": "VER-01 · Turnusmäßige Beitragsanpassung Wohngebäude",
   "cover": {
     "department": "Vertrag",
     "participantName": "Edda Brandt",
     "participantEmail": "edda.brandt@lifecorp.example",
-    "processName": "Beitragsanpassung Bestandsvertrag"
+    "processName": "VER-01 · Turnusmäßige Beitragsanpassung Wohngebäude"
   },
   "interactionMode": "chat",
   "dokumente": [

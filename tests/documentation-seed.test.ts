@@ -85,7 +85,7 @@ describe("Seeddaten der Prozessdokumentation", () => {
       const flagship = records.find(
         (record) =>
           record.cover.processName ===
-          "Leitungswasserschaden Wohngebäude regulieren",
+          "SCH-01 · Leitungswasserschaden Wohngebäude regulieren",
       );
       expect(flagship?.confirmationQuality).toBe("complete");
       const opportunity = await new OpportunityDiscoveryRepository(

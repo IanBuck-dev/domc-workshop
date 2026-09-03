@@ -59,7 +59,7 @@
     "confirmed": true
   },
   "systems": {
-    "value": ["KOMPASS", "VERA", "SAP FI", "AKTE", "PARTO"],
+    "value": ["KOMPASS", "VERA", "SAP S/4HANA", "AKTE", "PARTO"],
     "provenance": "user_stated",
     "evidenceIds": ["ev-chat-4", "ev-doc-aa-1"],
     "confidence": 92,
@@ -140,13 +140,13 @@
       "id": "ev-chat-3",
       "kind": "chat_message",
       "sourceId": "8f14e45f-ceea-4d1e-8b2a-000000000003",
-      "excerpt": "Zieh ich die 150 Euro Selbstbeteiligung ab und stoß die Zahlung über SAP FI an. Zum Schluss kommt alles in die AKTE und der Vorgang ist durch."
+      "excerpt": "Zieh ich die 150 Euro Selbstbeteiligung ab und stoß die Zahlung über SAP S/4HANA an. Zum Schluss kommt alles in die AKTE und der Vorgang ist durch."
     },
     {
       "id": "ev-chat-4",
       "kind": "chat_message",
       "sourceId": "8f14e45f-ceea-4d1e-8b2a-000000000004",
-      "excerpt": "Systeme sind KOMPASS für den Schaden selbst, VERA für die Vertragsdaten, SAP FI für die Zahlung und AKTE für die Ablage. Wer Partnerwerkstatt ist, steht in PARTO."
+      "excerpt": "Systeme sind KOMPASS für den Schaden selbst, VERA für die Vertragsdaten, SAP S/4HANA für die Zahlung und AKTE für die Ablage. Wer Partnerwerkstatt ist, steht in PARTO."
     },
     {
       "id": "ev-chat-5",
@@ -340,9 +340,9 @@
       "id": "step-5",
       "order": 6,
       "name": "Auszahlung anstoßen",
-      "activity": "Den ermittelten Betrag über SAP FI zur Auszahlung anweisen. Bei Leasingfahrzeugen erfolgt die Auszahlung abweichend an die im Vertrag hinterlegte Leasinggesellschaft.",
+      "activity": "Den ermittelten Betrag über SAP S/4HANA zur Auszahlung anweisen. Bei Leasingfahrzeugen erfolgt die Auszahlung abweichend an die im Vertrag hinterlegte Leasinggesellschaft.",
       "inputs": ["Ermittelter Auszahlungsbetrag"],
-      "outputs": ["Ausgelöste Zahlungsanweisung in SAP FI"],
+      "outputs": ["Ausgelöste Zahlungsanweisung in SAP S/4HANA"],
       "informationItems": [
         {
           "id": "step-5-info-1",

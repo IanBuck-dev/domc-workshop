@@ -1,0 +1,243 @@
+{
+  "slug": "copilot-studio-schadenwissen",
+  "titel": "IT-01 · Copilot-Studio-Agent für Schadenwissen prüfen und bereitstellen",
+  "fachbereich": "IT",
+  "gespraechspartner": {
+    "name": "Edda Brandt",
+    "email": "edda.brandt@lifecorp.example"
+  },
+  "erstelltAm": "2026-07-01T08:30:00.000Z",
+  "bestaetigtAm": "2026-07-15T15:05:00.000Z",
+  "belege": [
+    {
+      "id": "b1",
+      "text": "Der Fachbereich Schaden beantragt einen Copilot-Studio-Agenten für freigegebene Arbeitsanweisungen. Wir prüfen zuerst Owner, Nutzergruppe, Quellen und konkrete Testfragen."
+    },
+    {
+      "id": "b2",
+      "text": "Die Wissensseiten liegen in SharePoint Online. Wir kontrollieren Berechtigungen mit Entra ID und Klassifizierung sowie Aufbewahrung mit Purview, bevor der Agent Inhalte lesen darf."
+    },
+    {
+      "id": "b3",
+      "text": "Ein Agent braucht bei uns 20 bis 40 Testfälle mit erwarteter Antwort und Quellenbeleg. Kritische Antworten müssen auf die verbindliche Arbeitsanweisung verweisen und dürfen keine Leistungsentscheidung treffen."
+    },
+    {
+      "id": "b4",
+      "text": "Wir haben aktuell etwa drei Anfragen pro Monat. Eine saubere Prüfung dauert fünf bis acht Arbeitstage; am meisten Zeit kostet das Nacharbeiten unsauber gepflegter SharePoint-Berechtigungen."
+    },
+    {
+      "id": "b5",
+      "text": "Nach Fachabnahme und Sicherheitsfreigabe veröffentlichen wir zunächst für eine Pilotgruppe. Nutzungs- und Fehlerhinweise werden vier Wochen beobachtet, bevor der Rollout erweitert wird."
+    }
+  ],
+  "zweck": {
+    "wert": "Einen fachlich begrenzten Schadenwissens-Agenten mit kontrollierten Quellen, Zugriffen und überprüften Antworten bereitstellen.",
+    "belege": ["b1"]
+  },
+  "ausloeser": {
+    "wert": "Vollständiger Antrag des Fachbereichs Schaden für einen Copilot-Studio-Agenten.",
+    "belege": ["b1"]
+  },
+  "ergebnis": {
+    "wert": "Ein für eine definierte Nutzergruppe veröffentlichter und überwachter Agent oder eine begründete Rückgabe an den Fachbereich.",
+    "belege": ["b5"]
+  },
+  "abgrenzung": {
+    "wert": "Der Prozess stellt Wissen bereit; der Agent darf keine Schadenentscheidung treffen, Zahlungen auslösen oder Daten in KOMPASS ändern.",
+    "belege": ["b3"]
+  },
+  "beteiligte": {
+    "wert": [
+      "AI Enablement und Copilot Studio",
+      "Fachlicher Owner Schaden",
+      "Identität und Data Governance",
+      "Informationssicherheit",
+      "Pilotgruppe Schaden"
+    ],
+    "belege": ["b1", "b2", "b5"]
+  },
+  "informationsquellen": {
+    "wert": [
+      "Agentenantrag",
+      "Arbeitsanweisungen in SharePoint Online",
+      "Berechtigungsgruppen in Entra ID",
+      "Klassifizierungen in Purview",
+      "Testfallkatalog"
+    ],
+    "belege": ["b1", "b2", "b3"]
+  },
+  "systeme": {
+    "wert": [
+      "Microsoft Copilot Studio",
+      "SharePoint Online",
+      "Microsoft Entra ID",
+      "Microsoft Purview",
+      "Microsoft Teams"
+    ],
+    "belege": ["b2", "b5"]
+  },
+  "kontrollen": {
+    "wert": [
+      "Benannter fachlicher Owner und definierte Nutzergruppe",
+      "Berechtigungs- und Klassifizierungsprüfung",
+      "20 bis 40 Testfälle mit Quellenbeleg",
+      "Fachabnahme und Sicherheitsfreigabe",
+      "Vierwöchige Pilotbeobachtung"
+    ],
+    "belege": ["b1", "b2", "b3", "b5"]
+  },
+  "uebergaben": {
+    "wert": [
+      "Fachbereich Schaden an AI Enablement",
+      "AI Enablement an Data Governance und Informationssicherheit",
+      "IT an Pilotgruppe",
+      "Pilotbefunde an fachlichen Owner"
+    ],
+    "belege": ["b1", "b5"]
+  },
+  "mengenUndZeiten": {
+    "wert": [
+      "Etwa drei Anfragen pro Monat",
+      "Fünf bis acht Arbeitstage je Prüfung",
+      "20 bis 40 Testfälle",
+      "Vier Wochen Pilotbeobachtung"
+    ],
+    "belege": ["b3", "b4", "b5"]
+  },
+  "schwachstellen": {
+    "wert": [
+      "Quellberechtigungen sind historisch uneinheitlich",
+      "Testfragen und erwartete Antworten kommen in unterschiedlichen Formaten",
+      "Quellenänderungen nach Freigabe sind nicht automatisch im Testkatalog sichtbar"
+    ],
+    "belege": ["b2", "b3", "b4"]
+  },
+  "verbesserungsziele": {
+    "wert": [
+      "Quellen- und Berechtigungsprüfung nachvollziehbar bündeln",
+      "Testfälle systematisch gegen Quellen ausführen",
+      "Änderungen an freigegebenen Quellen früh erkennen"
+    ],
+    "belege": ["b2", "b3"]
+  },
+  "wissensluecken": [
+    "Ein verbindlicher Grenzwert für die erlaubte Fehlerrate im Pilot ist noch nicht beschlossen."
+  ],
+  "widersprueche": [],
+  "schritte": [
+    {
+      "name": "Antrag prüfen",
+      "taetigkeit": "Zweck, Owner, Nutzergruppe, Grenzen und Testverantwortung auf Vollständigkeit prüfen.",
+      "eingaben": ["Agentenantrag"],
+      "ausgaben": ["Prüffähiger Auftrag"],
+      "informationen": [
+        {
+          "name": "Use Case und Verantwortungen",
+          "quelle": "SharePoint Online",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b1"]
+    },
+    {
+      "name": "Wissensquellen inventarisieren",
+      "taetigkeit": "Verbindliche Schaden-Arbeitsanweisungen und ausgeschlossene Inhalte festhalten.",
+      "eingaben": ["Prüffähiger Auftrag"],
+      "ausgaben": ["Freigegebene Quellenliste"],
+      "informationen": [
+        {
+          "name": "Arbeitsanweisungen",
+          "quelle": "SharePoint Online",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b1", "b2"]
+    },
+    {
+      "name": "Zugriffe und Schutz prüfen",
+      "taetigkeit": "Nutzergruppen, Quellberechtigungen, Klassifizierung und Aufbewahrung abgleichen.",
+      "eingaben": ["Freigegebene Quellenliste"],
+      "ausgaben": ["Berechtigungs- und Schutzbefund"],
+      "informationen": [
+        {
+          "name": "Gruppen und Klassifizierungen",
+          "quelle": "Microsoft Entra ID und Microsoft Purview",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b2"]
+    },
+    {
+      "name": "Agent konfigurieren",
+      "taetigkeit": "Quellen, Antwortgrenzen und Übergabehinweise in Copilot Studio konfigurieren.",
+      "eingaben": ["Berechtigungs- und Schutzbefund"],
+      "ausgaben": ["Testbarer Agent"],
+      "informationen": [
+        {
+          "name": "Agentenkonfiguration",
+          "quelle": "Microsoft Copilot Studio",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b1", "b3"]
+    },
+    {
+      "name": "Testfälle ausführen",
+      "taetigkeit": "Fachliche Fragen, Grenzfälle und unzulässige Anfragen gegen erwartete Antworten und Quellen prüfen.",
+      "eingaben": ["Testbarer Agent", "Testfallkatalog"],
+      "ausgaben": ["Testergebnisse"],
+      "informationen": [
+        {
+          "name": "Testfall und Quellenbeleg",
+          "quelle": "SharePoint Online",
+          "typ": "database_or_report"
+        }
+      ],
+      "belege": ["b3"]
+    },
+    {
+      "name": "Befunde nacharbeiten",
+      "taetigkeit": "Fehlerhafte Antworten, fehlende Quellen und Berechtigungsprobleme beheben und betroffene Tests wiederholen.",
+      "eingaben": ["Testergebnisse"],
+      "ausgaben": ["Abnahmefähiger Agent"],
+      "informationen": [
+        {
+          "name": "Befundliste",
+          "quelle": "Microsoft Teams",
+          "typ": "free_text"
+        }
+      ],
+      "belege": ["b2", "b4"]
+    },
+    {
+      "name": "Freigaben einholen",
+      "taetigkeit": "Fachabnahme sowie Freigabe von Informationssicherheit und Data Governance dokumentieren.",
+      "eingaben": ["Abnahmefähiger Agent"],
+      "ausgaben": ["Pilotfreigabe"],
+      "informationen": [
+        {
+          "name": "Freigabevermerke",
+          "quelle": "SharePoint Online",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b5"]
+    },
+    {
+      "name": "Pilot veröffentlichen und beobachten",
+      "taetigkeit": "Agent für die Pilotgruppe veröffentlichen, Rückmeldungen vier Wochen auswerten und Rolloutentscheidung vorbereiten.",
+      "eingaben": ["Pilotfreigabe"],
+      "ausgaben": ["Beobachteter Pilot und Rolloutempfehlung"],
+      "informationen": [
+        {
+          "name": "Nutzungs- und Fehlerhinweise",
+          "quelle": "Microsoft Copilot Studio",
+          "typ": "database_or_report"
+        }
+      ],
+      "belege": ["b5"]
+    }
+  ],
+  "verzweigung": null,
+  "revisionen": []
+}

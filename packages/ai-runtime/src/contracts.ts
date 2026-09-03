@@ -77,6 +77,7 @@ export interface AiChatTurnRequest {
   cwd: string;
   timeoutMs: number;
   maxBudgetUsd: number;
+  attachments?: Array<{ path: string; mediaType: string }>;
   signal: AbortSignal;
   writeProcessFlow: (value: string) => Promise<ChatProcessFlowVerification>;
   verifyProcessFlow: () => Promise<ChatProcessFlowVerification>;

@@ -17,7 +17,7 @@
     },
     {
       "nummer": 4,
-      "antwort": "Danach triagieren wir: Über 5.000 Euro erwarteter Schadenhöhe ist ein Gutachter Pflicht. Unterhalb der Grenze kann trotzdem einer rausgehen, etwa bei unklarem Schadenbild, vermietetem Objekt, möglichem Schimmel oder auffälligen Vorschäden. Die Beauftragung läuft per Outlook; den Status halten wir in einer Teamliste nach.",
+      "antwort": "Danach triagieren wir: Über 5.000 Euro erwarteter Schadenhöhe ist ein Gutachter Pflicht. Unterhalb der Grenze kann trotzdem einer rausgehen, etwa bei unklarem Schadenbild, vermietetem Objekt, möglichem Schimmel oder auffälligen Vorschäden. Die Beauftragung läuft per E-Mail über Exchange Online; den Status halten wir in einer Teamliste nach.",
       "hinweis": "Trennt feste Regel und professionelles Urteil und zeigt die externe Orchestrierung über E-Mail und Liste."
     },
     {
@@ -27,7 +27,7 @@
     },
     {
       "nummer": 6,
-      "antwort": "Danach geht die Zahlung über SAP FI entweder an den Kunden oder direkt an den Handwerker, wenn eine Abtretung vorliegt. Kontaktdaten kommen aus PARTO. Das Abrechnungsschreiben und alle Belege landen in AKTE; anschließend schließen wir den Vorgang in KOMPASS.",
+      "antwort": "Danach geht die Zahlung über SAP S/4HANA entweder an den Kunden oder direkt an den Handwerker, wenn eine Abtretung vorliegt. Kontaktdaten kommen aus PARTO. Das Abrechnungsschreiben und alle Belege landen in AKTE; anschließend schließen wir den Vorgang in KOMPASS.",
       "hinweis": "Vervollständigt Hauptablauf, Zahlungsempfänger-Variante, Systeme und Abschlusskontrolle."
     },
     {

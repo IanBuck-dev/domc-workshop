@@ -1,0 +1,178 @@
+{
+  "slug": "mahnverfahren-direktinkasso-leben",
+  "titel": "FIN-02 · Mahnverfahren im Direktinkasso Leben durchführen",
+  "fachbereich": "Finanzen",
+  "gespraechspartner": {
+    "name": "Edda Brandt",
+    "email": "edda.brandt@lifecorp.example"
+  },
+  "erstelltAm": "2025-11-04T07:50:00.000Z",
+  "bestaetigtAm": "2025-11-11T12:30:00.000Z",
+  "belege": [
+    {
+      "id": "b1",
+      "text": "SAP S/4HANA erstellt zweimal pro Woche die Mahnvorschlagsliste für Lebensverträge im Direktinkasso. Ich prüfe Sperren, Rücklastschriften und bereits eingegangene Zahlungen."
+    },
+    {
+      "id": "b2",
+      "text": "Die Vertragsdaten kommen aus VERA. Nach Freigabe erzeugt SAP die Mahnung, legt sie über die Schnittstelle in AKTE ab und gibt sie an die Druckstraße."
+    },
+    {
+      "id": "b3",
+      "text": "Es sind im Schnitt 1.400 Vorschläge pro Lauf, aber nur etwa 60 müssen wir einzeln anfassen. Die Regeln sind fest; die manuelle Prüfung dauert zusammen ungefähr zwei Stunden."
+    },
+    {
+      "id": "b4",
+      "text": "Bei einer bestätigten Zahlung oder einer gesetzten Vertragssperre nehmen wir den Fall aus dem Lauf. Alles andere wird nach Vier-Augen-Freigabe gemahnt."
+    }
+  ],
+  "zweck": {
+    "wert": "Stark standardisierter, regelbasierter Massenprozess, der offene Beiträge im Direktinkasso Leben regelkonform mahnt und unberechtigte Mahnungen verhindert.",
+    "belege": ["b1"]
+  },
+  "ausloeser": {
+    "wert": "Zweimal wöchentlich erzeugte Mahnvorschlagsliste aus SAP S/4HANA.",
+    "belege": ["b1"]
+  },
+  "ergebnis": {
+    "wert": "Freigegebene Mahnungen sind versandt und abgelegt; ausgeschlossene Fälle sind mit Grund dokumentiert.",
+    "belege": ["b2", "b4"]
+  },
+  "abgrenzung": {
+    "wert": "Inkasso nach der letzten Mahnstufe und Vertragsentscheidungen sind nicht Teil dieses Laufs.",
+    "belege": ["b4"]
+  },
+  "beteiligte": {
+    "wert": [
+      "Prämieninkasso und Mahnwesen",
+      "Zweitprüfer",
+      "Versicherungsnehmer",
+      "Druckstraße"
+    ],
+    "belege": ["b2", "b4"]
+  },
+  "informationsquellen": {
+    "wert": [
+      "Mahnvorschlagsliste in SAP S/4HANA",
+      "Vertragsstatus in VERA",
+      "Zahlungsstatus und Rücklastschriften in SAP S/4HANA"
+    ],
+    "belege": ["b1", "b2"]
+  },
+  "systeme": {
+    "wert": ["SAP S/4HANA", "VERA", "AKTE"],
+    "belege": ["b1", "b2"]
+  },
+  "kontrollen": {
+    "wert": [
+      "Regelprüfung von Zahlung, Sperre und Rücklastschrift",
+      "Vier-Augen-Freigabe des Laufs",
+      "Ablage jeder Mahnung in AKTE"
+    ],
+    "belege": ["b2", "b4"]
+  },
+  "uebergaben": {
+    "wert": [
+      "SAP S/4HANA an Prämieninkasso",
+      "Prämieninkasso an Zweitprüfer",
+      "Freigegebener Lauf an Druckstraße"
+    ],
+    "belege": ["b1", "b2", "b4"]
+  },
+  "mengenUndZeiten": {
+    "wert": [
+      "Zwei Läufe pro Woche",
+      "Rund 1.400 Vorschläge pro Lauf",
+      "Etwa 60 manuelle Prüfungen und zwei Stunden Aufwand je Lauf"
+    ],
+    "belege": ["b3"]
+  },
+  "schwachstellen": {
+    "wert": [
+      "Statusabgleich erfolgt über mehrere Masken",
+      "Einzelne Ausschlüsse müssen manuell begründet werden"
+    ],
+    "belege": ["b1", "b3"]
+  },
+  "verbesserungsziele": {
+    "wert": [
+      "Prüfrelevante Statusinformationen in einer Sicht bündeln",
+      "Ausschlussgründe einheitlich dokumentieren"
+    ],
+    "belege": ["b1", "b4"]
+  },
+  "wissensluecken": [
+    "Die Quote später erfolgreicher Mahnungen wird nicht dem einzelnen Lauf zugeordnet."
+  ],
+  "widersprueche": [],
+  "schritte": [
+    {
+      "name": "Mahnvorschläge übernehmen",
+      "taetigkeit": "Den aktuellen Lauf in SAP S/4HANA öffnen und Summen gegen das Laufprotokoll prüfen.",
+      "eingaben": ["Mahnvorschlagsliste"],
+      "ausgaben": ["Geprüfter Laufbestand"],
+      "informationen": [
+        {
+          "name": "Offene Posten und Mahnstufe",
+          "quelle": "SAP S/4HANA",
+          "typ": "database_or_report"
+        }
+      ],
+      "belege": ["b1"]
+    },
+    {
+      "name": "Ausschlüsse prüfen",
+      "taetigkeit": "Zahlungseingänge, Rücklastschriften und Sperren mit SAP S/4HANA und VERA abgleichen.",
+      "eingaben": ["Geprüfter Laufbestand"],
+      "ausgaben": ["Markierte Ausschlussfälle"],
+      "informationen": [
+        {
+          "name": "Zahlungs- und Vertragsstatus",
+          "quelle": "SAP S/4HANA und VERA",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b1", "b4"]
+    },
+    {
+      "name": "Ausnahmen dokumentieren",
+      "taetigkeit": "Ausgeschlossene Fälle mit einem nachvollziehbaren Grund aus dem Mahnlauf nehmen.",
+      "eingaben": ["Markierte Ausschlussfälle"],
+      "ausgaben": ["Bereinigte Mahnvorschlagsliste"],
+      "informationen": [
+        {
+          "name": "Ausschlussgrund",
+          "quelle": "SAP S/4HANA",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Mahnlauf freigeben",
+      "taetigkeit": "Summen und Stichprobe im Vier-Augen-Prinzip prüfen und den Lauf freigeben.",
+      "eingaben": ["Bereinigte Mahnvorschlagsliste"],
+      "ausgaben": ["Freigegebener Mahnlauf"],
+      "informationen": [
+        {
+          "name": "Freigabevermerk",
+          "quelle": "SAP S/4HANA",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Mahnungen versenden und ablegen",
+      "taetigkeit": "Mahnungen erzeugen, an die Druckstraße übergeben und die Ablage in AKTE kontrollieren.",
+      "eingaben": ["Freigegebener Mahnlauf"],
+      "ausgaben": ["Versandte und abgelegte Mahnungen"],
+      "informationen": [
+        { "name": "Mahnschreiben", "quelle": "AKTE", "typ": "document" }
+      ],
+      "belege": ["b2"]
+    }
+  ],
+  "verzweigung": null,
+  "revisionen": []
+}

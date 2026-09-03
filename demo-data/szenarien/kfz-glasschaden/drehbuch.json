@@ -12,12 +12,12 @@
     },
     {
       "nummer": 3,
-      "antwort": "Wenn die Deckung passt, schau ich mir die Rechnung an. Ob die Summe realistisch ist, Stundensätze und so. Dann zieh ich die 150 Euro Selbstbeteiligung ab und stoß die Zahlung über SAP FI an. Zum Schluss kommt alles in die AKTE und der Vorgang ist durch.",
+      "antwort": "Wenn die Deckung passt, schau ich mir die Rechnung an. Ob die Summe realistisch ist, Stundensätze und so. Dann zieh ich die 150 Euro Selbstbeteiligung ab und stoß die Zahlung über SAP S/4HANA an. Zum Schluss kommt alles in die AKTE und der Vorgang ist durch.",
       "hinweis": "Vervollständigt den Hauptablauf (Rechnungsprüfung, SB-Abzug, Auszahlung, Ablage) - prüft Reihenfolge und Granularität gegen die Arbeitsanweisung."
     },
     {
       "nummer": 4,
-      "antwort": "Systeme sind KOMPASS für den Schaden selbst, VERA für die Vertragsdaten, SAP FI für die Zahlung und AKTE für die Ablage. Wer Partnerwerkstatt ist, steht in PARTO, aber da guck ich eigentlich nie selbst rein, das läuft im Hintergrund.",
+      "antwort": "Systeme sind KOMPASS für den Schaden selbst, VERA für die Vertragsdaten, SAP S/4HANA für die Zahlung und AKTE für die Ablage. Wer Partnerwerkstatt ist, steht in PARTO, aber da guck ich eigentlich nie selbst rein, das läuft im Hintergrund.",
       "hinweis": "Prüft, ob der Assistent alle fünf Systeme korrekt und mit der richtigen Rolle im Prozess zuordnet, inklusive PARTO als Randsystem ohne aktive Nutzung durch Edda."
     },
     {

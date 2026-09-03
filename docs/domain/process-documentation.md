@@ -108,7 +108,7 @@ sync on confirmation in both capture modes, manual reconciliation, revert, the c
 and index, and the full viewer (tree with persisted fold state, title + full-text search
 with highlighting, rich-text copy, PDF export, diff, revert) are built and covered.
 
-The demo seed produces eight processes across six departments including revisions and one
+The demo seed produces 14 processes across five departments including revisions and one
 revert, driven through the productive code paths (`finalizeChatCapture`,
 `correctUnderstanding`/`confirm`, `syncProcess`, `revert`) — nothing is written into
 `workspace/docs` by hand.

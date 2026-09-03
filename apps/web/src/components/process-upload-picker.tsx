@@ -116,8 +116,9 @@ export function ProcessUploadPicker({
           {busy ? "Datei wird verarbeitet …" : "Unterlage hinzufügen"}
         </Button>
         <small className="block text-caption text-muted-foreground">
-          PDF, Word, PowerPoint, Excel, CSV, Text oder Bild · höchstens 20 MB je
-          Datei
+          PDF, Word, PowerPoint, Excel, CSV, TXT, Markdown oder Bild · höchstens
+          20 MB je Datei. Bilder und Scans werden KI-basiert interpretiert;
+          wichtige Angaben bitte im Gespräch bestätigen.
         </small>
       </CardContent>
     </Card>

@@ -1,0 +1,225 @@
+{
+  "slug": "sap-api-zahlungsabgleich",
+  "titel": "IT-02 · SAP S/4HANA per API für agentischen Zahlungsabgleich in KOMPASS anbinden",
+  "fachbereich": "IT",
+  "gespraechspartner": {
+    "name": "Edda Brandt",
+    "email": "edda.brandt@lifecorp.example"
+  },
+  "erstelltAm": "2026-06-16T09:00:00.000Z",
+  "bestaetigtAm": "2026-06-30T13:20:00.000Z",
+  "belege": [
+    {
+      "id": "b1",
+      "text": "Schaden und Zahlungsverkehr brauchen für einen agentischen Abgleich lesenden Zugriff auf Zahlungsstatus aus SAP S/4HANA und einen begrenzten Rückschreibekanal für den Zuordnungsstatus in KOMPASS."
+    },
+    {
+      "id": "b2",
+      "text": "Wir definieren Felder, fachliche Schlüssel und erlaubte Aktionen in einem Datenvertrag. Die API wird über Azure API Management veröffentlicht und mit einer eigenen Entra-ID-Identität abgesichert."
+    },
+    {
+      "id": "b3",
+      "text": "Die Schnittstelle muss Spitzen von 8.000 Abfragen pro Stunde schaffen. Für Rückschreiben gelten Idempotenz, vollständiges Audit und eine technische Zweitfreigabe vor Produktion."
+    },
+    {
+      "id": "b4",
+      "text": "Ein kleiner Anschluss dauert normalerweise vier bis sechs Wochen. Die größte Unsicherheit sind unterschiedliche Zahlungs- und Schadenreferenzen sowie Fehlerfälle bei verspäteten SAP-Buchungen."
+    }
+  ],
+  "zweck": {
+    "wert": "Einen kontrollierten API-Zugang zwischen SAP S/4HANA und KOMPASS für den agentischen Zahlungsabgleich bereitstellen.",
+    "belege": ["b1"]
+  },
+  "ausloeser": {
+    "wert": "Freigegebene Schnittstellenanforderung von Schaden und Zahlungsverkehr mit benanntem Service Owner.",
+    "belege": ["b1"]
+  },
+  "ergebnis": {
+    "wert": "Versionierte, abgesicherte und überwachte API-Endpunkte sind produktiv freigegeben und dokumentiert.",
+    "belege": ["b2", "b3"]
+  },
+  "abgrenzung": {
+    "wert": "Die API entscheidet keine Zahlungszuordnung und führt keine Finanzbuchung aus; fachliche Agentenlogik ist ein eigener Prozess.",
+    "belege": ["b1"]
+  },
+  "beteiligte": {
+    "wert": [
+      "Integration und API",
+      "Service Owner SAP S/4HANA",
+      "Service Owner KOMPASS",
+      "Zahlungsverkehr",
+      "Schaden",
+      "Identität und Data Governance"
+    ],
+    "belege": ["b1", "b2"]
+  },
+  "informationsquellen": {
+    "wert": [
+      "Schnittstellenanforderung",
+      "Feld- und Datenvertrag",
+      "SAP-Zahlungsstatus",
+      "KOMPASS-Zuordnungsstatus",
+      "Testprotokoll"
+    ],
+    "belege": ["b1", "b2", "b3"]
+  },
+  "systeme": {
+    "wert": [
+      "SAP S/4HANA",
+      "KOMPASS",
+      "Azure API Management",
+      "Microsoft Entra ID",
+      "Microsoft Purview"
+    ],
+    "belege": ["b1", "b2"]
+  },
+  "kontrollen": {
+    "wert": [
+      "Minimierter Feldumfang und getrennte Lese-/Schreibrechte",
+      "Idempotenz bei Rückschreiben",
+      "Vollständiges technisches Audit",
+      "Zweitfreigabe vor Produktion",
+      "Last- und Fehlerfalltest"
+    ],
+    "belege": ["b2", "b3"]
+  },
+  "uebergaben": {
+    "wert": [
+      "Fachbereiche an Integration und API",
+      "Integration an Systemverantwortliche",
+      "Integration an Identität und Data Governance",
+      "Abnahme an Betrieb"
+    ],
+    "belege": ["b1", "b2"]
+  },
+  "mengenUndZeiten": {
+    "wert": [
+      "Vier bis sechs Wochen Durchlaufzeit",
+      "Bis zu 8.000 Leseabfragen pro Stunde",
+      "Rückschreiben nur für Zuordnungsstatus"
+    ],
+    "belege": ["b3", "b4"]
+  },
+  "schwachstellen": {
+    "wert": [
+      "Zahlungs- und Schadenreferenzen sind nicht durchgehend einheitlich",
+      "Verspätete SAP-Buchungen erzeugen zeitweise widersprüchliche Status",
+      "Abhängige Teams pflegen Anforderungen in getrennten Dokumenten"
+    ],
+    "belege": ["b2", "b4"]
+  },
+  "verbesserungsziele": {
+    "wert": [
+      "Datenvertrag aus fachlichen Beispielen konsistent ableiten",
+      "Fehlerfälle vollständig testen",
+      "Freigaben und Betriebsvoraussetzungen nachvollziehbar bündeln"
+    ],
+    "belege": ["b2", "b4"]
+  },
+  "wissensluecken": [
+    "Die endgültige Aufbewahrungsdauer technischer Auditdaten ist noch mit Purview abzustimmen."
+  ],
+  "widersprueche": [],
+  "schritte": [
+    {
+      "name": "Anforderung abgrenzen",
+      "taetigkeit": "Use Case, Systeme, Datenobjekte und ausdrücklich nicht erlaubte Aktionen festhalten.",
+      "eingaben": ["Schnittstellenanforderung"],
+      "ausgaben": ["Abgegrenzter Auftrag"],
+      "informationen": [
+        {
+          "name": "Use Case und Aktionsgrenzen",
+          "quelle": "SharePoint Online",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b1"]
+    },
+    {
+      "name": "Datenvertrag erstellen",
+      "taetigkeit": "Felder, Schlüssel, Statuswerte, Fehlercodes und Versionierung mit SAP- und KOMPASS-Verantwortlichen definieren.",
+      "eingaben": ["Abgegrenzter Auftrag"],
+      "ausgaben": ["Freigegebener Datenvertrag"],
+      "informationen": [
+        {
+          "name": "Feld- und Statusmodell",
+          "quelle": "SharePoint Online",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b2", "b4"]
+    },
+    {
+      "name": "Berechtigungen entwerfen",
+      "taetigkeit": "Eigene Agentenidentität, minimale Lese- und Schreibrechte sowie Klassifizierung festlegen.",
+      "eingaben": ["Freigegebener Datenvertrag"],
+      "ausgaben": ["Berechtigungskonzept"],
+      "informationen": [
+        {
+          "name": "Service-Identität und Rollen",
+          "quelle": "Microsoft Entra ID",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b2"]
+    },
+    {
+      "name": "API implementieren",
+      "taetigkeit": "SAP-Lesezugriff und begrenztes KOMPASS-Rückschreiben hinter Azure API Management implementieren.",
+      "eingaben": ["Datenvertrag", "Berechtigungskonzept"],
+      "ausgaben": ["Testbare API-Version"],
+      "informationen": [
+        {
+          "name": "API-Version und Richtlinien",
+          "quelle": "Azure API Management",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b1", "b2"]
+    },
+    {
+      "name": "Fachliche Beispiele testen",
+      "taetigkeit": "Normale, mehrdeutige und verspätet gebuchte Fälle mit Schaden und Zahlungsverkehr prüfen.",
+      "eingaben": ["Testbare API-Version", "Fachliche Testfälle"],
+      "ausgaben": ["Fachlicher Testbefund"],
+      "informationen": [
+        {
+          "name": "Testfall und erwarteter Status",
+          "quelle": "KOMPASS und SAP S/4HANA",
+          "typ": "database_or_report"
+        }
+      ],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Technische Leitplanken prüfen",
+      "taetigkeit": "Last, Idempotenz, Audit, Fehlerbehandlung und Berechtigungsgrenzen testen.",
+      "eingaben": ["Testbare API-Version"],
+      "ausgaben": ["Technisches Testprotokoll"],
+      "informationen": [
+        {
+          "name": "Last- und Auditprotokoll",
+          "quelle": "Azure API Management",
+          "typ": "database_or_report"
+        }
+      ],
+      "belege": ["b3"]
+    },
+    {
+      "name": "Freigeben und übergeben",
+      "taetigkeit": "Zweitfreigabe dokumentieren, API produktiv schalten und Betriebsunterlagen an die Service Owner übergeben.",
+      "eingaben": ["Fachlicher Testbefund", "Technisches Testprotokoll"],
+      "ausgaben": ["Produktive API und Betriebsübergabe"],
+      "informationen": [
+        {
+          "name": "Freigabe und Betriebsdokumentation",
+          "quelle": "SharePoint Online",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b3"]
+    }
+  ],
+  "verzweigung": null,
+  "revisionen": []
+}

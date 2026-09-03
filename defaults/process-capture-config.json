@@ -1,15 +1,7 @@
 {
   "schemaVersion": 1,
   "profile": { "id": "compact-v1", "version": 3 },
-  "departments": [
-    "Schaden",
-    "Vertrieb",
-    "Vertrag",
-    "Finanzen",
-    "IT",
-    "Personal",
-    "Sonstiger Fachbereich"
-  ],
+  "departments": ["Schaden", "Vertrieb", "Vertrag", "Finanzen", "IT"],
   "topics": [
     {
       "id": "purpose-scope",

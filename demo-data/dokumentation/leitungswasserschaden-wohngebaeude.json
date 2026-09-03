@@ -1,6 +1,6 @@
 {
   "slug": "leitungswasserschaden-wohngebaeude",
-  "titel": "Leitungswasserschaden Wohngebäude regulieren",
+  "titel": "SCH-01 · Leitungswasserschaden Wohngebäude regulieren",
   "fachbereich": "Schaden",
   "gespraechspartner": {
     "name": "Edda Brandt",
@@ -23,7 +23,7 @@
     },
     {
       "id": "b4",
-      "text": "Wenn der Kostenvoranschlag oder das Gutachten da ist, prüf ich die Positionen, kürz was nicht dazugehört, und dann geht die Zahlung über SAP FI raus. Der Kunde kriegt ein Abrechnungsschreiben."
+      "text": "Wenn der Kostenvoranschlag oder das Gutachten da ist, prüf ich die Positionen, kürz was nicht dazugehört, und dann geht die Zahlung über SAP S/4HANA raus. Der Kunde kriegt ein Abrechnungsschreiben."
     },
     {
       "id": "b5",
@@ -71,7 +71,7 @@
     "belege": ["b1", "b2", "b3", "b4"]
   },
   "systeme": {
-    "wert": ["KOMPASS", "VERA", "AKTE", "SAP FI", "Outlook"],
+    "wert": ["KOMPASS", "VERA", "AKTE", "SAP S/4HANA", "Exchange Online"],
     "belege": ["b2", "b4", "b5"]
   },
   "kontrollen": {
@@ -87,7 +87,7 @@
     "wert": [
       "Schadenannahme an Schadensachbearbeiter Sach nach Anlage des Vorgangs",
       "Schadensachbearbeiter an externen Sachverständigen bei Überschreiten der Wertgrenze",
-      "Schadensachbearbeiter an SAP FI zur Auszahlung"
+      "Schadensachbearbeiter an SAP S/4HANA zur Auszahlung"
     ],
     "belege": ["b3", "b4"]
   },
@@ -178,14 +178,11 @@
       "belege": ["b2"]
     },
     {
-      "name": "Schadenhöhe ermitteln",
-      "taetigkeit": "Kostenvoranschlag des Handwerksunternehmens anfordern und bei einer erwarteten Schadenhöhe über 5.000 Euro zusätzlich einen externen Sachverständigen beauftragen.",
+      "name": "Unterlagen vervollständigen",
+      "taetigkeit": "Schadenfotos, Kostenvoranschlag und fehlende Angaben gebündelt beim Versicherungsnehmer oder Handwerksunternehmen anfordern und in der AKTE ablegen.",
       "eingaben": ["Dokumentiertes Deckungsergebnis"],
-      "ausgaben": [
-        "Kostenvoranschlag",
-        "Sachverständigengutachten bei Schäden über der Wertgrenze"
-      ],
-      "hinweis": "Die Beauftragung des Sachverständigen läuft per E-Mail; ein Bearbeitungsstand ist im System nicht sichtbar.",
+      "ausgaben": ["Vollständiges Erstunterlagenpaket"],
+      "hinweis": "Fehlende Unterlagen werden über mehrere Kontakte nachgefordert und verlängern die Durchlaufzeit.",
       "informationen": [
         {
           "name": "Positionen und Summe des Kostenvoranschlags",
@@ -203,6 +200,28 @@
           "art": "external_party",
           "name": "Handwerksunternehmen",
           "beteiligung": "supplies"
+        }
+      ],
+      "belege": ["b4", "b6"]
+    },
+    {
+      "name": "Begutachtungsweg festlegen und steuern",
+      "taetigkeit": "Erwartete Schadenhöhe und Schadenbild prüfen, bei Pflicht oder fachlicher Begründung einen externen Sachverständigen per Exchange Online beauftragen und den Rücklauf nachhalten.",
+      "eingaben": ["Vollständiges Erstunterlagenpaket"],
+      "ausgaben": ["Kostenvoranschlag oder Sachverständigengutachten"],
+      "hinweis": "Oberhalb von 5.000 Euro ist das Gutachten Pflicht; unterhalb kann das Schadenbild eine Begutachtung erfordern.",
+      "informationen": [
+        {
+          "name": "Gutachtenauftrag und Bearbeitungsstatus",
+          "quelle": "Exchange Online und Teamliste",
+          "typ": "email"
+        }
+      ],
+      "akteure": [
+        {
+          "art": "role",
+          "name": "Schadensachbearbeiter Sach",
+          "beteiligung": "decides"
         },
         {
           "art": "external_party",
@@ -210,7 +229,7 @@
           "beteiligung": "performs"
         }
       ],
-      "belege": ["b3"]
+      "belege": ["b3", "b6"]
     },
     {
       "name": "Entschädigung berechnen",
@@ -237,15 +256,40 @@
       "belege": ["b4"]
     },
     {
-      "name": "Zahlung anstoßen und abrechnen",
-      "taetigkeit": "Die Zahlung über SAP FI auslösen und dem Versicherungsnehmer ein Abrechnungsschreiben mit den geprüften Positionen zusenden.",
+      "name": "Zahlung anstoßen",
+      "taetigkeit": "Zahlungsempfänger und Bankverbindung prüfen und die festgelegte Entschädigung über SAP S/4HANA auslösen.",
       "eingaben": ["Festgelegte Entschädigungssumme"],
-      "ausgaben": ["Ausgelöste Zahlung in SAP FI", "Abrechnungsschreiben"],
+      "ausgaben": ["Ausgelöste Zahlung in SAP S/4HANA"],
       "hinweis": null,
       "informationen": [
         {
           "name": "Zahlungsempfänger und Bankverbindung",
           "quelle": "PARTO",
+          "typ": "system_field"
+        }
+      ],
+      "akteure": [
+        {
+          "art": "role",
+          "name": "Schadensachbearbeiter Sach",
+          "beteiligung": "performs"
+        }
+      ],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Abrechnung versenden",
+      "taetigkeit": "Das Abrechnungsschreiben mit Entschädigung und begründeten Kürzungen erstellen, an den Versicherungsnehmer senden und in der AKTE ablegen.",
+      "eingaben": [
+        "Festgelegte Entschädigungssumme",
+        "Ausgelöste Zahlung in SAP S/4HANA"
+      ],
+      "ausgaben": ["Versandtes und abgelegtes Abrechnungsschreiben"],
+      "hinweis": null,
+      "informationen": [
+        {
+          "name": "Entschädigung und begründete Kürzungen",
+          "quelle": "KOMPASS",
           "typ": "system_field"
         }
       ],
@@ -261,12 +305,15 @@
           "beteiligung": "receives"
         }
       ],
-      "belege": ["b4"]
+      "belege": ["b4", "b5"]
     },
     {
       "name": "Vorgang schließen",
       "taetigkeit": "Den gesamten Schriftwechsel in der AKTE ablegen und den Schadenvorgang in KOMPASS auf erledigt setzen.",
-      "eingaben": ["Abrechnungsschreiben", "Eingegangener Schriftwechsel"],
+      "eingaben": [
+        "Versandtes und abgelegtes Abrechnungsschreiben",
+        "Eingegangener Schriftwechsel"
+      ],
       "ausgaben": [
         "Vollständige Schadenakte in der AKTE",
         "Erledigter Vorgang in KOMPASS"
@@ -306,8 +353,8 @@
     "kurzbeschreibung": "Die Sachbearbeitung nimmt Leitungswasserschäden entgegen, prüft den Versicherungsschutz, steuert Kostenvoranschlag oder Gutachten und reguliert den bestätigten Betrag bis zum Abschluss in KOMPASS.",
     "prozesseignerRolle": "Teamleitung Sachschaden Wohngebäude",
     "vertraulichkeit": "confidential",
-    "betriebUndSupport": "Die Gruppe Sachschaden Wohngebäude bearbeitet rund 120 Fälle pro Monat während der Servicezeiten. Fachliche Sonderfälle eskalieren an die Teamleitung; technische Störungen der Kernsysteme gehen an den Anwendersupport.",
-    "zugriffUndSchutz": "Zugriff auf Schaden-, Vertrags- und Zahlungsdaten erhalten nur berechtigte Mitarbeitende über ihre Rollen in KOMPASS, VERA, AKTE und SAP FI. Externe erhalten ausschließlich die für Auftrag oder Rückfrage erforderlichen Falldaten.",
+    "betriebUndSupport": "Die Gruppe Sachschaden Wohngebäude bearbeitet rund 120 Fälle pro Monat während der Servicezeiten. Fachliche Sonderfälle eskalieren an die Teamleitung; technische Störungen der Kernsysteme gehen an die IT-Anwendungsbetreuung Versicherung.",
+    "zugriffUndSchutz": "Zugriff auf Schaden-, Vertrags- und Zahlungsdaten erhalten nur berechtigte Mitarbeitende über ihre Rollen in KOMPASS, VERA, AKTE und SAP S/4HANA. Externe erhalten ausschließlich die für Auftrag oder Rückfrage erforderlichen Falldaten.",
     "monitoringUndNachvollziehbarkeit": "Schadenstatus, Deckungsergebnis, Reserve, Zahlungsveranlassung und Abschluss werden in KOMPASS protokolliert. Ein- und ausgehende Dokumente sowie Abrechnungsschreiben liegen revisionsbezogen in der AKTE.",
     "leitplankenUndOffeneFragen": []
   },

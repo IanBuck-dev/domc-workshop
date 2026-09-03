@@ -18,7 +18,7 @@ import type {
 import { AgenticPotentialAssessmentRepository } from "../packages/storage/src/agentic-potential-assessment-repository.ts";
 import { OpportunityDiscoveryRepository } from "../packages/storage/src/opportunity-discovery-repository.ts";
 
-const flagshipTitle = "Leitungswasserschaden Wohngebäude regulieren";
+const flagshipTitle = "SCH-01 · Leitungswasserschaden Wohngebäude regulieren";
 
 const trace = (): AiTrace => ({
   operationId: crypto.randomUUID(),
@@ -66,10 +66,10 @@ const hypothesisContent: HypothesisContent[] = [
     openQuestions: [],
   },
   {
-    stepOrder: 3,
+    stepOrder: 4,
     title: "Gutachterbeauftragung und Rückmeldungen orchestrieren",
     currentSituation:
-      "Beauftragungsgrund, Frist und Rückmeldung werden zwischen KOMPASS, Outlook und einer Teamliste manuell nachgehalten.",
+      "Beauftragungsgrund, Frist und Rückmeldung werden zwischen KOMPASS, Exchange Online und einer Teamliste manuell nachgehalten.",
     aiContribution:
       "Der Arbeitsbegleiter führt Fallstatus und Kommunikation zusammen, bereitet Beauftragungen vor und weist auf ausstehende Rückmeldungen hin.",
     aiCapabilities: ["interpretation", "planning"],
@@ -80,7 +80,7 @@ const hypothesisContent: HypothesisContent[] = [
       "Fristüberschreitungen markieren",
     ],
     requiredInformationAndSystemAccess: [
-      "Lesender Zugriff auf KOMPASS, Outlook und Teamliste",
+      "Lesender Zugriff auf KOMPASS, Exchange Online und Teamliste",
       "Schreibender Zugriff nur für freigegebene Beauftragungsentwürfe",
     ],
     expectedHumanRole:
@@ -95,7 +95,7 @@ const hypothesisContent: HypothesisContent[] = [
     openQuestions: [],
   },
   {
-    stepOrder: 4,
+    stepOrder: 5,
     title: "Kostenvoranschlag und Gutachten belegbasiert vorprüfen",
     currentSituation:
       "Positionen aus Kostenvoranschlag oder Gutachten werden manuell geprüft; Kürzungen müssen fachlich begründet werden.",
@@ -124,7 +124,7 @@ const hypothesisContent: HypothesisContent[] = [
     openQuestions: [],
   },
   {
-    stepOrder: 6,
+    stepOrder: 8,
     title: "Ausnahmen und Folgeübergaben früh erkennen",
     currentSituation:
       "Verdachtsmerkmale, Rückgriffshinweise und zeitkritische Ausnahmen werden im laufenden Fall erkannt und an getrennte Prozesse übergeben.",
@@ -336,7 +336,7 @@ function scenario(
         ],
       },
       {
-        target: "Outlook und Gutachter-Teamliste",
+        target: "Exchange Online und Gutachter-Teamliste",
         accessModes: ["read", "write"],
         timing: autonomous ? "on_demand" : "manual",
         possibleMechanisms: autonomous ? ["api"] : ["manual"],
@@ -453,7 +453,7 @@ const scoredCriteria = new Map<
     {
       score: 2,
       rationale:
-        "KOMPASS, VERA, AKTE, SAP FI, Outlook und die Teamliste sind mit ihrer Rolle im Ablauf erfasst.",
+        "KOMPASS, VERA, AKTE, SAP S/4HANA, Exchange Online und die Teamliste sind mit ihrer Rolle im Ablauf erfasst.",
     },
   ],
   [

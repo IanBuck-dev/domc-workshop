@@ -4,6 +4,9 @@ Dieser Ordner liefert realistische Demo-Daten und reproduzierbare
 Tuningrunden für die Prozessaufnahme und die Potenzialanalyse. Adressiert an
 Florian (bzw. jeden, der die App testet oder tunt).
 
+Alle fachlichen Annahmen zum Demo-Versicherer beginnen im zentralen
+[`LIFECORP.md`](../LIFECORP.md).
+
 ## Warum das nötig ist
 
 Die App friert Prompts und Schemas pro Prozess ein („Contract Freeze") —
@@ -13,12 +16,22 @@ bestehende. Wer eine Tuningrunde fährt, braucht also jedes Mal einen frisch
 geseedeten Prozess mit identischem Ausgangsmaterial — sonst vergleicht man
 am Ende zwei Änderungen gleichzeitig, ohne es zu merken.
 
+`bun run seed:showcase` erzeugt in einem leeren Workspace den vollständigen
+Präsentationsstand mit 14 bestätigten Prozessen und vier bewusst fortsetzbaren
+Aufnahmezuständen. `bun run seed:showcase --list` zeigt die feste Reihenfolge,
+ohne Daten anzulegen.
+
 ## Aufbau
 
 ```text
 demo-data/
-  UNTERNEHMEN.md        Das fiktive Unternehmen LifeCorp: Haus, Sparten,
-                         Systemlandschaft, Personas
+  UNTERNEHMEN.md         Unternehmensprofil, Systemnamen und Personas
+  ORGANISATION.md        Teams, Rollen und Übergaben
+  DATENQUELLEN.md        Systeme, Quellen, Kanäle und Dateiformate
+  MODELLIERUNGSRAHMEN.md Pflichtangaben für jeden Demo-Prozess
+  PROZESSPORTFOLIO.md    Zielauswahl und gewünschter Potenzial-Mix
+  ABNAHMEMATRIX.md       Seed-Tiefe, UI-Zustand und Abnahme je Prozess
+  showcase.json          Maschinenlesbare Reihenfolge und Sollzustände
   szenarien/
     <slug>/
       szenario.json      Deckblatt (Fachbereich, Beteiligte, Prozessname),
@@ -31,6 +44,8 @@ demo-data/
                           ersten Abruf gerendert
       verstaendnis.json   (optional) bestätigtes Prozessverständnis für
                           `--stufe bestaetigt`
+      aufnahme.json       (optional) kompakte Quelle für einen vorbereiteten
+                          Showcase-Prüfstand
 ```
 
 `drehbuch.json` und `DREHBUCH.md` haben bewusst eine klare Arbeitsteilung:
@@ -51,14 +66,14 @@ Zustand `confirmed` mit einem vorbereiteten Prozessverständnis an — danach
 genügt „Potenzialanalyse starten" im UI.
 
 `bun run seed:docs` legt zusätzlich für den Präsentationsfall
-`Leitungswasserschaden Wohngebäude regulieren` vier fachlich ausgearbeitete
+`SCH-01 · Leitungswasserschaden Wohngebäude regulieren` vier fachlich ausgearbeitete
 Potenzialhypothesen, drei Aufsichtsszenarien und eine abgeschlossene
 Potenzialbewertung an. Das ist ein ausdrücklich gekennzeichneter,
 deterministischer Demo-Seed: Er ruft keine KI auf und dient der reproduzierbaren
 Web-, Export- und Videoprüfung. Der normale Produktfluss erzeugt dieselben
 Datensätze weiterhin genau einmal über den konfigurierten KI-Provider.
 
-## Die vier Szenarien
+## Die sechs Aufnahmeszenarien
 
 - **kfz-glasschaden** (Fachbereich Schaden) — der saubere Fall: klarer
   Ablauf, drei sich ergänzende Dokumente. Tuningziel: Grundleistung prüfen —
@@ -75,13 +90,16 @@ Datensätze weiterhin genau einmal über den konfigurierten KI-Provider.
   Unterlagen, Gutachtersteuerung, professionelles Urteil, Fristen und
   kontrollierte Übergaben. Tuningziel ist die komplette Strecke bis zum
   agentischen Szenario und zu beiden Excel-Artefakten.
+- **einbruchdiebstahl-hausrat** (Fachbereich Schaden) — ein bereits
+  begonnener Chat mit ausgewählter Checkliste und zwei gespeicherten Zügen.
+- **bezugsrechtsaenderung-leben** (Fachbereich Vertrag) — ein fertiges
+  Prozessbild, das bewusst noch auf die menschliche Prüfung wartet.
 
 ## Automatisches Seeding beim Dev-Start
 
-Ist `workspace/process-captures/` beim Start von `bun run dev` leer, laufen
-alle Szenarien einmal automatisch durch das Seed-Skript. `DEMO_SEED=0`
-schaltet das ab. Für gezielte Tuningrunden bleibt `bun run seed` manuell
-nutzbar.
+Ist `workspace/process-captures/` beim Start von `bun run dev` leer, wird der
+vollständige Showcase einmal automatisch angelegt. `DEMO_SEED=0` schaltet das
+ab. Für gezielte Tuningrunden bleibt `bun run seed` manuell nutzbar.
 
 ## Warnung
 

@@ -1,0 +1,201 @@
+{
+  "slug": "arbeitgeberwechsel-bav",
+  "titel": "VER-04 · Arbeitgeberwechsel in der betrieblichen Altersvorsorge verarbeiten",
+  "fachbereich": "Vertrag",
+  "gespraechspartner": {
+    "name": "Edda Brandt",
+    "email": "edda.brandt@lifecorp.example"
+  },
+  "erstelltAm": "2026-03-03T08:20:00.000Z",
+  "bestaetigtAm": "2026-03-10T14:10:00.000Z",
+  "belege": [
+    {
+      "id": "b1",
+      "text": "Bei einem Arbeitgeberwechsel bekommen wir die Meldung meistens vom Vermittler oder vom neuen Arbeitgeber. Wir müssen zuerst sehen, ob der neue Arbeitgeber den Vertrag weiterführt oder ob eine Übertragung nötig ist."
+    },
+    {
+      "id": "b2",
+      "text": "Ich gleiche den Vertrag in VERA mit den Unterlagen in der AKTE ab, fordere fehlende Arbeitgeber- und Entgeltdaten über Exchange Online nach und berechne dann die neue Beitragsaufteilung."
+    },
+    {
+      "id": "b3",
+      "text": "Rund 180 Wechsel kommen im Monat. Ein vollständiger Fall dauert etwa 25 Minuten, Rückfragen machen daraus schnell zwei Wochen. Besonders oft fehlen der Übertragungsstichtag oder die Unterschrift des neuen Arbeitgebers."
+    },
+    {
+      "id": "b4",
+      "text": "Bevor ich die Änderung freigebe, prüft eine zweite Person Beitrag, Stichtag und steuerliche Kennzeichen. Danach gehen Bestätigung und neue Vertragsübersicht an Arbeitnehmer, Arbeitgeber und Vermittler."
+    }
+  ],
+  "zweck": {
+    "wert": "Einen bestehenden bAV-Vertrag nach Arbeitgeberwechsel fachlich korrekt fortführen oder übertragen.",
+    "belege": ["b1"]
+  },
+  "ausloeser": {
+    "wert": "Meldung eines Arbeitgeberwechsels durch Vermittler, Arbeitnehmer oder neuen Arbeitgeber.",
+    "belege": ["b1"]
+  },
+  "ergebnis": {
+    "wert": "Der Vertrag ist in VERA auf den neuen Arbeitgeber und Beitragsstand umgestellt; alle Beteiligten haben eine Bestätigung erhalten.",
+    "belege": ["b4"]
+  },
+  "abgrenzung": {
+    "wert": "Neuabschlüsse und Leistungsfälle gehören nicht dazu; der Prozess endet mit der bestätigten Vertragsfortführung oder der begründeten Ablehnung.",
+    "belege": ["b1", "b4"]
+  },
+  "beteiligte": {
+    "wert": [
+      "Sachbearbeitung Leben und bAV-Bestand",
+      "Arbeitnehmer",
+      "Neuer Arbeitgeber",
+      "Vermittler",
+      "Zweitprüfer im Bestand"
+    ],
+    "belege": ["b1", "b4"]
+  },
+  "informationsquellen": {
+    "wert": [
+      "Arbeitgeberwechsel-Meldung",
+      "bAV-Vertrag in VERA",
+      "Arbeitgeber- und Entgeltdaten",
+      "Unterlagen in AKTE"
+    ],
+    "belege": ["b1", "b2"]
+  },
+  "systeme": {
+    "wert": ["VERA", "AKTE", "PARTO", "Exchange Online"],
+    "belege": ["b2"]
+  },
+  "kontrollen": {
+    "wert": [
+      "Vollständigkeitsprüfung der Arbeitgeberunterlagen",
+      "Vier-Augen-Prüfung von Beitrag, Stichtag und steuerlichen Kennzeichen"
+    ],
+    "belege": ["b3", "b4"]
+  },
+  "uebergaben": {
+    "wert": [
+      "Vermittler oder Arbeitgeber an Leben und bAV-Bestand",
+      "Sachbearbeitung an Zweitprüfer",
+      "Bestand an Arbeitnehmer, Arbeitgeber und Vermittler"
+    ],
+    "belege": ["b1", "b4"]
+  },
+  "mengenUndZeiten": {
+    "wert": [
+      "Rund 180 Fälle pro Monat",
+      "25 Minuten Bearbeitungszeit bei vollständigen Unterlagen",
+      "Bis zu zwei Wochen bei Rückfragen"
+    ],
+    "belege": ["b3"]
+  },
+  "schwachstellen": {
+    "wert": [
+      "Unterlagen treffen über verschiedene Absender und Formate ein",
+      "Fehlende Stichtage und Unterschriften erzeugen wiederholte Rückfragen",
+      "Daten werden aus Anhängen manuell nach VERA übertragen"
+    ],
+    "belege": ["b2", "b3"]
+  },
+  "verbesserungsziele": {
+    "wert": [
+      "Unterlagen vor der Bearbeitung automatisch auf Vollständigkeit prüfen",
+      "Vertrags- und Arbeitgeberdaten übersichtlich gegenüberstellen",
+      "Rückfragen konsistent vorbereiten"
+    ],
+    "belege": ["b2", "b3"]
+  },
+  "wissensluecken": [
+    "Die genaue Verteilung nach Fortführung und Übertragung wird nicht ausgewertet."
+  ],
+  "widersprueche": [],
+  "schritte": [
+    {
+      "name": "Wechselmeldung übernehmen",
+      "taetigkeit": "Meldung und Anhänge aus Vermittlerportal oder Exchange Online dem Vertrag zuordnen.",
+      "eingaben": ["Wechselmeldung"],
+      "ausgaben": ["Zugeordneter Vorgang"],
+      "informationen": [
+        {
+          "name": "Vertragsnummer und neuer Arbeitgeber",
+          "quelle": "Exchange Online oder PARTO",
+          "typ": "email"
+        }
+      ],
+      "belege": ["b1"]
+    },
+    {
+      "name": "Vertragslage prüfen",
+      "taetigkeit": "Vertragsstatus, Durchführungsweg und bisherige Beitragsaufteilung in VERA prüfen.",
+      "eingaben": ["Zugeordneter Vorgang"],
+      "ausgaben": ["Geprüfte Ausgangslage"],
+      "informationen": [
+        { "name": "bAV-Vertragsdaten", "quelle": "VERA", "typ": "system_field" }
+      ],
+      "belege": ["b2"]
+    },
+    {
+      "name": "Fortführungsweg klären",
+      "taetigkeit": "Mit neuem Arbeitgeber und Vermittler klären, ob Fortführung, private Weiterzahlung oder Übertragung vorgesehen ist.",
+      "eingaben": ["Geprüfte Ausgangslage"],
+      "ausgaben": ["Festgelegter Fortführungsweg"],
+      "informationen": [
+        {
+          "name": "Erklärung des neuen Arbeitgebers",
+          "quelle": "Exchange Online",
+          "typ": "email"
+        }
+      ],
+      "belege": ["b1", "b2"]
+    },
+    {
+      "name": "Unterlagen vervollständigen",
+      "taetigkeit": "Fehlende Arbeitgeberdaten, Stichtag, Entgeltangaben und Unterschriften gezielt nachfordern und in AKTE ablegen.",
+      "eingaben": ["Festgelegter Fortführungsweg"],
+      "ausgaben": ["Vollständiges Unterlagenpaket"],
+      "informationen": [
+        {
+          "name": "Arbeitgeber- und Entgeltdaten",
+          "quelle": "AKTE",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b2", "b3"]
+    },
+    {
+      "name": "Vertragsänderung berechnen",
+      "taetigkeit": "Neue Beitragsaufteilung und Wirksamkeitsstichtag ermitteln und in VERA erfassen.",
+      "eingaben": ["Vollständiges Unterlagenpaket"],
+      "ausgaben": ["Erfasste Vertragsänderung"],
+      "informationen": [
+        {
+          "name": "Beitrag und steuerliche Kennzeichen",
+          "quelle": "VERA",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b2"]
+    },
+    {
+      "name": "Änderung zweitprüfen",
+      "taetigkeit": "Beitrag, Stichtag und steuerliche Kennzeichen durch eine zweite Person prüfen lassen.",
+      "eingaben": ["Erfasste Vertragsänderung"],
+      "ausgaben": ["Freigegebene Vertragsänderung"],
+      "informationen": [
+        { "name": "Prüfvermerk", "quelle": "VERA", "typ": "system_field" }
+      ],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Beteiligte informieren",
+      "taetigkeit": "Bestätigung und neue Vertragsübersicht versenden und in AKTE ablegen.",
+      "eingaben": ["Freigegebene Vertragsänderung"],
+      "ausgaben": ["Versandte Bestätigungen", "Aktualisierte Vertragsakte"],
+      "informationen": [
+        { "name": "Vertragsbestätigung", "quelle": "AKTE", "typ": "document" }
+      ],
+      "belege": ["b4"]
+    }
+  ],
+  "verzweigung": null,
+  "revisionen": []
+}

@@ -1,0 +1,22 @@
+{
+  "slug": "einbruchdiebstahl-hausrat",
+  "titel": "SCH-04 · Einbruchdiebstahl in der Hausratversicherung regulieren",
+  "cover": {
+    "department": "Schaden",
+    "participantName": "Edda Brandt",
+    "participantEmail": "edda.brandt@lifecorp.example",
+    "processName": "SCH-04 · Einbruchdiebstahl in der Hausratversicherung regulieren"
+  },
+  "interactionMode": "chat",
+  "showcase": {
+    "state": "chat_in_progress",
+    "completedTurns": 2
+  },
+  "dokumente": [
+    {
+      "quelle": "dokumente/checkliste-einbruchdiebstahl.md",
+      "zielname": "Checkliste_Einbruchdiebstahl.pdf",
+      "format": "pdf"
+    }
+  ]
+}

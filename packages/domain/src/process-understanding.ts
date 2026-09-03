@@ -160,20 +160,31 @@ const legacyAllowedExtensionsSchema = z.tuple([
   z.literal(".jpg"),
   z.literal(".jpeg"),
 ]);
+const textOnlyAllowedExtensionsSchema = z.tuple([
+  z.literal(".pdf"),
+  z.literal(".xlsx"),
+  z.literal(".csv"),
+  z.literal(".docx"),
+  z.literal(".pptx"),
+  z.literal(".txt"),
+  z.literal(".md"),
+]);
+const multimodalAllowedExtensionsSchema = z.tuple([
+  z.literal(".pdf"),
+  z.literal(".xlsx"),
+  z.literal(".csv"),
+  z.literal(".docx"),
+  z.literal(".pptx"),
+  z.literal(".txt"),
+  z.literal(".md"),
+  z.literal(".png"),
+  z.literal(".jpg"),
+  z.literal(".jpeg"),
+]);
 const allowedExtensionsSchema = z.union([
+  multimodalAllowedExtensionsSchema,
+  textOnlyAllowedExtensionsSchema,
   legacyAllowedExtensionsSchema,
-  z.tuple([
-    z.literal(".pdf"),
-    z.literal(".xlsx"),
-    z.literal(".csv"),
-    z.literal(".docx"),
-    z.literal(".pptx"),
-    z.literal(".txt"),
-    z.literal(".md"),
-    z.literal(".png"),
-    z.literal(".jpg"),
-    z.literal(".jpeg"),
-  ]),
 ]);
 
 const processCaptureConfigBase = {

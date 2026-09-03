@@ -18,6 +18,11 @@ understanding** that the lead confirms. Confirmed processes then feed two downst
 outputs: **AI-potential hypotheses with human-oversight scenarios**, and a **living
 process documentation corpus**.
 
+The implemented intake is deliberately user-led: the domain expert selects local files
+and starts each AI action explicitly. There is no live SharePoint connector, source
+crawler, or autonomous process discovery. Those capabilities are a future vision, not a
+hidden or partial feature of the prototype.
+
 The product boundary is deliberate and enforced in `AGENTS.md`: no solution approval,
 financial values, prioritisation, handover, or project management. The completed agentic
 scenario may receive one advisory criteria assessment; it deliberately leaves financial,

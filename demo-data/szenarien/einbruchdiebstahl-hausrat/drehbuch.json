@@ -1,0 +1,29 @@
+{
+  "zuege": [
+    {
+      "nummer": 1,
+      "antwort": "Ich bearbeite Einbruchdiebstähle in der Hausratversicherung. Der Fall kommt über das Kundenportal oder telefonisch rein. Ich prüfe zuerst Vertrag, Tatzeitraum und ob eine Anzeige bei der Polizei vorliegt. Am Ende ist der Schaden bezahlt oder nachvollziehbar abgelehnt.",
+      "hinweis": "Dieser Zug ist im Showcase bereits gespeichert und eröffnet Zweck, Auslöser sowie Prozessgrenze."
+    },
+    {
+      "nummer": 2,
+      "antwort": "Die Schadenmeldung liegt in KOMPASS, die Deckung sehe ich in VERA. Für die Prüfung brauche ich die polizeiliche Vorgangsnummer, eine Stehlgutliste und Kaufbelege oder Fotos. Alles wird in AKTE abgelegt. Wenn Unterlagen fehlen, schicke ich über Exchange Online eine gebündelte Rückfrage.",
+      "hinweis": "Dieser Zug ist im Showcase bereits gespeichert. Danach kann die Testperson mit Mengen, Bewertung und Kontrollen fortfahren."
+    },
+    {
+      "nummer": 3,
+      "antwort": "Wir haben ungefähr 75 Fälle im Monat. Ein vollständiger Standardfall braucht 45 Minuten Bearbeitungszeit und ist in zehn Tagen erledigt. Wenn Belege fehlen oder hochwertige Gegenstände dabei sind, dauert es eher vier bis sechs Wochen.",
+      "hinweis": "Liefert Mengen und Zeitwerte für die Fortsetzung des Chats."
+    },
+    {
+      "nummer": 4,
+      "antwort": "Schwierig ist die Stehlgutliste. Die Kunden schreiben sehr unterschiedlich, und ich muss Position für Position mit Kaufbelegen, Fotos und üblichen Werten abgleichen. Ab 15.000 Euro oder bei auffälligen Mustern geht der Fall an die Spezialprüfung.",
+      "hinweis": "Ergänzt Schmerzpunkt, professionelle Beurteilung und Übergabe."
+    },
+    {
+      "nummer": 5,
+      "antwort": "Vor der Zahlung prüft eine zweite Person die Entschädigungsberechnung. Danach stoße ich die Auszahlung in SAP S/4HANA an, schicke die Abrechnung und setze den Fall in KOMPASS auf erledigt.",
+      "hinweis": "Schließt den Ablauf mit Vier-Augen-Kontrolle, Zahlung und Dokumentation ab."
+    }
+  ]
+}

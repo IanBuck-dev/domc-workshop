@@ -1,0 +1,34 @@
+{
+  "zuege": [
+    {
+      "nummer": 1,
+      "antwort": "Ich bearbeite Änderungen des Bezugsrechts bei Lebensversicherungen. Der Auftrag kommt unterschrieben per Post, Kundenportal oder über den Vermittler. Am Ende ist die Änderung in VERA erfasst und bestätigt oder mit Begründung zurückgewiesen.",
+      "hinweis": "Zweck, Start und Ende."
+    },
+    {
+      "nummer": 2,
+      "antwort": "Ich prüfe zuerst Identität, Unterschrift, Vertragsnummer und ob der Versicherungsnehmer überhaupt verfügungsberechtigt ist. Bei unwiderruflichem Bezugsrecht brauche ich zusätzlich die Zustimmung der bisher berechtigten Person.",
+      "hinweis": "Entscheidung und Sonderfall."
+    },
+    {
+      "nummer": 3,
+      "antwort": "Der Vertrag steht in VERA, der Auftrag und die Identitätsnachweise kommen in AKTE. Bei Altverträgen muss ich zusätzlich in LEBUS nachsehen. Rückfragen schicke ich über Exchange Online.",
+      "hinweis": "Systeme und Quellen."
+    },
+    {
+      "nummer": 4,
+      "antwort": "Wir haben etwa 240 Aufträge im Monat. Ein vollständiger Fall dauert rund 15 Minuten. Bei fehlender Zustimmung oder unklaren Namensangaben liegen die Fälle im Schnitt acht Arbeitstage.",
+      "hinweis": "Mengen und Zeiten."
+    },
+    {
+      "nummer": 5,
+      "antwort": "Nach der Erfassung prüft eine zweite Person den Namen, die Art des Bezugsrechts und den Wirksamkeitszeitpunkt. Dann schicken wir die Bestätigung und legen sie in AKTE ab.",
+      "hinweis": "Kontrolle und Abschluss."
+    },
+    {
+      "nummer": 6,
+      "antwort": "Offen ist noch, ob wir bei allen Altverträgen dieselbe Formulierung für die Zustimmung verwenden. Das Prozessbild soll deshalb erst von der Teamleitung geprüft werden.",
+      "hinweis": "Bewusster offener Punkt für den Review-Zustand."
+    }
+  ]
+}

@@ -1,0 +1,227 @@
+{
+  "slug": "angebotsanfrage-wohngebaeude",
+  "titel": "VTR-03 · Angebotsanfrage für Wohngebäude vorprüfen",
+  "fachbereich": "Vertrieb",
+  "gespraechspartner": {
+    "name": "Edda Brandt",
+    "email": "edda.brandt@lifecorp.example"
+  },
+  "erstelltAm": "2026-01-13T09:05:00.000Z",
+  "bestaetigtAm": "2026-01-20T13:40:00.000Z",
+  "belege": [
+    {
+      "id": "b1",
+      "text": "Angebotsanfragen für Wohngebäude kommen direkt aus dem Kundenportal oder über Vermittler in PARTO. Ich prüfe zuerst, ob Adresse, Baujahr, Wohnfläche, Nutzung und Vorschäden vollständig sind."
+    },
+    {
+      "id": "b2",
+      "text": "Objektunterlagen sind oft freie PDFs, alte Grundrisse oder Fotos. Ich übertrage die Angaben nach VERA und gleiche auffällige Kombinationen mit unserer Annahmerichtlinie in SharePoint ab."
+    },
+    {
+      "id": "b3",
+      "text": "Wir haben ungefähr 900 Anfragen im Monat. Gut 30 Prozent brauchen mindestens eine Rückfrage; die eigentliche Prüfung dauert meist zwölf Minuten, mit Rückfrage zwei bis vier Tage."
+    },
+    {
+      "id": "b4",
+      "text": "Wenn eine Annahmegrenze betroffen ist, entscheidet die Risikoprüfung. Sonst erstelle ich den Vorschlag und gebe ihn an Interessent oder Vermittler zurück."
+    }
+  ],
+  "zweck": {
+    "wert": "Wohngebäude-Anfragen vollständig und plausibel für die Angebotserstellung vorbereiten.",
+    "belege": ["b1"]
+  },
+  "ausloeser": {
+    "wert": "Eingang einer Angebotsanfrage im Kundenportal oder Vermittlerportal in PARTO.",
+    "belege": ["b1"]
+  },
+  "ergebnis": {
+    "wert": "Ein vollständiger Angebotsdatensatz in VERA oder eine dokumentierte Übergabe an die Risikoprüfung.",
+    "belege": ["b4"]
+  },
+  "abgrenzung": {
+    "wert": "Die verbindliche Risikoprüfung bei Annahmegrenzen und der spätere Vertragsabschluss gehören nicht zur Vorprüfung.",
+    "belege": ["b4"]
+  },
+  "beteiligte": {
+    "wert": [
+      "Angebotsservice",
+      "Interessent",
+      "Vermittler",
+      "Risikoprüfung Vertrag"
+    ],
+    "belege": ["b1", "b4"]
+  },
+  "informationsquellen": {
+    "wert": [
+      "Angebotsanfrage",
+      "Objektunterlagen und Fotos",
+      "Annahmerichtlinie in SharePoint Online",
+      "Vorschäden in VERA"
+    ],
+    "belege": ["b1", "b2"]
+  },
+  "systeme": {
+    "wert": ["PARTO", "VERA", "AKTE", "SharePoint Online"],
+    "belege": ["b1", "b2"]
+  },
+  "kontrollen": {
+    "wert": [
+      "Pflichtfeldprüfung",
+      "Plausibilitätsabgleich von Objektmerkmalen",
+      "Übergabe bei dokumentierter Annahmegrenze"
+    ],
+    "belege": ["b1", "b2", "b4"]
+  },
+  "uebergaben": {
+    "wert": [
+      "Interessent oder Vermittler an Angebotsservice",
+      "Angebotsservice an Risikoprüfung bei Annahmegrenze",
+      "Angebotsservice an Interessent oder Vermittler mit Vorschlag"
+    ],
+    "belege": ["b1", "b4"]
+  },
+  "mengenUndZeiten": {
+    "wert": [
+      "Rund 900 Anfragen pro Monat",
+      "Etwa 30 Prozent mit Rückfrage",
+      "Zwölf Minuten reine Prüfung; zwei bis vier Tage mit Rückfrage"
+    ],
+    "belege": ["b3"]
+  },
+  "schwachstellen": {
+    "wert": [
+      "Objektangaben stehen verteilt in Formularen, PDFs, Grundrissen und Fotos",
+      "Angaben werden manuell nach VERA übertragen",
+      "Rückfragen werden individuell formuliert"
+    ],
+    "belege": ["b2", "b3"]
+  },
+  "verbesserungsziele": {
+    "wert": [
+      "Fehlende und widersprüchliche Angaben früh erkennen",
+      "Objektdaten mit Quellenbezug übersichtlich gegenüberstellen",
+      "Rückfragen vollständig vorbereiten"
+    ],
+    "belege": ["b2", "b3"]
+  },
+  "wissensluecken": [
+    "Die Trefferquote einzelner Annahmegrenzen wird derzeit nicht berichtet."
+  ],
+  "widersprueche": [],
+  "schritte": [
+    {
+      "name": "Anfrage übernehmen",
+      "taetigkeit": "Anfrage aus Kundenportal oder PARTO öffnen und dem Interessenten zuordnen.",
+      "eingaben": ["Angebotsanfrage"],
+      "ausgaben": ["Zugeordnete Anfrage"],
+      "informationen": [
+        {
+          "name": "Kontaktdaten und Vertriebskanal",
+          "quelle": "PARTO",
+          "typ": "system_field"
+        }
+      ],
+      "belege": ["b1"]
+    },
+    {
+      "name": "Pflichtangaben prüfen",
+      "taetigkeit": "Adresse, Baujahr, Wohnfläche, Nutzung und gewünschte Deckung auf Vollständigkeit prüfen.",
+      "eingaben": ["Zugeordnete Anfrage"],
+      "ausgaben": ["Vollständigkeitsstatus"],
+      "informationen": [
+        {
+          "name": "Objektstammdaten",
+          "quelle": "Angebotsanfrage",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b1"]
+    },
+    {
+      "name": "Objektunterlagen auswerten",
+      "taetigkeit": "Angaben aus PDFs, Grundrissen und Fotos mit den Formularangaben abgleichen.",
+      "eingaben": ["Objektunterlagen"],
+      "ausgaben": ["Abgeglichene Objektmerkmale"],
+      "informationen": [
+        {
+          "name": "Bauart und Nutzung",
+          "quelle": "Objektunterlagen in AKTE",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b2"]
+    },
+    {
+      "name": "Fehlende Angaben nachfordern",
+      "taetigkeit": "Eine gebündelte Rückfrage an Interessent oder Vermittler senden und Antwort dokumentieren.",
+      "eingaben": ["Vollständigkeitsstatus", "Abgeglichene Objektmerkmale"],
+      "ausgaben": ["Vervollständigte Anfrage"],
+      "informationen": [
+        {
+          "name": "Rückfrage und Antwort",
+          "quelle": "Exchange Online",
+          "typ": "email"
+        }
+      ],
+      "belege": ["b3"]
+    },
+    {
+      "name": "Risiko plausibilisieren",
+      "taetigkeit": "Vorschäden und Objektmerkmale gegen die Annahmerichtlinie prüfen.",
+      "eingaben": ["Vervollständigte Anfrage"],
+      "ausgaben": ["Plausibilisiertes Risiko"],
+      "informationen": [
+        {
+          "name": "Annahmerichtlinie",
+          "quelle": "SharePoint Online",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b2", "b4"]
+    },
+    {
+      "name": "Annahmeweg festlegen",
+      "taetigkeit": "Entscheiden, ob die Standardangebotserstellung möglich ist oder die Risikoprüfung übernehmen muss.",
+      "eingaben": ["Plausibilisiertes Risiko"],
+      "ausgaben": ["Freigabe oder Übergabepaket"],
+      "informationen": [
+        {
+          "name": "Annahmegrenze",
+          "quelle": "SharePoint Online",
+          "typ": "document"
+        }
+      ],
+      "belege": ["b4"]
+    },
+    {
+      "name": "Ergebnis bereitstellen",
+      "taetigkeit": "Angebotsdaten in VERA speichern und Vorschlag oder Zwischenbescheid an den Vertriebskanal geben.",
+      "eingaben": ["Freigabe oder Übergabepaket"],
+      "ausgaben": ["Angebotsdatensatz oder dokumentierte Übergabe"],
+      "informationen": [
+        { "name": "Angebotsstatus", "quelle": "VERA", "typ": "system_field" }
+      ],
+      "belege": ["b4"]
+    }
+  ],
+  "verzweigung": {
+    "nachSchritt": 6,
+    "frage": "Ist eine Annahmegrenze betroffen?",
+    "modus": "rule_based",
+    "zweige": [
+      {
+        "label": "Nein, Standardangebot",
+        "ziel": 7,
+        "ermittlung": "Keine Grenze der Annahmerichtlinie ist betroffen.",
+        "folge": "Der Angebotsvorschlag wird erstellt."
+      },
+      {
+        "label": "Ja, Risikoprüfung",
+        "ziel": "ende",
+        "ermittlung": "Mindestens eine dokumentierte Annahmegrenze ist betroffen.",
+        "folge": "Das vollständige Paket geht an die Risikoprüfung."
+      }
+    ]
+  },
+  "revisionen": []
+}

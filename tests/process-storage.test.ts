@@ -273,6 +273,20 @@ describe("process capture repository", () => {
         new File(["x"], "bad.exe", { type: "application/octet-stream" }),
       ),
     ).rejects.toThrow();
+    const image = await repo.saveUpload(
+      record.id,
+      new File(
+        [
+          Buffer.from(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==",
+            "base64",
+          ),
+        ],
+        "scan.png",
+        { type: "image/png" },
+      ),
+    );
+    expect(image.mediaType).toBe("image/png");
     await expect(
       repo.saveUpload(
         record.id,
@@ -296,7 +310,7 @@ describe("process capture repository", () => {
         crypto.randomUUID(),
       ]),
     ).rejects.toThrow("gehört nicht zu diesem Prozess");
-    for (let index = 2; index <= 5; index++)
+    for (let index = 3; index <= 5; index++)
       await repo.saveUpload(
         record.id,
         new File([`Ablauf ${index}`], `prozess-${index}.txt`, {

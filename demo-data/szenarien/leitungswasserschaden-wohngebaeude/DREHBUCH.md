@@ -22,13 +22,13 @@ Edda Brandt arbeitet in der Sach-Schadenregulierung. Sie beschreibt ihren Alltag
 - Fehlende Unterlagen und neue Belege nach Widerspruch erzeugen Rückschleifen, keine zusätzlichen linearen Hauptprozesse.
 - Unbewohnbarkeit ist eine zeitkritische Ausnahme am Fall, nicht der Normalablauf.
 - Betrugsprüfung und Regress sind externe Übergaben. Die Anwendung darf daraus keine automatische Ablehnung ableiten.
-- KOMPASS, VERA, PARTO, AKTE, SAP FI und Outlook werden mit ihrer tatsächlichen Rolle erfasst.
+- KOMPASS, VERA, PARTO, AKTE, SAP S/4HANA und Exchange Online werden mit ihrer tatsächlichen Rolle erfasst.
 - Die Fallübersicht belegt 276 Fälle im Quartal, 168 vollständige Ersteinreichungen, 112 Gutachterbeauftragungen und eine mediane Durchlaufzeit von 19 Tagen. Daraus dürfen keine erfundenen Finanzwerte entstehen.
 
 ## Erwartete KI-Potenziale
 
 1. **Agentische Fallvorbereitung:** Eingänge aus Portal, PDF und Bild lesen, dem Fall zuordnen, Vollständigkeit gegen Falltyp prüfen und fehlende Belege als Vorschlag vorbereiten.
-2. **Gutachter-Orchestrierung:** Beauftragungsgrund, Frist und Status aus KOMPASS, Outlook und Teamliste zusammenführen; ausstehende Terminbestätigungen sichtbar machen und Nachfassaktionen vorbereiten.
+2. **Gutachter-Orchestrierung:** Beauftragungsgrund, Frist und Status aus KOMPASS, Exchange Online und Teamliste zusammenführen; ausstehende Terminbestätigungen sichtbar machen und Nachfassaktionen vorbereiten.
 3. **Belegbasierte Prüfassistenz:** Kostenvoranschlag und Gutachten positionsweise gegenüberstellen, Auffälligkeiten und fehlende Deckungsbezüge markieren, aber Kürzung und Leistungsentscheidung beim Menschen lassen.
 4. **Ausnahme- und Übergabeerkennung:** Unbewohnbarkeit, Verdachtsmerkmale und Rückgriffshinweise früh erkennen und mit Belegen an den richtigen Prozess übergeben.
 
@@ -38,4 +38,4 @@ Edda Brandt arbeitet in der Sach-Schadenregulierung. Sie beschreibt ihren Alltag
 - Die 5.000-Euro-Grenze wird als einzige Gutachterregel behandelt und das professionelle Urteil verschwindet.
 - Die Empfehlung lautet auf vollautomatische Deckungs- oder Leistungsentscheidung ohne menschliche Verantwortung.
 - Die Anwendung erfindet Einsparbeträge, regulatorische Zulässigkeit oder einen Gesamtscore.
-- Outlook und Teamliste werden übersehen, obwohl genau dort das managementrelevante Steuerungsproblem liegt.
+- Exchange Online und Teamliste werden übersehen, obwohl genau dort das managementrelevante Steuerungsproblem liegt.

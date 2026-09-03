@@ -18,7 +18,7 @@ Erforderlich sind Fotos, eine Beschreibung der Ursache und ein Kostenvoranschlag
 
 Ab einer erwarteten Schadenhöhe von 5.000 Euro ist ein externer Sachverständiger zu beauftragen. Unterhalb der Grenze entscheidet die Sachbearbeitung nach Schadenbild. Gründe für eine Begutachtung sind insbesondere unklare Ursache, möglicher Schimmel, vermietete oder teilweise gewerblich genutzte Gebäude, wiederholte Vorschäden und nicht nachvollziehbare Positionen.
 
-Die Beauftragung erfolgt über Outlook. Auftragsdatum, Gutachter und Wiedervorlage werden in der Teamliste dokumentiert. Nach sieben Kalendertagen ohne Terminbestätigung wird nachgefasst.
+Die Beauftragung erfolgt über Exchange Online. Auftragsdatum, Gutachter und Wiedervorlage werden in der Teamliste dokumentiert. Nach sieben Kalendertagen ohne Terminbestätigung wird nachgefasst.
 
 ## 4. Entschädigung und Reserve prüfen
 
@@ -26,7 +26,7 @@ Kostenvoranschlag oder Gutachten werden positionsweise gegen Deckung und Schaden
 
 ## 5. Zahlung und Abschluss
 
-Die freigegebene Entschädigung wird über SAP FI an den Versicherungsnehmer gezahlt. Bei dokumentierter Abtretung ist das Handwerksunternehmen Zahlungsempfänger. Das Abrechnungsschreiben, die Berechnung und alle Belege werden in AKTE abgelegt. Danach wird der Vorgang in KOMPASS geschlossen.
+Die freigegebene Entschädigung wird über SAP S/4HANA an den Versicherungsnehmer gezahlt. Bei dokumentierter Abtretung ist das Handwerksunternehmen Zahlungsempfänger. Das Abrechnungsschreiben, die Berechnung und alle Belege werden in AKTE abgelegt. Danach wird der Vorgang in KOMPASS geschlossen.
 
 ## Ausnahmen und Übergaben
 

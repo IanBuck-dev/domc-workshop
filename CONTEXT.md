@@ -75,3 +75,47 @@ _Avoid_: Editable process document, template editor, process assessment
 **Agentic Potential Assessment**:
 The advisory, immutable criteria assessment of the completed `SCN-agentic` scenario. It is created by one bounded AI call; its web review and Excel export are deterministic views of the saved result.
 _Avoid_: Process assessment, solution approval, prioritisation
+
+**Demo Process Portfolio**:
+The curated set of fictional LifeCorp processes used to demonstrate the product. It covers LifeCorp's offered insurance business, its direct and intermediary channels, and Insurance-Enabling IT; generic corporate support processes are outside its scope.
+_Avoid_: Complete company process landscape, generic IT support or HR showcase
+
+**Showcase Seed State**:
+The deliberate workflow position at which a fictional Demo Process is created so the presentation includes confirmed results and credible continuation points. It describes demonstration readiness, not business progress at LifeCorp.
+_Avoid_: Random fixture state, production status
+
+**Insurance-Enabling IT**:
+The part of LifeCorp IT that enables and governs digital workplaces and agents or connects systems and data sources supporting the offered insurance business. Generic workplace support is not Insurance-Enabling IT in the Demo Process Portfolio.
+_Avoid_: First-level user support, device provisioning, generic corporate IT
+
+**Process Data Source**:
+A named system, repository, document, or communication channel that supplies business information to a Process Step. The source names where the information is held, not the application or AI layer used to access it.
+_Avoid_: Tool list, AI capability, unspecified database
+
+**AI Access Layer**:
+A controlled service through which an agent retrieves information or performs an allowed action against a Process Data Source. It is not itself the origin or system of record for that business information.
+_Avoid_: Data source, unrestricted agent access
+
+**Process Data Format**:
+The form in which information enters, leaves, or is stored during the real Process, independent of whether the prototype can ingest that form as evidence.
+_Avoid_: Supported upload format, application name
+
+**Supported Capture Format**:
+A file format that Process Capture can accept and make available to the bounded AI operation as evidence. Unsupported Process Data Formats remain facts about the Process but cannot be uploaded as evidence.
+_Avoid_: Every format used by the business, guaranteed OCR
+
+**Multimodal Capture Evidence**:
+An uploaded image or image-based document that the AI may interpret directly without a deterministic OCR result. Material facts derived from it require cautious wording and human confirmation.
+_Avoid_: Verified transcription, authoritative OCR output
+
+**Owning Team**:
+The single organisational team accountable for the normal end-to-end result of a captured Process. Other teams may contribute through explicit Handoffs without sharing ownership.
+_Avoid_: Every participating team, application owner
+
+**Process Evidence Source**:
+A conversation, instruction, checklist, template, system view, or example artifact that supports a statement about how the Process currently works. No individual Process Evidence Source becomes authoritative without Process Confirmation.
+_Avoid_: Process Data Source, automatically true documentation
+
+**Autonomous Process Discovery**:
+A future agentic capability that inspects explicitly approved Process Evidence Sources, proposes Process Candidates, and preserves source provenance for human review. It never confirms a Process or expands its own source scope.
+_Avoid_: Current Process Capture, background crawling, autonomous confirmation

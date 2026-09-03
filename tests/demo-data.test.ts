@@ -36,10 +36,20 @@ describe("demo-data scenarios", () => {
 
   test("every szenario.json parses against the shared schema and matches its folder name", async () => {
     const slugs = await scenarioSlugs();
+    const portfolio = await readFile(
+      join(process.cwd(), "demo-data", "PROZESSPORTFOLIO.md"),
+      "utf8",
+    );
     for (const slug of slugs) {
       const raw = await readJson(join(szenarienRoot, slug, "szenario.json"));
       const szenario = demoSzenarioSchema.parse(raw);
       expect(szenario.slug).toBe(slug);
+      expect(szenario.cover.processName).toBe(szenario.titel);
+      const portfolioRow = portfolio
+        .split("\n")
+        .find((line) => line.includes(`| ${szenario.titel}`));
+      expect(portfolioRow).toBeDefined();
+      expect(portfolioRow!).toContain(`| ${szenario.cover.department}`);
     }
   });
 

@@ -52,17 +52,17 @@
     },
     {
       "nummer": 11,
-      "antwort": "Zum Schluss stimme ich die Summen mit SAP FI ab, damit die Auszahlung tatsächlich rausgeht. Das macht eine Kollegin in der Finanzbuchhaltung, ich liefere nur die freigegebenen Beträge.",
-      "hinweis": "Abstimmung mit SAP FI. Prüft, ob der Assistent die Rollentrennung zwischen Edda und Finanzbuchhaltung sauber erfasst."
+      "antwort": "Zum Schluss stimme ich die Summen mit SAP S/4HANA ab, damit die Auszahlung tatsächlich rausgeht. Das macht eine Kollegin in der Finanzbuchhaltung, ich liefere nur die freigegebenen Beträge.",
+      "hinweis": "Abstimmung mit SAP S/4HANA. Prüft, ob der Assistent die Rollentrennung zwischen Edda und Finanzbuchhaltung sauber erfasst."
     },
     {
       "nummer": 12,
       "antwort": "Reklamationen kommen einfach per Mail rein, wenn ein Vermittler findet, seine Abrechnung stimmt nicht. Die sortiere ich selbst, es gibt keine feste Vorlage oder ein Ticketsystem dafür.",
-      "hinweis": "Reklamationsbearbeitung per Outlook. Erwartet, dass Outlook als System und der unstrukturierte, formularlose Ablauf erfasst werden."
+      "hinweis": "Reklamationsbearbeitung per E-Mail über Exchange Online. Erwartet, dass Exchange Online als System und der unstrukturierte, formularlose Ablauf erfasst werden."
     },
     {
       "nummer": 13,
-      "antwort": "Am schlimmsten ist die letzte Woche vorm Monatsabschluss, dann kommt alles gleichzeitig: Korrekturen, Reklamationen, und die Abstimmung mit SAP FI muss auch noch fertig werden.",
+      "antwort": "Am schlimmsten ist die letzte Woche vorm Monatsabschluss, dann kommt alles gleichzeitig: Korrekturen, Reklamationen, und die Abstimmung mit SAP S/4HANA muss auch noch fertig werden.",
       "hinweis": "Zeitdruck-Situation zum Monatsabschluss. Sollte als Aufwands-/Problemhinweis erfasst werden, nicht als eigener Regelschritt."
     },
     {

@@ -1,11 +1,8 @@
 # Backlog
 
-Everything the release-preparation audit of 2026-08-12 turned up: gaps between the decided
-specs and the code, guardrail violations, dead code, and documentation inconsistencies.
-
-This list is a record, not a plan. Nothing here was fixed while it was written — the
-branch that produced it changed documentation only. Deciding what to fix is the point of
-having the list.
+Known gaps between the decided specs and the code, guardrail divergences,
+documentation work, and explicitly deferred future capabilities. This list is a record,
+not an implementation plan; each item requires its own decision and delivery scope.
 
 Format:
 
@@ -86,6 +83,24 @@ product decision is required first.
   Vite build output; `apps/web/src/App.tsx`. Size: M.
 
 ## docs
+
+- **[docs] Build a small handover wiki for insurance IT and AI teams** — the feature and
+  operations documentation is detailed, but it does not yet provide a guided learning
+  path for a team taking over the repository. Add a short index and focused explainers
+  for the domain model, provider-neutral AI runtime, prompts and schemas, evidence and
+  provenance, agentic memory, bounded autonomy, connector security, testing, operations,
+  and the path from prototype to governed enterprise use. Keep current behavior and
+  future vision visibly separate. Evidence: `README.md`, `docs/domain/README.md`,
+  `docs/operations/`. Size: M.
+
+- **[future-capture] Design autonomous discovery from governed evidence sources** — a
+  future agent may inspect explicitly approved SharePoint areas and system interfaces,
+  propose process candidates, collect evidence, and prepare interviews. Before
+  implementation, define connector identity, least-privilege source scope, provenance,
+  prompt-injection handling, budgets, cancellation, audit, retention, and human
+  confirmation. The current local-file-picker flow remains authoritative until then.
+  Evidence: `README.md`, `demo-data/ORGANISATION.md`, `AGENTS.md`. Size: L (product and
+  security decision first).
 
 - **[docs] `AGENTS.md` mixes English rules with German paragraphs** — lines 35–36 and
   42–66 switch language mid-section, in the one file every agent reads first. Pick one
