@@ -149,7 +149,7 @@ export function ProcessDetailPage() {
                 {process.cover.processName}
               </h1>
               <p className="mt-3 text-muted-foreground">
-                {process.cover.department} · {process.id} · aktualisiert{" "}
+                {process.cover.department} · aktualisiert{" "}
                 {new Date(process.updatedAt).toLocaleString("de-DE", {
                   dateStyle: "short",
                   timeStyle: "short",

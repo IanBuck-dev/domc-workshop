@@ -99,7 +99,7 @@ export function OpportunityDiscoveryPage({
             {process.cover.processName}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            {process.cover.department} · {process.id}
+            {process.cover.department}
           </p>
         </div>
         <OpportunityProgress record={record} processId={id} active={phase} />

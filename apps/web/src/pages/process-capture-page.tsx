@@ -262,9 +262,7 @@ export function ProcessCapturePage() {
         <ArrowLeft className="size-4" /> Zum Prozess
       </Link>
       <div className="space-y-3">
-        <p className="text-eyebrow uppercase text-primary">
-          Seite 2 von 2 · {record.id}
-        </p>
+        <p className="text-eyebrow uppercase text-primary">Seite 2 von 2</p>
         <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
           <h1 className="text-title sm:text-display">
             {record.cover.processName}

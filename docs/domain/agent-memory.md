@@ -36,10 +36,11 @@ hand-edited.
 
 ### An entry
 
-Every fact carries its source: the `PROC-NNNN` process it came from and the date that
-process was confirmed (`memorySourceSchema`, process ids match `/^PROC-\d{4}$/`).
-`memorySourceTag` renders that as a visible tag on the bullet, so a fact in the prompt can
-always be traced back to the conversation that produced it.
+Every fact carries its source: the internal `PROC-NNNN` process it came from and the date that
+process was confirmed (`memorySourceSchema`, process ids match `/^PROC-\d{4}$/`). The Settings
+view resolves that source to its process name and never displays the technical ID; a deleted
+source is simply labelled `Gelöschte Prozessaufnahme`. The internal reference still lets a fact
+in the prompt be traced back to the conversation that produced it.
 
 `normalizeMemoryFact` additionally screens candidate facts for prompt-injection
 directives — "ignore all previous instructions", "system prompt", "verhalte dich als" and

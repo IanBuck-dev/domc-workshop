@@ -33,7 +33,8 @@ describe("PDD export storage", () => {
       exportedAt: "2026-08-12T09:01:00.000Z",
       exportId: "a0d73751-bdee-4a65-bd3a-64d953a8b477",
     });
-    expect(first.detail.filename).not.toBe(second.detail.filename);
+    expect(first.detail.filename).toBe(second.detail.filename);
+    expect(first.detail.filename).not.toMatch(/PROC-\d{4}/);
     const workbookEntries = unzipSync(first.bytes);
     const templateEntries = unzipSync(
       new Uint8Array(
@@ -75,6 +76,14 @@ describe("PDD export storage", () => {
     expect(firstSheetXml).toMatch(
       /<c\b[^>]*r="B5"[^>]*s="4"[^>]*t="inlineStr"/,
     );
+    expect(firstSheetXml).toContain("Prozesskürzel");
+    expect(firstSheetXml).toContain("Nicht vergeben");
+    expect(
+      Object.entries(workbookEntries)
+        .filter(([name]) => /^xl\/worksheets\/sheet\d+\.xml$/.test(name))
+        .map(([, value]) => new TextDecoder().decode(value))
+        .join("\n"),
+    ).not.toMatch(/PROC-\d{4}/);
     for (let index = 4; index <= 17; index++)
       expect(workbookEntries[`xl/worksheets/sheet${index}.xml`]).toEqual(
         templateEntries[`xl/worksheets/sheet${index}.xml`],
@@ -86,10 +95,21 @@ describe("PDD export storage", () => {
           "process-captures",
           record.id,
           "exports",
-          first.detail.filename,
+          `${first.detail.exportId}.xlsx`,
         ),
       ),
     ).toEqual(Buffer.from(first.bytes));
+    expect(
+      await readFile(
+        join(
+          root,
+          "process-captures",
+          record.id,
+          "exports",
+          `${second.detail.exportId}.xlsx`,
+        ),
+      ),
+    ).toEqual(Buffer.from(second.bytes));
     const auditEntries = (await processes.history(record.id)).filter(
       (entry) => entry.event === "pdd-exported",
     );

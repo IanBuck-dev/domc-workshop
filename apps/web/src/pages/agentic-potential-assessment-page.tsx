@@ -118,7 +118,7 @@ export function AgenticPotentialAssessmentPage() {
             {process.cover.processName}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            {process.cover.department} · {process.id}
+            {process.cover.department}
           </p>
           <p className="mt-1 text-ui text-muted-foreground">
             Bewertetes Szenario: {scenario?.title ?? "noch nicht verfügbar"}

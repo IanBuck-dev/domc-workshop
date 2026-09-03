@@ -19,7 +19,10 @@ decision. Calculation and list rendering do not call AI.
 
 The review route is `/processes/:id/opportunities/agentic-assessment`. Its download is
 deterministic: it reads the saved record only, patches the first sheet of the sanitized
-five-sheet XLSX template, and keeps an export audit with hash and revisions.
+five-sheet XLSX template, and keeps an export audit with hash and revisions. Its download name
+is derived from the frozen business process name, for example
+`Agentische-Potenzialbewertung_FIN-03_Nicht-zuordenbare-Zahlungseingaenge-klaeren.xlsx`; the
+technical `PROC-NNNN` remains only in internal route, storage, and audit references.
 
 ## Where it lives
 

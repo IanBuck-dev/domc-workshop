@@ -669,7 +669,7 @@ export function ProcessChatPage() {
                         {view.cover.processName}
                       </h1>
                       <p className="text-ui text-muted-foreground">
-                        {view.cover.department} · {id}
+                        {view.cover.department}
                       </p>
                     </div>
                     <Badge variant="outline">

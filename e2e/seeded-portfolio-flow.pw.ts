@@ -63,6 +63,25 @@ async function expectValidAssessmentWorkbook(
   expect(assessmentSheet.indexOf("<autoFilter")).toBeLessThan(
     assessmentSheet.indexOf("<mergeCells"),
   );
+  expect(
+    Object.entries(workbook)
+      .filter(([name]) => /^xl\/worksheets\/sheet\d+\.xml$/.test(name))
+      .map(([, value]) => decoder.decode(value))
+      .join("\n"),
+  ).not.toMatch(/PROC-\d{4}/);
+}
+
+async function expectTechnicalIdFreeWorkbook(download: Download) {
+  const path = await download.path();
+  expect(path).not.toBeNull();
+  const workbook = unzipSync(new Uint8Array(await readFile(path!)));
+  const decoder = new TextDecoder();
+  expect(
+    Object.entries(workbook)
+      .filter(([name]) => /^xl\/worksheets\/sheet\d+\.xml$/.test(name))
+      .map(([, value]) => decoder.decode(value))
+      .join("\n"),
+  ).not.toMatch(/PROC-\d{4}/);
 }
 
 test("all six deterministic LifeCorp journeys reach both Excel exports", async ({
@@ -91,6 +110,7 @@ test("all six deterministic LifeCorp journeys reach both Excel exports", async (
   expect(assessments).toHaveLength(6);
 
   for (const [title, expectedScore] of journeys) {
+    const businessCode = title.split(" · ")[0]!;
     const process = processes.find((item) => item.cover.processName === title);
     expect(process, `Seeded process ${title}`).toBeTruthy();
     expect(
@@ -106,15 +126,20 @@ test("all six deterministic LifeCorp journeys reach both Excel exports", async (
 
     await page.goto(`/processes/${process!.id}`);
     await expect(page.getByRole("heading", { name: title })).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/PROC-\d{4}/);
     const pddDownloadPromise = page.waitForEvent("download");
     await page.getByRole("button", { name: "Excel erstellen" }).click();
     const pddDownload = await pddDownloadPromise;
     expect(pddDownload.suggestedFilename()).toMatch(/\.xlsx$/i);
+    expect(pddDownload.suggestedFilename()).not.toMatch(/PROC-\d{4}/);
+    expect(pddDownload.suggestedFilename()).toContain(`${businessCode}_`);
+    await expectTechnicalIdFreeWorkbook(pddDownload);
 
     await page.goto(`/processes/${process!.id}/chat`);
     await expect(
       page.getByText(/^(Abgeschlossen|Mit offenen Punkten bestätigt)$/),
     ).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/PROC-\d{4}/);
     const chatResponse = await page.request.get(
       `/api/processes/${process!.id}/chat`,
     );
@@ -138,6 +163,7 @@ test("all six deterministic LifeCorp journeys reach both Excel exports", async (
     await expect(page.getByText("Assistiert", { exact: true })).toBeVisible();
     await expect(page.getByText("Teilautonom", { exact: true })).toBeVisible();
     await expect(page.getByText("Agentisch", { exact: true })).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/PROC-\d{4}/);
 
     await page.goto(
       `/processes/${process!.id}/opportunities/agentic-assessment`,
@@ -145,10 +171,15 @@ test("all six deterministic LifeCorp journeys reach both Excel exports", async (
     await expect(
       page.getByRole("heading", { name: "Ergebnisüberblick" }),
     ).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/PROC-\d{4}/);
     const assessmentDownloadPromise = page.waitForEvent("download");
     await page.getByRole("button", { name: "Excel erstellen" }).click();
     const assessmentDownload = await assessmentDownloadPromise;
     expect(assessmentDownload.suggestedFilename()).toMatch(/\.xlsx$/i);
+    expect(assessmentDownload.suggestedFilename()).not.toMatch(/PROC-\d{4}/);
+    expect(assessmentDownload.suggestedFilename()).toContain(
+      `${businessCode}_`,
+    );
     await expectValidAssessmentWorkbook(assessmentDownload, title);
   }
 

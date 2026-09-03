@@ -372,15 +372,11 @@ function EntryOrigin({
                 >
                   {source.processName}
                 </Link>{" "}
-                <span className="text-muted-foreground">
-                  ({source.processId})
-                </span>
               </p>
             ) : (
               <p className="text-ui">
-                <span className="font-semibold">{source.processId}</span>{" "}
                 <span className="text-muted-foreground">
-                  — Prozessaufnahme wurde gelöscht.
+                  Gelöschte Prozessaufnahme
                 </span>
               </p>
             )}

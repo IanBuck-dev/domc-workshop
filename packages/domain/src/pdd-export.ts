@@ -9,6 +9,10 @@ import {
   type ProcessCaptureConfig,
   type ProcessCaptureRecord,
 } from "./process-understanding.ts";
+import {
+  businessProcessCode,
+  safeProcessArtifactFilename,
+} from "./process-presentation.ts";
 
 const sheetNames = [
   "Übersicht",
@@ -207,30 +211,9 @@ export function pddSourceRevision(input: ProcessCaptureRecord) {
 
 export function safePddFilename(input: {
   prefix: string;
-  processId: string;
-  confirmedAt: string;
-  sourceRevision: string;
-  exportId: string;
+  processName: string;
 }) {
-  const processId = z
-    .string()
-    .regex(/^PROC-\d{4}$/)
-    .parse(input.processId);
-  const confirmedAt = z.string().datetime().parse(input.confirmedAt);
-  const revision = z
-    .string()
-    .regex(/^[a-f0-9]{64}$/)
-    .parse(input.sourceRevision);
-  const exportId = z.string().uuid().parse(input.exportId);
-  const prefix = input.prefix
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^A-Za-z0-9_-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
-  if (!prefix) throw new Error("Ungültiger PDD-Dateiname.");
-  const date = confirmedAt.slice(0, 10);
-  return `${prefix}-${processId}-${date}-${revision.slice(0, 12)}-${exportId.slice(0, 8)}.xlsx`;
+  return safeProcessArtifactFilename(input.prefix, input.processName);
 }
 
 export function derivePddCoverage(record: ProcessCaptureRecord) {
@@ -380,7 +363,11 @@ export function createPddWorkbookModel(
     ]);
   });
   const overviewRows: z.infer<typeof pddCellSchema>[][] = [
-    ["Prozess-ID", record.id, "text"],
+    [
+      "Prozesskürzel",
+      businessProcessCode(record.cover.processName) ?? "Nicht vergeben",
+      "text",
+    ],
     ["Fachbereich", record.cover.department, "text"],
     ["Bestätigt am", record.confirmedAt, "date"],
     [

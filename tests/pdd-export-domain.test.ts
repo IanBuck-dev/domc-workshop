@@ -65,13 +65,11 @@ describe("PDD export domain", () => {
     expect(pddSourceRevision(reordered)).toBe(pddSourceRevision(record));
     const filename = safePddFilename({
       prefix: "PDD / Köln",
-      processId: record.id,
-      confirmedAt: record.confirmedAt!,
-      sourceRevision: pddSourceRevision(record),
-      exportId: "3d5e581c-1f0d-45fc-a1c9-f6cb3bf61787",
+      processName: "FIN-03 · Nicht zuordenbare Zahlungseingänge klären",
     });
-    expect(filename).toMatch(
-      /^PDD-Koln-PROC-\d{4}-\d{4}-\d{2}-\d{2}-[a-f0-9]{12}-3d5e581c\.xlsx$/,
+    expect(filename).toBe(
+      "PDD-Koeln_FIN-03_Nicht-zuordenbare-Zahlungseingaenge-klaeren.xlsx",
     );
+    expect(filename).not.toMatch(/PROC-\d{4}/);
   });
 });

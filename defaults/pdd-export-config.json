@@ -31,7 +31,7 @@
   "mapping": {
     "cover": {
       "B5": "processName",
-      "B6": "processId",
+      "B6": "processReference",
       "B7": "Prozessdokumentation – Ist-Zustand",
       "B8": "version",
       "B9": "exportedAt",

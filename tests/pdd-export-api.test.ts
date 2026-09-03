@@ -45,6 +45,9 @@ describe("PDD export API", () => {
       "spreadsheetml.sheet",
     );
     expect(response.headers.get("content-disposition")).toContain("attachment");
+    expect(response.headers.get("content-disposition")).not.toMatch(
+      /PROC-\d{4}/,
+    );
     expect(response.headers.get("x-pdd-source-revision")).toMatch(
       /^[a-f0-9]{64}$/,
     );

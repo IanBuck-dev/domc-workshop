@@ -106,6 +106,13 @@ descending and places processes without a score afterwards; every column remains
 Near-duplicate names are caught at creation: `GET /api/processes/similar` compares against
 `normalizedProcessName`.
 
+### Process identity in the UI
+
+`PROC-NNNN` is the stable internal identifier for routes, storage, events, and audit history.
+It is never rendered to department users. The existing process name is the business identity;
+LifeCorp demo names optionally start with a code such as `FIN-03 · …`. Exports derive their
+friendly filename and optional workbook reference from that name without storing a second field.
+
 ## Where it lives
 
 | Layer   | Path                                                                                                                                                                                                                                                          |

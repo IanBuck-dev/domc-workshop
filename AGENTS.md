@@ -79,6 +79,9 @@ The prototype's login is gated. Real or reusable credentials live in the user's 
 
 - Write German interface copy for an insurance manager, not a developer.
 - Show the current state, the next required action, and why a recommendation was made.
+- `PROC-NNNN` is an internal storage, route, and audit identifier. Never show it in UI copy,
+  workbook cells, or download filenames; use the existing business process name and optional
+  prefix such as `FIN-03` instead.
 - Use a restrained, accessible desktop-first UI that remains usable on tablets.
 - No darkmode. The app is light mode only. Do not add `dark:` variants, a `.dark` token block, a `@custom-variant dark`, `prefers-color-scheme` rules, or a theme toggle. The shadcn CLI emits `dark:` classes when adding a component — strip them before committing.
 - Do not expose raw JSON, terminal commands, prompt text, stack traces, or model terminology in the normal UI.

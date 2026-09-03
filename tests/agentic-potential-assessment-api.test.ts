@@ -127,6 +127,9 @@ describe("agentic potential assessment API", () => {
     );
     expect(exported.status).toBe(200);
     expect(exported.headers.get("cache-control")).toBe("private, no-store");
+    expect(exported.headers.get("content-disposition")).not.toMatch(
+      /PROC-\d{4}/,
+    );
     expect(exported.headers.get("x-agentic-assessment-revision")).toBe(
       completed.assessmentRevision,
     );

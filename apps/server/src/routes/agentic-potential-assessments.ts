@@ -14,6 +14,7 @@ import { createAgenticAssessmentWorkbook } from "../../../../packages/storage/sr
 import type { AgenticPotentialAssessmentService } from "../agentic-potential-assessment-service.ts";
 import { authenticatedUser } from "../session.ts";
 import { atomicWrite } from "../../../../packages/storage/src/atomic-write.ts";
+import { safeProcessArtifactFilename } from "../../../../packages/domain/src/process-presentation.ts";
 
 const templateHash =
   "0a08b013941025069d27dc2e0c395fc7256eb4ad3dc91b2b731167eecbb12b84";
@@ -99,7 +100,10 @@ export function agenticPotentialAssessmentRoutes(
         record,
       );
       const exportId = crypto.randomUUID();
-      const filename = `Agentische-Potenzialbewertung_${processId}_${record.assessmentRevision.slice(0, 12)}_${exportId}.xlsx`;
+      const filename = safeProcessArtifactFilename(
+        "Agentische-Potenzialbewertung",
+        record.sourceSnapshot.processName,
+      );
       const detail = {
         exportId,
         filename,
@@ -115,7 +119,7 @@ export function agenticPotentialAssessmentRoutes(
         recursive: true,
       });
       await atomicWrite(
-        join(assessments.dir(processId), "exports", filename),
+        join(assessments.dir(processId), "exports", `${exportId}.xlsx`),
         bytes,
       );
       await assessments.recordExport(processId, detail);

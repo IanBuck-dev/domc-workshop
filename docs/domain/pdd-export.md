@@ -16,7 +16,8 @@ records remain readable but the UI does not offer an export for them.
 
 `pddSourceRevision` hashes the cover, confirmation metadata, work characteristics,
 canonical understanding, and current-state details with sorted object keys. The revision
-appears in the workbook, filename metadata, response header, and audit detail.
+appears in the workbook version metadata, response header, and audit detail. It does not appear
+in the user-facing download filename.
 
 ## Workbook contract
 
@@ -26,6 +27,10 @@ template sheets. This phase populates only `Deckblatt`, `01_Prozessdefinition`, 
 `02_Prozessschritte`; sheets 4–17 remain byte-identical to the sanitized asset. Unknown
 values display as `Nicht bekannt`, and future-state fields on the first three sheets
 display the explicit current-state scope notice.
+
+The cover's `Prozesskürzel` is derived from the optional prefix in the existing process name
+(for example `FIN-03`); it displays `Nicht vergeben` if no prefix exists. `PROC-NNNN` remains
+internal and is never written into user-visible workbook cells or download filenames.
 
 `packages/domain/src/pdd-export.ts` validates coverage and maps confirmed canonical facts
 without an export-time AI call. `packages/storage/src/pdd-workbook.ts` copies the
@@ -40,4 +45,6 @@ the `X-PDD-Source-Revision` header. Unknown processes return `404`; records that
 meet the confirmation gate return `409` with manager-facing German copy. The process
 detail page provides the PDD-Export card and downloads the returned binary once. The
 audit entry includes template/mapping revision, output hash, timestamps, and initiating
-authenticated user.
+authenticated user. The response uses a friendly name such as
+`PDD_FIN-03_Nicht-zuordenbare-Zahlungseingaenge-klaeren.xlsx`; immutable artifact storage uses
+the export UUID separately, so repeated downloads never overwrite each other.

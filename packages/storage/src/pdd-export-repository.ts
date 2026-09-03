@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { access, mkdir, readFile, rm } from "node:fs/promises";
+import { mkdir, readFile, rm } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import { z } from "zod";
 import {
@@ -9,6 +9,7 @@ import {
   safePddFilename,
   type PddExportAuditDetail,
 } from "../../domain/src/pdd-export.ts";
+import { businessProcessCode } from "../../domain/src/process-presentation.ts";
 import {
   processCaptureRecordSchema,
   type ProcessCaptureRecord,
@@ -99,8 +100,9 @@ export class PddExportRepository {
     const owner = unknown(details.processOwner);
     const values: Record<string, Record<string, string>> = {
       Deckblatt: {
+        A6: "Prozesskürzel",
         B5: record.cover.processName,
-        B6: record.id,
+        B6: businessProcessCode(record.cover.processName) ?? "Nicht vergeben",
         B7: "Prozessdokumentation – Ist-Zustand",
         B8: `${config.template.version} / ${pddSourceRevision(record).slice(0, 12)}`,
         B9: exportedAt.slice(0, 10),
@@ -264,10 +266,7 @@ export class PddExportRepository {
     const model = { sourceRevision: pddSourceRevision(record) };
     const filename = safePddFilename({
       prefix: config.filenamePrefix,
-      processId: record.id,
-      confirmedAt: record.confirmedAt,
-      sourceRevision: model.sourceRevision,
-      exportId,
+      processName: record.cover.processName,
     });
     const detail = pddExportAuditDetailSchema.parse({
       exportId,
@@ -286,16 +285,8 @@ export class PddExportRepository {
       template: config.template,
     });
     const directory = join(this.root, "process-captures", record.id, "exports");
-    const path = join(directory, filename);
+    const path = join(directory, `${exportId}.xlsx`);
     await mkdir(directory, { recursive: true });
-    try {
-      await access(path);
-      throw new Error(
-        "Eine PDD-Arbeitsmappe mit dieser Kennung existiert bereits.",
-      );
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-    }
     try {
       await atomicWrite(path, bytes);
       await new ProcessCaptureRepository(this.root).appendHistory(

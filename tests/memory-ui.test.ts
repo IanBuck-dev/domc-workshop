@@ -45,7 +45,7 @@ describe("settings UI for the learned company knowledge", () => {
     expect(source).toContain("Fachbereich");
     expect(source).toContain("Eingereicht von");
     expect(source).toContain("Bestätigt am");
-    expect(source).toContain("Prozessaufnahme wurde gelöscht.");
+    expect(source).toContain("Gelöschte Prozessaufnahme");
     expect(source).toContain("to={`/processes/${source.processId}`}");
     expect(source).toContain("entry.sources.map");
     // Klick statt Hover: der Titel darf keine reine Tooltip-Attrappe sein.
