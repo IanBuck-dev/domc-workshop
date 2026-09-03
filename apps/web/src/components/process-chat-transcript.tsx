@@ -218,20 +218,22 @@ export function ProcessChatTranscript({
                         ))}
                       </div>
                     )}
-                    <ReactMarkdown
-                      allowedElements={[
-                        "p",
-                        "strong",
-                        "em",
-                        "ul",
-                        "ol",
-                        "li",
-                        "br",
-                        "code",
-                      ]}
-                    >
-                      {text}
-                    </ReactMarkdown>
+                    <div className="[&_p+p]:mt-3 [&_ul]:mt-1 [&_li]:ml-5 [&_li]:list-disc [&_li+li]:mt-1">
+                      <ReactMarkdown
+                        allowedElements={[
+                          "p",
+                          "strong",
+                          "em",
+                          "ul",
+                          "ol",
+                          "li",
+                          "br",
+                          "code",
+                        ]}
+                      >
+                        {text}
+                      </ReactMarkdown>
+                    </div>
                   </MessageContent>
                 </Message>
               )}

@@ -4,6 +4,18 @@ import { processFlowIdentifierSchema } from "./process-understanding.ts";
 const idSchema = z.string().trim().min(1).max(160);
 const textSchema = z.string().trim().min(1).max(20_000);
 
+export const initialChatCaptureMessage = `Ich helfe Ihnen, den Prozess schnell und einfach zu erfassen. Bitte laden Sie alle bestehenden Prozessdokumente hoch, damit es möglichst wenig Rückfragen gibt.
+
+Aus den Dateien erstelle ich ein erstes Prozessdiagramm, welches wir dann Schritt für Schritt durchgehen, bis wir den finalen Ist-Stand erreicht haben.
+
+**Wie erfassen Sie den Prozess richtig?**
+
+1. Laden Sie alle verfügbaren Prozessunterlagen gemeinsam hoch.
+2. Erzählen Sie den Ablauf in Ihren eigenen Worten und so ausführlich, wie Sie möchten. Je mehr konkrete Details Sie nennen, desto weniger Rückfragen sind nötig. Ich ordne Ihre Angaben automatisch dem passenden Prozessschritt zu.
+3. Beschreiben Sie den Ablauf so, wie er heute tatsächlich durchgeführt wird – nicht als gewünschten Soll-Prozess.
+4. Ergänzen Sie beteiligte Rollen, verwendete Systeme, Entscheidungen und Ausnahmen.
+5. Prüfen und korrigieren Sie das Prozessbild gemeinsam mit mir, bis der Ist-Stand vollständig abgebildet ist.`;
+
 export const chatDocumentGateSchema = z.enum([
   "pending",
   "documents_selected",
@@ -192,3 +204,18 @@ export type ChatActivityEvent = z.infer<typeof chatActivityEventSchema>;
 export type ChatUnderstandingEvent = z.infer<
   typeof chatUnderstandingEventSchema
 >;
+
+/**
+ * Initialtexte sind Produktcopy und keine fachliche Nutzerevidenz. Bestehende
+ * Transkripte bleiben unverändert; ihre Darstellung folgt trotzdem der
+ * aktuellen Copy.
+ */
+export function presentChatTranscript(
+  transcript: ChatTranscriptEvent[],
+): ChatTranscriptEvent[] {
+  return transcript.map((event) =>
+    event.action === "initial" && event.role === "assistant"
+      ? { ...event, text: initialChatCaptureMessage }
+      : event,
+  );
+}

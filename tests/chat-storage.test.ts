@@ -120,7 +120,18 @@ describe("chat capture storage", () => {
       "tmp",
       "transcript.jsonl",
     ]);
-    expect((await chats.transcript(record.id))[0]?.action).toBe("initial");
+    const initialMessage = (await chats.transcript(record.id))[0];
+    expect(initialMessage?.action).toBe("initial");
+    expect(initialMessage?.text).toContain(
+      "Bitte laden Sie alle bestehenden Prozessdokumente hoch",
+    );
+    expect(initialMessage?.text).toContain(
+      "**Wie erfassen Sie den Prozess richtig?**",
+    );
+    expect(initialMessage?.text).toContain(
+      "nicht als gewünschten Soll-Prozess",
+    );
+    expect(initialMessage?.text).toContain("so ausführlich, wie Sie möchten");
     const contracts = join(processes.dir(record.id), "chat", "contracts");
     const frozenPrompt = await readFile(
       join(contracts, "process-chat.md"),

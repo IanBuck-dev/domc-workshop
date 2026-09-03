@@ -6,11 +6,32 @@ import {
   chatMentionSchema,
   chatMessageRequestSchema,
   chatTranscriptEventSchema,
+  initialChatCaptureMessage,
+  presentChatTranscript,
 } from "../packages/domain/src/chat-capture.ts";
 import { processCaptureRecordSchema } from "../packages/domain/src/process-understanding.ts";
 import { cover, processConfig } from "./process-fixtures.ts";
 
 describe("chat capture domain", () => {
+  test("presents current product copy for existing initial messages", () => {
+    const stored = chatTranscriptEventSchema.parse({
+      schemaVersion: 2,
+      id: crypto.randomUUID(),
+      turnId: null,
+      at: new Date().toISOString(),
+      role: "assistant",
+      status: "complete",
+      text: "Historischer Einstiegstext",
+      mentions: [],
+      action: "initial",
+    });
+
+    expect(presentChatTranscript([stored])[0]?.text).toBe(
+      initialChatCaptureMessage,
+    );
+    expect(stored.text).toBe("Historischer Einstiegstext");
+  });
+
   test("validates stable node and edge mentions and rejects duplicates", () => {
     expect(
       chatMentionSchema.parse({

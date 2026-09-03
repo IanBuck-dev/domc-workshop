@@ -44,6 +44,14 @@ _Avoid_: Sidebar, mini diagram, second Process Diagram
 One ordered activity in the current process. A Process Step is the primary visible element of the initial Process Diagram.
 _Avoid_: Form section, criterion
 
+**Active Process Step**:
+The single Process Step currently being described and checked in Chat Capture. After the initial overview it is the earliest ordered Process Step that the person has not yet confirmed.
+_Avoid_: Current question, selected diagram node, interview topic
+
+**Step Confirmation**:
+The person's explicit acceptance that the Active Process Step adequately reflects today's activity, inputs, outputs, actors, systems, and any relevant decisions or exceptions. It advances the conversation but does not replace Process Confirmation.
+_Avoid_: AI confidence, automatic completion, Process Confirmation
+
 **Process Actor**:
 A department, role, or external party involved in a Process Step, together with how it participates. Process Actors identify organizational responsibility without naming individual people.
 _Avoid_: Workshop participant, user account

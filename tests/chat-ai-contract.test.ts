@@ -71,6 +71,20 @@ describe("chat AI runtime contract", () => {
     );
   });
 
+  test("pins the one-active-step conversation protocol", async () => {
+    const prompt = await readFile(
+      join(process.cwd(), "defaults/prompts/process-chat-v3.md"),
+      "utf8",
+    );
+    expect(prompt).toContain("## Verbindliches Gesprächsmuster");
+    expect(prompt).toContain("genau einen **aktiven Prozessschritt**");
+    expect(prompt).toContain("dessen `confirmed` noch `false` ist");
+    expect(prompt).toContain("**Bereits verstanden**");
+    expect(prompt).toContain("**Noch offen**");
+    expect(prompt).toContain("Fordere keine bloße Ja-Nein-Antwort");
+    expect(prompt).toContain("frage sie nicht erneut");
+  });
+
   test("fails closed without SRT and allows the explicit local Bun override", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "chat-sandbox-"));
     try {

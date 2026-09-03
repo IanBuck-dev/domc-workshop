@@ -35,7 +35,6 @@ import {
   saveConfigOverride,
 } from "../lib/local-config";
 import type { ProcessCaptureConfig } from "../lib/process-types";
-import { resetChatTutorial } from "../lib/chat-tutorial-preference";
 
 export function SettingsPage() {
   const [defaults, setDefaults] = useState<ProcessCaptureConfig | null>(null);
@@ -174,17 +173,6 @@ export function SettingsPage() {
           </Button>
         </div>
       </div>
-      <Button
-        variant="secondary"
-        onClick={() => {
-          resetChatTutorial();
-          setMessage(
-            "Die Einführung wird beim nächsten Chat erneut angezeigt.",
-          );
-        }}
-      >
-        Einführung beim nächsten Chat erneut anzeigen
-      </Button>
       {message && (
         <p
           className="rounded-md border border-primary/20 bg-secondary p-3 text-label text-secondary-foreground"

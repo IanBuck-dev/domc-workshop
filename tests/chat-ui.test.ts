@@ -14,28 +14,54 @@ describe("chat capture UI contract", () => {
     expect(source).toContain("Formular");
   });
 
-  test("contains the deterministic tutorial and blocking document actions", async () => {
-    const tutorial = await readFile(
-      join(process.cwd(), "apps/web/src/components/chat-capture-tutorial.tsx"),
+  test("contains the inline capture guide and blocking document actions", async () => {
+    const storage = await readFile(
+      join(process.cwd(), "packages/domain/src/chat-capture.ts"),
       "utf8",
     );
     const gate = await readFile(
       join(process.cwd(), "apps/web/src/components/chat-document-gate.tsx"),
       "utf8",
     );
+    const milestone = await readFile(
+      join(
+        process.cwd(),
+        "apps/web/src/components/process-chat-milestone-card.tsx",
+      ),
+      "utf8",
+    );
+    const transcript = await readFile(
+      join(
+        process.cwd(),
+        "apps/web/src/components/process-chat-transcript.tsx",
+      ),
+      "utf8",
+    );
+    const callout = await readFile(
+      join(process.cwd(), "apps/web/src/components/ui/info-callout.tsx"),
+      "utf8",
+    );
     const page = await readFile(
       join(process.cwd(), "apps/web/src/pages/process-chat-page.tsx"),
       "utf8",
     );
-    expect(tutorial).toContain("Unterlagen bereitstellen");
-    expect(tutorial).toContain("In Alltagssprache ergänzen");
-    expect(tutorial).toContain("Prozessbild prüfen");
+    expect(storage).toContain("Wie erfassen Sie den Prozess richtig?");
+    expect(storage).toContain("tatsächlich durchgeführt wird");
+    expect(storage).toContain(
+      "verwendete Systeme, Entscheidungen und Ausnahmen",
+    );
     expect(gate).toContain("Unterlagen auswerten");
     expect(gate).toContain("Ohne Unterlagen fortfahren");
     expect(gate).toContain('role="alert"');
     expect(page).toContain("Trotz offener Punkte bestätigen?");
     expect(page).toContain("useChat");
     expect(page).toContain("DefaultChatTransport");
+    expect(page).not.toContain("ChatCaptureTutorial");
+    expect(transcript).toContain("[&_li]:list-disc");
+    expect(milestone).toContain("splitInitialCaptureMessage");
+    expect(milestone).toContain("<InfoCallout");
+    expect(callout).toContain('role="note"');
+    expect(callout).toContain("bg-info-surface");
   });
 
   test("uses the message scroller and controlled manual-activation responsive tabs", async () => {

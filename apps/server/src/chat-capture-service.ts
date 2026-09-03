@@ -3,6 +3,7 @@ import { copyFile, mkdir, readFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 import {
   chatMessageRequestSchema,
+  presentChatTranscript,
   type ChatTranscriptEvent,
 } from "../../../packages/domain/src/chat-capture.ts";
 import {
@@ -209,7 +210,7 @@ export class ChatCaptureService {
       processState: fresh.state,
       interactionMode: fresh.interactionMode,
       state,
-      transcript: await this.chats.transcript(id),
+      transcript: presentChatTranscript(await this.chats.transcript(id)),
       uploads: fresh.uploads,
       understanding: reconciliation.understanding,
       understandingStatus: reconciliation.status,

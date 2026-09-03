@@ -3,7 +3,6 @@ import { DefaultChatTransport, type UIMessage } from "ai";
 import { ArrowDown, ChevronsRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { ChatCaptureTutorial } from "../components/chat-capture-tutorial";
 import { DemoSidecar } from "../components/demo-sidecar";
 import { DocumentPreviewDialog } from "../components/document-preview-dialog";
 import { ProcessChatComposer } from "../components/process-chat-composer";
@@ -52,10 +51,6 @@ import {
 } from "../components/ui/tabs";
 import { api, ApiError } from "../lib/api-client";
 import { useProcessChanged } from "../lib/process-events";
-import {
-  chatTutorialCompleted,
-  completeChatTutorial,
-} from "../lib/chat-tutorial-preference";
 import {
   chatActivityEventSchema,
   chatUnderstandingEventSchema,
@@ -174,7 +169,6 @@ export function ProcessChatPage() {
   const [mentions, setMentions] = useState<ChatMention[]>([]);
   const [turnUploadIds, setTurnUploadIds] = useState<string[]>([]);
   const [error, setError] = useState("");
-  const [tutorial, setTutorial] = useState(!chatTutorialCompleted());
   const [tab, setTab] = useState<"chat" | "diagram">("chat");
   const [expanded, setExpanded] = useState(false);
   const [diagramUnread, setDiagramUnread] = useState(false);
@@ -584,13 +578,6 @@ export function ProcessChatPage() {
       data-chat-workspace
       className="relative flex h-full min-h-0 flex-col bg-background"
     >
-      <ChatCaptureTutorial
-        open={tutorial && Boolean(view) && !confirmed}
-        onDone={() => {
-          completeChatTutorial();
-          setTutorial(false);
-        }}
-      />
       <DocumentPreviewDialog
         processId={id}
         upload={preview}

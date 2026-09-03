@@ -439,7 +439,6 @@ Nachweis:
 - [ ] Konsolidierung erhält Quellen und entfernt keine unbestätigten Inhalte unbemerkt.
 - [ ] Reset verlangt eine bewusste Bestätigung und erklärt die Wirkung.
 - [ ] Ein Reset löscht Firmenwissen, aber keine Prozesse oder Prozessdokumente.
-- [ ] Der Chat-Tutorialstatus lässt sich zurücksetzen.
 - [ ] Die Dokumentations-Reconciliation lässt sich bewusst starten.
 - [ ] Reconciliation ergänzt fehlende Dokumentation ohne bestätigte Prozesse zu ändern.
 - [ ] Form-Prozesse speisen derzeit kein Firmenwissen; das ist ein bekannter Backlog-Punkt.

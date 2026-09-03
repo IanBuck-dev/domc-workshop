@@ -35,6 +35,9 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-surface: var(--info-surface);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -143,6 +146,12 @@
   --accent-foreground: #14563c;
   --destructive: #b42318;
   --destructive-foreground: #ffffff;
+  /* Blue is reserved for informational callouts. It is deliberately separate
+     from the green brand/action palette so guidance is not mistaken for a
+     selected state or required action. */
+  --info: #2563a6;
+  --info-foreground: #17324d;
+  --info-surface: #eaf4fb;
   --border: #e0e8e4;
   /* Control outlines (input, select, textarea, checkbox). Darker than --border
      on purpose: WCAG 1.4.11 wants 3:1 for interactive boundaries. Neutral, not

@@ -37,6 +37,18 @@ describe("LifeCorp showcase journeys", () => {
     }
   });
 
+  test("shows the one-active-step protocol throughout the FIN-03 journey", async () => {
+    const journey = (await listShowcaseJourneyFixtures()).find(
+      (item) => item.slug === "zahlungseingaenge-klaeren",
+    )!;
+    expect(journey.conversation).toHaveLength(7);
+    journey.conversation.forEach((turn, index) => {
+      expect(turn.assistant).toContain(`**Schritt ${index + 1} von 7`);
+      expect(turn.assistant).toContain("**Bereits verstanden**");
+      expect(turn.assistant).toContain("**Noch offen**");
+    });
+  });
+
   test("derive every advertised score from criterion rows", async () => {
     const journeys = await listShowcaseJourneyFixtures();
     for (const journey of journeys) {

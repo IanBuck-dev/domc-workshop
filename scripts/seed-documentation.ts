@@ -265,7 +265,7 @@ async function main() {
         role: "assistant",
         status: "complete",
         text: journeyUploads.length
-          ? `Ich habe ${journeyUploads.length} Unterlage${journeyUploads.length === 1 ? "" : "n"} berücksichtigt. Ich gehe den heutigen Ablauf jetzt Schritt für Schritt mit Ihnen durch.`
+          ? `Ich habe ${journeyUploads.length} Unterlage${journeyUploads.length === 1 ? "" : "n"} berücksichtigt und daraus einen ersten Überblick mit ${fixture.schritte.length} Prozessschritten erstellt. Wir prüfen jetzt immer genau einen Schritt: Ich zeige Ihnen zuerst, was bereits klar ist und welche Angaben noch fehlen.`
           : "Wir erfassen den heutigen Ablauf ohne Unterlagen. Ich frage die relevanten Punkte Schritt für Schritt ab.",
         mentions: [],
         action: journeyUploads.length ? "analyze_documents" : "skip_documents",

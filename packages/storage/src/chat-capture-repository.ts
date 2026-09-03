@@ -5,6 +5,7 @@ import {
   chatCaptureStateSchema,
   chatSessionRecordSchema,
   chatTranscriptEventSchema,
+  initialChatCaptureMessage,
   type ChatCaptureState,
   type ChatSessionRecord,
   type ChatTranscriptEvent,
@@ -21,9 +22,6 @@ import { atomicWrite } from "./atomic-write.ts";
 import { audit } from "./audit-log.ts";
 
 const MAX_WORKING_BYTES = 2 * 1024 * 1024;
-const initialAssistantText =
-  "Ich unterstütze Sie dabei, den heutigen Ablauf als verständliches Prozessbild festzuhalten. Am schnellsten geht das mit vorhandenen Arbeitsanweisungen, Präsentationen oder Beispieldokumenten. Laden Sie alle passenden Unterlagen gemeinsam hoch – oder fahren Sie ohne Unterlagen fort.";
-
 export class ChatCaptureRepository {
   constructor(private readonly root: string) {}
   private dir(id: string) {
@@ -138,7 +136,7 @@ export class ChatCaptureRepository {
       at: now,
       role: "assistant",
       status: "complete",
-      text: initialAssistantText,
+      text: initialChatCaptureMessage,
       mentions: [],
       action: "initial",
     });

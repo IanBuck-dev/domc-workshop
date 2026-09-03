@@ -3,15 +3,29 @@ import { Link } from "react-router-dom";
 import type { ProcessUnderstanding, UploadRecord } from "../lib/process-types";
 import { DocumentAttachmentList } from "./document-attachment-list";
 import { Button } from "./ui/button";
+import { InfoCallout } from "./ui/info-callout";
 
-function Body({ text }: { text: string }) {
+const captureGuideMarker = "**Wie erfassen Sie den Prozess richtig?**";
+
+function Body({ text, className = "" }: { text: string; className?: string }) {
   return (
-    <ReactMarkdown
-      allowedElements={["p", "strong", "em", "ul", "ol", "li", "br", "code"]}
-    >
-      {text}
-    </ReactMarkdown>
+    <div className={className}>
+      <ReactMarkdown
+        allowedElements={["p", "strong", "em", "ul", "ol", "li", "br", "code"]}
+      >
+        {text}
+      </ReactMarkdown>
+    </div>
   );
+}
+
+function splitInitialCaptureMessage(text: string) {
+  const markerIndex = text.indexOf(captureGuideMarker);
+  if (markerIndex < 0) return { introduction: text, guide: null };
+  return {
+    introduction: text.slice(0, markerIndex).trim(),
+    guide: text.slice(markerIndex + captureGuideMarker.length).trim(),
+  };
 }
 
 export function InitialProcessChatMilestoneCard({
@@ -34,6 +48,7 @@ export function InitialProcessChatMilestoneCard({
   processing: boolean;
 }) {
   const hasAttachments = selectedUploads.length > 0 || missingSelectedCount > 0;
+  const content = splitInitialCaptureMessage(text);
   return (
     <section
       className="rounded-xl border bg-card p-5"
@@ -41,8 +56,19 @@ export function InitialProcessChatMilestoneCard({
     >
       <p className="text-overline uppercase text-primary">Prozesserfassung</p>
       <div id="capture-milestone-title" className="mt-3 text-body">
-        <Body text={text} />
+        <Body text={content.introduction} className="[&_p+p]:mt-3" />
       </div>
+      {content.guide && (
+        <InfoCallout
+          title="Wie erfassen Sie den Prozess richtig?"
+          className="mt-5"
+        >
+          <Body
+            text={content.guide}
+            className="[&_li]:ml-5 [&_li]:pl-1 [&_li]:list-decimal [&_li+li]:mt-1.5"
+          />
+        </InfoCallout>
+      )}
       {documentGate ??
         (hasAttachments && (
           <div className="mt-5 border-t pt-4">

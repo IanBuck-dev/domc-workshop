@@ -16,28 +16,32 @@
   ],
   "conversation": [
     {
-      "assistant": "Was löst die Klärung aus, und welches Ergebnis muss am Ende fachlich vorliegen?",
+      "assistant": "**Schritt 1 von 7 – Klärfallliste übernehmen**\n\n**Bereits verstanden**\n- SAP S/4HANA stellt täglich nicht automatisch zugeordnete Zahlungen bereit.\n- Betrag, Absender und Verwendungszweck bilden den Eingang.\n\n**Noch offen**\n- Wer die Liste übernimmt und ob davor ein manueller Arbeitsschritt liegt.\n- Welches konkrete Ergebnis an den nächsten Schritt übergeben wird.\n\nErzählen Sie bitte, wie dieser erste Schritt heute tatsächlich abläuft und was danach vorliegt.",
       "userEvidenceId": "b1"
     },
     {
-      "assistant": "Wie gehen Sie bei einem unklaren Verwendungszweck konkret vor?",
+      "assistant": "**Schritt 2 von 7 – Verwendungszweck auswerten**\n\n**Bereits verstanden**\n- Die priorisierte Klärfallliste ist der Eingang.\n- Betrag, Absender und Verwendungszweck stehen für die Prüfung bereit.\n\n**Noch offen**\n- Wie die Sachbearbeitung aus dem Freitext konkrete Suchmerkmale gewinnt.\n- Welche typischen Unklarheiten auftreten und welches Ergebnis dieser Schritt liefert.\n\nBeschreiben Sie diesen Arbeitsschritt gern so ausführlich, wie Sie ihn einer neuen Kollegin oder einem neuen Kollegen erklären würden.",
       "userEvidenceId": "b2"
     },
     {
-      "assistant": "Welche Systeme durchsuchen Sie und nach welchen Merkmalen?",
+      "assistant": "**Schritt 3 von 7 – Vertrag und Person suchen**\n\n**Bereits verstanden**\n- Vertragsnummern, Namen oder Schadenhinweise dienen als Suchmerkmale.\n- Am Ende werden mögliche Vertrags- und Personentreffer benötigt.\n\n**Noch offen**\n- In welchen Systemen die Sachbearbeitung sucht und welche Merkmale sie dort abgleicht.\n- Woran sie erkennt, dass alle plausiblen Treffer gesammelt wurden.\n\nErzählen Sie bitte, wie Sie diese Suche in der Praxis durchführen und was Sie als Ergebnis festhalten.",
       "userEvidenceId": "b3"
     },
     {
-      "assistant": "Wo braucht es eine fachliche Entscheidung oder eine zusätzliche Kontrolle?",
+      "assistant": "**Schritt 4 von 7 – Fachlichen Bezug ergänzen**\n\n**Bereits verstanden**\n- Nach der Vertrags- und Personensuche können mehrere mögliche Treffer bestehen.\n- Für die spätere Zuordnung wird zusätzlicher fachlicher Kontext benötigt.\n\n**Noch offen**\n- Wann Schadeninformationen oder Unterlagen zu Sammelzahlungen einbezogen werden.\n- Wo diese Informationen liegen und welches Ergebnis an die Bewertung übergeht.\n\nBeschreiben Sie bitte, wie Sie den fachlichen Bezug ergänzen und welche Sonderfälle dabei typischerweise auftreten.",
       "userEvidenceId": "b4"
     },
     {
-      "assistant": "Wie endet der Normalfall, und wohin geben Sie nicht lösbare Fälle weiter?",
+      "assistant": "**Schritt 5 von 7 – Zuordnung bewerten**\n\n**Bereits verstanden**\n- Mögliche Treffer und der ergänzte fachliche Kontext liegen gemeinsam vor.\n- Der Schritt muss zwischen eindeutiger Zuordnung und weiterer Klärung unterscheiden.\n\n**Noch offen**\n- Nach welchen fachlichen Kriterien eine Zuordnung als eindeutig gilt.\n- Was dokumentiert wird, wenn keine eindeutige Zuordnung möglich ist.\n\nErzählen Sie bitte, wie Sie zu dieser Entscheidung kommen und welches Ergebnis Sie jeweils festhalten.",
       "userEvidenceId": "b5"
     },
     {
-      "assistant": "Welche Mengen, Bearbeitungszeiten und wiederkehrenden Engpässe sehen Sie?",
+      "assistant": "**Schritt 6 von 7 – Risikofälle zweitprüfen**\n\n**Bereits verstanden**\n- Bestimmte Zuordnungsvorschläge benötigen vor der Buchung eine zusätzliche Kontrolle.\n- Das Ergebnis muss eine nachvollziehbare Freigabe oder Ablehnung sein.\n\n**Noch offen**\n- Welche Fälle in die Zweitprüfung gelangen, wer sie durchführt und was erneut geprüft wird.\n- Wo die Kontrolle dokumentiert wird.\n\nBeschreiben Sie bitte den heutigen Prüfablauf einschließlich der Freigaberegeln.",
       "userEvidenceId": "b6"
+    },
+    {
+      "assistant": "**Schritt 7 von 7 – Zahlung buchen oder weitergeben**\n\n**Bereits verstanden**\n- Eine freigegebene Zuordnung kann gebucht werden; ein ungelöster Fall braucht eine fachliche Übergabe.\n- Dieser Schritt beendet den betrachteten Prozess.\n\n**Noch offen**\n- Wie die Buchung erfolgt und welche Informationen bei einer Übergabe mitgegeben werden.\n- Woran die Sachbearbeitung den Vorgang als abgeschlossen erkennt.\n\nErzählen Sie bitte, wie beide Ergebnisse in der Praxis bearbeitet werden und wo dabei noch Aufwand entsteht.",
+      "userEvidenceId": "b7"
     }
   ],
   "hypotheses": [

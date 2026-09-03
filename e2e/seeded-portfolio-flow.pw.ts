@@ -139,13 +139,20 @@ test("all six deterministic LifeCorp journeys reach both Excel exports", async (
     await expect(
       page.getByText(/^(Abgeschlossen|Mit offenen Punkten bestätigt)$/),
     ).toBeVisible();
+    await expect(
+      page.getByRole("note").getByText("Wie erfassen Sie den Prozess richtig?"),
+    ).toBeVisible();
     await expect(page.locator("body")).not.toContainText(/PROC-\d{4}/);
     const chatResponse = await page.request.get(
       `/api/processes/${process!.id}/chat`,
     );
     expect(chatResponse.ok()).toBeTruthy();
     const chat = (await chatResponse.json()) as {
-      transcript: Array<{ role: "user" | "assistant" }>;
+      transcript: Array<{
+        role: "user" | "assistant";
+        action: string;
+        text: string;
+      }>;
     };
     expect(
       chat.transcript.filter((event) => event.role === "user").length,
@@ -155,6 +162,20 @@ test("all six deterministic LifeCorp journeys reach both Excel exports", async (
     ).toBeGreaterThan(
       chat.transcript.filter((event) => event.role === "user").length,
     );
+    if (title.startsWith("FIN-03")) {
+      const stepMessages = chat.transcript.filter(
+        (event) =>
+          event.role === "assistant" &&
+          event.action === "message" &&
+          event.text.includes("**Schritt "),
+      );
+      expect(stepMessages).toHaveLength(7);
+      stepMessages.forEach((event, index) => {
+        expect(event.text).toContain(`**Schritt ${index + 1} von 7`);
+        expect(event.text).toContain("**Bereits verstanden**");
+        expect(event.text).toContain("**Noch offen**");
+      });
+    }
 
     await page.goto(`/processes/${process!.id}/opportunities/scenarios`);
     await expect(
