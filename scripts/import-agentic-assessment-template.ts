@@ -32,7 +32,7 @@ function assessmentSheet() {
     `<c r="${ref}" s="${style}" t="inlineStr"><is><t xml:space="preserve">${value}</t></is></c>`;
   const row = (index: number, values: string[], style = "1") =>
     `<row r="${index}">${values.map((value, column) => cell(`${String.fromCharCode(65 + column)}${index}`, value, style)).join("")}</row>`;
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView workbookViewId="0" showGridLines="0"><pane ySplit="6" topLeftCell="A7" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="18"/><cols>${headers.map((_, index) => `<col min="${index + 1}" max="${index + 1}" width="${[24, 32, 24, 10, 46, 58, 28, 28, 16, 42][index]}" customWidth="1"/>`).join("")}</cols><sheetData><row r="1" ht="28">${cell("A1", "Agentische Potenzialbewertung", "2")}</row>${row(2, ["Prozess", "", "Szenario", "", "Assessment-Revision", "", "Quellrevision", "", "Erstellt", ""])}${row(3, ["Bewertet", "", "Nicht ausreichend belegt", "", "Ausgeschlossen", "", "", "", "", ""])}${row(5, headers, "2")}</sheetData><mergeCells count="1"><mergeCell ref="A1:J1"/></mergeCells><autoFilter ref="A5:J5"/><printOptions gridLines="0"/><pageMargins left="0.3" right="0.3" top="0.5" bottom="0.5" header="0.2" footer="0.2"/><pageSetup orientation="landscape" paperSize="9" fitToWidth="1" fitToHeight="0"/></worksheet>`;
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><dimension ref="A1:J5"/><sheetViews><sheetView workbookViewId="0" showGridLines="0"><pane ySplit="6" topLeftCell="A7" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="A7" sqref="A7"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="18"/><cols>${headers.map((_, index) => `<col min="${index + 1}" max="${index + 1}" width="${[24, 32, 24, 10, 46, 58, 28, 28, 16, 42][index]}" customWidth="1"/>`).join("")}</cols><sheetData><row r="1" ht="28">${cell("A1", "Agentische Potenzialbewertung", "2")}</row>${row(2, ["Prozess", "", "Szenario", "", "Assessment-Revision", "", "Quellrevision", "", "Erstellt", ""])}${row(3, ["Bewertet", "", "Nicht ausreichend belegt", "", "Ausgeschlossen", "", "", "", "", ""])}${row(5, headers, "2")}</sheetData><autoFilter ref="A5:J5"/><mergeCells count="1"><mergeCell ref="A1:J1"/></mergeCells><printOptions gridLines="0"/><pageMargins left="0.3" right="0.3" top="0.5" bottom="0.5" header="0.2" footer="0.2"/><pageSetup orientation="landscape" paperSize="9" fitToWidth="1" fitToHeight="0"/></worksheet>`;
 }
 
 const bytes = new Uint8Array(await readFile(source));
@@ -98,9 +98,13 @@ workbook = workbook.replace(
   /<workbookView\b([^>]*)\bfirstSheet="[^"]*"([^>]*)\bactiveTab="[^"]*"([^>]*)\/>/,
   '<workbookView$1firstSheet="0"$2activeTab="0"$3/>',
 );
+const sheetIds = [...workbook.matchAll(/<sheet\b[^>]*\bsheetId="(\d+)"/g)].map(
+  (match) => Number(match[1]),
+);
+const assessmentSheetId = Math.max(...sheetIds) + 1;
 workbook = workbook.replace(
   /<sheets>/,
-  '<sheets><sheet name="Agentische Bewertung" sheetId="1" r:id="rId11"/>',
+  `<sheets><sheet name="Agentische Bewertung" sheetId="${assessmentSheetId}" r:id="rId11"/>`,
 );
 entries["xl/workbook.xml"] = strToU8(workbook);
 entries["docProps/core.xml"] = strToU8(

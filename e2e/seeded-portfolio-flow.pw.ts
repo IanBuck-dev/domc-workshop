@@ -1,4 +1,6 @@
-import { expect, test, type Page } from "@playwright/test";
+import { readFile } from "node:fs/promises";
+import { expect, test, type Download, type Page } from "@playwright/test";
+import { unzipSync } from "fflate";
 
 const username = process.env.E2E_AUTH_USERNAME;
 const password = process.env.E2E_AUTH_PASSWORD;
@@ -39,6 +41,28 @@ async function login(page: Page) {
   await page.getByLabel("Passwort").fill(password!);
   await page.getByRole("button", { name: "Anmelden" }).click();
   await expect(page.getByRole("heading", { name: "Prozesse" })).toBeVisible();
+}
+
+async function expectValidAssessmentWorkbook(
+  download: Download,
+  processName: string,
+) {
+  const path = await download.path();
+  expect(path).not.toBeNull();
+  const workbook = unzipSync(new Uint8Array(await readFile(path!)));
+  const decoder = new TextDecoder();
+  const workbookXml = decoder.decode(workbook["xl/workbook.xml"]!);
+  const sheetIds = [
+    ...workbookXml.matchAll(/<sheet\b[^>]*\bsheetId="(\d+)"/g),
+  ].map((match) => match[1]);
+  expect(new Set(sheetIds).size).toBe(sheetIds.length);
+
+  const assessmentSheet = decoder.decode(workbook["xl/worksheets/sheet1.xml"]!);
+  expect(assessmentSheet).toContain(processName);
+  expect(assessmentSheet).toContain("Agentische Potenzialbewertung");
+  expect(assessmentSheet.indexOf("<autoFilter")).toBeLessThan(
+    assessmentSheet.indexOf("<mergeCells"),
+  );
 }
 
 test("all six deterministic LifeCorp journeys reach both Excel exports", async ({
@@ -125,6 +149,7 @@ test("all six deterministic LifeCorp journeys reach both Excel exports", async (
     await page.getByRole("button", { name: "Excel erstellen" }).click();
     const assessmentDownload = await assessmentDownloadPromise;
     expect(assessmentDownload.suggestedFilename()).toMatch(/\.xlsx$/i);
+    await expectValidAssessmentWorkbook(assessmentDownload, title);
   }
 
   expect(failures.failedRequests, "No browser request should fail").toEqual([]);

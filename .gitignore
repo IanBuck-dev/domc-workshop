@@ -1,6 +1,7 @@
 # Dependencies and generated builds
 node_modules/
 dist/
+outputs/
 *.zip
 
 # Local workshop data and agent validation artifacts

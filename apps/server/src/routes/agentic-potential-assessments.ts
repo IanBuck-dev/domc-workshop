@@ -16,7 +16,7 @@ import { authenticatedUser } from "../session.ts";
 import { atomicWrite } from "../../../../packages/storage/src/atomic-write.ts";
 
 const templateHash =
-  "595aca516fcaf22f42aa550deabcf6d74e3fb03f6154127a6233edabd1a618f2";
+  "0a08b013941025069d27dc2e0c395fc7256eb4ad3dc91b2b731167eecbb12b84";
 function disposition(filename: string) {
   const ascii = filename.replace(/[^\x20-\x7e]/g, "_").replace(/["\\]/g, "_");
   return `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(filename)}`;

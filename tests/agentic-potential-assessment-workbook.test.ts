@@ -60,6 +60,17 @@ test("sanitized assessment template has five sheets and no classification artifa
     "Kriterien Kurz",
     "Archiv_Forms",
   ]);
+  const sheetIds = [
+    ...workbook.matchAll(/<sheet\b[^>]*\bsheetId="(\d+)"/g),
+  ].map((match) => match[1]);
+  expect(new Set(sheetIds).size).toBe(sheetIds.length);
+  const assessmentTemplateSheet = new TextDecoder().decode(
+    files["xl/worksheets/sheet1.xml"]!,
+  );
+  expect(assessmentTemplateSheet).toContain('<dimension ref="A1:J5"/>');
+  expect(assessmentTemplateSheet.indexOf("<autoFilter")).toBeLessThan(
+    assessmentTemplateSheet.indexOf("<mergeCells"),
+  );
   for (let index = 2; index <= 5; index++)
     expect(
       new TextDecoder().decode(files[`xl/worksheets/sheet${index}.xml`]!),
@@ -88,6 +99,11 @@ test("export fills only the assessment sheet from the stored result", async () =
   const sheet = new TextDecoder().decode(exported["xl/worksheets/sheet1.xml"]!);
   expect(sheet).toContain(process.cover.processName);
   expect(sheet).toContain(record.assessmentRevision!);
+  expect(sheet).toContain('<dimension ref="A1:J46"/>');
+  expect(sheet).toContain('activePane="bottomLeft"');
+  expect(sheet.indexOf("<autoFilter")).toBeLessThan(
+    sheet.indexOf("<mergeCells"),
+  );
   expect(
     sheet.match(/Nicht berechnet – unvollständige Bewertungsgrundlage/g),
   ).toHaveLength(9);
