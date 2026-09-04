@@ -1,50 +1,24 @@
-import { AlertTriangle, ArrowLeft, RefreshCw, Sparkles } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { AlertTriangle, RefreshCw, Sparkles } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Link, Navigate } from "react-router-dom";
 import { OpportunityHypothesesView } from "../components/opportunity-hypotheses-view";
-import { OpportunityProgress } from "../components/opportunity-progress";
 import { OpportunityScenariosView } from "../components/opportunity-scenarios-view";
 import { api } from "../lib/api-client";
-import type { OpportunityDiscoveryDetail } from "../lib/opportunity-types";
-import type { ProcessCaptureRecord } from "../lib/process-types";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
 import { Skeleton } from "../components/ui/skeleton";
 import { Spinner } from "../components/ui/spinner";
-import { useProcessChanged } from "../lib/process-events";
+import { useOpportunityWorkspace } from "../lib/opportunity-workspace";
 
 export function OpportunityDiscoveryPage({
   phase,
 }: {
   phase: "hypotheses" | "scenarios";
 }) {
-  const { id = "" } = useParams();
-  const [process, setProcess] = useState<ProcessCaptureRecord | null>(null);
-  const [detail, setDetail] = useState<OpportunityDiscoveryDetail | null>(null);
+  const { process, opportunity: detail, reload } = useOpportunityWorkspace();
+  const id = process.id;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    let mounted = true;
-    Promise.all([api.process(id), api.opportunity(id)])
-      .then(([nextProcess, nextDetail]) => {
-        if (!mounted) return;
-        setProcess(nextProcess);
-        setDetail(nextDetail);
-      })
-      .catch((reason: Error) => mounted && setError(reason.message));
-    return () => {
-      mounted = false;
-    };
-  }, [id]);
-
-  // Zwischenstände der laufenden Analyse meldet der Server von sich aus.
-  useProcessChanged(id, () => {
-    api
-      .opportunity(id)
-      .then(setDetail)
-      .catch((reason: Error) => setError(reason.message));
-  });
 
   const hypotheses = useMemo(
     () =>
@@ -53,17 +27,6 @@ export function OpportunityDiscoveryPage({
       ) ?? [],
     [detail?.record.hypotheses],
   );
-
-  if (error && (!detail || !process))
-    return (
-      <p
-        className="mx-auto mt-8 w-full max-w-7xl rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-ui text-destructive"
-        role="alert"
-      >
-        {error}
-      </p>
-    );
-  if (!detail || !process) return <OpportunityDiscoveryPageSkeleton id={id} />;
 
   const record = detail.record;
   const scenariosAvailable = [
@@ -83,28 +46,7 @@ export function OpportunityDiscoveryPage({
     (hypothesis) => hypothesis.confidenceLevel === "medium",
   ).length;
   return (
-    <section className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-      <Link
-        className="inline-flex items-center gap-2 text-label text-primary hover:underline"
-        to={`/processes/${id}`}
-      >
-        <ArrowLeft /> Zum Prozess
-      </Link>
-      <div className="flex flex-col justify-between gap-6 xl:flex-row xl:items-end">
-        <div>
-          <p className="text-eyebrow uppercase text-primary">
-            KI-Potenziale entdecken
-          </p>
-          <h1 className="mt-1 text-title sm:text-display">
-            {process.cover.processName}
-          </h1>
-          <p className="mt-2 text-muted-foreground">
-            {process.cover.department}
-          </p>
-        </div>
-        <OpportunityProgress record={record} processId={id} active={phase} />
-      </div>
-
+    <>
       {detail.isStale && (
         <p
           className="flex gap-2 rounded-lg border border-amber-700/30 bg-amber-50 px-4 py-3 text-ui text-amber-950"
@@ -153,7 +95,7 @@ export function OpportunityDiscoveryPage({
                 setError("");
                 try {
                   await api.retryOpportunity(id);
-                  setDetail(await api.opportunity(id));
+                  await reload();
                 } catch (reason) {
                   setError((reason as Error).message);
                 } finally {
@@ -266,37 +208,7 @@ export function OpportunityDiscoveryPage({
           )}
         </>
       )}
-    </section>
-  );
-}
-
-function OpportunityDiscoveryPageSkeleton({ id }: { id: string }) {
-  return (
-    <section className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-      <Link
-        className="inline-flex items-center gap-2 text-label text-primary hover:underline"
-        to={`/processes/${id}`}
-      >
-        <ArrowLeft /> Zum Prozess
-      </Link>
-      <div
-        className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end"
-        role="status"
-        aria-busy="true"
-        aria-label="Potenzialanalyse wird geladen"
-      >
-        <span className="sr-only">Potenzialanalyse wird geladen</span>
-        <div className="space-y-2">
-          <p className="text-eyebrow uppercase text-primary">
-            KI-Potenziale entdecken
-          </p>
-          <Skeleton className="mt-1 h-9 w-72 sm:h-11" />
-          <Skeleton className="mt-2 h-4 w-56" />
-        </div>
-        <Skeleton className="h-9 w-64" />
-      </div>
-      <Skeleton className="h-64 w-full rounded-lg" />
-    </section>
+    </>
   );
 }
 

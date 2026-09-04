@@ -6,15 +6,17 @@ const web = (...parts: string[]) =>
   join(process.cwd(), "apps", "web", "src", ...parts);
 
 test("does not render technical process IDs in user-facing process headers", async () => {
-  const [detail, capture, chat, opportunities, assessment] = await Promise.all(
-    [
-      web("pages", "process-detail-page.tsx"),
-      web("pages", "process-capture-page.tsx"),
-      web("pages", "process-chat-page.tsx"),
-      web("pages", "opportunity-discovery-page.tsx"),
-      web("pages", "agentic-potential-assessment-page.tsx"),
-    ].map((path) => readFile(path, "utf8")),
-  );
+  const [detail, capture, chat, opportunities, assessment, workspace] =
+    await Promise.all(
+      [
+        web("pages", "process-detail-page.tsx"),
+        web("pages", "process-capture-page.tsx"),
+        web("pages", "process-chat-page.tsx"),
+        web("pages", "opportunity-discovery-page.tsx"),
+        web("pages", "agentic-potential-assessment-page.tsx"),
+        web("pages", "opportunity-workspace-page.tsx"),
+      ].map((path) => readFile(path, "utf8")),
+    );
   expect(detail).not.toContain("{process.cover.department} · {process.id}");
   expect(capture).not.toContain("Seite 2 von 2 · {record.id}");
   expect(chat).not.toContain("{view.cover.department} · {id}");
@@ -22,6 +24,7 @@ test("does not render technical process IDs in user-facing process headers", asy
     "{process.cover.department} · {process.id}",
   );
   expect(assessment).not.toContain("{process.cover.department} · {process.id}");
+  expect(workspace).not.toContain("{process.cover.department} · {process.id}");
 });
 
 test("shows process names, not technical IDs, for learned knowledge sources", async () => {

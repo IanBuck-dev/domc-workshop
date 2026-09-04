@@ -43,6 +43,16 @@ async function login(page: Page) {
   await expect(page.getByRole("heading", { name: "Prozesse" })).toBeVisible();
 }
 
+function expectSameBox(
+  actual: { x: number; y: number; width: number; height: number } | null,
+  expected: { x: number; y: number; width: number; height: number } | null,
+) {
+  expect(actual).not.toBeNull();
+  expect(expected).not.toBeNull();
+  for (const property of ["x", "y", "width", "height"] as const)
+    expect(Math.abs(actual![property] - expected![property])).toBeLessThan(1);
+}
+
 async function expectValidAssessmentWorkbook(
   download: Download,
   processName: string,
@@ -209,4 +219,64 @@ test("all six deterministic LifeCorp journeys reach both Excel exports", async (
     failures.consoleErrors,
     "No browser console error should occur",
   ).toEqual([]);
+});
+
+test("opportunity navigation keeps its header stable without refetching", async ({
+  page,
+}) => {
+  test.skip(
+    !username || !password,
+    "Only the isolated local E2E runner supplies credentials.",
+  );
+  const failures = observeBrowserFailures(page);
+  await page.setViewportSize({ width: 1440, height: 1600 });
+  await login(page);
+
+  const response = await page.request.get("/api/processes");
+  expect(response.ok()).toBeTruthy();
+  const processes = (await response.json()) as Array<{
+    id: string;
+    cover: { processName: string };
+  }>;
+  const process = processes.find((item) =>
+    item.cover.processName.startsWith("FIN-03 ·"),
+  )!;
+  const title = process.cover.processName;
+
+  await page.goto(`/processes/${process.id}/opportunities/hypotheses`);
+  const heading = page.getByRole("heading", { name: title, exact: true });
+  const navigation = page.getByRole("navigation", {
+    name: "Fortschritt der Potenzialanalyse",
+  });
+  await expect(heading).toBeVisible();
+  await expect(navigation).toBeVisible();
+  const initialHeading = await heading.boundingBox();
+  const initialNavigation = await navigation.boundingBox();
+
+  const apiRequests: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().includes("/api/"))
+      apiRequests.push(
+        `${request.method()} ${new URL(request.url()).pathname}`,
+      );
+  });
+
+  await navigation.getByRole("link", { name: /KI-Szenarien/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "Drei Szenarien im Vergleich" }),
+  ).toBeVisible();
+  expectSameBox(await heading.boundingBox(), initialHeading);
+  expectSameBox(await navigation.boundingBox(), initialNavigation);
+
+  await navigation.getByRole("link", { name: /Potenzialbewertung/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "Ergebnisüberblick" }),
+  ).toBeVisible();
+  await expect(page.getByText(/^Bewertetes Szenario:/)).toBeVisible();
+  expectSameBox(await heading.boundingBox(), initialHeading);
+  expectSameBox(await navigation.boundingBox(), initialNavigation);
+
+  expect(apiRequests).toEqual([]);
+  expect(failures.failedRequests).toEqual([]);
+  expect(failures.consoleErrors).toEqual([]);
 });

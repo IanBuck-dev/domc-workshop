@@ -116,6 +116,22 @@ function ereignisse(fixtures: DocumentationFixture[]): Ereignis[] {
 
 class SeedError extends Error {}
 
+const compactCapturePrompts = [
+  "Bevor wir einzelne Schritte festhalten, brauche ich einen kurzen Überblick über den heutigen Prozess. Beschreiben Sie bitte in Ihren eigenen Worten, was den Vorgang auslöst, welches fachliche Ergebnis am Ende vorliegen soll und wer hauptsächlich beteiligt ist.",
+  "Danke, der Rahmen ist damit erkennbar. Beschreiben Sie nun bitte den normalen Ablauf in seiner tatsächlichen Reihenfolge: Was geschieht zuerst, welche Arbeit folgt danach und welche Rollen übernehmen die einzelnen Tätigkeiten?",
+  "Der Hauptablauf wird klarer. Ergänzen Sie bitte, welche Informationen, Unterlagen und Systeme die Mitarbeitenden dabei verwenden und an welchen Stellen Daten manuell übertragen oder außerhalb der führenden Systeme bearbeitet werden.",
+  "Als Nächstes möchte ich die fachlichen Entscheidungen und Kontrollen verstehen. Erzählen Sie bitte, welche Fälle unterschiedlich behandelt werden, wer entscheidet oder freigibt und welche Ausnahmen im heutigen Ablauf besonders wichtig sind.",
+  "Beschreiben Sie bitte noch, wie der normale Vorgang abgeschlossen wird: Welche Übergaben erfolgen, wo werden Ergebnis und Nachweise gespeichert und woran erkennen die Beteiligten, dass der Prozess beendet ist?",
+  "Zum Abschluss fehlen noch Größenordnung und Belastung. Erzählen Sie bitte, wie häufig der Prozess läuft, wie lange er typischerweise dauert und an welchen Stellen heute die größten Wartezeiten, Wiederholungen oder Fehler entstehen.",
+] as const;
+
+function compactCapturePrompt(index: number) {
+  return (
+    compactCapturePrompts[index] ??
+    "Ergänzen Sie bitte weitere konkrete Informationen zum heutigen Ablauf, die im bisherigen Prozessbild noch fehlen oder korrigiert werden müssen."
+  );
+}
+
 async function main() {
   const argv = process.argv.slice(2);
   const fixtures = await listDocumentationFixtures();
@@ -309,14 +325,28 @@ async function main() {
         action: "confirmation",
       });
     } else {
-      for (const beleg of fixture.belege) {
+      const base = new Date(fixture.erstelltAm).getTime();
+      const at = (index: number) =>
+        new Date(base + (index + 1) * 60_000).toISOString();
+      for (const [index, beleg] of fixture.belege.entries()) {
+        await chats.append(processId, {
+          schemaVersion: 2,
+          id: crypto.randomUUID(),
+          turnId: null,
+          at: at(index * 2),
+          role: "assistant",
+          status: "complete",
+          text: compactCapturePrompt(index),
+          mentions: [],
+          action: "message",
+        });
         const id = crypto.randomUUID();
         zuordnung.set(beleg.id, id);
         await chats.append(processId, {
           schemaVersion: 2,
           id,
           turnId: null,
-          at: fixture.erstelltAm,
+          at: at(index * 2 + 1),
           role: "user",
           status: "complete",
           text: beleg.text,
@@ -324,6 +354,17 @@ async function main() {
           action: "message",
         });
       }
+      await chats.append(processId, {
+        schemaVersion: 2,
+        id: crypto.randomUUID(),
+        turnId: null,
+        at: at(fixture.belege.length * 2),
+        role: "assistant",
+        status: "complete",
+        text: "Danke. Ich habe Ihre Angaben als heutigen Ablauf strukturiert und die noch unbekannten oder widersprüchlichen Punkte sichtbar im Prozessbild festgehalten. Bitte prüfen Sie den Gesamtstand vor der fachlichen Bestätigung.",
+        mentions: [],
+        action: "confirmation",
+      });
     }
     belegIds.set(fixture.slug, zuordnung);
   }

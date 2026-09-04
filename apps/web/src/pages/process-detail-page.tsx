@@ -1,6 +1,7 @@
 import {
   ArrowLeft,
   ArrowRight,
+  CircleAlert,
   EllipsisVertical,
   FileSpreadsheet,
   ClipboardCheck,
@@ -200,6 +201,11 @@ export function ProcessDetailPage() {
           {error}
         </p>
       )}
+      {process &&
+        process.interactionMode === "chat" &&
+        process.confirmationQuality === "with_gaps" && (
+          <OpenPointsNotice process={process} />
+        )}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {process && navigation ? (
           <ProcessModuleCard
@@ -305,13 +311,6 @@ export function ProcessDetailPage() {
           <ProcessModuleCardSkeleton />
         )}
       </div>
-      {process &&
-        process.interactionMode === "chat" &&
-        process.confirmationQuality === "with_gaps" && (
-          <p className="rounded-md border border-amber-500/30 bg-amber-50 p-3 text-ui text-amber-950">
-            Der Prozess wurde mit offenen Punkten bestätigt.
-          </p>
-        )}
       <ProcessDeleteDialog
         open={deleteOpen}
         processName={process?.cover.processName ?? ""}
@@ -422,6 +421,48 @@ export function ProcessDetailPage() {
       </Button>
     );
   }
+}
+
+function OpenPointsNotice({ process }: { process: ProcessCaptureRecord }) {
+  const openPoints = [
+    ...(process.understanding?.knowledgeGaps ?? []),
+    ...(process.understanding?.conflicts ?? []),
+  ];
+  return (
+    <section
+      id="offene-punkte"
+      className="scroll-mt-6 border-l-4 border-amber-500 bg-amber-50 px-4 py-3 text-amber-950"
+      aria-labelledby="open-points-title"
+    >
+      <div className="flex gap-3">
+        <CircleAlert className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
+        <div className="min-w-0">
+          <h2 id="open-points-title" className="text-label">
+            {openPoints.length === 1
+              ? "1 offener Punkt in der Prozessaufnahme"
+              : `${openPoints.length} offene Punkte in der Prozessaufnahme`}
+          </h2>
+          {openPoints.length > 0 ? (
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-ui">
+              {openPoints.map((point) => (
+                <li key={point}>{point}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-ui">
+              Der Prozess wurde als möglicherweise unvollständig bestätigt.
+            </p>
+          )}
+          <Link
+            to={`/processes/${process.id}/${process.interactionMode === "chat" ? "chat" : "capture"}`}
+            className="mt-3 inline-flex text-label underline underline-offset-4"
+          >
+            Prozessaufnahme öffnen
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
 }
 
 function ProcessModuleCardSkeleton() {

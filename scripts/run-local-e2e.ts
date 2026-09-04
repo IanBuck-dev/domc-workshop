@@ -6,6 +6,7 @@ import { createServer } from "node:net";
 const scenario = "leitungswasserschaden-wohngebaeude";
 const screenshotMode = process.argv.includes("--screenshots");
 const realProviderMode = process.argv.includes("--real-provider");
+const navigationOnly = process.argv.includes("--opportunity-navigation");
 
 if (screenshotMode && realProviderMode)
   throw new Error("Screenshot- und Real-Provider-Modus schließen sich aus.");
@@ -105,6 +106,9 @@ try {
           ? "e2e/real-provider-product-flow.pw.ts"
           : "e2e/seeded-portfolio-flow.pw.ts",
       ...(process.argv.includes("--headed") ? ["--headed"] : []),
+      ...(navigationOnly
+        ? ["--grep", "opportunity navigation keeps its header stable"]
+        : []),
     ],
     {
       ...commonEnv,

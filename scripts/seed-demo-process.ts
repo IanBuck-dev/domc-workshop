@@ -301,15 +301,39 @@ async function seedReviewRequired(
   const fixture = documentationFixtureSchema.parse(
     JSON.parse(await readFile(path, "utf8")),
   );
+  const reviewPrompts = [
+    `Ich habe die Arbeitsanweisung berücksichtigt und daraus einen ersten Überblick mit ${fixture.schritte.length} Prozessschritten erstellt. Bevor wir die Schritte einzeln prüfen: Beschreiben Sie bitte in Ihren eigenen Worten, wodurch die Bezugsrechtsänderung ausgelöst wird, wer beteiligt ist und welches Ergebnis am Ende vorliegen soll.`,
+    `Danke, der Rahmen ist klar. Wir beginnen mit **Schritt 1 von ${fixture.schritte.length} – ${fixture.schritte[0]?.name}** und der anschließenden Berechtigungsprüfung.\n\n**Bereits verstanden**\nDer Auftrag wird dem Vertrag zugeordnet und die Berechtigung muss vor jeder Änderung feststehen.\n\n**Noch offen**\nWelche Angaben und Nachweise prüfen Sie konkret, und wann benötigen Sie die Zustimmung einer weiteren Person?`,
+    `Damit sind Zuordnung und Berechtigungsprüfung nachvollziehbar. Als Nächstes geht es um **Schritt 3 von ${fixture.schritte.length} – ${fixture.schritte[2]?.name}**.\n\n**Bereits verstanden**\nBei einem unwiderruflichen Bezugsrecht gelten zusätzliche Anforderungen.\n\n**Noch offen**\nIn welchen Systemen und Unterlagen prüfen Sie Vertragsart, Zustimmung und Altverträge? Wie laufen Rückfragen?`,
+    `Die verwendeten Quellen und Systeme sind damit erfasst. Für das Prozessbild fehlen noch Größenordnung und Belastung: Wie viele Aufträge bearbeiten Sie, wie lange dauert ein vollständiger Fall und wo entstehen heute die längsten Wartezeiten?`,
+    `Danke. Wir schließen jetzt die Bearbeitung mit **Schritt 5 von ${fixture.schritte.length} – ${fixture.schritte[4]?.name}** und **${fixture.schritte[5]?.name}** ab.\n\n**Bereits verstanden**\nDie Änderung wird im Bestandssystem erfasst.\n\n**Noch offen**\nWelche Vier-Augen-Kontrolle erfolgt danach, wer erhält die Bestätigung und wo wird sie abgelegt?`,
+    "Der vollständige Ist-Ablauf ist nun abgebildet. Bevor ich das Prozessbild zur Prüfung vorlege: Welche fachlichen Punkte sind noch ungeklärt oder müssen ausdrücklich durch die Teamleitung bestätigt werden?",
+  ] as const;
   const evidenceIds = new Map<string, string>();
-  for (const beleg of fixture.belege) {
+  const base = new Date(fixture.erstelltAm).getTime();
+  const at = (index: number) =>
+    new Date(base + (index + 1) * 60_000).toISOString();
+  for (const [index, beleg] of fixture.belege.entries()) {
+    await chatRepo.append(processId, {
+      schemaVersion: 2,
+      id: crypto.randomUUID(),
+      turnId: null,
+      at: at(index * 2),
+      role: "assistant",
+      status: "complete",
+      text:
+        reviewPrompts[index] ??
+        "Ergänzen Sie bitte die Informationen, die im bisherigen Prozessbild noch fehlen oder korrigiert werden müssen.",
+      mentions: [],
+      action: index === 0 && uploadsByName.size ? "analyze_documents" : "message",
+    });
     const id = crypto.randomUUID();
     evidenceIds.set(beleg.id, id);
     await chatRepo.append(processId, {
       schemaVersion: 2,
       id,
       turnId: null,
-      at: fixture.erstelltAm,
+      at: at(index * 2 + 1),
       role: "user",
       status: "complete",
       text: beleg.text,
@@ -317,6 +341,17 @@ async function seedReviewRequired(
       action: "message",
     });
   }
+  await chatRepo.append(processId, {
+    schemaVersion: 2,
+    id: crypto.randomUUID(),
+    turnId: null,
+    at: at(fixture.belege.length * 2),
+    role: "assistant",
+    status: "complete",
+    text: `Danke. Ich habe Ihre Angaben in einem Prozessbild mit ${fixture.schritte.length} Schritten zusammengeführt. Der offene Punkt zur Zustimmungsformulierung bei Altverträgen ist sichtbar festgehalten. Bitte prüfen Sie jetzt den Gesamtstand und lassen Sie die offene Frage durch die Teamleitung klären.`,
+    mentions: [],
+    action: "confirmation",
+  });
   const expandedUnderstanding = expandUnderstanding(
     fixture,
     inhaltAt(fixture, 0),

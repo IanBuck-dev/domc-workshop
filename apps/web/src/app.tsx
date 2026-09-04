@@ -17,6 +17,7 @@ import { ImprintPage } from "./pages/imprint-page";
 import { PrivacyPage } from "./pages/privacy-page";
 import { UsageNoticePage } from "./pages/usage-notice-page";
 import { AgenticPotentialAssessmentPage } from "./pages/agentic-potential-assessment-page";
+import { OpportunityWorkspacePage } from "./pages/opportunity-workspace-page";
 
 const publicPaths = new Set([
   "/impressum",
@@ -63,7 +64,10 @@ export function App() {
             element={<ProcessCapturePage />}
           />
           <Route path="/processes/:id/chat" element={<ProcessChatPage />} />
-          <Route path="/processes/:id/opportunities">
+          <Route
+            path="/processes/:id/opportunities"
+            element={<OpportunityWorkspacePage />}
+          >
             <Route index element={<Navigate to="hypotheses" replace />} />
             <Route
               path="hypotheses"

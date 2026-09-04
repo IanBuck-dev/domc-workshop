@@ -1,70 +1,23 @@
-import {
-  AlertTriangle,
-  ArrowLeft,
-  Download,
-  RefreshCw,
-  Sparkles,
-} from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { AlertTriangle, Download, RefreshCw, Sparkles } from "lucide-react";
+import { useState } from "react";
 import { AgenticPotentialAssessmentTable } from "../components/agentic-potential-assessment-table";
-import { OpportunityProgress } from "../components/opportunity-progress";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
-import { Skeleton } from "../components/ui/skeleton";
 import { Spinner } from "../components/ui/spinner";
 import { api } from "../lib/api-client";
-import type { AgenticPotentialAssessmentDetail } from "../lib/agentic-potential-assessment-types";
-import type { OpportunityDiscoveryDetail } from "../lib/opportunity-types";
-import type { ProcessCaptureRecord } from "../lib/process-types";
-import { useProcessChanged } from "../lib/process-events";
+import { useOpportunityWorkspace } from "../lib/opportunity-workspace";
 
 export function AgenticPotentialAssessmentPage() {
-  const { id = "" } = useParams();
-  const [process, setProcess] = useState<ProcessCaptureRecord | null>(null);
-  const [opportunity, setOpportunity] =
-    useState<OpportunityDiscoveryDetail | null>(null);
-  const [detail, setDetail] = useState<AgenticPotentialAssessmentDetail | null>(
-    null,
-  );
-  const [detailLoaded, setDetailLoaded] = useState(false);
+  const {
+    process,
+    opportunity,
+    assessment: detail,
+    reload,
+  } = useOpportunityWorkspace();
+  const id = process.id;
   const [busy, setBusy] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState("");
-  const load = useCallback(async () => {
-    const [nextProcess, nextOpportunity] = await Promise.all([
-      api.process(id),
-      api.opportunity(id),
-    ]);
-    setProcess(nextProcess);
-    setOpportunity(nextOpportunity);
-    setDetail(await api.agenticAssessment(id));
-    setDetailLoaded(true);
-  }, [id]);
-  useEffect(() => {
-    void load().catch((reason) => setError((reason as Error).message));
-  }, [load]);
-  useProcessChanged(id, () => {
-    void load().catch((reason) => setError((reason as Error).message));
-  });
-
-  // Schlägt schon der erste Abruf fehl, bleibt der Seitenrumpf leer — dann muss
-  // die Fehlermeldung sichtbar sein statt eines endlosen Ladezustands.
-  if (error && (!process || !opportunity))
-    return (
-      <section className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <BackLink id={id} />
-        <p
-          role="alert"
-          className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-ui text-destructive"
-        >
-          {error}
-        </p>
-      </section>
-    );
-  if (!process || !opportunity || !detailLoaded)
-    return <AssessmentPageSkeleton id={id} />;
-
   const record = detail?.record;
   const scenario = opportunity.record.scenarios?.scenarios.find(
     (item) => item.id === "SCN-agentic",
@@ -82,7 +35,7 @@ export function AgenticPotentialAssessmentPage() {
     try {
       if (retry) await api.retryAgenticAssessment(id);
       else await api.startAgenticAssessment(id);
-      await load();
+      await reload();
     } catch (reason) {
       setError((reason as Error).message);
     } finally {
@@ -107,29 +60,10 @@ export function AgenticPotentialAssessmentPage() {
     }
   };
   return (
-    <section className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-      <BackLink id={id} />
-      <div className="flex flex-col justify-between gap-6 xl:flex-row xl:items-end">
-        <div className="min-w-0">
-          <p className="text-eyebrow uppercase text-primary">
-            Potenzialbewertung
-          </p>
-          <h1 className="mt-1 text-title sm:text-display">
-            {process.cover.processName}
-          </h1>
-          <p className="mt-2 text-muted-foreground">
-            {process.cover.department}
-          </p>
-          <p className="mt-1 text-ui text-muted-foreground">
-            Bewertetes Szenario: {scenario?.title ?? "noch nicht verfügbar"}
-          </p>
-        </div>
-        <OpportunityProgress
-          record={opportunity.record}
-          processId={id}
-          active="assessment"
-        />
-      </div>
+    <>
+      <p className="text-ui text-muted-foreground">
+        Bewertetes Szenario: {scenario?.title ?? "noch nicht verfügbar"}
+      </p>
       {error && (
         <p
           role="alert"
@@ -302,42 +236,6 @@ export function AgenticPotentialAssessmentPage() {
           </p>
         </>
       )}
-    </section>
-  );
-}
-
-function BackLink({ id }: { id: string }) {
-  return (
-    <Link
-      className="inline-flex items-center gap-2 text-label text-primary hover:underline"
-      to={`/processes/${id}`}
-    >
-      <ArrowLeft /> Zum Prozess
-    </Link>
-  );
-}
-
-function AssessmentPageSkeleton({ id }: { id: string }) {
-  return (
-    <section className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-      <BackLink id={id} />
-      <div
-        className="flex flex-col justify-between gap-6 xl:flex-row xl:items-end"
-        role="status"
-        aria-busy="true"
-        aria-label="Potenzialbewertung wird geladen"
-      >
-        <span className="sr-only">Potenzialbewertung wird geladen</span>
-        <div className="space-y-2">
-          <p className="text-eyebrow uppercase text-primary">
-            Potenzialbewertung
-          </p>
-          <Skeleton className="mt-1 h-9 w-72 sm:h-11" />
-          <Skeleton className="mt-2 h-4 w-56" />
-        </div>
-        <Skeleton className="h-9 w-full sm:w-[30rem]" />
-      </div>
-      <Skeleton className="h-64 w-full rounded-lg" />
-    </section>
+    </>
   );
 }

@@ -71,6 +71,7 @@ function CorpusTreeNode({
       <li>
         <button
           type="button"
+          title={node.label}
           onClick={() => onToggleFolder(node.path)}
           aria-expanded={open}
           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-label text-muted-foreground transition-colors hover:bg-muted"
@@ -112,6 +113,7 @@ function CorpusTreeNode({
     <li>
       <button
         type="button"
+        title={node.label}
         onClick={() => onSelect(node.path)}
         aria-current={selected ? "true" : undefined}
         className={cn(

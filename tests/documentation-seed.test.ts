@@ -102,6 +102,16 @@ describe("Seeddaten der Prozessdokumentation", () => {
       const fixtureBySlug = new Map(
         fixtures.map((fixture) => [fixture.slug, fixture]),
       );
+      for (const fixture of fixtures) {
+        const record = byTitle.get(fixture.titel)!;
+        const transcript = await chats.transcript(record.id);
+        expect(
+          transcript.filter((event) => event.role === "user"),
+        ).toHaveLength(fixture.belege.length);
+        expect(
+          transcript.filter((event) => event.role === "assistant").length,
+        ).toBeGreaterThan(fixture.belege.length);
+      }
       for (const journey of journeys) {
         const fixture = fixtureBySlug.get(journey.slug)!;
         const record = byTitle.get(fixture.titel)!;

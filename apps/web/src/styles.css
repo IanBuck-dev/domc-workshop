@@ -183,6 +183,9 @@
 
   html {
     min-width: 320px;
+    /* Kurze und lange Ansichten behalten dieselbe Inhaltsbreite, auch wenn die
+       vertikale Scrollbar nur auf einer der beiden Seiten benötigt wird. */
+    scrollbar-gutter: stable;
     background: var(--background);
   }
 

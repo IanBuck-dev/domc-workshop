@@ -149,6 +149,37 @@ describe("LifeCorp showcase seed", () => {
         ),
       ).toHaveLength(2);
 
+      const reviewRequired = byTitle.get(
+        "VER-03 · Bezugsrechtsänderung einer Lebensversicherung bearbeiten",
+      )!;
+      const reviewTranscript = await chats.transcript(reviewRequired.id);
+      expect(
+        reviewTranscript.filter((event) => event.role === "user"),
+      ).toHaveLength(6);
+      expect(
+        reviewTranscript.filter((event) => event.role === "assistant"),
+      ).toHaveLength(8);
+      expect(
+        reviewTranscript.slice(1, -1).map((event) => event.role),
+      ).toEqual([
+        "assistant",
+        "user",
+        "assistant",
+        "user",
+        "assistant",
+        "user",
+        "assistant",
+        "user",
+        "assistant",
+        "user",
+        "assistant",
+        "user",
+      ]);
+      expect(reviewTranscript.at(-1)?.action).toBe("confirmation");
+      expect(reviewTranscript.at(-1)?.text).toContain(
+        "Bitte prüfen Sie jetzt den Gesamtstand",
+      );
+
       const notStarted = byTitle.get(
         "VTR-02 · Provisionsabrechnung Außendienst",
       )!;

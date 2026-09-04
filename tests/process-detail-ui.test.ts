@@ -31,5 +31,9 @@ describe("process detail module cards", () => {
     );
     expect(source).toContain("px-5 pt-4 pb-17");
     expect(source).not.toContain("dark:");
+    expect(source).toContain('id="offene-punkte"');
+    expect(source).toContain("process.understanding?.knowledgeGaps");
+    expect(source).toContain("process.understanding?.conflicts");
+    expect(source).toContain("offene Punkte in der Prozessaufnahme");
   });
 });

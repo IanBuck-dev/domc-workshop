@@ -74,7 +74,8 @@ written to the process history — reconciliation is the catch-up path.
 The viewer at `/dokumentation` is read-only apart from the revert action:
 
 - a collapsible document tree whose fold state persists in browser storage
-  (`claims-ai.corpus-tree.collapsed.v1`);
+  (`claims-ai.corpus-tree.collapsed.v1`); every truncated folder and document label exposes
+  its full text as a tooltip;
 - inline search over titles **and** full text, loading document bodies once on the first
   keystroke — no server-side search endpoint; hits are counted per document and marked in
   the open text with `<mark>`. The frontmatter is never searched;
@@ -84,6 +85,10 @@ The viewer at `/dokumentation` is read-only apart from the revert action:
   `apps/web/src/styles.css`;
 - an _Änderungsverlauf_ tab with a side-by-side diff (`react-diff-view`) and the revert
   dialog.
+
+Documents confirmed with gaps show their open-point count and the actual questions in the
+body. _Zur Prozessaufnahme_ links to the source process overview, where the same questions
+appear immediately above the module cards with a direct link into the capture.
 
 The manager-facing tree excludes the generated index and machine catalogue. Its folder
 and document labels come from the versioned catalogue, so German spelling and acronyms

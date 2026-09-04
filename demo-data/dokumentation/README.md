@@ -60,6 +60,11 @@ Unterlagen über die normale Upload-Prüfung hoch und erzeugt danach Memory-Fakt
 Potenzialhypothesen, alle drei Aufsichtsszenarien und eine abgeschlossene Bewertung.
 Keiner dieser Schritte startet einen KI-Provider.
 
+Auch die acht kompakteren Prozesse erhalten deterministische Assistant-Beiträge zwischen
+den Gesprächsbelegen und eine abschließende Zusammenfassung. Dadurch bleibt jeder
+bestätigte Chat als glaubwürdige Unterhaltung lesbar, ohne eine vollständige
+End-to-End-Journey oder einen KI-Aufruf vorzutäuschen.
+
 ## Dateiformat
 
 Geschrieben wird nur der deutsche Fachtext. Alles Mechanische — Kennungen,

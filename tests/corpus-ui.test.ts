@@ -106,6 +106,8 @@ describe("Korpus-Baum", () => {
     expect(markup).toContain("Beitragsinkasso");
     expect(markup).not.toContain(".md");
     expect(markup).toContain('aria-current="true"');
+    expect(markup).toContain('title="Beitragsinkasso"');
+    expect(markup).toContain('title="Prozesse"');
   });
 
   test("bevorzugt versionierte Fachlabels für Ordner und Dokumente", () => {
@@ -291,7 +293,9 @@ describe("Korpus-Dokument", () => {
     expect(markup).toContain("Schaden und Leistung");
     expect(markup).toContain("Bestätigt mit offenen Punkten");
     expect(markup).toContain("2 offene Punkte");
-    expect(markup).toContain('href="/processes/PROC-0007"');
+    expect(markup).toContain(
+      'href="/processes/PROC-0007#offene-punkte"',
+    );
     expect(markup).toContain("Zweck und Ergebnis");
     // Quellrevision und Rendererversion sind Maschinenmetadaten.
     expect(markup).not.toContain("4f2b91c");

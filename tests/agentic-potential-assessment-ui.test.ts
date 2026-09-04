@@ -11,6 +11,30 @@ test("review page offers deterministic inspection and export", async () => {
   expect(page).toContain("Nicht ausreichend belegt");
 });
 
+test("opportunity navigation keeps shared data and header mounted", async () => {
+  const [app, workspace, context, discovery, assessment] = await Promise.all(
+    [
+      "apps/web/src/app.tsx",
+      "apps/web/src/pages/opportunity-workspace-page.tsx",
+      "apps/web/src/lib/opportunity-workspace.ts",
+      "apps/web/src/pages/opportunity-discovery-page.tsx",
+      "apps/web/src/pages/agentic-potential-assessment-page.tsx",
+    ].map((path) => readFile(path, "utf8")),
+  );
+
+  expect(app).toContain("element={<OpportunityWorkspacePage />}");
+  expect(workspace).toContain("<Outlet");
+  expect(workspace).toContain("api.process(id)");
+  expect(workspace).toContain("api.opportunity(id)");
+  expect(workspace).toContain("api.agenticAssessment(id)");
+  expect(context).toContain("useOutletContext<OpportunityWorkspaceContext>()");
+  expect(discovery).toContain("useOpportunityWorkspace()");
+  expect(assessment).toContain("useOpportunityWorkspace()");
+  expect(discovery).not.toContain("OpportunityDiscoveryPageSkeleton");
+  expect(assessment).not.toContain("AssessmentPageSkeleton");
+  expect(workspace).not.toContain("Bewertetes Szenario:");
+});
+
 test("assessment criteria use a compact expandable table with filters", async () => {
   const table = await readFile(
     "apps/web/src/components/agentic-potential-assessment-table.tsx",

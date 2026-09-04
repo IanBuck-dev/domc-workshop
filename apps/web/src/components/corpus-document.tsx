@@ -51,7 +51,7 @@ export function CorpusDocument({
         )}
         {frontmatter.id && (
           <Link
-            to={`/processes/${frontmatter.id}`}
+            to={`/processes/${frontmatter.id}#offene-punkte`}
             className="text-ui text-primary underline underline-offset-4"
           >
             Zur Prozessaufnahme
