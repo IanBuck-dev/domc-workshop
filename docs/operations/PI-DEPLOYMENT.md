@@ -23,7 +23,7 @@ Der Arbeitsbaum muss leer sein. Deployt wird ausschließlich ein bereits zu
 
 ```zsh
 ssh ian_claw@pi-controller.tailb3f4a9.ts.net \
-  'sudo -u claims-ai env HOME=/var/lib/claims-ai PATH=/var/lib/claims-ai/.bun/bin:/usr/local/bin:/usr/bin:/bin codex login status'
+  'sudo -u claims-ai env HOME=/var/lib/claims-ai PATH=/var/lib/claims-ai/.npm-global/bin:/var/lib/claims-ai/.bun/bin:/usr/local/bin:/usr/bin:/bin codex login status'
 ```
 
 Erwartet wird eine erfolgreiche Codex-Anmeldung. Ein ausgeschöpftes
@@ -34,7 +34,7 @@ Falls eine erneute Anmeldung erforderlich ist:
 
 ```zsh
 ssh -t ian_claw@pi-controller.tailb3f4a9.ts.net \
-  'sudo -u claims-ai env HOME=/var/lib/claims-ai PATH=/var/lib/claims-ai/.bun/bin:/usr/local/bin:/usr/bin:/bin codex login'
+  'sudo -u claims-ai env HOME=/var/lib/claims-ai PATH=/var/lib/claims-ai/.npm-global/bin:/var/lib/claims-ai/.bun/bin:/usr/local/bin:/usr/bin:/bin codex login'
 ```
 
 ## 3. Bestehenden Workspace vor dem Release erfassen
