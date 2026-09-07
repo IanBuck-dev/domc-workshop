@@ -4,7 +4,7 @@
 
 1. Prüfen Sie, dass ausschließlich fiktive oder wirksam anonymisierte Daten verwendet werden.
 2. Prüfen Sie den Claude-Login und den Zustand des Dienstes `claims-ai-portfolio`.
-3. Öffnen Sie `https://claims-ai.ian-buck.dev` und melden Sie sich mit dem Testkonto an.
+3. Öffnen Sie `https://demo-zukunftswerkstatt.ian-buck.dev` und melden Sie sich mit dem Testkonto an.
 4. Verwenden Sie nur wenige, relevante und aktuelle Testdokumente. Maximal fünf Dateien dürfen für eine Prozesserfassung ausgewählt werden.
 5. Prüfen Sie, dass das feste Erfassungsprofil `compact-v1` und der Reasoning-Aufwand `medium` verwendet werden.
 
@@ -97,7 +97,7 @@ Wiederherstellung; während einer laufenden KI-Aktion ist das Löschen gesperrt.
 - Servervorgaben liegen versioniert unter `defaults/`. Der Einstellungen-Import verändert keine Serverdateien.
 - Der Dienst bindet ausschließlich an `127.0.0.1:3210`; Cloudflare Tunnel übernimmt den HTTPS-Zugang.
 - Impressum, Datenschutzhinweise und Nutzungshinweise sind unter den öffentlichen Routen `/impressum`, `/datenschutz` und `/nutzungshinweise` ohne Anmeldung erreichbar. Die Betreiberangaben liegen ausschließlich in `/var/lib/claims-ai/public-site-information.json`; die kontrollierte Übertragung steht im [Pi-Runbook](PI-DEPLOYMENT.md).
-- Der produktive Tunnel-Hostname ist `claims-ai.ian-buck.dev`; sein DNS-Eintrag zeigt auf den bestehenden Pi-Tunnel, dessen zweite Ingress-Regel nur diesen Dienst an Port `3210` weiterleitet.
+- Der produktive Tunnel-Hostname ist `demo-zukunftswerkstatt.ian-buck.dev`; sein DNS-Eintrag zeigt auf den bestehenden Pi-Tunnel, dessen zweite Ingress-Regel nur diesen Dienst an Port `3210` weiterleitet.
 - Claude-Aktionen laufen nacheinander in Wegwerf-Arbeitsbereichen. Ein fehlendes Sandbox Runtime ist im Produktionsbetrieb ein Fehler, kein stiller Rückfall.
 - Der Claude-Login ist für den Dienstbenutzer `claims-ai` eingerichtet. Status und Deployment werden im [Pi-Runbook](PI-DEPLOYMENT.md) mit den vollständigen, reproduzierbaren Befehlen beschrieben.
 - Die Service-Härtung bleibt aktiv; `ProtectKernelTunables` und `ProtectKernelLogs` sind bewusst nicht gesetzt, weil Bubblewrap sonst keinen privaten `/proc`-Mount anlegen kann. `/tmp/claude` liegt durch `PrivateTmp=yes` im privaten temporären Namensraum des Dienstes.

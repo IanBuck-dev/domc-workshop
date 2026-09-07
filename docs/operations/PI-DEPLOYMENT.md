@@ -79,7 +79,7 @@ ssh ian_claw@pi-controller.tailb3f4a9.ts.net \
   'sudo install -o claims-ai -g claims-ai -m 0600 /tmp/public-site-information.json /var/lib/claims-ai/public-site-information.json && rm /tmp/public-site-information.json'
 ```
 
-Danach öffnen Sie ohne Anmeldung `https://claims-ai.ian-buck.dev/impressum`,
+Danach öffnen Sie ohne Anmeldung `https://demo-zukunftswerkstatt.ian-buck.dev/impressum`,
 `/datenschutz` und `/nutzungshinweise` und lassen die Texte vor einer
 allgemeinen Veröffentlichung rechtlich prüfen. Das Installationsskript legt
 bei fehlender Datei nur eine nicht veröffentlichungsreife Vorlage an.
@@ -98,7 +98,7 @@ diff -u /tmp/claims-ai-workspace-before.sha256 /tmp/claims-ai-workspace-after.sh
 Der `diff` muss vor neuen Live-Tests leer sein. Die bewusst ausgeschlossene
 Datei `.instance.lock` enthält die Kennung der laufenden Serverinstanz und wird
 bei jedem Neustart ersetzt. Danach werden Anmeldung, beide Erfassungsarten und
-die Potenzialanalyse über `https://claims-ai.ian-buck.dev` geprüft.
+die Potenzialanalyse über `https://demo-zukunftswerkstatt.ian-buck.dev` geprüft.
 
 Für den Chat-Smoke wird ein neuer Prozess mit dem Standardmodus `Chat` angelegt,
 eine anonymisierte Unterlage ausgewertet, mindestens eine Korrektur über eine

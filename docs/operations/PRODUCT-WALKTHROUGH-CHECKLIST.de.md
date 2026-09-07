@@ -21,7 +21,7 @@ Alt-Nachweise sind als Baseline markiert und ersetzen keinen aktuellen Produkt-W
 | Feld             | Wert                                                      |
 | ---------------- | --------------------------------------------------------- |
 | Lauf-ID          | `WALKTHROUGH-2026-09-03-01`                               |
-| Zielsystem       | `https://claims-ai.ian-buck.dev`                          |
+| Zielsystem       | `https://demo-zukunftswerkstatt.ian-buck.dev`             |
 | Release          | `245290c5c1238cea152dd30946e45aebfd313fee`                |
 | Browser          | Playwright Chromium; persönliche Browserprüfung folgt     |
 | Desktop-Viewport | `1440 × 1000`                                             |
