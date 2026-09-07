@@ -293,9 +293,7 @@ describe("Korpus-Dokument", () => {
     expect(markup).toContain("Schaden und Leistung");
     expect(markup).toContain("Bestätigt mit offenen Punkten");
     expect(markup).toContain("2 offene Punkte");
-    expect(markup).toContain(
-      'href="/processes/PROC-0007#offene-punkte"',
-    );
+    expect(markup).toContain('href="/processes/PROC-0007#offene-punkte"');
     expect(markup).toContain("Zweck und Ergebnis");
     // Quellrevision und Rendererversion sind Maschinenmetadaten.
     expect(markup).not.toContain("4f2b91c");

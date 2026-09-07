@@ -81,6 +81,9 @@ describe("chat AI runtime contract", () => {
     expect(prompt).toContain("dessen `confirmed` noch `false` ist");
     expect(prompt).toContain("**Bereits verstanden**");
     expect(prompt).toContain("**Noch offen**");
+    expect(prompt).toContain(
+      "Für diesen Schritt sind aktuell keine Angaben offen.",
+    );
     expect(prompt).toContain("Fordere keine bloße Ja-Nein-Antwort");
     expect(prompt).toContain("frage sie nicht erneut");
   });

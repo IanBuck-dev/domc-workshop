@@ -325,7 +325,8 @@ async function seedReviewRequired(
         reviewPrompts[index] ??
         "Ergänzen Sie bitte die Informationen, die im bisherigen Prozessbild noch fehlen oder korrigiert werden müssen.",
       mentions: [],
-      action: index === 0 && uploadsByName.size ? "analyze_documents" : "message",
+      action:
+        index === 0 && uploadsByName.size ? "analyze_documents" : "message",
     });
     const id = crypto.randomUUID();
     evidenceIds.set(beleg.id, id);

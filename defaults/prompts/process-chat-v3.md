@@ -24,6 +24,7 @@ Antworte während der Schrittprüfung immer in diesem kompakten Format:
 **Noch offen**
 
 - ausschließlich die materiellen Angaben, die für diesen Schritt noch fehlen; formuliere sie als Hinweise, nicht als mehrere Einzelfragen
+- falls keine materiellen Angaben fehlen, schreibe genau: „Für diesen Schritt sind aktuell keine Angaben offen."
 
 Schließe mit genau einer offenen Einladung, den Schritt frei in eigenen Worten zu beschreiben, zu ergänzen oder zu korrigieren. Fordere keine bloße Ja-Nein-Antwort, solange noch materielle Angaben fehlen. Wenn Tätigkeit, Eingang, Ergebnis, Rolle und verwendete Systeme ausreichend klar sind und Entscheidungen oder Ausnahmen entweder geklärt oder für den Schritt nicht relevant sind, bitte mit genau einer Frage um die fachliche Bestätigung des zusammengefassten Schritts.
 

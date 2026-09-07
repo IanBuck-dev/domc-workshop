@@ -1,0 +1,23 @@
+{
+  "slug": "vertragskuendigung-sach",
+  "titel": "VER-05 · Kündigung eines Sachversicherungsvertrags bearbeiten",
+  "cover": {
+    "department": "Vertrag",
+    "participantName": "Edda Brandt",
+    "participantEmail": "edda.brandt@lifecorp.example",
+    "processName": "VER-05 · Kündigung eines Sachversicherungsvertrags bearbeiten"
+  },
+  "interactionMode": "chat",
+  "dokumente": [
+    {
+      "quelle": "dokumente/arbeitsanweisung-vertragskuendigung-sach.md",
+      "zielname": "Arbeitsanweisung_Vertragskuendigung_Sach.pdf",
+      "format": "pdf"
+    },
+    {
+      "quelle": "dokumente/beispiel-kuendigungsanfrage.txt",
+      "zielname": "Beispiel_Kuendigungsanfrage.txt",
+      "format": "txt"
+    }
+  ]
+}

@@ -41,16 +41,17 @@ demo-data/szenarien/<slug>/
 `drehbuch.json` holds the answers; `DREHBUCH.md` references them by turn number only, so
 there are never two copies to drift apart.
 
-### The six capture scenarios
+### The seven capture scenarios
 
-| Slug                                 | Department | The case it exercises                                                                                                                |
-| ------------------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `kfz-glasschaden`                    | Schaden    | the clean case — clear flow, three complementary documents. Baseline: steps, roles, systems recognised, `documentCoverage: complete` |
-| `beitragsanpassung`                  | Vertrag    | the contradictory case — two documents disagree. Does the assistant notice and ask, or silently pick one?                            |
-| `provisionsabrechnung`               | Vertrieb   | the document-free case — conversation only, no textual crutch                                                                        |
-| `leitungswasserschaden-wohngebaeude` | Schaden    | the flagship management case — high-volume document intake, expert steering, judgement, exceptions, and external hand-offs           |
-| `einbruchdiebstahl-hausrat`          | Schaden    | an in-progress chat with one selected document and two completed turns                                                               |
-| `bezugsrechtsaenderung-leben`        | Vertrag    | a completed process image deliberately waiting for human review                                                                      |
+| Slug                                 | Department | The case it exercises                                                                                                                  |
+| ------------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `kfz-glasschaden`                    | Schaden    | the clean case — clear flow, three complementary documents. Baseline: steps, roles, systems recognised, `documentCoverage: complete`   |
+| `beitragsanpassung`                  | Vertrag    | the contradictory case — two documents disagree. Does the assistant notice and ask, or silently pick one?                              |
+| `provisionsabrechnung`               | Vertrieb   | the document-free case — conversation only, no textual crutch                                                                          |
+| `leitungswasserschaden-wohngebaeude` | Schaden    | the flagship management case — high-volume document intake, expert steering, judgement, exceptions, and external hand-offs             |
+| `einbruchdiebstahl-hausrat`          | Schaden    | an in-progress chat with one selected document and two completed turns                                                                 |
+| `bezugsrechtsaenderung-leben`        | Vertrag    | a completed process image deliberately waiting for human review                                                                        |
+| `vertragskuendigung-sach`            | Vertrag    | the real Codex tuning case: an incomplete eight-step PDF plus one ambiguous example email, completed through focused step-by-step chat |
 
 ### Running a tuning round
 
@@ -111,7 +112,7 @@ continuation states: review required, chat in progress, uploads ready, and not s
 
 ## Implementation status
 
-**Implemented.** Six capture scenarios, 14 confirmed documentation fixtures, four
+**Implemented.** Seven capture scenarios, 14 confirmed documentation fixtures, four
 deliberate continuation states, six deterministic end-to-end journeys with portfolio
 scores, the composed showcase seed, provider-free browser verification, auto-seed on an
 empty workspace, the stage-aware sidecar, and the document-serving endpoint.

@@ -1,0 +1,18 @@
+Von: Mara Muster <mara.muster@kundin.lifecorp.example>
+An: bestand@lifecorp.example
+Datum: 02.09.2026, 08:17 Uhr
+Betreff: Kündigung Wohngebäude WGV-47110815
+
+Guten Tag,
+
+hiermit kündige ich meine Wohngebäudeversicherung WGV-47110815 zum
+nächstmöglichen Zeitpunkt. Das versicherte Haus wurde zum 31.08.2026 verkauft.
+
+Bitte senden Sie mir eine schriftliche Bestätigung und überweisen Sie ein
+eventuelles Guthaben auf das Ihnen bekannte Konto.
+
+Viele Grüße
+Mara Muster
+
+Hinweis zum Testdatensatz: Diese Nachricht, die Person und die Vertragsnummer
+sind vollständig erfunden.

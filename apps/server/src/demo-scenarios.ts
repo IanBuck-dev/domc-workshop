@@ -295,6 +295,7 @@ function markdownToHtmlDocument(markdown: string): string {
   th, td { border: 1px solid #cccccc; padding: 6px 10px; text-align: left; font-size: 0.95em; }
   th { background: #f2f2f2; }
   ul, ol { margin: 0.5em 0; padding-left: 1.4em; }
+  li { display: list-item; margin: 0.25em 0; break-inside: avoid; }
   p { margin: 0.6em 0; }
 </style>
 <body>

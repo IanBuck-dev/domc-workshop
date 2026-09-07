@@ -159,9 +159,7 @@ describe("LifeCorp showcase seed", () => {
       expect(
         reviewTranscript.filter((event) => event.role === "assistant"),
       ).toHaveLength(8);
-      expect(
-        reviewTranscript.slice(1, -1).map((event) => event.role),
-      ).toEqual([
+      expect(reviewTranscript.slice(1, -1).map((event) => event.role)).toEqual([
         "assistant",
         "user",
         "assistant",

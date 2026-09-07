@@ -80,7 +80,7 @@ den konfigurierten Provider.
 Excel-Downloads. Nur `bun run test:e2e:real` startet bewusst den realen Codex-Lauf für
 den Leitungswasserfall.
 
-## Die sechs Aufnahmeszenarien
+## Die sieben Aufnahmeszenarien
 
 - **kfz-glasschaden** (Fachbereich Schaden) — der saubere Fall: klarer
   Ablauf, drei sich ergänzende Dokumente. Tuningziel: Grundleistung prüfen —
@@ -101,6 +101,11 @@ den Leitungswasserfall.
   begonnener Chat mit ausgewählter Checkliste und zwei gespeicherten Zügen.
 - **bezugsrechtsaenderung-leben** (Fachbereich Vertrag) — ein fertiges
   Prozessbild, das bewusst noch auf die menschliche Prüfung wartet.
+- **vertragskuendigung-sach** (Fachbereich Vertrag) — der reale
+  Codex-Tuningfall mit einer unvollständigen Arbeitsanweisung als PDF und einer
+  konkreten Kunden-E-Mail. Tuningziel: acht Schritte fokussiert prüfen,
+  Einzelfall und Prozessregel trennen und offene Frist- und Nachweisregeln nicht
+  erfinden.
 
 ## Automatisches Seeding beim Dev-Start
 

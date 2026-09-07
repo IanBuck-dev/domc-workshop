@@ -55,6 +55,16 @@ Bewertung ausgearbeitet. Ihre kriteriumsbasierten Vergleichswerte sind FIN-03 = 
 VER-01 = 79, SCH-01 = 72, VTR-01 = 58, IT-02 = 46 und FIN-02 = 28. Alle übrigen
 Prozesse bleiben bewusst ohne Score.
 
+## Zusätzlicher Tuningfall
+
+Dieser Fall gehört nicht zum 18-Prozess-Präsentationsstand. Er wird bei Bedarf
+frisch angelegt, um die reale KI-Prozessaufnahme gegen die aktuellen
+Instruktionen zu prüfen.
+
+| Fachbereich | Prozess                                                       | Versicherungsgebiet       | Potenzial | Status                  |
+| ----------- | ------------------------------------------------------------- | ------------------------- | --------- | ----------------------- |
+| Vertrag     | VER-05 · Kündigung eines Sachversicherungsvertrags bearbeiten | Kfz, Hausrat, Wohngebäude | Hoch      | realer Codex-Tuningfall |
+
 Die verbindliche Tiefe, der gewünschte Seed-Zustand und die Abnahmekriterien
 jedes Prozesses stehen in der [`ABNAHMEMATRIX.md`](ABNAHMEMATRIX.md).
 

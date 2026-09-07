@@ -116,6 +116,35 @@ describe("demo-data scenarios", () => {
     }
   });
 
+  test("cancellation tuning case has two complementary inputs and an eight-step source flow", async () => {
+    const root = join(szenarienRoot, "vertragskuendigung-sach");
+    const scenario = demoSzenarioSchema.parse(
+      await readJson(join(root, "szenario.json")),
+    );
+    expect(scenario.dokumente.map((document) => document.format)).toEqual([
+      "pdf",
+      "txt",
+    ]);
+    expect(scenario.dokumente).toHaveLength(2);
+
+    const instruction = await readFile(
+      join(root, "dokumente", "arbeitsanweisung-vertragskuendigung-sach.md"),
+      "utf8",
+    );
+    expect(instruction).toMatch(
+      /\| 8\s+\| Bestätigung versenden und abschließen/,
+    );
+    expect(instruction).toContain("nicht beschrieben");
+
+    const exampleEmail = await readFile(
+      join(root, "dokumente", "beispiel-kuendigungsanfrage.txt"),
+      "utf8",
+    );
+    const normalizedEmail = exampleEmail.replace(/\s+/g, " ");
+    expect(normalizedEmail).toContain("zum nächstmöglichen Zeitpunkt");
+    expect(normalizedEmail).toContain("31.08.2026 verkauft");
+  });
+
   test("formular topic and work characteristic IDs exist in the process capture config with valid option IDs", async () => {
     const config = await processConfig();
     const topicIds: Set<string> = new Set(

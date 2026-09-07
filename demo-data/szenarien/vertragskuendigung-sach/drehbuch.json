@@ -1,0 +1,59 @@
+{
+  "zuege": [
+    {
+      "nummer": 1,
+      "antwort": "Wir im Serviceteam Bestand bearbeiten Kündigungen für Kfz, Hausrat und Wohngebäude. Der Prozess beginnt mit dem Eingang einer Kündigung und endet, wenn das richtige Beendigungsdatum in VERA steht, die Bestätigung raus ist und alles in AKTE liegt. Offene Schäden bearbeiten wir nicht selbst.",
+      "hinweis": "Rahmen, Ergebnis und Abgrenzung. Der Agent sollte danach auf genau einen Prozessschritt fokussieren."
+    },
+    {
+      "nummer": 2,
+      "antwort": "Die meisten Kündigungen kommen per E-Mail ins gemeinsame Exchange-Postfach. Briefe scannt der zentrale Posteingang ein, Portalnachrichten landen schon mit Vertragsbezug in AKTE. Bei E-Mail und Post müssen wir den Vertrag meistens selbst über Nummer, Name und Anschrift in VERA finden. Der Eingangsstempel aus dem Posteingang bleibt dabei erhalten.",
+      "hinweis": "Schritt 1: drei Eingangskanäle, Eingangsstempel und unterschiedliche Vorstrukturierung."
+    },
+    {
+      "nummer": 3,
+      "antwort": "Ich prüfe zuerst, ob der Absender zum Versicherungsnehmer passt und ob die Vertragsnummer plausibel ist. Schreibt ein Vermittler oder eine andere Person, brauche ich eine Vollmacht oder einen schon hinterlegten Vertretungsnachweis. Eine normale Absenderadresse allein reicht mir nicht als Nachweis.",
+      "hinweis": "Schritt 2 und 4: Zuordnung, Identität und Vertretungsberechtigung."
+    },
+    {
+      "nummer": 4,
+      "antwort": "Dann ordne ich ein, ob es eine normale Kündigung oder ein besonderer Anlass ist. Typisch sind Verkauf, Beitragserhöhung oder ein Schadenfall. Bei 'zum nächstmöglichen Zeitpunkt' prüfe ich beides: ob der genannte Anlass ein früheres Datum erlaubt und welches ordentliche Vertragsende sonst gilt.",
+      "hinweis": "Schritt 3: Kündigungsart. Der Agent darf aus dem Anlass noch keine Zulässigkeit ableiten."
+    },
+    {
+      "nummer": 5,
+      "antwort": "Die Fristen stehen je nach Produkt und Vertragsgeneration in VERA oder in den dort verlinkten Vertragsunterlagen. Eine einzige Fristenregel gibt es nicht. Bei Altverträgen muss ich öfter in die Bedingungen schauen. Wenn ich das Datum nicht eindeutig bestimmen kann, geht der Fall an das zuständige Bestandsfachteam.",
+      "hinweis": "Schritt 5: variable Regeln, Quellen und Eskalation statt erfundener allgemeiner Frist."
+    },
+    {
+      "nummer": 6,
+      "antwort": "Beim Verkauf eines Gebäudes brauchen wir einen geeigneten Nachweis und das Datum des Eigentumsübergangs. Fehlt etwas, nutze ich eine Textvorlage in Exchange und setze den Vorgang in AKTE auf 'Rückfrage'. Sobald die Antwort kommt, nehme ich ihn wieder auf. Welche Unterlage genügt, ist in der Kurzanweisung leider nicht sauber festgelegt.",
+      "hinweis": "Schritt 6: Rückfrageschleife und bewusste Wissenslücke zu geeigneten Nachweisen."
+    },
+    {
+      "nummer": 7,
+      "antwort": "Bei der Beispielmail würde ich also nicht einfach den 31. August übernehmen. Der Verkaufsnachweis fehlt, und wir wissen noch nicht, ob an diesem Tag schon der Eigentumsübergang war. Ich würde Mara Muster anschreiben und parallel das ordentliche Vertragsende in VERA prüfen.",
+      "hinweis": "Konkreter Abgleich mit der zweiten Eingabedatei. Muss als aktueller Umgang mit dem Beispielfall, nicht als allgemeine Regel erfasst werden."
+    },
+    {
+      "nummer": 8,
+      "antwort": "Wenn alles klar ist, trage ich Kündigungsgrund, Eingangsdatum und Beendigungsdatum in VERA ein. Rückwirkende Beendigungen und unklare Sonderkündigungen prüft immer eine zweite Person. Normale fristgerechte Kündigungen kontrollieren wir nur stichprobenartig. VERA erzeugt danach den Entwurf der Bestätigung.",
+      "hinweis": "Schritt 7: Felder, differenzierte Kontrolle und Dokumenterzeugung."
+    },
+    {
+      "nummer": 9,
+      "antwort": "Ich prüfe den Bestätigungsentwurf gegen VERA, versende ihn über den Eingangskanal und lege die finale Fassung in AKTE ab. Offene Beiträge gehen als Hinweis an Prämieninkasso und Mahnwesen. Ein Guthaben wird systemseitig an SAP S/4HANA übergeben; wir stoßen keine einzelne Überweisung von Hand an.",
+      "hinweis": "Schritt 8: Abschluss, Ablage und klar begrenzte Übergaben an Finanzen."
+    },
+    {
+      "nummer": 10,
+      "antwort": "Das ist ein Massenprozess mit ungefähr 1.600 Vorgängen im Monat. Ein vollständiger Standardfall dauert etwa zwölf Minuten. Bei knapp jedem fünften Vorgang fehlt etwas oder der Anlass ist nicht eindeutig; dann liegen die Fälle im Mittel vier Arbeitstage. Besonders viel Zeit kostet das Suchen in Vertragsbedingungen und das Nachhalten der Rückfragen.",
+      "hinweis": "Mengen, Bearbeitungszeit, Rückfragequote und Schwachstellen als Grundlage für spätere KI-Potenziale."
+    },
+    {
+      "nummer": 11,
+      "antwort": "Aus meiner Sicht ist das der heutige Ablauf. Offen bleibt vor allem, welche Verkaufsnachweise je Produkt ausreichen und ob die Kontrollregel für rückwirkende Fälle überall gleich gelebt wird. Das sollte die Teamleitung vor der Bestätigung klären.",
+      "hinweis": "Abschluss mit zwei expliziten Wissenslücken. Der Agent sollte jetzt zur Prüfung des Prozessbilds überleiten statt eine neue Fragerunde zu beginnen."
+    }
+  ]
+}
