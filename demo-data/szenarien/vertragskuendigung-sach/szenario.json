@@ -10,7 +10,7 @@
   "interactionMode": "chat",
   "dokumente": [
     {
-      "quelle": "dokumente/arbeitsanweisung-vertragskuendigung-sach.md",
+      "quelle": "dokumente/Arbeitsanweisung_Vertragskuendigung_Sach.pdf",
       "zielname": "Arbeitsanweisung_Vertragskuendigung_Sach.pdf",
       "format": "pdf"
     },

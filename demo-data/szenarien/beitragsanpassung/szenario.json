@@ -10,7 +10,7 @@
   "interactionMode": "chat",
   "dokumente": [
     {
-      "quelle": "dokumente/verfahrensanweisung-beitragsanpassung.md",
+      "quelle": "dokumente/Verfahrensanweisung_Beitragsanpassung.pdf",
       "zielname": "Verfahrensanweisung_Beitragsanpassung.pdf",
       "format": "pdf"
     },

@@ -280,3 +280,59 @@ test("opportunity navigation keeps its header stable without refetching", async 
   expect(failures.failedRequests).toEqual([]);
   expect(failures.consoleErrors).toEqual([]);
 });
+
+test("demo sidecar stays centered and uploads the VER-05 PDF", async ({
+  page,
+}) => {
+  test.skip(
+    !username || !password,
+    "Only the isolated local E2E runner supplies credentials.",
+  );
+  const failures = observeBrowserFailures(page);
+  await login(page);
+  await page.goto("/processes/new");
+  await page.getByRole("button", { name: "Demo-Sidecar öffnen" }).click();
+
+  const panel = page
+    .getByText("Demo-Drehbuch", { exact: true })
+    .locator("xpath=../..");
+  const expectVerticallyCentered = async () => {
+    const box = await panel.boundingBox();
+    const viewport = page.viewportSize();
+    expect(box).not.toBeNull();
+    expect(viewport).not.toBeNull();
+    const availableCenter = 64 + (viewport!.height - 64) / 2;
+    expect(Math.abs(box!.y + box!.height / 2 - availableCenter)).toBeLessThan(
+      1,
+    );
+  };
+
+  await expect(panel).toBeVisible();
+  await expectVerticallyCentered();
+  await page.setViewportSize({ width: 1024, height: 900 });
+  await expectVerticallyCentered();
+  await page.setViewportSize({ width: 1440, height: 1000 });
+
+  await panel.getByRole("combobox").click();
+  await page
+    .getByRole("option", {
+      name: "VER-05 · Kündigung eines Sachversicherungsvertrags bearbeiten",
+    })
+    .click();
+  await panel.getByRole("button", { name: "Grunddaten einfüllen" }).click();
+  await page.getByRole("button", { name: "Weiter zu Schritt 2" }).click();
+  await expect(page).toHaveURL(/\/processes\/PROC-\d+\/chat$/);
+
+  const pdfName = "Arbeitsanweisung_Vertragskuendigung_Sach.pdf";
+  await page
+    .getByRole("button", { name: `Datei ${pdfName} hochladen` })
+    .click();
+  await expect(
+    page.getByRole("button", { name: `Datei ${pdfName} hochladen` }),
+  ).toHaveCount(0);
+  await expect(page.getByText(pdfName, { exact: true })).toBeVisible();
+  await expect(page.getByRole("alert")).toHaveCount(0);
+
+  expect(failures.failedRequests).toEqual([]);
+  expect(failures.consoleErrors).toEqual([]);
+});

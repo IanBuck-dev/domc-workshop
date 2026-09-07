@@ -5,6 +5,7 @@ import { join } from "node:path";
 import {
   demoDrehbuchSchema,
   demoSzenarioSchema,
+  readDemoDocument,
   type DemoSzenario,
 } from "../apps/server/src/demo-scenarios.ts";
 import {
@@ -79,6 +80,28 @@ describe("demo-data scenarios", () => {
       for (const dokument of szenario.dokumente) {
         const quellPath = join(szenarienRoot, slug, dokument.quelle);
         expect(existsSync(quellPath)).toBe(true);
+      }
+    }
+  });
+
+  test("serves every PDF demo document from a versioned binary without runtime rendering", async () => {
+    const slugs = await scenarioSlugs();
+    for (const slug of slugs) {
+      const scenario = demoSzenarioSchema.parse(
+        await readJson(join(szenarienRoot, slug, "szenario.json")),
+      );
+      for (const document of scenario.dokumente.filter(
+        (entry) => entry.format === "pdf",
+      )) {
+        expect(document.quelle.toLowerCase().endsWith(".pdf")).toBe(true);
+        const source = await readFile(
+          join(szenarienRoot, slug, document.quelle),
+        );
+        const served = await readDemoDocument(slug, document.zielname);
+        expect(served.contentType).toBe("application/pdf");
+        expect(served.dateiname).toBe(document.zielname);
+        expect(Buffer.from(served.bytes)).toEqual(source);
+        expect(source.subarray(0, 5).toString("ascii")).toBe("%PDF-");
       }
     }
   });

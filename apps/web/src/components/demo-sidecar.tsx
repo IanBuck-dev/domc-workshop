@@ -142,7 +142,7 @@ export function DemoSidecar({
     );
 
   return (
-    <div className="fixed top-16 bottom-0 left-0 z-30 flex items-start">
+    <div className="fixed top-16 bottom-0 left-0 z-30 flex items-center">
       <div className="flex max-h-full w-[320px] flex-col overflow-hidden rounded-r-lg border border-l-0 border-border bg-card shadow-lg">
         <header className="flex items-center justify-between gap-2 border-b border-border px-3 py-2.5">
           <p className="text-label">Demo-Drehbuch</p>

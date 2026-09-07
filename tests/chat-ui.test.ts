@@ -326,6 +326,14 @@ describe("chat capture UI contract", () => {
     expect(sidecar).toContain('const zeigeVorschlaege = stage !== "documents"');
     expect(sidecar).toContain("offeneDokumente");
     expect(sidecar).toContain("Dieses Szenario nutzt keine Unterlagen.");
+    expect(sidecar).not.toContain(
+      'className="fixed top-16 bottom-0 left-0 z-30 flex items-start"',
+    );
+    expect(
+      sidecar.match(
+        /className="fixed top-16 bottom-0 left-0 z-30 flex items-center"/g,
+      ),
+    ).toHaveLength(2);
     // Im erweiterten Prozessbild darf der Griff nicht über der Chatspalte liegen.
     expect(sidecar).toContain("if (suppressed || !szenarien");
     expect(page).toContain("suppressed={expanded}");

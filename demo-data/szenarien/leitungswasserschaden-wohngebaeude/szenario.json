@@ -10,7 +10,7 @@
   "interactionMode": "chat",
   "dokumente": [
     {
-      "quelle": "dokumente/arbeitsanweisung-leitungswasserschaden.md",
+      "quelle": "dokumente/Arbeitsanweisung_Leitungswasserschaden.pdf",
       "zielname": "Arbeitsanweisung_Leitungswasserschaden.pdf",
       "format": "pdf"
     },

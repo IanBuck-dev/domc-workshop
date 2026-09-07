@@ -378,7 +378,7 @@ export async function readDemoDocument(
   );
   if (!dokument) throw new DemoDocumentNotFoundError();
   const quellPath = join(root, slug, dokument.quelle);
-  if (dokument.format === "pdf") {
+  if (dokument.format === "pdf" && !quellPath.toLowerCase().endsWith(".pdf")) {
     const bytes = await renderMarkdownToPdf(slug, dokument, quellPath);
     return {
       bytes,
