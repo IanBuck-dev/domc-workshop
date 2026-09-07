@@ -1,6 +1,14 @@
 import { expect, test } from "bun:test";
 import { createHash } from "node:crypto";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import {
+  chmod,
+  mkdir,
+  mkdtemp,
+  readFile,
+  realpath,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { z } from "zod";
@@ -78,6 +86,62 @@ test("Codex structured calls use an ephemeral schema-constrained sandbox", async
       values: { type: "array", items: { type: "string" } },
     },
   });
+});
+
+test("Codex sandbox can read the wrapper's platform package", async () => {
+  const root = await mkdtemp(join(tmpdir(), "claims-ai-codex-install-"));
+  try {
+    const packageRoot = join(root, "node_modules", "@openai", "codex");
+    const wrapper = join(packageRoot, "bin", "codex.js");
+    const sandbox = join(root, "srt");
+    await mkdir(join(packageRoot, "bin"), { recursive: true });
+    await writeFile(wrapper, "#!/usr/bin/env node\n");
+    await writeFile(sandbox, "#!/bin/sh\n");
+    await Promise.all([chmod(wrapper, 0o755), chmod(sandbox, 0o755)]);
+    let settings: { filesystem?: { allowRead?: string[] } } = {};
+    const adapter = new CodexCliAdapter({
+      tempRoot: join(root, "runtime"),
+      codexCommand: wrapper,
+      sandboxCommand: sandbox,
+      sandboxMode: "required",
+      transport: async (request) => {
+        const settingsPath = request.command[2];
+        if (!settingsPath) throw new Error("Sandbox settings path missing.");
+        settings = JSON.parse(await readFile(settingsPath, "utf8"));
+        return {
+          stdout: JSON.stringify({ ok: true }),
+          stderr: "",
+          exitCode: 0,
+          sandboxed: true,
+        };
+      },
+    });
+    await adapter.runStructured({
+      processId: "PROC-1",
+      operationName: "sandbox-install-test",
+      prompt: "input",
+      systemPrompt: "system",
+      responseSchema: z.object({ ok: z.boolean() }),
+      responseJsonSchema: {
+        type: "object",
+        properties: { ok: { type: "boolean" } },
+      },
+      model: {
+        model: "gpt-5.6-sol",
+        effort: "medium",
+        timeoutMs: 10_000,
+        maxOutputTokens: 512,
+        maxInputCharacters: 10_000,
+        maxBudgetUsd: 1,
+      },
+      tools: "none",
+    });
+    expect(settings.filesystem?.allowRead).toContain(
+      await realpath(packageRoot),
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("Codex structured calls reject an oversized last-message artifact", async () => {

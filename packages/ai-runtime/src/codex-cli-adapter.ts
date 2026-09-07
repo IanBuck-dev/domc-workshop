@@ -7,7 +7,7 @@ import {
   rm,
   writeFile,
 } from "node:fs/promises";
-import { basename, join, relative, resolve, sep } from "node:path";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { tmpdir } from "node:os";
 import type {
   AiRuntimeProvider,
@@ -308,6 +308,12 @@ export class CodexCliAdapter implements AiRuntimeProvider {
     const auth = home ? join(home, ".codex") : null;
     const executable =
       Bun.which(this.options.codexCommand) ?? this.options.codexCommand;
+    const resolvedExecutable = await realpath(executable).catch(() =>
+      resolve(executable),
+    );
+    const executableReads = [executable, resolvedExecutable];
+    if (basename(resolvedExecutable) === "codex.js")
+      executableReads.push(dirname(dirname(resolvedExecutable)));
     const settings = {
       network: {
         allowedDomains: ["api.openai.com", "*.openai.com", "chatgpt.com"],
@@ -319,8 +325,8 @@ export class CodexCliAdapter implements AiRuntimeProvider {
         denyRead: [home, "/root"].filter((value): value is string =>
           Boolean(value),
         ),
-        allowRead: [cwd, auth, executable].filter((value): value is string =>
-          Boolean(value),
+        allowRead: [cwd, auth, ...executableReads].filter(
+          (value): value is string => Boolean(value),
         ),
         allowWrite: [cwd, auth].filter((value): value is string =>
           Boolean(value),
