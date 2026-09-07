@@ -152,6 +152,33 @@ test("Codex app-server deletes persisted provider sessions", async () => {
   expect(calls[2]?.params).toEqual({ threadId: "thread-to-delete" });
 });
 
+test("Codex session deletion is idempotent for a reserved but unused thread ID", async () => {
+  const adapter = new CodexChatCaptureAdapter({
+    start: () =>
+      fakeServer((message, output) => {
+        if (!message.id) return;
+        output.write(
+          `${JSON.stringify({
+            jsonrpc: "2.0",
+            id: message.id,
+            ...(message.method === "thread/delete"
+              ? {
+                  error: {
+                    code: -32600,
+                    message: `no rollout found for thread id ${message.params.threadId}`,
+                  },
+                }
+              : { result: {} }),
+          })}\n`,
+        );
+      }),
+  });
+
+  await expect(
+    adapter.deleteSession("reserved-thread", "/tmp/process"),
+  ).resolves.toBeUndefined();
+});
+
 test("Codex app-server resumes the stored thread for a later user turn", async () => {
   const calls: Record<string, any>[] = [];
   let output!: PassThrough;

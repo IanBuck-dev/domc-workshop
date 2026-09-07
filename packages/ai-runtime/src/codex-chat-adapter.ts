@@ -440,7 +440,13 @@ export class CodexChatCaptureAdapter {
         clientInfo: { name: "claims-ai-portfolio", version: "1" },
       });
       send({ method: "initialized", params: {} });
-      await call("thread/delete", { threadId: sessionId });
+      try {
+        await call("thread/delete", { threadId: sessionId });
+      } catch (error) {
+        // Chat captures reserve a session ID before the first turn. Codex has
+        // no persisted rollout for that ID yet, so deletion is already done.
+        if (!/no rollout found for thread id/i.test(String(error))) throw error;
+      }
     } finally {
       clearTimeout(timeout);
       controller.abort();
