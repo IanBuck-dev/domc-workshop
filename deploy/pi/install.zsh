@@ -10,7 +10,7 @@ SOURCE_DIR="${0:A:h:h:h}"
 INSTALL_DIR="/opt/claims-ai-portfolio/current"
 STATE_DIR="/var/lib/claims-ai"
 ENV_FILE="/etc/claims-ai-portfolio.env"
-NPM_GLOBAL_DIR="${STATE_DIR}/.npm-global"
+CODEX_INSTALL_DIR="/opt/claims-ai-codex"
 CODEX_VERSION="0.153.4"
 
 apt-get update
@@ -20,7 +20,7 @@ if ! id claims-ai >/dev/null 2>&1; then
   useradd --system --create-home --home-dir "${STATE_DIR}" --shell /usr/sbin/nologin claims-ai
 fi
 install -d -o claims-ai -g claims-ai -m 0700 "${STATE_DIR}" "${STATE_DIR}/workspace" "${STATE_DIR}/ai-operations"
-install -d -o claims-ai -g claims-ai -m 0755 "${NPM_GLOBAL_DIR}"
+install -d -o root -g root -m 0755 "${CODEX_INSTALL_DIR}"
 install -d -o root -g root -m 0755 "${INSTALL_DIR}"
 
 rsync -a --delete \
@@ -36,12 +36,11 @@ if [[ ! -x "${STATE_DIR}/.bun/bin/bun" ]]; then
   sudo -u claims-ai env HOME="${STATE_DIR}" zsh -c 'curl -fsSL https://bun.sh/install | bash'
 fi
 
-sudo -u claims-ai env HOME="${STATE_DIR}" \
-  npm install --global --prefix "${NPM_GLOBAL_DIR}" "@openai/codex@${CODEX_VERSION}"
+npm install --global --prefix "${CODEX_INSTALL_DIR}" "@openai/codex@${CODEX_VERSION}"
 
 sudo -u claims-ai env \
   HOME="${STATE_DIR}" \
-  PATH="${NPM_GLOBAL_DIR}/bin:${STATE_DIR}/.bun/bin:/usr/local/bin:/usr/bin:/bin" \
+  PATH="${CODEX_INSTALL_DIR}/bin:${STATE_DIR}/.bun/bin:/usr/local/bin:/usr/bin:/bin" \
   zsh -c "bun add --global @anthropic-ai/claude-code@2.1.215 && cd '${INSTALL_DIR}' && bun install --frozen-lockfile && bun run build"
 
 if [[ ! -f "${ENV_FILE}" ]]; then
@@ -77,7 +76,7 @@ systemctl daemon-reload
 systemctl enable claims-ai-portfolio.service
 
 print "Installation abgeschlossen. Für den Standardprovider Codex einmalig authentifizieren:"
-print "sudo -u claims-ai env HOME=${STATE_DIR} PATH=${NPM_GLOBAL_DIR}/bin:${STATE_DIR}/.bun/bin:\$PATH codex login"
+print "sudo -u claims-ai env HOME=${STATE_DIR} PATH=${CODEX_INSTALL_DIR}/bin:${STATE_DIR}/.bun/bin:\$PATH codex login"
 print "Für AI_PROVIDER=claude-cli zusätzlich Claude authentifizieren:"
 print "sudo -u claims-ai env HOME=${STATE_DIR} CLAUDE_CONFIG_DIR=${STATE_DIR}/.claude PATH=${STATE_DIR}/.bun/bin:\$PATH claude auth login"
 print "Danach: sudo systemctl start claims-ai-portfolio"
