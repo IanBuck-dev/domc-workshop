@@ -67,6 +67,7 @@ test("Codex structured calls use an ephemeral schema-constrained sandbox", async
   expect(command).toContain("--skip-git-repo-check");
   expect(command).toContain("-");
   expect(command).toContain("model_reasoning_effort=medium");
+  expect(command).toContain('service_tier="default"');
   expect(command).toContain("--output-schema");
   expect(command).toContain("--json");
   expect(result.trace.provider).toBe("codex-cli");

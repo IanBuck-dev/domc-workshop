@@ -102,7 +102,7 @@ describe("process AI contract", () => {
     });
     const config = await processConfig();
     expect(config.ai).toMatchObject({
-      model: "gpt-5.6-sol",
+      model: "gpt-5.6-terra",
       reasoningEffort: "medium",
     });
     const result = await new ProcessFollowUpAdapter(runner).run({

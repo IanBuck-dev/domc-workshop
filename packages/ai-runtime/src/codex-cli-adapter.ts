@@ -14,6 +14,7 @@ import type {
   StructuredAiRequest,
   StructuredAiResult,
 } from "./contracts.ts";
+import { configuredAiEffort, configuredAiServiceTier } from "./contracts.ts";
 import { providerModel } from "./operation-policy.ts";
 
 export interface CodexTransportRequest {
@@ -196,6 +197,8 @@ export class CodexCliAdapter implements AiRuntimeProvider {
         .filter((name) => /\.(?:png|jpe?g)$/i.test(name))
         .flatMap((name) => ["--image", `uploads/${name}`]);
       const prompt = `${request.systemPrompt}\n\n${request.prompt}\n\n## Verfügbare Dateien\n${available}\n\nGib ausschließlich das strukturierte Ergebnis gemäß response-schema.json aus.`;
+      const effort = configuredAiEffort(request.model.effort);
+      const serviceTier = configuredAiServiceTier();
       const codexCommand = [
         this.options.codexCommand,
         "exec",
@@ -213,7 +216,9 @@ export class CodexCliAdapter implements AiRuntimeProvider {
         "--model",
         providerModel("codex-cli", request.model.model),
         "--config",
-        `model_reasoning_effort=${request.model.effort}`,
+        `model_reasoning_effort=${effort}`,
+        "--config",
+        `service_tier="${serviceTier}"`,
         ...imageArguments,
         "-",
       ];

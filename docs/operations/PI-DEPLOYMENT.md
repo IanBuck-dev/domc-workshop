@@ -66,6 +66,11 @@ Das Installationsskript kopiert den Release nach
 und baut Anwendung sowie ARM64-Release. Der persistente Workspace unter
 `/var/lib/claims-ai/workspace` bleibt unangetastet.
 
+Der systemd-Dienst setzt für die Demo `AI_MODEL=gpt-5.6-terra`,
+`AI_REASONING_EFFORT=medium` und `AI_SERVICE_TIER=priority`. `priority` aktiviert
+den Fast-Service-Tier der Codex CLI; `default` schaltet auf die normale Geschwindigkeit
+zurück.
+
 ## 4a. Öffentliche Betreiberangaben vor dem ersten Release hinterlegen
 
 Die Datei mit Impressums- und Datenschutzangaben liegt bewusst außerhalb des

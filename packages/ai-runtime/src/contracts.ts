@@ -3,6 +3,8 @@ import type { AiTrace } from "../../domain/src/process-understanding.ts";
 
 export const aiProviderIds = ["codex-cli", "claude-cli"] as const;
 export type AiProviderId = (typeof aiProviderIds)[number];
+export const aiServiceTiers = ["default", "priority"] as const;
+export type AiServiceTier = (typeof aiServiceTiers)[number];
 
 export interface AiRuntimeModelConfig {
   model: string;
@@ -102,5 +104,22 @@ export function configuredAiModel(
   override = process.env.AI_MODEL,
 ) {
   if (override) return override;
-  return provider === "codex-cli" ? "gpt-5.6-sol" : "opus";
+  return provider === "codex-cli" ? "gpt-5.6-terra" : "opus";
+}
+
+export function configuredAiEffort(
+  configured: AiRuntimeModelConfig["effort"],
+  override = process.env.AI_REASONING_EFFORT,
+): AiRuntimeModelConfig["effort"] {
+  if (!override) return configured;
+  if (override === "medium" || override === "high") return override;
+  throw new Error("AI_REASONING_EFFORT must be medium or high.");
+}
+
+export function configuredAiServiceTier(
+  value = process.env.AI_SERVICE_TIER,
+): AiServiceTier {
+  if (!value || value === "default") return "default";
+  if (value === "priority") return value;
+  throw new Error("AI_SERVICE_TIER must be default or priority.");
 }

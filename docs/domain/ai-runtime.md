@@ -8,7 +8,10 @@ validated response, a recorded trace. Nothing in this repository calls a model a
 
 `AI_PROVIDER=codex-cli` is the default and uses the locally authenticated `codex` CLI.
 `AI_PROVIDER=claude-cli` preserves the existing Claude CLI path. `AI_MODEL` overrides the
-provider model for an operator session; defaults are `gpt-5.6-sol` and `opus` respectively.
+provider model for an operator session; defaults are `gpt-5.6-terra` and `opus` respectively.
+`AI_REASONING_EFFORT=medium|high` overrides the frozen effort. Codex additionally accepts
+`AI_SERVICE_TIER=default|priority`; `priority` is the CLI's Fast mode and trades increased
+usage for approximately 1.5x model speed.
 
 ## How it works
 
@@ -64,13 +67,18 @@ The browser side is `apps/web/src/lib/process-events.tsx`.
 ### Model configuration
 
 `AiRuntimeModelConfig` (`packages/ai-runtime/src/contracts.ts`) is the shared
-budget every call carries: `model` (`gpt-5.6-sol` by default; frozen legacy records may
+budget every call carries: `model` (`gpt-5.6-terra` by default; frozen legacy records may
 still use `opus` or `claude-opus-4-8`), `effort` (`medium` | `high`),
 `timeoutMs`, `maxOutputTokens`, `maxInputCharacters`, and `maxBudgetUsd`. The values come
 from `defaults/process-capture-config.json` and
 `defaults/opportunity-discovery-config.json` and are **frozen per record** at creation
 (`configSnapshot`, `configHash`), which is what makes prompt-tuning rounds reproducible:
 changing a prompt only affects processes created afterwards.
+The operator overrides apply at execution time, including to frozen records. The Pi demo
+and local development start use Terra, medium reasoning and the `priority` service tier
+for consistent presentation latency. Structured Codex calls translate that tier to
+`codex exec --config service_tier="priority"`; App Server chat turns use
+`serviceTierForTurn: "priority"`.
 
 ### Prompts and schemas are files
 

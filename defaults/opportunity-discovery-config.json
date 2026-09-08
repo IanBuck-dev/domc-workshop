@@ -6,8 +6,8 @@
     "scenarios": "Erzeuge drei kompakte, nachvollziehbare Ausbaustufen mit klarer Arbeitsteilung zwischen Mensch und KI. Bewerte weder Wirtschaftlichkeit noch Machbarkeit."
   },
   "ai": {
-    "model": "gpt-5.6-sol",
-    "reasoningEffort": "high",
+    "model": "gpt-5.6-terra",
+    "reasoningEffort": "medium",
     "timeoutMs": 300000,
     "maxOutputTokens": 12000,
     "maxInputCharacters": 200000,

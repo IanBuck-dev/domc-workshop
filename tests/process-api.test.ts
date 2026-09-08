@@ -243,8 +243,8 @@ describe("process capture API", () => {
         ?.steps,
     ).toHaveLength(5);
     expect(modelCalls).toEqual([
-      { model: "gpt-5.6-sol", effort: "medium" },
-      { model: "gpt-5.6-sol", effort: "medium" },
+      { model: "gpt-5.6-terra", effort: "medium" },
+      { model: "gpt-5.6-terra", effort: "medium" },
     ]);
     await waitForNoActiveOperation(created.id);
     const correctedCharacteristics = workCharacteristicAnswers();

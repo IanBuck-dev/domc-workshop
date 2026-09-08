@@ -91,6 +91,9 @@ const server = Bun.spawn(["bun", "apps/server/src/index.ts"], {
     ...process.env,
     BUN_WATCH: "1",
     PORT: String(port),
+    AI_MODEL: process.env.AI_MODEL ?? "gpt-5.6-terra",
+    AI_REASONING_EFFORT: process.env.AI_REASONING_EFFORT ?? "medium",
+    AI_SERVICE_TIER: process.env.AI_SERVICE_TIER ?? "priority",
     ...(withoutAiSandbox ? { AI_SANDBOX_MODE: "off" } : {}),
   },
 });

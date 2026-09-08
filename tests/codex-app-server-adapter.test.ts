@@ -80,6 +80,7 @@ test("Codex app-server follows the initialize, thread, turn, tool, completion pr
   expect(calls[2]?.params).toMatchObject({
     approvalPolicy: "never",
     permissions: ":read-only",
+    serviceTier: "default",
     runtimeWorkspaceRoots: ["/tmp/process"],
     dynamicTools: [
       { type: "function", name: "write_process_flow" },
@@ -94,6 +95,7 @@ test("Codex app-server follows the initialize, thread, turn, tool, completion pr
     permissions: ":read-only",
     runtimeWorkspaceRoots: ["/tmp/process"],
     effort: "medium",
+    serviceTierForTurn: "default",
   });
   expect(calls[3]?.params.input).toEqual([
     { type: "text", text: "Bitte prüfen", text_elements: [] },

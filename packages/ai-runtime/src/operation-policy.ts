@@ -1,13 +1,17 @@
-import type { AiProviderId, AiRuntimeModelConfig } from "./contracts.ts";
+import {
+  configuredAiEffort,
+  type AiProviderId,
+  type AiRuntimeModelConfig,
+} from "./contracts.ts";
 
 export const operationPolicies = {
   "process-follow-ups": { effort: "medium" },
   "process-synthesis": { effort: "medium" },
-  "opportunity-hypotheses": { effort: "high" },
-  "opportunity-scenarios": { effort: "high" },
+  "opportunity-hypotheses": { effort: "medium" },
+  "opportunity-scenarios": { effort: "medium" },
   "memory-distillation": { effort: "medium" },
   "memory-consolidation": { effort: "medium" },
-  "agentic-potential-assessment": { effort: "high" },
+  "agentic-potential-assessment": { effort: "medium" },
 } as const;
 
 export function providerModel(
@@ -17,7 +21,7 @@ export function providerModel(
 ) {
   if (override) return override;
   if (provider === "codex-cli")
-    return configured.startsWith("gpt-") ? configured : "gpt-5.6-sol";
+    return configured.startsWith("gpt-") ? configured : "gpt-5.6-terra";
   return configured.startsWith("gpt-") ? "opus" : configured;
 }
 
@@ -28,5 +32,6 @@ export function runtimeModel(
   return {
     ...configured,
     model: providerModel(provider, configured.model),
+    effort: configuredAiEffort(configured.effort),
   };
 }

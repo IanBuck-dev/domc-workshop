@@ -143,8 +143,8 @@ describe("opportunity discovery API", () => {
     expect(completed.scenarios?.scenarios).toHaveLength(3);
     expect(calls).toEqual(["hypotheses", "scenarios"]);
     expect(modelCalls).toEqual([
-      { model: "gpt-5.6-sol", effort: "high" },
-      { model: "gpt-5.6-sol", effort: "high" },
+      { model: "gpt-5.6-terra", effort: "medium" },
+      { model: "gpt-5.6-terra", effort: "medium" },
     ]);
     const detail = await app.request(`/api/opportunities/${process.id}`);
     expect(detail.status).toBe(200);

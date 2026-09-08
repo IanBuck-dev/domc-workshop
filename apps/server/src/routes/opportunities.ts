@@ -42,7 +42,7 @@ export function opportunityRoutes(
           const contracts = await opportunities.contracts(processId);
           const model = {
             model: record.configSnapshot.ai.model,
-            effort: "high",
+            effort: record.configSnapshot.ai.reasoningEffort,
             timeoutMs: record.configSnapshot.ai.timeoutMs,
             maxOutputTokens: record.configSnapshot.ai.maxOutputTokens,
             maxInputCharacters: record.configSnapshot.ai.maxInputCharacters,

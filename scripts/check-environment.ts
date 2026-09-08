@@ -7,6 +7,16 @@ if (provider !== "codex-cli" && provider !== "claude-cli") {
   console.error("FEHLER AI_PROVIDER muss codex-cli oder claude-cli sein");
   process.exit(1);
 }
+const reasoningEffort = process.env.AI_REASONING_EFFORT ?? "medium";
+if (reasoningEffort !== "medium" && reasoningEffort !== "high") {
+  console.error("FEHLER AI_REASONING_EFFORT muss medium oder high sein");
+  process.exit(1);
+}
+const serviceTier = process.env.AI_SERVICE_TIER ?? "default";
+if (serviceTier !== "default" && serviceTier !== "priority") {
+  console.error("FEHLER AI_SERVICE_TIER muss default oder priority sein");
+  process.exit(1);
+}
 
 async function commandVersion(command: string, args: string[] = ["--version"]) {
   const lookup = Bun.spawn(

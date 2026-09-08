@@ -90,7 +90,13 @@ export const agenticPotentialAssessmentConfigSchema = z
       .strict(),
     ai: z
       .object({
-        model: z.enum(["sonnet", "opus", "claude-opus-4-8", "gpt-5.6-sol"]),
+        model: z.enum([
+          "sonnet",
+          "opus",
+          "claude-opus-4-8",
+          "gpt-5.6-sol",
+          "gpt-5.6-terra",
+        ]),
         reasoningEffort: z.enum(["medium", "high"]),
         timeoutMs: z.number().int().min(10_000).max(300_000),
         maxOutputTokens: z.number().int().min(512).max(32_768),

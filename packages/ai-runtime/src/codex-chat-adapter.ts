@@ -4,6 +4,7 @@ import type {
   AiChatTurnRequest,
   NormalizedChatTurnHandle,
 } from "./contracts.ts";
+import { configuredAiEffort, configuredAiServiceTier } from "./contracts.ts";
 import { providerModel } from "./operation-policy.ts";
 import { buildCodexDocumentContext } from "./codex-document-context.ts";
 
@@ -97,6 +98,8 @@ export class CodexChatCaptureAdapter {
       request.attachments ?? [],
       request.maxInputCharacters,
     );
+    const effort = configuredAiEffort("medium");
+    const serviceTier = configuredAiServiceTier();
     const child = this.transport.start(request.cwd, request.signal);
     if (!child.stdin || !child.stdout)
       throw new Error("Codex app-server did not expose stdio.");
@@ -298,6 +301,7 @@ export class CodexChatCaptureAdapter {
             ? { threadId: request.sessionId }
             : { cwd: request.cwd }),
           model: providerModel("codex-cli", request.model),
+          serviceTier,
           approvalPolicy: "never",
           permissions: ":read-only",
           runtimeWorkspaceRoots: [request.cwd],
@@ -353,7 +357,8 @@ export class CodexChatCaptureAdapter {
         approvalPolicy: "never",
         permissions: ":read-only",
         runtimeWorkspaceRoots: [request.cwd],
-        effort: "medium",
+        effort,
+        serviceTierForTurn: serviceTier,
       });
       const startedTurn = turn.turn as Record<string, unknown> | undefined;
       if (!startedTurn || typeof startedTurn.id !== "string")
