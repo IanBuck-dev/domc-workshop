@@ -367,6 +367,7 @@ export class ChatCaptureService {
       model: record.configSnapshot.ai.model,
       prompt: `${memoryContext}${recoveryContext}${actionInstruction}${uploadText}${mentionText}\n\nNutzernachricht (Evidenzart chat_message, sourceId ${request.id}):\n${request.text}`,
       timeoutMs: record.configSnapshot.ai.timeoutMs,
+      maxInputCharacters: record.configSnapshot.ai.maxInputCharacters,
       maxBudgetUsd: record.configSnapshot.ai.maxBudgetUsd,
       attachments: uploads.map((upload) => ({
         path: this.processes.uploadPath(id, upload.id, upload.name),

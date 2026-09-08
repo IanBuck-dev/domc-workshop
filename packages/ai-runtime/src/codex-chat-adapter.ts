@@ -5,6 +5,7 @@ import type {
   NormalizedChatTurnHandle,
 } from "./contracts.ts";
 import { providerModel } from "./operation-policy.ts";
+import { buildCodexDocumentContext } from "./codex-document-context.ts";
 
 export type CodexChatTurnRequest = AiChatTurnRequest;
 
@@ -92,6 +93,10 @@ export class CodexChatCaptureAdapter {
   ): Promise<NormalizedChatTurnHandle> {
     if (request.signal.aborted)
       throw new DOMException("AI operation cancelled.", "AbortError");
+    const documentContext = await buildCodexDocumentContext(
+      request.attachments ?? [],
+      request.maxInputCharacters,
+    );
     const child = this.transport.start(request.cwd, request.signal);
     if (!child.stdin || !child.stdout)
       throw new Error("Codex app-server did not expose stdio.");
@@ -332,7 +337,11 @@ export class CodexChatCaptureAdapter {
       const turn = await call("turn/start", {
         threadId,
         input: [
-          { type: "text", text: request.prompt, text_elements: [] },
+          {
+            type: "text",
+            text: `${request.prompt}${documentContext}`,
+            text_elements: [],
+          },
           ...(request.attachments ?? [])
             .filter((attachment) => attachment.mediaType.startsWith("image/"))
             .map((attachment) => ({

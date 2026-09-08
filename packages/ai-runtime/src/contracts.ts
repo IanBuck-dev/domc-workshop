@@ -76,6 +76,7 @@ export interface AiChatTurnRequest {
   model: string;
   cwd: string;
   timeoutMs: number;
+  maxInputCharacters: number;
   maxBudgetUsd: number;
   attachments?: Array<{ path: string; mediaType: string }>;
   signal: AbortSignal;

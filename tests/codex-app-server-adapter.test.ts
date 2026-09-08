@@ -36,6 +36,7 @@ const request = (overrides: Record<string, unknown> = {}) => ({
   model: "gpt-5.6-sol",
   cwd: "/tmp/process",
   timeoutMs: 10_000,
+  maxInputCharacters: 200_000,
   maxBudgetUsd: 1,
   signal: new AbortController().signal,
   writeProcessFlow: async () => ({ ok: true as const, revision: "rev-write" }),
@@ -238,17 +239,24 @@ test("Codex app-server attaches selected images as multimodal input", async () =
           );
       }),
   });
-  await adapter.startTurn(
+  const handle = await adapter.startTurn(
     request({
       attachments: [
         { path: "/tmp/process/uploads/scan.png", mediaType: "image/png" },
-        { path: "/tmp/process/uploads/info.txt", mediaType: "text/plain" },
       ],
     }),
   );
   expect(calls.at(-1)?.params.input).toEqual([
     { type: "text", text: "Bitte prüfen", text_elements: [] },
     { type: "localImage", path: "/tmp/process/uploads/scan.png" },
+  ]);
+  output.write(
+    `${JSON.stringify({ jsonrpc: "2.0", method: "turn/completed", params: { turn: { status: "completed" } } })}\n`,
+  );
+  await Promise.all([
+    handle.result.text,
+    handle.result.finalStep,
+    handle.result.finishReason,
   ]);
 });
 
